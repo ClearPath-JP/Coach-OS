@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { formatTrendLabel } from '@/lib/dashboard-trends'
 import { formatCents } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
 
@@ -21,11 +22,19 @@ type SessionRow = {
   clients: { first_name: string | null; last_name: string | null } | null
 }
 
+type Trend = { pct: number; up: boolean } | null
+
 type Summary = {
   activeClientsCount: number
   sessionsThisWeek: number
   revenueMonthCents: number
   pendingInvoicesCount: number
+  trends?: {
+    activeClients: Trend
+    sessionsThisWeek: Trend
+    revenueMonth: Trend
+    messagesToCoach: Trend
+  }
 }
 
 type ConversationRow = {
@@ -269,8 +278,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             <StatCardGhost
               label="Active clients"
               value={String(summary?.activeClientsCount ?? '—')}
-              trendLabel="+12%"
-              trendUp
+              {...(() => {
+                const f = formatTrendLabel(summary?.trends?.activeClients ?? null)
+                return f ? { trendLabel: f.label, trendUp: f.up } : {}
+              })()}
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -281,8 +292,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             <StatCardGhost
               label="Sessions this week"
               value={String(summary?.sessionsThisWeek ?? '—')}
-              trendLabel="+8%"
-              trendUp
+              {...(() => {
+                const f = formatTrendLabel(summary?.trends?.sessionsThisWeek ?? null)
+                return f ? { trendLabel: f.label, trendUp: f.up } : {}
+              })()}
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -295,8 +308,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               value={
                 summary?.revenueMonthCents != null ? formatCents(summary.revenueMonthCents) : '—'
               }
-              trendLabel="-5%"
-              trendUp={false}
+              {...(() => {
+                const f = formatTrendLabel(summary?.trends?.revenueMonth ?? null)
+                return f ? { trendLabel: f.label, trendUp: f.up } : {}
+              })()}
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" x2="12" y1="1" y2="23" />
@@ -307,8 +322,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             <StatCardGhost
               label="Unread messages"
               value={String(unreadMessagesTotal)}
-              trendLabel="+3%"
-              trendUp
+              {...(() => {
+                const f = formatTrendLabel(summary?.trends?.messagesToCoach ?? null)
+                return f ? { trendLabel: f.label, trendUp: f.up } : {}
+              })()}
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />

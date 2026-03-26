@@ -323,6 +323,22 @@ html[data-theme='dark'] ::selection {
   animation: pageEnter var(--duration-slow) var(--ease-out);
 }
 
+.coach-route-enter,
+.client-route-enter {
+  animation: coachRouteEnter var(--duration-slower) var(--ease-out) both;
+}
+
+@keyframes coachRouteEnter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pageEnter {
   from {
     opacity: 0;

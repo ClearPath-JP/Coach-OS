@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 function ProfileIcon({ className }: { className?: string }) {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -27,7 +27,18 @@ function ProfileIcon({ className }: { className?: string }) {
 
 function BillingIcon({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
       <rect width="20" height="14" x="2" y="5" rx="2" />
       <line x1="2" x2="22" y1="10" y2="10" />
       <path d="M6 15h.01M10 15h.01M14 15h.01M18 15h.01" />
@@ -37,7 +48,18 @@ function BillingIcon({ className }: { className?: string }) {
 
 function PackagesIcon({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
       <path d="M12 3v6" />
       <path d="M3 9v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9" />
       <path d="M21 9l-9-6-9 6" />
@@ -48,7 +70,18 @@ function PackagesIcon({ className }: { className?: string }) {
 
 function InvoicesIcon({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <path d="M14 2v6h6" />
       <path d="M16 13H8" />
@@ -60,7 +93,18 @@ function InvoicesIcon({ className }: { className?: string }) {
 
 function ProgramsIcon({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
       <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
       <path d="M8 7h6" />
       <path d="M8 11h8" />
@@ -70,7 +114,18 @@ function ProgramsIcon({ className }: { className?: string }) {
 
 function VideosIcon({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
       <path d="M22 8v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
       <path d="m10 8 6 4-6 4V8z" />
     </svg>
@@ -79,7 +134,18 @@ function VideosIcon({ className }: { className?: string }) {
 
 function AnalyticsIcon({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
       <path d="M3 3v18h18" />
       <path d="M7 16l4-8 4 5 4-9" />
     </svg>
@@ -88,14 +154,24 @@ function AnalyticsIcon({ className }: { className?: string }) {
 
 function PaymentsIcon({ className }: { className?: string }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
       <rect width="20" height="14" x="2" y="5" rx="2" />
       <path d="M2 10h20" />
     </svg>
   )
 }
 
-/** Default coach tabs (used when coach layout provides MobileNav) — includes Programs, Videos, Packages */
 export const coachTabs = [
   { href: '/coach/dashboard', label: 'Home', icon: HomeIcon },
   { href: '/coach/analytics', label: 'Analytics', icon: AnalyticsIcon },
@@ -110,7 +186,6 @@ export const coachTabs = [
   { href: '/billing', label: 'Billing', icon: BillingIcon },
 ] as const
 
-/** Client portal tabs (used in app/client/layout) */
 export const clientPortalTabs = [
   { href: '/client/portal', label: 'Home', icon: HomeIcon },
   { href: '/client/messages', label: 'Messages', icon: MessagesIcon },
@@ -123,8 +198,8 @@ export const clientPortalTabs = [
 function HomeIcon({ className }: { className?: string }) {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -143,8 +218,8 @@ function HomeIcon({ className }: { className?: string }) {
 function ClientsIcon({ className }: { className?: string }) {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -165,8 +240,8 @@ function ClientsIcon({ className }: { className?: string }) {
 function CalendarIcon({ className }: { className?: string }) {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -187,8 +262,8 @@ function CalendarIcon({ className }: { className?: string }) {
 function MessagesIcon({ className }: { className?: string }) {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -210,57 +285,59 @@ export interface MobileNavTab {
 }
 
 export interface MobileNavProps {
-  /** Optional class for the container */
   className?: string
-  /** Tabs to show; defaults to coach tabs */
   tabs?: readonly MobileNavTab[]
-  /** Unread message count — shown as green badge on Messages tab when > 0 */
   messageUnreadCount?: number
 }
 
-/** Bottom tab bar — visible only below lg (1024px). */
+/** Bottom tab bar — visible only below lg. Matches ClearPath design system (blur, accent active state). */
 export function MobileNav({ className, tabs = coachTabs, messageUnreadCount = 0 }: MobileNavProps) {
   const pathname = usePathname()
 
   return (
     <nav
       className={cn(
-        'safe-bottom fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-[var(--color-border)] bg-[var(--color-bg)] py-2 lg:hidden',
+        'safe-bottom fixed bottom-0 left-0 right-0 z-40 lg:hidden',
+        'border-t border-[var(--border-default)] bg-[var(--bg-app)]/92 backdrop-blur-[12px]',
         className
       )}
       role="navigation"
       aria-label="Main"
     >
-      {tabs.map(({ href, label, icon: Icon }) => {
-        const isActive =
-          pathname === href || (href !== '/' && pathname.startsWith(href))
-        const isMessagesTab = href.includes('messages')
-        const showBadge = isMessagesTab && messageUnreadCount > 0
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              'relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 focus:outline-none',
-              isActive
-                ? 'text-[var(--color-accent)]'
-                : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
-            )}
-            aria-current={isActive ? 'page' : undefined}
-          >
-            <Icon className={cn('size-6', isActive && 'text-[var(--color-accent)]')} />
-            <span>{label}</span>
-            {showBadge && (
-              <span
-                className="absolute right-0 top-0 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[var(--color-success)] px-1.5 text-[11px] font-medium text-white"
-                aria-label={`${messageUnreadCount} unread messages`}
-              >
-                {messageUnreadCount > 99 ? '99+' : messageUnreadCount}
-              </span>
-            )}
-          </Link>
-        )
-      })}
+      <div className="flex max-h-[72px] items-stretch justify-start gap-0.5 overflow-x-auto overscroll-x-contain px-1 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {tabs.map(({ href, label, icon: Icon }) => {
+          const isActive =
+            pathname === href || (href !== '/' && pathname.startsWith(href))
+          const isMessagesTab = href.includes('messages')
+          const showBadge = isMessagesTab && messageUnreadCount > 0
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                'relative flex min-h-[44px] min-w-[52px] max-w-[76px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-md)] px-1.5 py-1',
+                'text-[10px] font-medium tracking-[var(--tracking-normal)] transition-[background-color,color] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]',
+                'focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]',
+                isActive
+                  ? 'bg-[var(--accent-light)] text-[var(--accent)]'
+                  : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
+              )}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <Icon className={cn('size-[22px] shrink-0', isActive && 'text-[var(--accent)]')} />
+              <span className="line-clamp-1 w-full text-center">{label}</span>
+              {showBadge ? (
+                <span
+                  className="absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--success)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
+                  aria-label={`${messageUnreadCount} unread messages`}
+                >
+                  {messageUnreadCount > 99 ? '99+' : messageUnreadCount}
+                </span>
+              ) : null}
+            </Link>
+          )
+        })}
+      </div>
     </nav>
   )
 }

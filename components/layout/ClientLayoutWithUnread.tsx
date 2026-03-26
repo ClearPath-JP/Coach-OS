@@ -79,24 +79,23 @@ export function ClientLayoutWithUnread({
   }, [fetchUnread])
 
   return (
-    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[var(--color-bg)] lg:h-[100dvh] lg:overflow-hidden">
+    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
       <Nav
         userDisplayName={userDisplayName}
         logoHref="/client/portal"
         brandName={brandName}
         showThemeToggle
         clientPortal
-        className="w-full shrink-0 bg-[var(--color-bg)]"
+        className="w-full shrink-0"
       />
-      <div className="flex min-h-0 flex-1 flex-row">
-        <aside className="hidden lg:flex lg:w-[240px] lg:shrink-0 lg:flex-col lg:border-r lg:border-[var(--color-border)] lg:bg-[var(--color-surface)]">
-          <ClientPortalDesktopSidebar className="flex-1 min-h-0 border-0" />
+      <div className="flex min-h-0 flex-1 flex-row lg:min-h-0 lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]">
+        <aside className="hidden min-h-0 lg:flex lg:w-[var(--sidebar-width)] lg:shrink-0 lg:flex-col lg:border-r lg:border-[var(--border-default)] lg:bg-[var(--bg-subtle)]">
+          <ClientPortalDesktopSidebar className="h-full min-h-0 flex-1 border-0" />
         </aside>
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-16 lg:min-h-0 lg:overflow-hidden lg:pb-0">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-20 lg:min-h-0 lg:overflow-y-auto lg:pb-0">
           {children}
-          <div className="mt-auto flex shrink-0 justify-center px-4 pb-2 pt-4 text-center text-[12px] text-[var(--color-muted)] lg:pb-4">
-            Powered by{' '}
-            <span className="font-medium text-[var(--color-accent)]">ClearPath</span>
+          <div className="mt-auto flex shrink-0 justify-center px-4 pb-2 pt-4 text-center text-[11px] text-[var(--text-quaternary)] lg:pb-4">
+            Powered by <span className="font-medium text-[var(--accent)]">ClearPath</span>
           </div>
         </div>
       </div>

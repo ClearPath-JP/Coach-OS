@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase-server'
 import { Nav } from '@/components/layout/Nav'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { CoachKeyboardShortcuts } from '@/components/coach/CoachKeyboardShortcuts'
 import { getCoachSidebarNav } from '@/components/layout/coach-sidebar-nav'
 
 /**
@@ -83,12 +84,13 @@ export default async function CoachLayout({
         </div>
         <div
           id="coach-main-scroll"
-          className="page-content flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-16 lg:min-h-0 lg:overflow-y-auto lg:pb-0"
+          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-16 lg:min-h-0 lg:overflow-y-auto lg:pb-0"
         >
           {children}
         </div>
       </div>
       <MobileNav />
+      <CoachKeyboardShortcuts />
     </div>
   )
 }
