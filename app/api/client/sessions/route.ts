@@ -1,9 +1,45 @@
 import { NextResponse } from 'next/server'
+import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase-server'
+import { normalizeEmail } from '@/lib/utils'
+
+type SessionRow = {
+  id: string
+  scheduled_time: string
+  end_time: string | null
+  duration_minutes: number | null
+  status: string
+  notes: string | null
+  session_type: string | null
+}
+
+function mapSessionTypeLabel(raw: string | null | undefined): 'Video' | 'Phone' | 'In person' {
+  const v = (raw ?? '').toLowerCase().trim()
+  if (v === 'phone' || v === 'call') return 'Phone'
+  if (v === 'in_person' || v === 'in-person' || v === 'in person') return 'In person'
+  return 'Video'
+}
+
+function enrichSession(s: SessionRow) {
+  const t = parseISO(s.scheduled_time)
+  return {
+    id: s.id,
+    scheduled_time: s.scheduled_time,
+    end_time: s.end_time,
+    duration_minutes: s.duration_minutes,
+    status: s.status,
+    notes: s.notes,
+    session_type: s.session_type,
+    date: format(t, 'yyyy-MM-dd'),
+    start_time: s.scheduled_time,
+    type: mapSessionTypeLabel(s.session_type),
+  }
+}
 
 /**
  * GET /api/client/sessions — fetch sessions for the authenticated client.
- * Returns upcoming (scheduled_time >= now, status pending/confirmed) and past (scheduled_time < now or completed/cancelled).
+ * Returns upcoming (scheduled_time >= now, status pending/confirmed) and past (everything else).
+ * Each row includes date, start_time (ISO), type (Video | Phone | In person), plus DB fields.
  */
 export async function GET() {
   try {
@@ -25,7 +61,7 @@ export async function GET() {
     const { data: client } = await supabase
       .from('clients')
       .select('id')
-      .eq('email', user.email ?? '')
+      .eq('email', normalizeEmail(user.email))
       .limit(1)
       .maybeSingle()
     if (!client) {
@@ -35,20 +71,24 @@ export async function GET() {
     const now = new Date().toISOString()
     const { data: all } = await supabase
       .from('sessions')
-      .select('id, scheduled_time, end_time, duration_minutes, status, notes')
+      .select('id, scheduled_time, end_time, duration_minutes, status, notes, session_type')
       .eq('client_id', client.id)
       .order('scheduled_time', { ascending: false })
 
-    const upcoming: typeof all = []
-    const past: typeof all = []
-    for (const s of all ?? []) {
+    const rows = (all ?? []) as SessionRow[]
+    const upcomingRaw: SessionRow[] = []
+    const pastRaw: SessionRow[] = []
+    for (const s of rows) {
       if (s.scheduled_time >= now && ['pending', 'confirmed'].includes(s.status)) {
-        upcoming.push(s)
+        upcomingRaw.push(s)
       } else {
-        past.push(s)
+        pastRaw.push(s)
       }
     }
-    upcoming.sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time))
+    upcomingRaw.sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time))
+
+    const upcoming = upcomingRaw.map(enrichSession)
+    const past = pastRaw.map(enrichSession)
 
     return NextResponse.json({ data: { upcoming, past } })
   } catch (err) {

@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import { ClientLayoutWithUnread } from '@/components/layout/ClientLayoutWithUnread'
+import { getClientWorkspaceBranding } from '@/lib/client-workspace-branding'
+import { normalizeEmail } from '@/lib/utils'
+import { ClientBrandingProvider } from '@/components/client/ClientBrandingContext'
 
 /**
  * Client layout: require auth + role !== 'coach' (11-auth §4.2).
- * Uses MobileNav (bottom tab bar) with unread message badge and top Nav.
+ * Branding context for all /client/*; Nav + MobileNav live in (main)/layout.tsx.
  */
 export default async function ClientLayout({
   children,
@@ -30,16 +32,24 @@ export default async function ClientLayout({
     const { data: client } = await supabase
       .from('clients')
       .select('first_name, last_name')
-      .eq('email', user.email)
+      .eq('email', normalizeEmail(user.email))
       .maybeSingle()
     if (client) {
       clientDisplayName = [client.first_name, client.last_name].filter(Boolean).join(' ') || null
     }
   }
 
+  const branding = await getClientWorkspaceBranding(user.email)
+
   return (
-    <ClientLayoutWithUnread userDisplayName={clientDisplayName}>
+    <ClientBrandingProvider
+      value={{
+        brandName: branding?.brandName ?? null,
+        workspaceId: branding?.workspaceId ?? null,
+        userDisplayName: clientDisplayName,
+      }}
+    >
       {children}
-    </ClientLayoutWithUnread>
+    </ClientBrandingProvider>
   )
 }

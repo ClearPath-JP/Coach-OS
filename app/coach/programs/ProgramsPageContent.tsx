@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
@@ -28,7 +29,11 @@ type Tab = 'all' | 'draft' | 'published' | 'archived'
 
 function ProgramCardSkeleton() {
   return (
-    <Card variant="raised" padding="lg" className="animate-pulse">
+    <Card
+      variant="flat"
+      padding="lg"
+      className="animate-pulse border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
+    >
       <div className="aspect-video rounded-lg bg-[var(--color-border)]" />
       <div className="mt-4 h-5 w-2/3 rounded bg-[var(--color-border)]" />
       <div className="mt-2 h-4 w-full rounded bg-[var(--color-border)]" />
@@ -165,6 +170,9 @@ export function ProgramsPageContent() {
 
       {!loading && !error && programs.length === 0 && (
         <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
+            📚
+          </div>
           <p className="font-medium text-[var(--color-ink)]">No programs yet</p>
           <p className="mt-1 text-[15px] text-[var(--color-muted)]">
             Create your first program to start delivering structured content to your clients.
@@ -178,13 +186,20 @@ export function ProgramsPageContent() {
       {!loading && !error && programs.length > 0 && (
         <div className="mt-6 grid gap-4 grid-cols-1 md:grid-cols-2">
           {programs.map((prog) => (
-            <Card key={prog.id} variant="raised" padding="lg">
-              <div className="aspect-video rounded-lg bg-[var(--color-border)] overflow-hidden">
+            <Card
+              key={prog.id}
+              variant="flat"
+              padding="lg"
+              className="border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
+            >
+              <div className="relative aspect-video rounded-lg bg-[var(--color-border)] overflow-hidden">
                 {prog.thumbnail_url ? (
-                  <img
+                  <Image
                     src={prog.thumbnail_url}
                     alt=""
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-[var(--color-muted)] text-sm">
@@ -235,7 +250,7 @@ export function ProgramsPageContent() {
           setSubmitError(null)
         }}
         title="Create program"
-        className="max-w-md"
+        className="w-full max-w-none md:max-w-md"
       >
         <form onSubmit={handleCreate} className="space-y-4">
           <div>

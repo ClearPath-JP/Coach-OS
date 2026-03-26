@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const raw = await request.json()
     const parsed = bodySchema.safeParse(raw)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid body', details: parsed.error.issues }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
     }
 
     const supabase = createServiceClient()

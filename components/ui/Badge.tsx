@@ -3,33 +3,64 @@
 import { type HTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-export type BadgeVariant = 'active' | 'inactive' | 'pending' | 'error'
+export type BadgeVariant =
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info'
+  | 'neutral'
+  | 'accent'
+  | 'active'
+  | 'inactive'
+  | 'pending'
 
-const variantClasses: Record<BadgeVariant, string> = {
-  active:
-    'bg-[var(--color-success-light)] text-[var(--color-success)]',
-  inactive:
-    'bg-[var(--color-border)]/80 text-[var(--color-text-secondary)]',
-  pending:
-    'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
-  error:
-    'bg-[var(--color-error-light)] text-[var(--color-error)]',
+function resolveVariant(
+  v: BadgeVariant
+): 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'accent' {
+  if (v === 'active') return 'success'
+  if (v === 'inactive') return 'neutral'
+  if (v === 'pending') return 'warning'
+  return v
 }
+
+const variantClasses: Record<
+  'success' | 'warning' | 'error' | 'info' | 'neutral' | 'accent',
+  string
+> = {
+  success:
+    'bg-[var(--success-bg)] text-[var(--success)] border-[var(--success-border)]',
+  warning:
+    'bg-[var(--warning-bg)] text-[var(--warning)] border-[var(--warning-border)]',
+  error: 'bg-[var(--error-bg)] text-[var(--error)] border-[var(--error-border)]',
+  info: 'bg-[var(--info-bg)] text-[var(--info)] border-[var(--info-border)]',
+  neutral:
+    'bg-[var(--bg-muted)] text-[var(--text-tertiary)] border-[var(--border-default)]',
+  accent:
+    'bg-[var(--accent-light)] text-[var(--accent)] border-[var(--accent-muted)]',
+}
+
+const base = cn(
+  'badge inline-flex max-w-full items-center gap-1 rounded-[var(--radius-full)] border px-2 py-0.5',
+  'text-[12px] font-medium whitespace-nowrap [font-family:var(--font)]'
+)
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant
+  dot?: boolean
 }
 
-function Badge({ className, variant = 'inactive', ...props }: BadgeProps) {
+function Badge({ className, variant = 'neutral', dot = false, children, ...props }: BadgeProps) {
+  const v = resolveVariant(variant)
   return (
-    <span
-      className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-[13px] font-medium',
-        variantClasses[variant],
-        className
-      )}
-      {...props}
-    />
+    <span className={cn(base, variantClasses[v], className)} {...props}>
+      {dot ? (
+        <span
+          className="size-1 shrink-0 rounded-[var(--radius-full)] bg-current opacity-90"
+          aria-hidden
+        />
+      ) : null}
+      {children}
+    </span>
   )
 }
 

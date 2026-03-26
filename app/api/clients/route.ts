@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { createServiceClient } from '@/lib/supabase/service'
+import { requireCoach } from '@/lib/api-helpers'
 import { addClientSchema } from '@/lib/validations'
 import { checkClientLimit } from '@/lib/plan-limits'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { normalizeEmail, sanitizeIlikeSearch } from '@/lib/utils'
+
+function generateTempPassword(): string {
+  return (
+    Math.random().toString(36).slice(-8).toUpperCase() +
+    Math.random().toString(36).slice(-4) +
+    '!'
+  )
+}
 
 /**
  * GET /api/clients — fetch all clients for the coach's workspace.
@@ -9,34 +20,40 @@ import { checkClientLimit } from '@/lib/plan-limits'
  */
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
-    if (profile?.role !== 'coach') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
+
+    const { success, retryAfter } = await checkRateLimitAsync(`clients-get:${user.id}`, {
+      windowMs: 60_000,
+      max: 100,
+    })
+    if (!success) {
+      const res = NextResponse.json(
+        { error: 'Too many attempts — please wait a minute and try again' },
+        { status: 429 }
+      )
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
 
     const { searchParams } = new URL(request.url)
-    const search = searchParams.get('search')?.trim() || ''
+    const safeSearch = sanitizeIlikeSearch(searchParams.get('search') ?? '')
     const status = searchParams.get('status')?.trim() || ''
 
     let query = supabase
       .from('clients')
       .select('id, workspace_id, first_name, last_name, email, phone, goals, status, notes, profile_photo_url, created_at, updated_at')
+      .eq('workspace_id', workspaceId)
       .order('updated_at', { ascending: false })
 
     if (status && ['active', 'paused', 'completed'].includes(status)) {
       query = query.eq('status', status)
     }
-    if (search) {
-      query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`)
+    if (safeSearch) {
+      query = query.or(
+        `first_name.ilike.%${safeSearch}%,last_name.ilike.%${safeSearch}%,email.ilike.%${safeSearch}%`
+      )
     }
 
     const { data, error } = await query
@@ -47,7 +64,9 @@ export async function GET(request: Request) {
         { status: 500 }
       )
     }
-    return NextResponse.json({ data: data ?? [] })
+    const res = NextResponse.json({ data: data ?? [] })
+    res.headers.set('Cache-Control', 'private, max-age=30')
+    return res
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },
@@ -62,21 +81,24 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
+
+    const { success, retryAfter } = await checkRateLimitAsync(`clients-post:${user.id}`, {
+      windowMs: 60_000,
+      max: 30,
+    })
+    if (!success) {
+      const res = NextResponse.json(
+        { error: 'Too many attempts — please wait a minute and try again' },
+        { status: 429 }
+      )
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
 
-    const limit = await checkClientLimit(coach.workspace_id)
+    const limit = await checkClientLimit(workspaceId)
     if (!limit.allowed) {
       const msg = limit.max === null
         ? "You've reached your plan limit for clients. Contact support to add more."
@@ -93,13 +115,127 @@ export async function POST(request: Request) {
     }
 
     const { firstName, lastName, email, phone, goals } = parsed.data
+    const emailNorm = email.trim().toLowerCase()
+    const tempPassword = generateTempPassword()
+
+    let service
+    try {
+      service = createServiceClient()
+    } catch {
+      return NextResponse.json(
+        { error: 'Server configuration error — contact support' },
+        { status: 503 }
+      )
+    }
+
+    const { data: existingInWorkspace } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('workspace_id', workspaceId)
+      .eq('email', emailNorm)
+      .maybeSingle()
+    if (existingInWorkspace) {
+      return NextResponse.json(
+        { error: 'A client with this email already exists' },
+        { status: 400 }
+      )
+    }
+
+    let newUserId: string
+    let createdNewAuthUser = false
+
+    const { data: createdAuth, error: authErr } = await service.auth.admin.createUser({
+      email: emailNorm,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: {
+        role: 'client',
+        workspace_id: workspaceId,
+        must_change_password: true,
+      },
+    })
+
+    if (authErr || !createdAuth.user?.id) {
+      const msg = (authErr?.message ?? '').toLowerCase()
+      const looksDuplicate =
+        msg.includes('already') || msg.includes('registered') || msg.includes('exists')
+      if (!looksDuplicate) {
+        return NextResponse.json(
+          { error: authErr?.message || 'Could not create client account' },
+          { status: 500 }
+        )
+      }
+      const { data: userPage } = await service.auth.admin.listUsers({ page: 1, perPage: 1000 })
+      const existing = userPage?.users?.find((u) => normalizeEmail(u.email) === emailNorm)
+      if (!existing?.id) {
+        return NextResponse.json(
+          { error: 'A client with this email already has an account' },
+          { status: 400 }
+        )
+      }
+      const { data: existingProfile } = await service
+        .from('profiles')
+        .select('role')
+        .eq('id', existing.id)
+        .maybeSingle()
+      if (existingProfile?.role === 'coach') {
+        return NextResponse.json(
+          { error: 'This email is already used by a coach account' },
+          { status: 400 }
+        )
+      }
+      const { error: updErr } = await service.auth.admin.updateUserById(existing.id, {
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          role: 'client',
+          workspace_id: workspaceId,
+          must_change_password: true,
+        },
+      })
+      if (updErr) {
+        return NextResponse.json(
+          { error: updErr.message || 'Could not reset client account' },
+          { status: 500 }
+        )
+      }
+      newUserId = existing.id
+    } else {
+      newUserId = createdAuth.user.id
+      createdNewAuthUser = true
+    }
+    const fullName = `${firstName} ${lastName}`.trim()
+
+    const { error: profileErr } = await service.from('profiles').upsert(
+      {
+        id: newUserId,
+        email: emailNorm,
+        full_name: fullName,
+        role: 'client',
+        workspace_id: workspaceId,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' }
+    )
+
+    if (profileErr) {
+      if (createdNewAuthUser) {
+        await service.auth.admin.deleteUser(newUserId)
+      }
+      return NextResponse.json(
+        { error: profileErr.message || 'Could not create client profile' },
+        { status: 500 }
+      )
+    }
+
     const { data, error } = await supabase
       .from('clients')
       .insert({
-        workspace_id: coach.workspace_id,
+        coach_id: user.id,
+        workspace_id: workspaceId,
         first_name: firstName,
         last_name: lastName,
-        email: email.trim().toLowerCase(),
+        email: emailNorm,
         phone: phone?.trim() || null,
         goals: goals?.trim() || null,
         status: 'active',
@@ -108,6 +244,9 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
+      if (createdNewAuthUser) {
+        await service.auth.admin.deleteUser(newUserId)
+      }
       if (error.code === '23505') {
         return NextResponse.json({ error: 'A client with this email already exists' }, { status: 400 })
       }
@@ -116,7 +255,7 @@ export async function POST(request: Request) {
         { status: 500 }
       )
     }
-    return NextResponse.json({ data })
+    return NextResponse.json({ data: { client: data, tempPassword } })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },

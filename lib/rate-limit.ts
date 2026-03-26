@@ -7,6 +7,24 @@
 const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
 
+/** Fixed-window counters for Jest (no Redis) so rate-limit integration tests behave deterministically. */
+const memoryBuckets = new Map<string, { count: number; resetAt: number }>()
+
+function checkInMemory(key: string, options: RateLimitOptions): RateLimitResult {
+  const now = Date.now()
+  let bucket = memoryBuckets.get(key)
+  if (!bucket || now >= bucket.resetAt) {
+    bucket = { count: 0, resetAt: now + options.windowMs }
+    memoryBuckets.set(key, bucket)
+  }
+  bucket.count += 1
+  if (bucket.count > options.max) {
+    const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000))
+    return { success: false, retryAfter }
+  }
+  return { success: true }
+}
+
 export type RateLimitOptions = {
   windowMs: number
   max: number
@@ -33,11 +51,15 @@ async function checkWithUpstash(
       redis,
       limiter: Ratelimit.slidingWindow(options.max, `${windowSeconds} s`),
     })
-    const { success, pending, reset } = await ratelimit.limit(key)
+    const { success, reset } = await ratelimit.limit(key)
     if (success) return { success: true }
     const retryAfter = Math.ceil((reset - Date.now()) / 1000)
     return { success: false, retryAfter: Math.max(1, retryAfter) }
-  } catch {
+  } catch (error) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Rate limit Redis error:', error)
+      return { success: false, retryAfter: 60 }
+    }
     return { success: true }
   }
 }
@@ -50,7 +72,16 @@ export async function checkRateLimitAsync(
   key: string,
   options: RateLimitOptions
 ): Promise<RateLimitResult> {
+  if (process.env.CLEARPATH_TEST_RATE_LIMIT === '1') {
+    return checkInMemory(key, options)
+  }
   if (!REDIS_URL || !REDIS_TOKEN) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error(
+        'Rate limit: UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not configured in production'
+      )
+      return { success: false, retryAfter: 60 }
+    }
     return { success: true }
   }
   return checkWithUpstash(key, options)

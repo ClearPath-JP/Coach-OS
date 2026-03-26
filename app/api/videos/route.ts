@@ -95,7 +95,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('videos')
-      .select('id, workspace_id, coach_id, title, description, drive_file_id, drive_file_name, processing_status, processing_error, playback_url, thumbnail_url, duration_seconds, file_size_bytes, storage_provider, created_at, processed_at')
+      .select('id, workspace_id, coach_id, title, description, category, drive_file_id, drive_file_name, processing_status, processing_error, playback_url, thumbnail_url, duration_seconds, file_size_bytes, storage_provider, created_at, processed_at')
       .eq('workspace_id', coach.workspace_id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })

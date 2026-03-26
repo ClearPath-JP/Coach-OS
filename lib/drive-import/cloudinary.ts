@@ -48,9 +48,12 @@ export async function uploadVideoFromUrl(remoteUrl: string): Promise<CloudinaryV
   if (!res.ok || !data.secure_url) {
     throw new Error(data.error?.message ?? `Cloudinary upload failed (${res.status})`)
   }
-  return {
-    secure_url: data.secure_url,
-    duration: data.duration,
-    bytes: data.bytes,
+  const out: CloudinaryVideoResult = { secure_url: data.secure_url }
+  if (data.duration !== undefined) {
+    out.duration = data.duration
   }
+  if (data.bytes !== undefined) {
+    out.bytes = data.bytes
+  }
+  return out
 }

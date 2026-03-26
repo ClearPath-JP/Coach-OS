@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { normalizeEmail } from '@/lib/utils'
 
 /**
  * GET /api/client/invoices/pending-count — count of pending invoices for current client. Client only.
@@ -15,7 +16,7 @@ export async function GET() {
     const { data: client } = await supabase
       .from('clients')
       .select('id')
-      .eq('email', user.email)
+      .eq('email', normalizeEmail(user.email))
       .maybeSingle()
 
     if (!client) {

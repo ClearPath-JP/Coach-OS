@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { createClient } from '@/lib/supabase'
 import { format } from 'date-fns'
 
 export type SessionForDrawer = {
@@ -22,13 +21,24 @@ export interface SessionDetailDrawerProps {
   session: SessionForDrawer | null
   onClose: () => void
   onUpdated: () => void
+  onToast?: (message: string, variant?: 'success' | 'error' | 'warning') => void
+  /** Opens book flow with this session’s client and duration; old session is removed after a new time is booked. */
+  onReschedule?: () => void
 }
 
-export function SessionDetailDrawer({ session, onClose, onUpdated }: SessionDetailDrawerProps) {
+export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onReschedule }: SessionDetailDrawerProps) {
   const [notes, setNotes] = useState(session?.notes ?? '')
   const [savingNotes, setSavingNotes] = useState(false)
   const [confirmCancel, setConfirmCancel] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
+
+  useEffect(() => {
+    if (!session) return
+    setNotes(session.notes ?? '')
+    setConfirmCancel(false)
+    setConfirmRemove(false)
+  }, [session])
 
   if (!session) return null
 
@@ -40,9 +50,16 @@ export function SessionDetailDrawer({ session, onClose, onUpdated }: SessionDeta
   const saveNotes = async () => {
     setSavingNotes(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('sessions').update({ notes: notes.trim() || null, updated_at: new Date().toISOString() }).eq('id', session.id)
-      if (!error) onUpdated()
+      const res = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notes.trim() || null }),
+      })
+      if (res.ok) {
+        onUpdated()
+      } else {
+        onToast?.("Couldn't save notes", 'error')
+      }
     } finally {
       setSavingNotes(false)
     }
@@ -51,11 +68,16 @@ export function SessionDetailDrawer({ session, onClose, onUpdated }: SessionDeta
   const markComplete = async () => {
     setActionLoading(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('sessions').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', session.id)
-      if (!error) {
+      const res = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      })
+      if (res.ok) {
         onUpdated()
-        onClose()
+        onToast?.('Session marked complete', 'success')
+      } else {
+        onToast?.("Couldn't update session", 'error')
       }
     } finally {
       setActionLoading(false)
@@ -65,12 +87,49 @@ export function SessionDetailDrawer({ session, onClose, onUpdated }: SessionDeta
   const cancelSession = async () => {
     setActionLoading(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('sessions').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', session.id)
-      if (!error) {
+      const res = await fetch(`/api/sessions/${session.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' }),
+      })
+      if (res.ok) {
         onUpdated()
-        onClose()
+        onToast?.('Session cancelled', 'success')
         setConfirmCancel(false)
+      } else {
+        onToast?.("Couldn't cancel session", 'error')
+      }
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const removeFromCalendar = async () => {
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/sessions/${session.id}`, { method: 'DELETE' })
+      if (res.ok) {
+        onUpdated()
+        onToast?.('Session removed from calendar', 'success')
+        setConfirmRemove(false)
+        onClose()
+      } else {
+        const json = await res.json().catch(() => ({}))
+        onToast?.(typeof json.error === 'string' ? json.error : "Couldn't remove session", 'error')
+      }
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const sendReminder = async () => {
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/sessions/${session.id}/send-reminder`, { method: 'POST' })
+      if (res.ok) {
+        onToast?.('Reminder sent', 'success')
+      } else {
+        onToast?.("Couldn't send reminder", 'error')
       }
     } finally {
       setActionLoading(false)
@@ -80,7 +139,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated }: SessionDeta
   const statusVariant = session.status === 'confirmed' ? 'active' : session.status === 'completed' ? 'inactive' : 'pending'
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl flex flex-col" role="dialog" aria-modal="true">
+    <div className="h-full border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm flex flex-col" role="dialog" aria-modal="false">
       <div className="flex items-center justify-between border-b border-[var(--color-border)] p-4">
         <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Session details</h2>
         <button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-[var(--color-surface)] text-[var(--color-text-secondary)]" aria-label="Close">
@@ -96,12 +155,19 @@ export function SessionDetailDrawer({ session, onClose, onUpdated }: SessionDeta
         </div>
         <div>
           <p className="text-sm text-[var(--color-text-secondary)]">Date & time</p>
-          <p className="text-[var(--color-text-primary)]">{format(start, 'EEEE, MMM d, yyyy')} · {format(start, 'h:mm a')} – {format(end, 'h:mm a')}</p>
+          <p className="text-sm text-[var(--color-text-primary)]">{format(start, 'EEEE, MMM d, yyyy')} · {format(start, 'h:mm a')} – {format(end, 'h:mm a')}</p>
           <p className="text-xs text-[var(--color-text-secondary)]">{durationMins} min</p>
+          <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
+            To move this session, use Reschedule to pick a new date and time. The previous time is removed after the new session is booked.
+          </p>
         </div>
         <div>
           <p className="text-sm text-[var(--color-text-secondary)]">Status</p>
           <Badge variant={statusVariant}>{session.status}</Badge>
+        </div>
+        <div>
+          <p className="text-sm text-[var(--color-text-secondary)]">Type</p>
+          <p className="text-[var(--color-text-primary)]">video</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Notes</label>
@@ -111,34 +177,61 @@ export function SessionDetailDrawer({ session, onClose, onUpdated }: SessionDeta
             onBlur={saveNotes}
             disabled={savingNotes}
             rows={3}
-            className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]"
+            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]"
             placeholder="Session notes…"
           />
         </div>
-        {session.status === 'confirmed' && start > new Date() && (
-          <div className="flex flex-col gap-2 pt-4 border-t border-[var(--color-border)]">
-            <Button onClick={markComplete} disabled={actionLoading} variant="secondary">
-              Mark complete
+        <div className="flex flex-col gap-2 pt-4 border-t border-[var(--color-border)]">
+          {onReschedule && session.status !== 'completed' ? (
+            <Button type="button" variant="secondary" disabled={actionLoading} onClick={() => onReschedule()}>
+              Reschedule
             </Button>
-            {!confirmCancel ? (
-              <Button variant="destructive-secondary" onClick={() => setConfirmCancel(true)} disabled={actionLoading}>
-                Cancel session
+          ) : null}
+          <Button onClick={markComplete} disabled={actionLoading} variant="secondary" className="border-[var(--color-success)] text-[var(--color-success)] hover:bg-[var(--color-success-light)]">
+            Mark complete
+          </Button>
+          {!confirmCancel ? (
+            <Button variant="destructive-secondary" onClick={() => setConfirmCancel(true)} disabled={actionLoading}>
+              Cancel session
+            </Button>
+          ) : (
+            <div className="rounded-lg bg-[var(--color-error-light)] p-3">
+              <p className="text-sm text-[var(--color-error)] mb-2">Cancel this session?</p>
+              <div className="flex gap-2">
+                <Button variant="destructive" onClick={cancelSession} disabled={actionLoading}>
+                  Cancel session
+                </Button>
+                <Button variant="secondary" onClick={() => setConfirmCancel(false)}>
+                  Keep
+                </Button>
+              </div>
+            </div>
+          )}
+          {session.status !== 'completed' ? (
+            !confirmRemove ? (
+              <Button variant="destructive-secondary" onClick={() => setConfirmRemove(true)} disabled={actionLoading}>
+                Remove from calendar
               </Button>
             ) : (
-              <div className="rounded-lg bg-[var(--color-error-light)] p-3">
-                <p className="text-sm text-[var(--color-error)] mb-2">Cancel this session?</p>
-                <div className="flex gap-2">
-                  <Button variant="destructive" onClick={cancelSession} disabled={actionLoading}>
-                    Cancel session
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                <p className="text-sm text-[var(--color-text-primary)] mb-2">
+                  Remove this booking for {clientName}? This deletes the session and cannot be undone.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="destructive" onClick={removeFromCalendar} disabled={actionLoading}>
+                    Remove
                   </Button>
-                  <Button variant="secondary" onClick={() => setConfirmCancel(false)}>
+                  <Button variant="secondary" onClick={() => setConfirmRemove(false)}>
                     Keep
                   </Button>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            )
+          ) : null}
+          <Button variant="secondary" onClick={sendReminder} disabled={actionLoading}>
+            Send reminder
+          </Button>
+        </div>
       </div>
     </div>
   )

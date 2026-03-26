@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 
@@ -26,21 +27,25 @@ export function VideoSelectModal({ open, onClose, onSelect }: VideoSelectModalPr
 
   useEffect(() => {
     if (!open) return
-    setError(null)
-    setLoading(true)
-    fetch('/api/videos?status=ready')
-      .then((r) => r.json())
-      .then((data) => {
+    void (async () => {
+      setError(null)
+      setLoading(true)
+      try {
+        const r = await fetch('/api/videos?status=ready')
+        const data = await r.json()
         if (data.data) setVideos(data.data)
         else setVideos([])
         if (data.error) setError(data.error)
-      })
-      .catch(() => setError('Could not load videos'))
-      .finally(() => setLoading(false))
+      } catch {
+        setError('Could not load videos')
+      } finally {
+        setLoading(false)
+      }
+    })()
   }, [open])
 
   return (
-    <Modal isOpen={open} onClose={onClose} title="Select video" className="max-w-2xl">
+    <Modal isOpen={open} onClose={onClose} title="Select video" className="w-full max-w-none md:max-w-2xl">
       {loading && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -66,9 +71,16 @@ export function VideoSelectModal({ open, onClose, onSelect }: VideoSelectModalPr
               }}
               className="rounded-lg border border-[var(--color-border)] overflow-hidden text-left hover:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
             >
-              <div className="aspect-video bg-[var(--color-border)]">
+              <div className="relative aspect-video bg-[var(--color-border)]">
                 {video.thumbnail_url ? (
-                  <img src={video.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                  <Image
+                    src={video.thumbnail_url}
+                    alt=""
+                    fill
+                    loading="lazy"
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 33vw"
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
                     <svg className="w-10 h-10 text-[var(--color-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

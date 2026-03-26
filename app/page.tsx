@@ -46,6 +46,21 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key`}
     .maybeSingle()
   const role = profile?.role
   if (role === 'coach') {
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('workspace_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (coach?.workspace_id) {
+      const { data: workspace } = await supabase
+        .from('workspaces')
+        .select('completed_onboarding')
+        .eq('id', coach.workspace_id)
+        .maybeSingle()
+      if (workspace?.completed_onboarding) {
+        redirect('/coach/dashboard')
+      }
+    }
     redirect('/onboarding')
   }
   redirect('/client/portal')

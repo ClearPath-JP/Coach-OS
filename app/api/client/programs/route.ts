@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { normalizeEmail } from '@/lib/utils'
 
 /**
  * GET /api/client/programs — all programs assigned to the client, with progress counts. Client only.
@@ -24,7 +25,7 @@ export async function GET() {
     const { data: client } = await supabase
       .from('clients')
       .select('id')
-      .eq('email', user.email ?? '')
+      .eq('email', normalizeEmail(user.email))
       .limit(1)
       .maybeSingle()
     if (!client) {

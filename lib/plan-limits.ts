@@ -7,9 +7,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 export const PLAN_LIMITS = {
   free: { maxClients: 3, maxVideoStorageGb: 1 },
-  starter: { maxClients: 10, maxVideoStorageGb: 5 },
-  pro: { maxClients: 30, maxVideoStorageGb: 25 },
-  scale: { maxClients: null as number | null, maxVideoStorageGb: 100 },
+  starter: { maxClients: 10, maxVideoStorageGb: 10 },
+  pro: { maxClients: 30, maxVideoStorageGb: 50 },
+  scale: { maxClients: null as number | null, maxVideoStorageGb: 200 },
 } as const
 
 export type PlanSlug = keyof typeof PLAN_LIMITS
@@ -36,7 +36,7 @@ export async function checkClientLimit(workspaceId: string): Promise<ClientLimit
 
   const { count, error } = await supabase
     .from('clients')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('workspace_id', workspaceId)
 
   if (error) {

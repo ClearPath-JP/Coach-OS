@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { completeCoachSignup } from '@/lib/complete-coach-signup'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
 /**
@@ -35,76 +36,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: existingCoach } = await supabase
-      .from('coaches')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (existingCoach) {
-      return NextResponse.json({ data: 'ok' })
-    }
-
-    const firstName =
-      (user.user_metadata?.full_name as string)?.trim() || 'Coach'
-    const workspaceName = `${firstName}'s Workspace`
-    const emailTrimmed = (user.email ?? '').trim().toLowerCase()
-
-    const { data: workspace, error: workspaceError } = await supabase
-      .from('workspaces')
-      .insert({ name: workspaceName, owner_id: user.id })
-      .select('id')
-      .single()
-
-    if (workspaceError || !workspace?.id) {
-      return NextResponse.json(
-        {
-          error:
-            workspaceError?.message ??
-            'Could not create your workspace — please try again.',
-        },
-        { status: 500 }
-      )
-    }
-
-    const { error: profileError } = await supabase.from('profiles').upsert(
-      {
-        id: user.id,
-        email: user.email ?? emailTrimmed,
-        full_name: firstName,
-        role: 'coach',
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'id' }
-    )
-    if (profileError) {
-      return NextResponse.json(
-        {
-          error:
-            profileError.message ??
-            'Could not create your profile — please try again.',
-        },
-        { status: 500 }
-      )
-    }
-
-    const { error: coachError } = await supabase.from('coaches').insert({
-      user_id: user.id,
-      workspace_id: workspace.id,
-      role: 'owner',
-    })
-    if (coachError) {
-      return NextResponse.json(
-        {
-          error:
-            coachError.message ??
-            'Could not link your account — please try again.',
-        },
-        { status: 500 }
-      )
+    const result = await completeCoachSignup(supabase, user)
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status })
     }
 
     return NextResponse.json({ data: 'ok' })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again.' },
       { status: 500 }

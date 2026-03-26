@@ -4,6 +4,7 @@ export type Video = {
   coach_id: string
   title: string
   description: string | null
+  category: string | null
   drive_file_id: string | null
   drive_file_name: string | null
   processing_status: 'queued' | 'processing' | 'ready' | 'failed' | 'deleted'

@@ -73,7 +73,7 @@ export default function OnboardingStep2Page() {
             className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               selected.includes(type)
                 ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
-                : 'border-[var(--color-border)] bg-white text-[var(--color-text-primary)] hover:border-[var(--color-accent)]'
+                : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-primary)] hover:border-[var(--color-accent)]'
             }`}
           >
             {type}

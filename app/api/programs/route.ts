@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { requireCoach } from '@/lib/api-helpers'
+import { invalidateProgramsListCache, programsListCacheKey, withCache } from '@/lib/api-cache'
 import { createProgramSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
@@ -9,64 +10,64 @@ import { checkRateLimitAsync } from '@/lib/rate-limit'
  */
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
+
+    const { success, retryAfter } = await checkRateLimitAsync(`programs-get:${user.id}`, {
+      windowMs: 60_000,
+      max: 100,
+    })
+    if (!success) {
+      const res = NextResponse.json(
+        { error: 'Too many attempts — please wait a minute and try again' },
+        { status: 429 }
+      )
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')?.trim()
+    const statusKey = status && ['draft', 'published', 'archived'].includes(status) ? status : 'all'
 
-    let query = supabase
-      .from('programs')
-      .select('id, workspace_id, coach_id, title, description, thumbnail_url, status, total_modules, created_at, updated_at')
-      .eq('workspace_id', coach.workspace_id)
-      .order('updated_at', { ascending: false })
+    const cacheKey = programsListCacheKey(workspaceId, statusKey)
+    const data = await withCache(cacheKey, 30, async () => {
+      let query = supabase
+        .from('programs')
+        .select('id, workspace_id, coach_id, title, description, thumbnail_url, status, total_modules, created_at, updated_at')
+        .eq('workspace_id', workspaceId)
+        .order('updated_at', { ascending: false })
 
-    if (status && ['draft', 'published', 'archived'].includes(status)) {
-      query = query.eq('status', status)
-    }
+      if (status && ['draft', 'published', 'archived'].includes(status)) {
+        query = query.eq('status', status)
+      }
 
-    const { data: programs, error } = await query
+      const { data: programs, error } = await query
+      if (error) throw new Error(error.message)
+      const list = programs ?? []
+      if (list.length === 0) return []
+      const programIds = list.map((p) => p.id)
+      const { data: assignments } = await supabase
+        .from('client_programs')
+        .select('program_id')
+        .in('program_id', programIds)
+      const assignedCountByProgram: Record<string, number> = {}
+      for (const a of assignments ?? []) {
+        assignedCountByProgram[a.program_id] = (assignedCountByProgram[a.program_id] ?? 0) + 1
+      }
+      return list.map((p) => ({
+        ...p,
+        assigned_count: assignedCountByProgram[p.id] ?? 0,
+      }))
+    })
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Could not load programs' },
-        { status: 500 }
-      )
-    }
-    const list = programs ?? []
-    if (list.length === 0) {
-      return NextResponse.json({ data: [] })
-    }
-    const programIds = list.map((p) => p.id)
-    const { data: assignments } = await supabase
-      .from('client_programs')
-      .select('program_id')
-      .in('program_id', programIds)
-    const assignedCountByProgram: Record<string, number> = {}
-    for (const a of assignments ?? []) {
-      assignedCountByProgram[a.program_id] = (assignedCountByProgram[a.program_id] ?? 0) + 1
-    }
-    const data = list.map((p) => ({
-      ...p,
-      assigned_count: assignedCountByProgram[p.id] ?? 0,
-    }))
-    return NextResponse.json({ data })
-  } catch {
-    return NextResponse.json(
-      { error: 'Something went wrong — check your connection and try again' },
-      { status: 500 }
-    )
+    const res = NextResponse.json({ data })
+    res.headers.set('Cache-Control', 'private, max-age=30')
+    return res
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Something went wrong — check your connection and try again'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
 
@@ -75,11 +76,9 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`api-programs:${user.id}`, {
       windowMs: 60_000,
@@ -94,15 +93,6 @@ export async function POST(request: Request) {
       return res
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const body = await request.json()
     const parsed = createProgramSchema.safeParse(body)
     if (!parsed.success) {
@@ -113,7 +103,7 @@ export async function POST(request: Request) {
     const { data: row, error } = await supabase
       .from('programs')
       .insert({
-        workspace_id: coach.workspace_id,
+        workspace_id: workspaceId,
         coach_id: user.id,
         title: parsed.data.title,
         description: parsed.data.description ?? null,
@@ -129,6 +119,7 @@ export async function POST(request: Request) {
         { status: 500 }
       )
     }
+    void invalidateProgramsListCache(workspaceId)
     return NextResponse.json({ data: row })
   } catch {
     return NextResponse.json(

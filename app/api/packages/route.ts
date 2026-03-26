@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { requireCoach } from '@/lib/api-helpers'
+import { invalidatePackagesCache, packagesCacheKey, withCache } from '@/lib/api-cache'
 import { createPackageSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
@@ -8,38 +9,40 @@ import { checkRateLimitAsync } from '@/lib/rate-limit'
  */
 export async function GET() {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
 
-    const { data, error } = await supabase
-      .from('session_packages')
-      .select('id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at')
-      .eq('workspace_id', coach.workspace_id)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Could not load packages' },
-        { status: 500 }
+    const { success, retryAfter } = await checkRateLimitAsync(`packages-get:${user.id}`, {
+      windowMs: 60_000,
+      max: 100,
+    })
+    if (!success) {
+      const res = NextResponse.json(
+        { error: 'Too many attempts — please wait a minute and try again' },
+        { status: 429 }
       )
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
-    return NextResponse.json({ data: data ?? [] })
-  } catch {
-    return NextResponse.json(
-      { error: 'Something went wrong — check your connection and try again' },
-      { status: 500 }
-    )
+
+    const key = packagesCacheKey(workspaceId)
+    const rows = await withCache(key, 60, async () => {
+      const { data, error } = await supabase
+        .from('session_packages')
+        .select('id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at')
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false })
+      if (error) throw new Error(error.message)
+      return data ?? []
+    })
+
+    const res = NextResponse.json({ data: rows })
+    res.headers.set('Cache-Control', 'private, max-age=30')
+    return res
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Something went wrong — check your connection and try again'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
 
@@ -48,11 +51,9 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`api-packages:${user.id}`, {
       windowMs: 60_000,
@@ -67,15 +68,6 @@ export async function POST(request: Request) {
       return res
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const body = await request.json()
     const parsed = createPackageSchema.safeParse(body)
     if (!parsed.success) {
@@ -86,7 +78,7 @@ export async function POST(request: Request) {
     const { data: row, error } = await supabase
       .from('session_packages')
       .insert({
-        workspace_id: coach.workspace_id,
+        workspace_id: workspaceId,
         coach_id: user.id,
         title: parsed.data.title,
         description: parsed.data.description ?? null,
@@ -105,6 +97,7 @@ export async function POST(request: Request) {
         { status: 500 }
       )
     }
+    void invalidatePackagesCache(workspaceId)
     return NextResponse.json({ data: row })
   } catch {
     return NextResponse.json(

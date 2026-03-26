@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { logAuditEvent } from '@/lib/audit-log'
 import { createClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -11,6 +12,12 @@ import { inviteClientSchema } from '@/lib/validations'
  */
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       request.headers.get('x-real-ip') ??
@@ -28,10 +35,9 @@ export async function POST(request: Request) {
       return res
     }
 
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    if (profile?.role !== 'coach') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
     const { data: coach } = await supabase
       .from('coaches')
@@ -90,8 +96,16 @@ export async function POST(request: Request) {
       )
     }
 
+    void logAuditEvent(
+      'client_invited',
+      user.id,
+      coach.workspace_id,
+      { invitedEmail: parsed.data.email },
+      request
+    )
+
     return NextResponse.json({ data: 'Invite sent' })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },
       { status: 500 }

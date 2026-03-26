@@ -76,8 +76,17 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="add-availability-title">
-      <div className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-lg">
+    <div
+      className="fixed inset-0 z-50 flex max-md:flex-col max-md:justify-end md:items-center md:justify-center md:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-availability-title"
+    >
+      <button type="button" className="absolute inset-0 bg-black/40" onClick={onClose} aria-label="Close dialog" tabIndex={-1} />
+      <div
+        className="relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-t-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-lg max-md:max-w-none md:max-w-md md:rounded-xl max-md:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 id="add-availability-title" className="text-lg font-medium text-[var(--color-text-primary)]">
           Add availability
         </h2>
@@ -89,7 +98,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
             <select
               value={dayOfWeek}
               onChange={(e) => setDayOfWeek(Number(e.target.value))}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
               required
             >
               {DAYS.map((d) => (
@@ -104,7 +113,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
             <select
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
             >
               {THIRTY_MIN_OPTIONS.map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -118,7 +127,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
             <select
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
             >
               {THIRTY_MIN_OPTIONS.map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -134,7 +143,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="e.g. Morning sessions"
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] min-h-[44px]"
             />
           </div>
           {error && (

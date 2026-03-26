@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
+import { ClientAuthBrandTitle } from '@/components/client/ClientAuthBrandTitle'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -23,16 +24,17 @@ export default function SetPasswordPage() {
   useEffect(() => {
     const supabase = createClient()
     async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (user && !error) {
         setSessionReady(true)
         setNoSession(false)
         return
       }
       if (typeof window !== 'undefined' && window.location.hash) {
         await new Promise((r) => setTimeout(r, 400))
-        const { data: { session: retry } } = await supabase.auth.getSession()
-        if (retry) {
+        const { data: { user: retryUser }, error: retryError } =
+          await supabase.auth.getUser()
+        if (retryUser && !retryError) {
           setSessionReady(true)
           setNoSession(false)
           return
@@ -108,7 +110,8 @@ export default function SetPasswordPage() {
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-[var(--color-surface)]">
       <Card variant="raised" padding="lg" className="w-full max-w-md">
-        <h1 className="text-lg font-medium text-[var(--color-ink)]">Set your password</h1>
+        <ClientAuthBrandTitle className="text-lg font-medium text-[var(--color-ink)]" />
+        <h2 className="mt-2 text-lg font-medium text-[var(--color-ink)]">Set your password</h2>
         <p className="mt-1 text-[15px] text-[var(--color-muted)]">
           Choose a password to sign in to your client portal.
         </p>

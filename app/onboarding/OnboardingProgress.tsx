@@ -26,7 +26,7 @@ export function OnboardingProgress() {
           className={`h-2 w-10 rounded-full ${
             i === step
               ? 'bg-[var(--color-accent)]'
-              : 'border border-[var(--color-border)] bg-white'
+              : 'border border-[var(--color-border)] bg-[var(--color-bg)]'
           }`}
           aria-current={i === step ? 'step' : undefined}
         />

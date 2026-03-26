@@ -10,7 +10,7 @@ This document is the single source of rules for Cursor in this project. It is al
 - **Project:** ClearPath Coach Operating System  
 - **Version:** 2.0  
 - **Type:** Multi-tenant SaaS — coaching platform  
-- **Stack:** Next.js 14 (App Router), Supabase, Vercel, TypeScript, Tailwind CSS  
+- **Stack:** Next.js 16 (App Router), Supabase, Vercel, TypeScript, Tailwind CSS  
 - **App URL:** app.clearpath.com  
 - **Marketing URL:** clearpath.com (separate repo — do not touch from this project)
 

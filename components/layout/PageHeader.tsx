@@ -13,11 +13,11 @@ export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
   return (
     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-[var(--color-ink)] font-medium leading-tight">
+        <h1 className="text-[22px] font-medium leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-1 text-[15px] text-[var(--color-muted)]">
+          <p className="mt-1 text-[15px] font-normal leading-[var(--leading-body)] text-[var(--color-text-secondary)]">
             {subtitle}
           </p>
         )}

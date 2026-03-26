@@ -86,7 +86,7 @@ export function MarkPaidModal({
       isOpen={isOpen}
       onClose={onClose}
       title={`Record payment from ${clientName}`}
-      className="max-w-md"
+      className="w-full max-w-none md:max-w-md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -96,7 +96,7 @@ export function MarkPaidModal({
           <select
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-2 text-[15px] text-[var(--color-ink)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] min-h-[44px]"
+            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] text-[var(--color-ink)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] min-h-[44px]"
             required
             aria-required
           >

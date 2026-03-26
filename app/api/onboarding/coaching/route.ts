@@ -1,17 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
-
-const COACHING_TYPES = [
-  'Fitness',
-  'Life',
-  'Business',
-  'Nutrition',
-  'Mindset',
-  'Performance',
-  'Career',
-  'Relationships',
-  'Other',
-] as const
+import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { onboardingCoachingSchema } from '@/lib/validations'
 
 /**
  * POST /api/onboarding/coaching — save Step 2: coaching_types, current_client_count.
@@ -24,6 +14,17 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`onboarding-coaching:${user.id}`, {
+      windowMs: 60_000,
+      max: 30,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
+    }
+
     const { data: coach } = await supabase
       .from('coaches')
       .select('workspace_id')
@@ -33,12 +34,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const rawTypes = Array.isArray(body.coaching_types) ? body.coaching_types : []
-    const coachingTypes = rawTypes
-      .filter((t: unknown) => typeof t === 'string' && COACHING_TYPES.includes(t as (typeof COACHING_TYPES)[number]))
-      .map((t: string) => t)
-    const rawCount = body.current_client_count
+    let raw: unknown
+    try {
+      raw = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+
+    const parsed = onboardingCoachingSchema.safeParse(raw)
+    if (!parsed.success) {
+      const msg = parsed.error.issues.map((i) => i.message).join('; ') || 'Invalid input'
+      return NextResponse.json({ error: msg }, { status: 400 })
+    }
+
+    const coachingTypes = parsed.data.coaching_types ?? []
+    const rawCount = parsed.data.current_client_count
     const validCount =
       typeof rawCount === 'number' && Number.isInteger(rawCount) && rawCount >= 0
         ? rawCount
@@ -58,10 +68,7 @@ export async function POST(request: Request) {
       .eq('id', coach.workspace_id)
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Could not update workspace' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Could not update workspace' }, { status: 500 })
     }
     return NextResponse.json({ data: 'Saved' })
   } catch {

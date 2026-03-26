@@ -48,6 +48,113 @@ function PackageCardSkeleton() {
   )
 }
 
+type PackageFormModalProps = {
+  isOpen: boolean
+  initialPackage: Package | null
+  submitting: boolean
+  submitError: string | null
+  onClose: () => void
+  onSave: (payload: CreatePackageInput) => Promise<void>
+}
+
+function PackageFormModal({
+  isOpen,
+  initialPackage,
+  submitting,
+  submitError,
+  onClose,
+  onSave,
+}: PackageFormModalProps) {
+  const [form, setForm] = useState<CreatePackageInput>(() =>
+    initialPackage
+      ? {
+          title: initialPackage.title,
+          description: initialPackage.description ?? '',
+          price_cents: initialPackage.price_cents,
+          currency: initialPackage.currency,
+          duration_minutes: initialPackage.duration_minutes,
+          session_type: initialPackage.session_type ?? '',
+          is_active: initialPackage.is_active,
+        }
+      : {
+          title: '',
+          description: '',
+          price_cents: 0,
+          currency: 'usd',
+          duration_minutes: 60,
+          session_type: '',
+          is_active: true,
+        }
+  )
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await onSave(form)
+  }
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={initialPackage ? 'Edit package' : 'Create package'}
+      className="w-full max-w-none md:max-w-md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Title *</label>
+          <Input
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            placeholder="e.g. Single session"
+            required
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Description</label>
+          <Textarea
+            value={form.description ?? ''}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            placeholder="Optional"
+            rows={2}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Price (USD) *</label>
+          <Input
+            type="number"
+            step="0.01"
+            min="0"
+            value={form.price_cents ? (form.price_cents / 100).toFixed(2) : ''}
+            onChange={(e) => setForm((f) => ({ ...f, price_cents: Math.round(parseFloat(e.target.value || '0') * 100) }))}
+            placeholder="0.00"
+            required
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Duration (minutes)</label>
+          <Input
+            type="number"
+            min="5"
+            max="480"
+            value={form.duration_minutes || ''}
+            onChange={(e) => setForm((f) => ({ ...f, duration_minutes: parseInt(e.target.value || '60', 10) }))}
+            placeholder="60"
+          />
+        </div>
+        {submitError && <p className="text-sm text-[var(--color-error)]">{submitError}</p>}
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Saving…' : initialPackage ? 'Save changes' : 'Create package'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
 export function PackagesPageContent() {
   const [packages, setPackages] = useState<Package[]>([])
   const [clients, setClients] = useState<Client[]>([])
@@ -56,15 +163,6 @@ export function PackagesPageContent() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editPkg, setEditPkg] = useState<Package | null>(null)
   const [sendInvoicePkg, setSendInvoicePkg] = useState<Package | null>(null)
-  const [form, setForm] = useState<CreatePackageInput>({
-    title: '',
-    description: '',
-    price_cents: 0,
-    currency: 'usd',
-    duration_minutes: 60,
-    session_type: '',
-    is_active: true,
-  })
   const [invoiceForm, setInvoiceForm] = useState<CreateInvoiceInput>({
     packageId: '',
     clientId: '',
@@ -112,15 +210,8 @@ export function PackagesPageContent() {
 
   const openEdit = (pkg: Package) => {
     setEditPkg(pkg)
-    setForm({
-      title: pkg.title,
-      description: pkg.description ?? '',
-      price_cents: pkg.price_cents,
-      currency: pkg.currency,
-      duration_minutes: pkg.duration_minutes,
-      session_type: pkg.session_type ?? '',
-      is_active: pkg.is_active,
-    })
+    setCreateOpen(true)
+    setSubmitError(null)
   }
 
   const openSendInvoice = (pkg: Package) => {
@@ -133,13 +224,12 @@ export function PackagesPageContent() {
     setSubmitError(null)
   }
 
-  const handleCreateOrUpdate = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCreateOrUpdate = async (payload: CreatePackageInput) => {
     setSubmitError(null)
     const parsed = createPackageSchema.safeParse({
-      ...form,
-      description: form.description || null,
-      session_type: form.session_type || null,
+      ...payload,
+      description: payload.description || null,
+      session_type: payload.session_type || null,
     })
     if (!parsed.success) {
       setSubmitError(parsed.error.issues[0]?.message ?? 'Invalid input')
@@ -172,7 +262,6 @@ export function PackagesPageContent() {
       }
       setCreateOpen(false)
       setEditPkg(null)
-      setForm({ title: '', description: '', price_cents: 0, currency: 'usd', duration_minutes: 60, session_type: '', is_active: true })
       fetchPackages()
     } catch {
       setSubmitError('Something went wrong — try again')
@@ -234,14 +323,14 @@ export function PackagesPageContent() {
           <Link href="/coach/invoices">
             <Button variant="secondary">Invoice history</Button>
           </Link>
-          <Button onClick={() => { setCreateOpen(true); setEditPkg(null); setForm({ title: '', description: '', price_cents: 0, currency: 'usd', duration_minutes: 60, session_type: '', is_active: true }); setSubmitError(null); }}>
+          <Button onClick={() => { setCreateOpen(true); setEditPkg(null); setSubmitError(null); }}>
             Create package
           </Button>
         </div>
       </div>
 
       {loading && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <PackageCardSkeleton key={i} />
           ))}
@@ -259,6 +348,9 @@ export function PackagesPageContent() {
 
       {!loading && !error && packages.length === 0 && (
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
+            📦
+          </div>
           <p className="font-medium text-[var(--color-ink)]">No packages yet</p>
           <p className="mt-1 text-[15px] text-[var(--color-muted)]">
             Create a session package to send invoices to clients.
@@ -270,7 +362,7 @@ export function PackagesPageContent() {
       )}
 
       {!loading && !error && packages.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {packages.filter((p) => p.is_active).map((pkg) => (
             <Card key={pkg.id} variant="raised" padding="lg">
               <div className="flex items-start justify-between gap-2">
@@ -309,71 +401,25 @@ export function PackagesPageContent() {
         </div>
       )}
 
-      <Modal
-        isOpen={createOpen || !!editPkg}
-        onClose={() => { setCreateOpen(false); setEditPkg(null); setSubmitError(null); }}
-        title={editPkg ? 'Edit package' : 'Create package'}
-        className="max-w-md"
-      >
-        <form onSubmit={handleCreateOrUpdate} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Title *</label>
-            <Input
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              placeholder="e.g. Single session"
-              required
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Description</label>
-            <Textarea
-              value={form.description ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              placeholder="Optional"
-              rows={2}
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Price (USD) *</label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.price_cents ? (form.price_cents / 100).toFixed(2) : ''}
-              onChange={(e) => setForm((f) => ({ ...f, price_cents: Math.round(parseFloat(e.target.value || '0') * 100) }))}
-              placeholder="0.00"
-              required
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Duration (minutes)</label>
-            <Input
-              type="number"
-              min="5"
-              max="480"
-              value={form.duration_minutes || ''}
-              onChange={(e) => setForm((f) => ({ ...f, duration_minutes: parseInt(e.target.value || '60', 10) }))}
-              placeholder="60"
-            />
-          </div>
-          {submitError && <p className="text-sm text-[var(--color-error)]">{submitError}</p>}
-          <div className="flex gap-2 justify-end pt-2">
-            <Button type="button" variant="secondary" onClick={() => { setCreateOpen(false); setEditPkg(null); }}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? 'Saving…' : editPkg ? 'Save changes' : 'Create package'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <PackageFormModal
+        key={createOpen ? (editPkg?.id ?? '__create__') : '__closed__'}
+        isOpen={createOpen}
+        initialPackage={editPkg}
+        submitting={submitting}
+        submitError={submitError}
+        onClose={() => {
+          setCreateOpen(false)
+          setEditPkg(null)
+          setSubmitError(null)
+        }}
+        onSave={handleCreateOrUpdate}
+      />
 
       <Modal
         isOpen={!!sendInvoicePkg}
         onClose={() => { setSendInvoicePkg(null); setSubmitError(null); }}
         title="Send invoice"
-        className="max-w-md"
+        className="w-full max-w-none md:max-w-md"
       >
         {sendInvoicePkg && (
           <form onSubmit={handleSendInvoice} className="space-y-4">
@@ -385,7 +431,7 @@ export function PackagesPageContent() {
               <select
                 value={invoiceForm.clientId}
                 onChange={(e) => setInvoiceForm((f) => ({ ...f, clientId: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-2 text-[15px] min-h-[44px]"
+                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] min-h-[44px]"
                 required
               >
                 <option value="">Select a client</option>

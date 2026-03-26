@@ -89,10 +89,9 @@ export function AssignProgramModal({ programId, open, onClose, onAssigned }: Ass
       setSuccess(`Program assigned to ${name}`)
       setSelectedClientId('')
       onAssigned()
-      const t = setTimeout(() => {
+      setTimeout(() => {
         onClose()
       }, 1500)
-      return () => clearTimeout(t)
     } catch {
       setError('Something went wrong — try again')
     } finally {
@@ -101,7 +100,7 @@ export function AssignProgramModal({ programId, open, onClose, onAssigned }: Ass
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title="Assign program" className="max-w-md">
+    <Modal isOpen={open} onClose={onClose} title="Assign program" className="w-full max-w-none md:max-w-md">
       {loading ? (
         <p className="text-[var(--color-muted)] text-sm">Loading…</p>
       ) : (
@@ -118,7 +117,7 @@ export function AssignProgramModal({ programId, open, onClose, onAssigned }: Ass
             <select
               value={selectedClientId}
               onChange={(e) => setSelectedClientId(e.target.value)}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
             >
               <option value="">Choose a client…</option>
               {availableClients.map((c) => (

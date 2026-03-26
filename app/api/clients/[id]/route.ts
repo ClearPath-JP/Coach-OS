@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { updateClientSchema } from '@/lib/validations'
 
 type Params = { params: Promise<{ id: string }> }
@@ -69,6 +70,16 @@ export async function PATCH(request: Request, { params }: Params) {
       .maybeSingle()
     if (profile?.role !== 'coach') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`clients-patch:${user.id}`, {
+      windowMs: 60_000,
+      max: 60,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
 
     const body = await request.json()

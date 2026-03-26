@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { invalidatePackagesCache } from '@/lib/api-cache'
 import { createClient } from '@/lib/supabase-server'
 import { updatePackageSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -75,6 +76,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 404 }
       )
     }
+    void invalidatePackagesCache(coach.workspace_id)
     return NextResponse.json({ data: row })
   } catch {
     return NextResponse.json(
@@ -125,6 +127,7 @@ export async function DELETE(request: Request, context: RouteContext) {
         { status: 404 }
       )
     }
+    void invalidatePackagesCache(coach.workspace_id)
     return NextResponse.json({ data: 'ok' })
   } catch {
     return NextResponse.json(

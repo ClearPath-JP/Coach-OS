@@ -162,7 +162,7 @@ Findings from testing and codebase review of edge cases and failure scenarios. F
 
 **Current behavior**
 
-- **Middleware** (`middleware.ts`): For `/coach` and `/client`, it uses `supabase.auth.getSession()`. If there is no session, it redirects to `/login?next=<pathname>`. So when the user **navigates** to a new page after expiry, they get redirected to login with a return URL.
+- **Middleware** (`proxy.ts`): For `/coach` and `/client`, it uses `supabase.auth.getUser()`. **`getUser()` is the secure method** — it verifies the JWT with Supabase Auth servers on each call, rather than relying only on locally stored session data. If there is no valid user, it redirects to `/login?next=<pathname>`. So when the user **navigates** to a new page after expiry, they get redirected to login with a return URL.
 - **Mid-action (e.g. submit a form):** The request goes to an API route or server action, which calls `getUser()`. If the token is expired, Supabase returns an unauthenticated state; the route typically returns 401 Unauthorized. There is **no** app-wide handling of 401 in the client (e.g. no global fetch interceptor or React context that redirects to login on 401). So the user may see a generic error (e.g. “Could not create session” or “Failed to send”) or a 401 response without an automatic redirect to login. They must navigate (e.g. refresh or click a link) to hit middleware and then get redirected to login.
 
 **What should happen**

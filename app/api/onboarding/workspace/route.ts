@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { onboardingWorkspaceSchema } from '@/lib/validations'
 
 /**
  * POST /api/onboarding/workspace — save Step 1: workspace name, logo_url, avatar (profile) URL.
@@ -12,6 +14,17 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`onboarding-workspace:${user.id}`, {
+      windowMs: 60_000,
+      max: 30,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
+    }
+
     const { data: coach } = await supabase
       .from('coaches')
       .select('workspace_id')
@@ -21,16 +34,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const name = typeof body.name === 'string' ? body.name.trim() : ''
-    if (name.length < 2) {
-      return NextResponse.json(
-        { error: 'Workspace name must be at least 2 characters' },
-        { status: 400 }
-      )
+    let raw: unknown
+    try {
+      raw = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
-    const logoUrl = typeof body.logo_url === 'string' ? body.logo_url.trim() || null : null
-    const avatarUrl = typeof body.avatar_url === 'string' ? body.avatar_url.trim() || null : null
+
+    const parsed = onboardingWorkspaceSchema.safeParse(raw)
+    if (!parsed.success) {
+      const msg = parsed.error.issues.map((i) => i.message).join('; ') || 'Invalid input'
+      return NextResponse.json({ error: msg }, { status: 400 })
+    }
+
+    const { name, logo_url: logoUrlRaw, avatar_url: avatarUrlRaw } = parsed.data
+    const logoUrl =
+      logoUrlRaw === undefined || logoUrlRaw === '' || logoUrlRaw === null
+        ? null
+        : typeof logoUrlRaw === 'string'
+          ? logoUrlRaw.trim() || null
+          : null
+    const avatarUrl =
+      avatarUrlRaw === undefined || avatarUrlRaw === '' || avatarUrlRaw === null
+        ? null
+        : typeof avatarUrlRaw === 'string'
+          ? avatarUrlRaw.trim() || null
+          : null
 
     const { error: workspaceError } = await supabase
       .from('workspaces')
@@ -38,10 +67,7 @@ export async function POST(request: Request) {
       .eq('id', coach.workspace_id)
 
     if (workspaceError) {
-      return NextResponse.json(
-        { error: workspaceError.message || 'Could not update workspace' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Could not update workspace' }, { status: 500 })
     }
 
     if (avatarUrl !== null) {

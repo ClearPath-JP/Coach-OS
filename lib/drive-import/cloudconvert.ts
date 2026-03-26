@@ -54,9 +54,17 @@ export async function createDriveToMp4Job(params: {
     body: JSON.stringify(body),
   })
 
-  const json = (await res.json()) as { data?: { id?: string }; message?: string }
+  const json = (await res.json()) as {
+    data?: { id?: string }
+    message?: string
+    errors?: Record<string, unknown>
+  }
   if (!res.ok || !json.data?.id) {
-    throw new Error(json.message ?? `CloudConvert job create failed (${res.status})`)
+    const detail =
+      json.message ??
+      (json.errors ? JSON.stringify(json.errors) : null) ??
+      `CloudConvert job create failed (${res.status})`
+    throw new Error(detail)
   }
   return { jobId: json.data.id }
 }

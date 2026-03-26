@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { markMessagesReadSchema } from '@/lib/validations'
 
 /**
@@ -15,6 +16,16 @@ export async function PATCH(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`messages-read:${user.id}`, {
+      windowMs: 60_000,
+      max: 120,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
 
     const body = await request.json()
@@ -34,10 +45,7 @@ export async function PATCH(request: Request) {
       .is('read_at', null)
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Could not mark messages as read' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Could not mark messages as read' }, { status: 500 })
     }
 
     return NextResponse.json({ data: 'marked read' })

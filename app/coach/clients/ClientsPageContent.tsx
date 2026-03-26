@@ -85,7 +85,6 @@ export function CoachClientsPageContent() {
   }
 
   const handleAddSuccess = () => {
-    setAddModalOpen(false)
     setToast('Client added')
     fetchClients()
     setTimeout(() => setToast(null), 4000)
@@ -100,17 +99,14 @@ export function CoachClientsPageContent() {
 
   return (
     <>
-      <PageHeader
-        title="Clients"
-        subtitle="Manage your roster"
-      >
-        <Button onClick={() => setAddModalOpen(true)}>
+      <PageHeader title="Clients" subtitle="Manage your roster">
+        <Button className="w-full min-[480px]:w-auto" onClick={() => setAddModalOpen(true)}>
           Add client
         </Button>
       </PageHeader>
 
       <div className="mt-6 space-y-4">
-        <form onSubmit={handleSearchSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="min-w-0 flex-1">
             <Input
               type="search"
@@ -118,10 +114,10 @@ export function CoachClientsPageContent() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               aria-label="Search clients"
-              className="max-w-md"
+              className="w-full max-w-md"
             />
           </div>
-          <Button type="submit" variant="secondary">
+          <Button type="submit" variant="secondary" className="w-full sm:w-auto">
             Search
           </Button>
         </form>
@@ -137,7 +133,7 @@ export function CoachClientsPageContent() {
               className={`min-h-[44px] rounded-lg border px-4 py-2 text-[15px] font-medium transition-colors ${
                 statusFilter === tab.value
                   ? 'border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)]'
-                  : 'border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]'
+                  : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]'
               }`}
             >
               {tab.label}
@@ -156,6 +152,9 @@ export function CoachClientsPageContent() {
         )}
         {!loading && !error && clients.length === 0 && (
           <Card className="rounded-xl border border-[var(--color-border)] p-8 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
+              👥
+            </div>
             <h2 className="text-[18px] font-medium text-[var(--color-text-primary)]">
               No clients yet
             </h2>
@@ -168,14 +167,18 @@ export function CoachClientsPageContent() {
           </Card>
         )}
         {!loading && !error && clients.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {clients.map((client) => (
               <Link
                 key={client.id}
                 href={`/coach/clients/${client.id}`}
                 className="block min-w-0 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 rounded-xl"
               >
-                <Card variant="raised" padding="lg" className="h-full transition-shadow hover:shadow-[var(--shadow-card-raised)]">
+                <Card
+                  variant="flat"
+                  padding="lg"
+                  className="h-full border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
+                >
                   <div className="flex items-start gap-4">
                     <div
                       className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-[15px] font-medium text-[var(--color-accent)]"
@@ -234,7 +237,12 @@ function ClientListSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {[1, 2, 3, 4, 5, 6].map((i) => (
-        <Card key={i} variant="raised" padding="lg" className="h-full">
+        <Card
+          key={i}
+          variant="flat"
+          padding="lg"
+          className="h-full border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
+        >
           <div className="flex items-start gap-4">
             <div className="h-12 w-12 shrink-0 rounded-full bg-[var(--color-border)] animate-pulse" />
             <div className="min-w-0 flex-1 space-y-2">

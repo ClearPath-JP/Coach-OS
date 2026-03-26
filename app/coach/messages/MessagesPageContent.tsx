@@ -1,12 +1,19 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
 import { InvoiceCard } from '@/components/coach/InvoiceCard'
+import {
+  SessionBookingMessageCard,
+  type SessionBookingCardData,
+} from '@/components/shared/SessionBookingMessageCard'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { mergeByIdSortByCreatedAt } from '@/lib/utils'
 
 type Conversation = {
   clientId: string
@@ -15,6 +22,8 @@ type Conversation = {
   lastMessagePreview: string
   lastMessageAt: string
   unreadCount: number
+  /** False when no messages yet — coach can still open the thread */
+  hasMessages: boolean
 }
 
 type Message = {
@@ -30,7 +39,11 @@ type Message = {
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase().slice(0, 2)
+  if (parts.length >= 2) {
+    const a = parts[0]?.[0] ?? ''
+    const b = parts[parts.length - 1]?.[0] ?? ''
+    return (a + b).toUpperCase().slice(0, 2) || '?'
+  }
   return name.slice(0, 2).toUpperCase() || '?'
 }
 
@@ -38,6 +51,152 @@ function statusBadgeVariant(status: string): 'active' | 'inactive' | 'pending' {
   if (status === 'active') return 'active'
   if (status === 'paused') return 'pending'
   return 'inactive'
+}
+
+function groupMessagesByDate(messages: Message[]): { dateLabel: string; msgs: Message[] }[] {
+  const groups = new Map<string, Message[]>()
+  for (const m of messages) {
+    const d = new Date(m.created_at)
+    const label = isToday(d) ? 'Today' : isYesterday(d) ? 'Yesterday' : format(d, 'MMMM d, yyyy')
+    if (!groups.has(label)) groups.set(label, [])
+    groups.get(label)!.push(m)
+  }
+  return [...groups.entries()].map(([dateLabel, msgs]) => ({ dateLabel, msgs }))
+}
+
+function MessagesThreadMessagesList({
+  messages,
+  userId,
+  selectedClientName,
+  selectedClientId,
+  fetchMessages,
+}: {
+  messages: Message[]
+  userId: string | null
+  selectedClientName: string
+  selectedClientId: string
+  fetchMessages: (clientId: string) => void | Promise<void>
+}) {
+  return (
+    <div className="space-y-4">
+      {groupMessagesByDate(messages).map(({ dateLabel, msgs }) => (
+        <div key={dateLabel}>
+          <p className="mb-2 text-center text-[12px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
+            {dateLabel}
+          </p>
+          <div className="space-y-2">
+            {msgs.map((msg) => {
+              const isInvoice = msg.message_type === 'invoice'
+              const isSession = msg.message_type === 'session'
+              let invoiceData: Parameters<typeof InvoiceCard>[0]['data'] | null = null
+              let sessionData: SessionBookingCardData | null = null
+              if (isInvoice) {
+                try {
+                  const parsed = JSON.parse(msg.content) as {
+                    type?: string
+                    invoiceId?: string
+                    packageTitle?: string
+                    packageDescription?: string | null
+                    amountCents?: number
+                    currency?: string
+                    status?: string
+                    dueDate?: string | null
+                    paymentMethod?: string | null
+                    paidAt?: string | null
+                  }
+                  if (parsed?.type === 'invoice' && parsed.invoiceId) {
+                    invoiceData = {
+                      type: 'invoice',
+                      invoiceId: parsed.invoiceId,
+                      packageTitle: parsed.packageTitle ?? 'Invoice',
+                      packageDescription: parsed.packageDescription ?? null,
+                      amountCents: parsed.amountCents ?? 0,
+                      currency: parsed.currency ?? 'usd',
+                      status: parsed.status ?? 'pending',
+                      dueDate: parsed.dueDate ?? null,
+                      paymentMethod: parsed.paymentMethod ?? null,
+                      paidAt: parsed.paidAt ?? null,
+                    }
+                  }
+                } catch {
+                  invoiceData = null
+                }
+              }
+              if (isSession) {
+                try {
+                  const parsed = JSON.parse(msg.content) as {
+                    type?: string
+                    sessionId?: string
+                    scheduledTime?: string
+                    endTime?: string | null
+                    durationMinutes?: number
+                    status?: string
+                    notes?: string | null
+                  }
+                  if (parsed?.type === 'session' && parsed.sessionId && parsed.scheduledTime) {
+                    sessionData = {
+                      type: 'session',
+                      sessionId: parsed.sessionId,
+                      scheduledTime: parsed.scheduledTime,
+                      endTime: parsed.endTime ?? null,
+                      durationMinutes: parsed.durationMinutes ?? 60,
+                      status: parsed.status ?? 'confirmed',
+                      notes: parsed.notes ?? null,
+                    }
+                  }
+                } catch {
+                  sessionData = null
+                }
+              }
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
+                >
+                  {invoiceData ? (
+                    <div className="max-w-[320px]">
+                      <InvoiceCard
+                        data={invoiceData}
+                        clientName={selectedClientName || 'Client'}
+                        onPaymentRecorded={() => void fetchMessages(selectedClientId)}
+                      />
+                      <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                        {format(new Date(msg.created_at), 'h:mm a')}
+                      </p>
+                    </div>
+                  ) : sessionData ? (
+                    <div className="max-w-[320px]">
+                      <SessionBookingMessageCard data={sessionData} />
+                      <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                        {format(new Date(msg.created_at), 'h:mm a')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div
+                      className={`max-w-[85%] rounded-xl px-4 py-2 ${
+                        msg.sender_id === userId
+                          ? 'bg-[var(--color-accent)] text-white'
+                          : 'bg-[var(--color-surface)] text-[var(--color-ink)] border border-[var(--color-border)]'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap break-words text-[15px]">{msg.content}</p>
+                      <p
+                        className={`mt-1 text-[12px] ${
+                          msg.sender_id === userId ? 'text-white/80' : 'text-[var(--color-muted)]'
+                        }`}
+                      >
+                        {format(new Date(msg.created_at), 'h:mm a')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 export function CoachMessagesPageContent() {
@@ -52,9 +211,15 @@ export function CoachMessagesPageContent() {
   const [inputValue, setInputValue] = useState('')
   const [sending, setSending] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+  const [hasMoreOlder, setHasMoreOlder] = useState(false)
+  const [oldestCursor, setOldestCursor] = useState<string | null>(null)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const threadScrollRef = useRef<HTMLDivElement>(null)
   const threadEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const fetchConversations = useCallback(async () => {
     setConversationsError(null)
@@ -81,17 +246,27 @@ export function CoachMessagesPageContent() {
   }, [fetchConversations])
 
   useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    const sync = () => setIsNarrowViewport(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => {
     let cancelled = false
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!cancelled && user) setUserId(user.id)
     })
     return () => { cancelled = true }
-  }, [supabase.auth])
+  }, [supabase])
 
   const fetchMessages = useCallback(
     async (clientId: string) => {
       setMessagesError(null)
       setLoadingMessages(true)
+      setHasMoreOlder(false)
+      setOldestCursor(null)
       try {
         const res = await fetch(`/api/messages?clientId=${encodeURIComponent(clientId)}`)
         const json = await res.json()
@@ -101,8 +276,10 @@ export function CoachMessagesPageContent() {
           return
         }
         setMessages(json.data ?? [])
+        setHasMoreOlder(json.hasMore === true)
+        setOldestCursor(typeof json.nextCursor === 'string' ? json.nextCursor : null)
         const conv = conversations.find((c) => c.clientId === clientId)
-        if (conv) setSelectedClientName(conv.fullName)
+        if (conv?.fullName) setSelectedClientName(conv.fullName)
       } catch {
         setMessagesError('Something went wrong — check your connection and try again')
         setMessages([])
@@ -112,6 +289,35 @@ export function CoachMessagesPageContent() {
     },
     [conversations]
   )
+
+  const loadOlderMessages = useCallback(async () => {
+    if (!selectedClientId || !oldestCursor || loadingOlder || !hasMoreOlder) return
+    setLoadingOlder(true)
+    const prevScrollHeight = threadScrollRef.current?.scrollHeight ?? 0
+    try {
+      const res = await fetch(
+        `/api/messages?clientId=${encodeURIComponent(selectedClientId)}&before=${encodeURIComponent(oldestCursor)}`
+      )
+      const json = await res.json()
+      if (!res.ok || !json.data?.length) {
+        setHasMoreOlder(false)
+        return
+      }
+      setMessages((prev) =>
+        mergeByIdSortByCreatedAt(prev, json.data as Message[])
+      )
+      setHasMoreOlder(json.hasMore === true)
+      setOldestCursor(typeof json.nextCursor === 'string' ? json.nextCursor : null)
+    } catch {
+      setHasMoreOlder(false)
+    } finally {
+      setLoadingOlder(false)
+      requestAnimationFrame(() => {
+        const el = threadScrollRef.current
+        if (el) el.scrollTop = el.scrollHeight - prevScrollHeight
+      })
+    }
+  }, [selectedClientId, oldestCursor, loadingOlder, hasMoreOlder])
 
   useEffect(() => {
     if (!selectedClientId) {
@@ -128,15 +334,37 @@ export function CoachMessagesPageContent() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clientId: selectedClientId }),
-    }).catch(() => {})
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          let body: { error?: string } = {}
+          try {
+            body = await res.json()
+          } catch {
+            /* ignore */
+          }
+          console.error('Mark messages read failed:', res.status, body)
+          setToast('Could not mark messages as read — try again')
+        }
+      })
+      .catch((err) => {
+        console.error('Mark messages read failed:', err)
+        setToast('Could not mark messages as read — try again')
+      })
   }, [selectedClientId])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = window.setTimeout(() => setToast(null), 4000)
+    return () => window.clearTimeout(t)
+  }, [toast])
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   useEffect(() => {
-    if (!selectedClientId || !userId) return
+    if (!selectedClientId) return
 
     const channel = supabase
       .channel(`messages:${selectedClientId}`)
@@ -173,11 +401,7 @@ export function CoachMessagesPageContent() {
           )
         }
       )
-      .subscribe((status, err) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || (err != null)) {
-          console.error('[Realtime] messages subscription:', status, err)
-        }
-      })
+      .subscribe()
 
     channelRef.current = channel
     return () => {
@@ -186,7 +410,7 @@ export function CoachMessagesPageContent() {
         channelRef.current = null
       }
     }
-  }, [selectedClientId, userId])
+  }, [selectedClientId, supabase])
 
   const handleSend = async () => {
     const content = inputValue.trim()
@@ -205,12 +429,7 @@ export function CoachMessagesPageContent() {
         setInputValue(content)
         return
       }
-      setMessages((prev) => {
-        const next = [...prev, json.data]
-        return next.sort(
-          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        )
-      })
+      setMessages((prev) => mergeByIdSortByCreatedAt(prev, [json.data as Message]))
       fetchConversations()
     } catch {
       setMessagesError('Could not send message — try again')
@@ -224,7 +443,7 @@ export function CoachMessagesPageContent() {
   const showThreadOnly = selectedClientId
 
   return (
-    <div className="flex h-[calc(100vh-2rem)] min-h-0 flex-col lg:flex-row">
+    <div className="flex min-h-0 flex-1 flex-col min-h-[calc(100dvh-7rem)] lg:min-h-[calc(100dvh-3.5rem)] lg:flex-row">
       {/* Left: conversation list — 1/3 on desktop, full on mobile when no thread */}
       <div
         className={`flex h-full flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] ${
@@ -232,7 +451,9 @@ export function CoachMessagesPageContent() {
         }`}
       >
         <div className="border-b border-[var(--color-border)] px-4 py-4">
-          <h1 className="text-lg font-medium text-[var(--color-ink)]">Messages</h1>
+          <h1 className="text-[22px] font-medium leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
+            Messages
+          </h1>
         </div>
         <div className="flex-1 overflow-y-auto">
           {loadingConversations && <ConversationListSkeleton />}
@@ -246,10 +467,16 @@ export function CoachMessagesPageContent() {
           )}
           {!loadingConversations && !conversationsError && conversations.length === 0 && (
             <div className="p-6 text-center">
-              <p className="font-medium text-[var(--color-ink)]">No conversations yet.</p>
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
+                💬
+              </div>
+              <p className="font-medium text-[var(--color-ink)]">No active clients yet</p>
               <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-                Add a client and send them a message to get started.
+                Add a client to start messaging.
               </p>
+              <Link href="/coach/clients" className="mt-4 inline-block">
+                <Button variant="secondary">Go to clients</Button>
+              </Link>
             </div>
           )}
           {!loadingConversations && !conversationsError && conversations.length > 0 && (
@@ -258,8 +485,11 @@ export function CoachMessagesPageContent() {
                 <li key={c.clientId}>
                   <button
                     type="button"
-                    onClick={() => setSelectedClientId(c.clientId)}
-                    className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-border)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-inset ${
+                    onClick={() => {
+                      setSelectedClientId(c.clientId)
+                      setSelectedClientName(c.fullName)
+                    }}
+                    className={`flex min-h-[44px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-border)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-inset ${
                       selectedClientId === c.clientId ? 'bg-[var(--color-accent-light)]' : ''
                     }`}
                   >
@@ -272,7 +502,9 @@ export function CoachMessagesPageContent() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium text-[var(--color-ink)]">{c.fullName}</p>
                       <p className="truncate text-[13px] text-[var(--color-muted)]">
-                        {c.lastMessagePreview || 'No messages yet'}
+                        {c.hasMessages
+                          ? c.lastMessagePreview || 'Message'
+                          : 'Start a conversation'}
                       </p>
                       <p className="mt-0.5 text-[12px] text-[var(--color-muted)]">
                         {c.lastMessageAt
@@ -298,7 +530,7 @@ export function CoachMessagesPageContent() {
 
       {/* Right: thread — 2/3 on desktop, full on mobile when selected */}
       <div
-        className={`flex h-full flex-col bg-white ${
+        className={`flex min-h-0 flex-1 flex-col bg-[var(--color-bg)] ${
           showThreadOnly ? 'flex w-full lg:w-2/3' : 'hidden lg:flex lg:w-2/3'
         }`}
       >
@@ -310,7 +542,7 @@ export function CoachMessagesPageContent() {
         {selectedClientId && (
           <>
             <div className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
-              {typeof window !== 'undefined' && window.innerWidth < 1024 && (
+              {isNarrowViewport && (
                 <button
                   type="button"
                   onClick={() => setSelectedClientId(null)}
@@ -342,92 +574,57 @@ export function CoachMessagesPageContent() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4">
+            <div
+              ref={threadScrollRef}
+              className="flex-1 overflow-y-auto p-4"
+              onScroll={(e) => {
+                const t = e.currentTarget
+                if (t.scrollTop < 72 && hasMoreOlder && !loadingOlder && !loadingMessages) {
+                  void loadOlderMessages()
+                }
+              }}
+            >
+              {loadingOlder && (
+                <p className="mb-2 text-center text-[12px] text-[var(--color-muted)]">Loading older messages…</p>
+              )}
               {loadingMessages && <ThreadSkeleton />}
               {!loadingMessages && messagesError && (
                 <p className="text-[var(--color-muted)]">{messagesError}</p>
               )}
               {!loadingMessages && !messagesError && messages.length === 0 && (
-                <p className="text-center text-[var(--color-muted)]">No messages yet. Send a message to get started.</p>
-              )}
-              {!loadingMessages && !messagesError && messages.length > 0 && (
-                <div className="space-y-4">
-                  {groupMessagesByDate(messages).map(({ dateLabel, msgs }) => (
-                    <div key={dateLabel}>
-                      <p className="mb-2 text-center text-[12px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
-                        {dateLabel}
-                      </p>
-                      <div className="space-y-2">
-                        {msgs.map((msg) => {
-                          const isInvoice = msg.message_type === 'invoice'
-                          let invoiceData: Parameters<typeof InvoiceCard>[0]['data'] | null = null
-                          if (isInvoice) {
-                            try {
-                              const parsed = JSON.parse(msg.content) as { type?: string; invoiceId?: string; packageTitle?: string; packageDescription?: string | null; amountCents?: number; currency?: string; status?: string; dueDate?: string | null; paymentMethod?: string | null; paidAt?: string | null }
-                              if (parsed?.type === 'invoice' && parsed.invoiceId) {
-                                invoiceData = {
-                                  type: 'invoice',
-                                  invoiceId: parsed.invoiceId,
-                                  packageTitle: parsed.packageTitle ?? 'Invoice',
-                                  packageDescription: parsed.packageDescription ?? null,
-                                  amountCents: parsed.amountCents ?? 0,
-                                  currency: parsed.currency ?? 'usd',
-                                  status: parsed.status ?? 'pending',
-                                  dueDate: parsed.dueDate ?? null,
-                                  paymentMethod: parsed.paymentMethod ?? null,
-                                  paidAt: parsed.paidAt ?? null,
-                                }
-                              }
-                            } catch {
-                              invoiceData = null
-                            }
-                          }
-                          return (
-                            <div
-                              key={msg.id}
-                              className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
-                            >
-                              {invoiceData ? (
-                                <div className="max-w-[320px]">
-                                  <InvoiceCard
-                                    data={invoiceData}
-                                    clientName={selectedClientName || 'Client'}
-                                    onPaymentRecorded={() => fetchMessages(selectedClientId!)}
-                                  />
-                                  <p className="mt-1 text-[12px] text-[var(--color-muted)]">
-                                    {format(new Date(msg.created_at), 'h:mm a')}
-                                  </p>
-                                </div>
-                              ) : (
-                                <div
-                                  className={`max-w-[85%] rounded-xl px-4 py-2 ${
-                                    msg.sender_id === userId
-                                      ? 'bg-[var(--color-accent)] text-white'
-                                      : 'bg-[var(--color-surface)] text-[var(--color-ink)] border border-[var(--color-border)]'
-                                  }`}
-                                >
-                                  <p className="whitespace-pre-wrap break-words text-[15px]">{msg.content}</p>
-                                  <p
-                                    className={`mt-1 text-[12px] ${
-                                      msg.sender_id === userId ? 'text-white/80' : 'text-[var(--color-muted)]'
-                                    }`}
-                                  >
-                                    {format(new Date(msg.created_at), 'h:mm a')}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))}
+                <div className="py-8 text-center">
+                  <p className="text-[15px] text-[var(--color-muted)]">
+                    No messages yet — type below to start the conversation.
+                  </p>
                 </div>
+              )}
+              {!loadingMessages && !messagesError && messages.length > 0 && selectedClientId && (
+                <ErrorBoundary
+                  fallback={
+                    <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
+                      <p className="font-medium text-[var(--color-text-primary)]">Could not display this thread</p>
+                      <p className="mt-1 text-[13px] text-[var(--color-muted)]">
+                        Live updates may be unavailable. Try again or refresh the page.
+                      </p>
+                    </div>
+                  }
+                >
+                  <MessagesThreadMessagesList
+                    messages={messages}
+                    userId={userId}
+                    selectedClientName={selectedClientName}
+                    selectedClientId={selectedClientId}
+                    fetchMessages={fetchMessages}
+                  />
+                </ErrorBoundary>
               )}
               <div ref={threadEndRef} />
             </div>
 
-            <div className="border-t border-[var(--color-border)] p-4">
+            <div
+              className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-bg)] p-4"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            >
               <div className="flex gap-2">
                 <textarea
                   value={inputValue}
@@ -441,13 +638,13 @@ export function CoachMessagesPageContent() {
                   placeholder="Type a message..."
                   rows={1}
                   maxLength={2000}
-                  className="min-h-[44px] flex-1 resize-y rounded-lg border border-[var(--color-border)] bg-white px-4 py-2 text-[15px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-0"
+                  className="min-h-[44px] flex-1 resize-y rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] leading-[var(--leading-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-0"
                   aria-label="Message"
                 />
                 <Button
                   onClick={handleSend}
                   disabled={!inputValue.trim() || sending}
-                  className="shrink-0"
+                  className="min-h-[44px] shrink-0"
                 >
                   {sending ? 'Sending…' : 'Send'}
                 </Button>
@@ -461,31 +658,27 @@ export function CoachMessagesPageContent() {
           </>
         )}
       </div>
+      {toast ? (
+        <div
+          className="safe-bottom fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-lg border border-[var(--color-border)] bg-[var(--color-ink)] px-4 py-2 text-center text-[14px] text-white shadow-lg"
+          role="status"
+        >
+          {toast}
+        </div>
+      ) : null}
     </div>
   )
-}
-
-function groupMessagesByDate(messages: Message[]): { dateLabel: string; msgs: Message[] }[] {
-  const groups = new Map<string, Message[]>()
-  for (const m of messages) {
-    const d = new Date(m.created_at)
-    const label = isToday(d) ? 'Today' : isYesterday(d) ? 'Yesterday' : format(d, 'MMMM d, yyyy')
-    if (!groups.has(label)) groups.set(label, [])
-    groups.get(label)!.push(m)
-  }
-  return [...groups.entries()].map(([dateLabel, msgs]) => ({ dateLabel, msgs }))
 }
 
 function ConversationListSkeleton() {
   return (
     <ul className="divide-y divide-[var(--color-border)]">
       {[1, 2, 3, 4, 5].map((i) => (
-        <li key={i} className="flex items-center gap-3 px-4 py-3">
-          <div className="h-10 w-10 shrink-0 rounded-full bg-[var(--color-border)] animate-pulse" />
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-4 w-2/3 rounded bg-[var(--color-border)] animate-pulse" />
-            <div className="h-3 w-full rounded bg-[var(--color-border)] animate-pulse" />
-            <div className="h-3 w-1/4 rounded bg-[var(--color-border)] animate-pulse" />
+        <li key={i} className="flex min-h-[64px] items-center gap-3 px-4 py-3">
+          <Skeleton className="size-10 shrink-0 rounded-full" />
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
+            <Skeleton className="h-4 w-[65%] max-w-[200px]" />
+            <Skeleton className="h-3 w-[88%] max-w-[260px]" />
           </div>
         </li>
       ))}
@@ -498,7 +691,7 @@ function ThreadSkeleton() {
     <div className="space-y-4">
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className={i % 2 === 0 ? 'flex justify-end' : 'flex justify-start'}>
-          <div className="h-16 w-3/4 max-w-[280px] rounded-xl bg-[var(--color-border)] animate-pulse" />
+          <Skeleton className="h-16 w-3/4 max-w-[280px] rounded-xl" />
         </div>
       ))}
     </div>

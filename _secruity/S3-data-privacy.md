@@ -182,7 +182,7 @@ Video files are not stored in Supabase; `videos.url` references external URLs on
 
 ### 6.1 How sessions work
 
-- Auth is **Supabase Auth** (JWT in cookies via `@supabase/ssr`). Middleware uses `supabase.auth.getSession()` to protect `/coach` and `/client` routes; no session → redirect to `/login?next=...`.
+- Auth is **Supabase Auth** (JWT in cookies via `@supabase/ssr`). Middleware uses `supabase.auth.getUser()` to protect `/coach` and `/client` routes — **`getUser()` verifies the JWT with Supabase Auth servers** on each request (the secure approach, rather than trusting only locally stored session data). No valid user → redirect to `/login?next=...`.
 - Session duration is controlled by **Supabase project settings** (JWT expiry and refresh token behaviour). The codebase does **not** set custom JWT expiry; defaults apply (e.g. 1 hour access token, longer-lived refresh token).
 - **Logout:** User clicks Logout → `supabase.auth.signOut()` (e.g. in `CoachNav`, `ClientNav`, `SidebarNav`). This clears the session on the client and invalidates the session in Supabase Auth, so the JWT can no longer be refreshed.
 

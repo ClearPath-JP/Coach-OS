@@ -169,7 +169,7 @@ export function InvoicesPageContent() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-[var(--color-border)] bg-white px-4 py-2 text-[15px] min-h-[44px]"
+          className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] min-h-[44px]"
         >
           <option value="all">All statuses</option>
           <option value="pending">Pending</option>
@@ -180,7 +180,7 @@ export function InvoicesPageContent() {
         <select
           value={clientFilter}
           onChange={(e) => setClientFilter(e.target.value)}
-          className="rounded-lg border border-[var(--color-border)] bg-white px-4 py-2 text-[15px] min-h-[44px]"
+          className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] min-h-[44px]"
         >
           <option value="">All clients</option>
           {clients.map((c) => (

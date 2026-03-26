@@ -39,14 +39,17 @@ type CcJobData = {
  * POST /api/webhooks/cloudconvert
  *
  * **With CLOUDCONVERT_WEBHOOK_SECRET:** validates HMAC (account webhook in CloudConvert dashboard).
- * **Without secret:** requires `job.id` in JSON body and re-fetches the job from CloudConvert
- * (works with per-job webhooks that may not include a signing secret you control).
+ * **Without HMAC:** requires `X-Clearpath-Secret` = `N8N_CALLBACK_SECRET`, `job.id` in JSON body,
+ * and re-fetches the job from CloudConvert (per-job webhooks without account signing secret).
  */
 export async function POST(request: Request) {
   const rawBody = await request.text()
   const webhookSecret = process.env.CLOUDCONVERT_WEBHOOK_SECRET?.trim()
-  const useHmac = Boolean(webhookSecret)
-  const signatureValid = verifyCloudConvertSignature(rawBody, request.headers.get('CloudConvert-Signature'))
+  const signatureHeader = request.headers.get('CloudConvert-Signature')
+  // Per-job `webhook_url` callbacks often omit CloudConvert-Signature; account-wide webhooks include it.
+  // Only enforce HMAC when both a secret and a signature header are present.
+  const useHmac = Boolean(webhookSecret && signatureHeader)
+  const signatureValid = verifyCloudConvertSignature(rawBody, signatureHeader)
 
   if (useHmac && !signatureValid) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
@@ -63,9 +66,14 @@ export async function POST(request: Request) {
   }
 
   if (!useHmac) {
+    const n8nSecret = process.env.N8N_CALLBACK_SECRET?.trim()
+    const headerSecret = (request.headers.get('x-clearpath-secret') ?? request.headers.get('X-Clearpath-Secret') ?? '').trim()
+    if (!n8nSecret || headerSecret !== n8nSecret) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const jobId = job.id
     if (!jobId || typeof jobId !== 'string') {
-      return NextResponse.json({ error: 'job.id required when CLOUDCONVERT_WEBHOOK_SECRET is unset' }, { status: 400 })
+      return NextResponse.json({ error: 'job.id required in webhook body' }, { status: 400 })
     }
     const remote = await fetchCloudConvertJob(jobId)
     if (!remote) {

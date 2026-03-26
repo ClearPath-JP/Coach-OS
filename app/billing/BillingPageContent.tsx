@@ -36,10 +36,45 @@ const STATUS_LABELS: Record<Status, string> = {
   paused: 'Paused',
 }
 
-const PRICING = [
-  { plan: 'starter' as const, price: '$49', period: '/mo', clients: 'up to 10 clients', storage: '5GB video storage', features: 'All core features' },
-  { plan: 'pro' as const, price: '$99', period: '/mo', clients: 'up to 30 clients', storage: '25GB video storage', features: 'Priority support' },
-  { plan: 'scale' as const, price: '$199', period: '/mo', clients: 'Unlimited clients', storage: '100GB video storage', features: 'Dedicated support' },
+const PRICING_TIERS = [
+  {
+    plan: 'starter' as const,
+    price: '$79',
+    period: '/month',
+    popular: false,
+    features: [
+      'Up to 10 clients',
+      '10GB video storage',
+      'All core features',
+      'Email support',
+    ],
+  },
+  {
+    plan: 'pro' as const,
+    price: '$149',
+    period: '/month',
+    popular: true,
+    features: [
+      'Up to 30 clients',
+      '50GB video storage',
+      'Analytics dashboard',
+      'White label branding',
+      'Priority support',
+    ],
+  },
+  {
+    plan: 'scale' as const,
+    price: '$299',
+    period: '/month',
+    popular: false,
+    features: [
+      'Unlimited clients',
+      '200GB video storage',
+      'All features',
+      'Dedicated support',
+      'API access (coming soon)',
+    ],
+  },
 ]
 
 export function BillingPageContent({ subscription, hasStripeCustomer }: BillingPageContentProps) {
@@ -48,6 +83,7 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
   const cancelled = searchParams.get('cancelled') === 'true'
   const warningPastDue = searchParams.get('warning') === 'past_due'
   const warningCancelled = searchParams.get('warning') === 'cancelled'
+  const warningSubscription = searchParams.get('warning') === 'subscription'
 
   const [loadingPlan, setLoadingPlan] = useState<Plan | null>(null)
   const [portalLoading, setPortalLoading] = useState(false)
@@ -122,6 +158,11 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
           Your plan was cancelled. Renew to keep access.
         </div>
       )}
+      {warningSubscription && !warningPastDue && !warningCancelled && (
+        <div className="rounded-xl border border-[var(--color-warning)] bg-[var(--color-warning-light)] px-4 py-3 text-[15px] text-[var(--color-warning)]">
+          Your subscription needs attention — update your payment method or choose a plan to restore full coach access.
+        </div>
+      )}
 
       {/* Current plan card */}
       <Card variant="raised" padding="lg" className={currentPlan !== 'free' ? 'border-2 border-[var(--color-accent)]' : ''}>
@@ -161,7 +202,7 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
 
       {/* Pricing cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        {PRICING.map(({ plan, price, period, clients, storage, features }) => {
+        {PRICING_TIERS.map(({ plan, price, period, popular, features }) => {
           const isCurrent = currentPlan === plan
           const planIndex = planOrder.indexOf(plan)
           const isUpgrade = planIndex > currentIndex
@@ -172,18 +213,29 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
               key={plan}
               variant="raised"
               padding="lg"
-              className={isCurrent ? 'border-2 border-[var(--color-accent)]' : ''}
+              className={
+                isCurrent
+                  ? 'border-2 border-[var(--color-accent)]'
+                  : popular
+                    ? 'border-2 border-[var(--color-accent)]/40 ring-1 ring-[var(--color-accent)]/20'
+                    : ''
+              }
             >
-              <div className="font-medium text-[var(--color-text-primary)]">
-                {PLAN_LABELS[plan]}
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-[var(--color-text-primary)]">{PLAN_LABELS[plan]}</span>
+                {popular ? (
+                  <Badge variant="active" className="text-[11px]">
+                    Most popular
+                  </Badge>
+                ) : null}
               </div>
               <div className="mt-1 text-2xl font-medium text-[var(--color-text-primary)]">
                 {price}<span className="text-base font-normal text-[var(--color-text-secondary)]">{period}</span>
               </div>
-              <ul className="mt-3 space-y-1 text-[15px] text-[var(--color-text-secondary)]">
-                <li>{clients}</li>
-                <li>{storage}</li>
-                <li>{features}</li>
+              <ul className="mt-3 list-inside list-disc space-y-1 text-[15px] text-[var(--color-text-secondary)]">
+                {features.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
               </ul>
               <div className="mt-4">
                 <Button

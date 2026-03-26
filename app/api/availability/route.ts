@@ -26,6 +26,7 @@ export async function GET() {
       .eq('coach_id', user.id)
       .order('day_of_week')
       .order('start_time')
+      .limit(200)
 
     if (error) {
       return NextResponse.json(

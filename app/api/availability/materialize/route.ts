@@ -8,12 +8,15 @@ const pad = (n: number) => String(n).padStart(2, '0')
 /** Build UTC Date from (y,m,d,h,min) interpreted in the given IANA timezone. Uses Intl (no date-fns-tz). */
 function fromZonedTime(dateTimeStr: string, timeZone: string): Date {
   const [datePart, timePart] = dateTimeStr.split('T')
-  const [y, m, d] = (datePart ?? '').split('-').map(Number)
+  const ymd = (datePart ?? '').split('-').map(Number)
+  const y = ymd[0] ?? 0
+  const mo = ymd[1] ?? 1
+  const d = ymd[2] ?? 1
   const [h = 0, min = 0, sec = 0] = (timePart ?? '00:00:00').split(':').map(Number)
   if (timeZone === 'UTC') {
-    return new Date(Date.UTC(y, m - 1, d, h, min, sec))
+    return new Date(Date.UTC(y, mo - 1, d, h, min, sec))
   }
-  const utcTrial = Date.UTC(y, m - 1, d, h, min, sec)
+  const utcTrial = Date.UTC(y, mo - 1, d, h, min, sec)
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone,
     year: 'numeric',

@@ -516,6 +516,32 @@ The following routes are **not** yet implemented. Add them here when created so 
 
 ---
 
+### 2.6 Payments & analytics (Session 17)
+
+| Route | Method | Purpose | Notes |
+|-------|--------|---------|--------|
+| `/api/payments` | GET | List payments for workspace | Coach only. Query: `clientId`, `startDate` (YYYY-MM-DD), `endDate`, `method`, `offset` (pagination, 20 per page). Returns `{ data, hasMore, nextOffset }`. |
+| `/api/payments` | POST | Record a manual payment | Coach only. Body: `createPaymentSchema` — `clientId`, `amountCents` (min 1), `paymentMethod`, optional `paymentReference`, `notes` (max 200), `paymentDate` (YYYY-MM-DD), optional `invoiceId`, `sessionId`. Validates client/invoice/session in workspace. Rate limit 60/min. Returns `{ data: payment }`. |
+| `/api/payments/summary` | GET | Aggregated revenue and breakdowns | Coach only. Query: `period=week\|month\|year\|all`, optional `startDate`, `endDate`, optional `clientId`. Returns `{ data: { totalRevenue, totalPayments, byMethod, byClient, byPeriod } }` (amounts in cents). |
+| `/api/payments/[id]` | PATCH | Update a payment | Coach only. Body: `updatePaymentSchema` (partial). Rate limit 60/min. Returns `{ data: payment }`. |
+| `/api/payments/[id]` | DELETE | Hard-delete a payment | Coach only. Returns `{ data: { id } }`. |
+| `/api/coach/analytics` | GET | Analytics payload for dashboard page | Coach only. Query: `period=week\|month\|year\|all`, optional `startDate`, `endDate`. Returns `{ data: { paymentSummary, sessionsCompleted, activeClients, avgRevenuePerClient, recentActivity } }`. |
+
+---
+
+### 2.7 Settings (Session 15)
+
+| Route | Method | Purpose | Notes |
+|-------|--------|---------|--------|
+| `/api/settings` | GET | Return merged workspace + profile settings for coach | Coach only. Returns workspace and profile payload in one response. |
+| `/api/settings/workspace` | PATCH | Update workspace settings | Body: `{ displayName, accentColor, accentColorLight, timezone, logoUrl, preferredPaymentMethods }`. Coach only. Rate limit: 30/min. |
+| `/api/settings/profile` | PATCH | Update coach profile settings | Body: `{ firstName, lastName, bio, phone, avatarUrl }`. Coach only. |
+| `/api/settings/notifications` | PATCH | Update notification preferences | Body: `{ newMessage, sessionReminder, clientActivity, paymentReceived }`. Coach only. |
+| `/api/settings/change-password` | POST | Change account password | Body: `{ currentPassword, newPassword, confirmPassword }`. Validates password match and min 8 chars. Calls `supabase.auth.updateUser`. Coach only. Rate limit: 5/hour. |
+| `/api/settings/account` | DELETE | Soft-delete workspace and cancel billing | Body must include `{ confirm: 'DELETE MY ACCOUNT' }` exactly. Sets `workspaces.status = 'deleted'`, cancels Stripe subscription when present. Coach only. Rate limit: 1/hour. |
+
+---
+
 ## 3. Quick reference — existing routes only
 
 | Path | Method | Auth | Summary |

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { normalizeEmail } from '@/lib/utils'
 
 type RouteContext = { params: Promise<{ moduleId: string }> }
 
@@ -41,7 +42,7 @@ export async function POST(request: Request, context: RouteContext) {
     const { data: client } = await supabase
       .from('clients')
       .select('id, workspace_id')
-      .eq('email', user.email ?? '')
+      .eq('email', normalizeEmail(user.email))
       .limit(1)
       .maybeSingle()
     if (!client) {

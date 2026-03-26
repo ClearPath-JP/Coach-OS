@@ -5,7 +5,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 export const dynamic = 'force-dynamic'
 
 function driveRedirectUri(): string {
-  const explicit = process.env.GOOGLE_DRIVE_REDIRECT_URI?.trim()
+  const explicit =
+    process.env.GOOGLE_REDIRECT_URI?.trim() || process.env.GOOGLE_DRIVE_REDIRECT_URI?.trim()
   if (explicit) return explicit
   const base = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/$/, '') ?? 'http://localhost:3000'
   return `${base}/api/integrations/google-drive/callback`

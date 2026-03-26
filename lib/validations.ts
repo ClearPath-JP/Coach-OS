@@ -34,9 +34,13 @@ export type LoginInput = z.infer<typeof loginSchema>
 export const signupSchema = z
   .object({
     firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
     email: z.string().email('Email must be valid'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
+    acceptTerms: z.boolean().refine((v) => v === true, {
+      message: 'You must accept the Terms of Service and Privacy Policy',
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
@@ -55,6 +59,28 @@ export const setPasswordSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 export type SetPasswordInput = z.infer<typeof setPasswordSchema>
+
+/** Coach — update video metadata (title / description / category) */
+export const patchVideoSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(200).optional(),
+    description: z.union([z.string().max(2000), z.null()]).optional(),
+    category: z.union([z.string().max(80), z.null()]).optional(),
+  })
+  .refine((d) => d.title !== undefined || d.description !== undefined || d.category !== undefined, {
+    message: 'Provide at least one field to update',
+  })
+export type PatchVideoInput = z.infer<typeof patchVideoSchema>
+
+export const bulkVideoCategorySchema = z.object({
+  videoIds: z.array(z.string().uuid()).min(1, 'Select at least one video').max(200),
+  category: z.union([z.string().max(80), z.null()]).optional(),
+})
+
+export const createVideoAssignmentSchema = z.object({
+  videoId: z.string().uuid('Invalid video'),
+  clientId: z.string().uuid('Invalid client'),
+})
 
 /** Send message form — clientId + content (05-messaging, Session 8) */
 export const sendMessageSchema = z.object({
@@ -111,6 +137,23 @@ export const createSessionSchema = z.object({
   status: z.enum(['pending', 'confirmed']).optional().default('confirmed'),
 })
 export type CreateSessionInput = z.infer<typeof createSessionSchema>
+
+/** Calendar UI — create session (date + local start time, coach dashboard) */
+export const coachCalendarSessionCreateSchema = z.object({
+  clientId: z.string().uuid('Invalid client'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD for date'),
+  startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Use HH:mm for start time'),
+  durationMinutes: z.number().int().min(15).max(240).optional(),
+  type: z.string().max(100).optional(),
+  notes: z.string().max(2000).optional().nullable(),
+})
+export type CoachCalendarSessionCreateInput = z.infer<typeof coachCalendarSessionCreateSchema>
+
+/** Stripe checkout plan */
+export const billingCheckoutSchema = z.object({
+  plan: z.enum(['starter', 'pro', 'scale']),
+})
+export type BillingCheckoutInput = z.infer<typeof billingCheckoutSchema>
 
 /** Session package — create/update (Session 11) */
 export const createPackageSchema = z.object({
@@ -199,3 +242,160 @@ export const assignProgramSchema = z.object({
   clientId: z.string().uuid('Invalid client'),
 })
 export type AssignProgramInput = z.infer<typeof assignProgramSchema>
+
+/** Settings (Session 15) */
+const timezoneEnum = z.enum([
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Asia/Tokyo',
+  'Asia/Singapore',
+  'Australia/Sydney',
+])
+
+const paymentMethodsEnum = z.enum([
+  'cash',
+  'venmo',
+  'cashapp',
+  'zelle',
+  'paypal',
+  'bank_transfer',
+])
+
+const hexColorRegex = /^#[0-9A-Fa-f]{6}$/
+
+export const updateWorkspaceSettingsSchema = z.object({
+  displayName: z.string().min(1).max(120).nullable().optional(),
+  accentColor: z.string().regex(hexColorRegex, 'Accent color must be a valid hex color').nullable().optional(),
+  accentColorLight: z.string().regex(hexColorRegex, 'Accent light color must be a valid hex color').nullable().optional(),
+  timezone: timezoneEnum.optional(),
+  logoUrl: z.union([z.string().url(), z.null()]).optional(),
+  preferredPaymentMethods: z.array(paymentMethodsEnum).max(6).nullable().optional(),
+  brandName: z.string().max(120).nullable().optional(),
+  brandTagline: z.string().max(100).nullable().optional(),
+  clientPortalHeading: z.string().max(200).nullable().optional(),
+  clientWelcomeMessage: z.string().max(200).nullable().optional(),
+})
+export type UpdateWorkspaceSettingsInput = z.infer<typeof updateWorkspaceSettingsSchema>
+
+export const updateProfileSettingsSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').max(100).optional(),
+  lastName: z.string().min(1, 'Last name is required').max(100).optional(),
+  bio: z.string().max(300).nullable().optional(),
+  phone: z.string().max(50).nullable().optional(),
+  avatarUrl: z.union([z.string().url(), z.null()]).optional(),
+})
+export type UpdateProfileSettingsInput = z.infer<typeof updateProfileSettingsSchema>
+
+export const updateNotificationsSchema = z.object({
+  newMessage: z.boolean().optional(),
+  sessionReminder: z.boolean().optional(),
+  clientActivity: z.boolean().optional(),
+  paymentReceived: z.boolean().optional(),
+})
+export type UpdateNotificationsInput = z.infer<typeof updateNotificationsSchema>
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z.string().min(8, 'Confirm password must be at least 8 characters'),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: 'New password and confirm password must match',
+    path: ['confirmPassword'],
+  })
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
+
+/** Manual / invoice-linked payments (Session 17) */
+export const paymentMethodSchema = z.enum([
+  'cash',
+  'venmo',
+  'cashapp',
+  'zelle',
+  'paypal',
+  'bank_transfer',
+  'stripe',
+  'other',
+])
+export const createPaymentSchema = z.object({
+  clientId: z.string().uuid('Invalid client'),
+  amountCents: z.number().int().min(1, 'Amount must be at least one cent'),
+  paymentMethod: paymentMethodSchema,
+  paymentReference: z.string().max(500).optional().nullable(),
+  notes: z.string().max(200).optional().nullable(),
+  paymentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date').optional(),
+  invoiceId: z.string().uuid().optional().nullable(),
+  sessionId: z.string().uuid().optional().nullable(),
+})
+export type CreatePaymentInput = z.infer<typeof createPaymentSchema>
+
+export const updatePaymentSchema = z.object({
+  clientId: z.string().uuid().optional(),
+  amountCents: z.number().int().min(1).optional(),
+  paymentMethod: paymentMethodSchema.optional(),
+  paymentReference: z.string().max(500).nullable().optional(),
+  notes: z.string().max(200).nullable().optional(),
+  paymentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  invoiceId: z.string().uuid().nullable().optional(),
+  sessionId: z.string().uuid().nullable().optional(),
+})
+export type UpdatePaymentInput = z.infer<typeof updatePaymentSchema>
+
+/** PATCH /api/sessions/[id] — coach calendar session update */
+export const updateSessionSchema = z
+  .object({
+    notes: z.string().max(2000).nullable().optional(),
+    status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
+    durationMinutes: z.number().int().min(15).max(240).optional(),
+  })
+  .refine((d) => (d.date == null) === (d.startTime == null), {
+    message: 'Provide both date and start time together',
+    path: ['startTime'],
+  })
+export type UpdateSessionInput = z.infer<typeof updateSessionSchema>
+
+/** Onboarding step 1 */
+export const onboardingWorkspaceSchema = z.object({
+  name: z
+    .string()
+    .transform((s) => s.trim())
+    .pipe(z.string().min(2, 'Workspace name must be at least 2 characters').max(200)),
+  logo_url: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
+  avatar_url: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
+})
+export type OnboardingWorkspaceInput = z.infer<typeof onboardingWorkspaceSchema>
+
+const onboardingCoachingTypeSchema = z.enum([
+  'Fitness',
+  'Life',
+  'Business',
+  'Nutrition',
+  'Mindset',
+  'Performance',
+  'Career',
+  'Relationships',
+  'Other',
+])
+
+/** Onboarding step 2 */
+export const onboardingCoachingSchema = z.object({
+  coaching_types: z.array(onboardingCoachingTypeSchema).max(20).optional(),
+  current_client_count: z.union([z.number().int().nonnegative(), z.string(), z.null()]).optional(),
+})
+export type OnboardingCoachingInput = z.infer<typeof onboardingCoachingSchema>
+
+/** PATCH bodies that must be empty JSON objects */
+export const emptyStrictBodySchema = z.object({}).strict()
+
+/** Program upload FormData fields (file validated separately) */
+export const programUploadFieldsSchema = z.object({
+  moduleId: z.string().uuid('Invalid module'),
+  workspaceId: z.string().uuid('Invalid workspace'),
+})

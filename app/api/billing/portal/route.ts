@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { stripe } from '@/lib/stripe'
 
 /**
@@ -20,6 +21,24 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (!coach?.workspace_id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    if (profile?.role !== 'coach') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { success, retryAfter } = await checkRateLimitAsync(`billing-portal:${user.id}`, {
+      windowMs: 60 * 60 * 1000,
+      max: 30,
+    })
+    if (!success) {
+      const res = NextResponse.json(
+        { error: 'Too many attempts — please wait an hour and try again' },
+        { status: 429 }
+      )
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
 
     const { data: workspace } = await supabase

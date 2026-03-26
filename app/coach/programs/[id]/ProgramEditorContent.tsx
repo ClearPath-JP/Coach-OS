@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import {
   DndContext,
@@ -88,7 +88,7 @@ function ModuleRow({
     isDragging,
   } = useSortable({
     id: module.id,
-    disabled: isDragDisabled,
+    disabled: isDragDisabled ?? false,
   })
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -103,13 +103,13 @@ function ModuleRow({
         'flex items-center gap-2 rounded-lg border px-3 py-2 group',
         isSelected
           ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
-          : 'border-[var(--color-border)] bg-white hover:border-[var(--color-muted)]/50',
+          : 'border-[var(--color-border)] bg-[var(--color-bg)] hover:border-[var(--color-muted)]/50',
         isDragging && 'opacity-50 shadow-lg'
       )}
     >
       <button
         type="button"
-        className="touch-none cursor-grab text-[var(--color-muted)] hover:text-[var(--color-ink)] disabled:cursor-not-allowed"
+        className="touch-none flex min-h-[44px] min-w-[44px] cursor-grab items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)] disabled:cursor-not-allowed"
         aria-label="Drag to reorder"
         {...(isDragDisabled ? {} : { ...attributes, ...listeners })}
       >
@@ -130,7 +130,7 @@ function ModuleRow({
       <button
         type="button"
         onClick={onDelete}
-        className="rounded p-1 text-[var(--color-muted)] opacity-0 group-hover:opacity-100 hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded p-1 text-[var(--color-muted)] opacity-100 hover:bg-[var(--color-error)]/10 hover:text-[var(--color-error)] lg:opacity-0 lg:group-hover:opacity-100"
         aria-label="Delete module"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -161,6 +161,17 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
   const [addingModule, setAddingModule] = useState(false)
   const [editingContentId, setEditingContentId] = useState<string | null>(null)
   const [addContentOpen, setAddContentOpen] = useState(false)
+  const isLgUp = useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia('(min-width: 1024px)')
+      mq.addEventListener('change', onChange)
+      return () => mq.removeEventListener('change', onChange)
+    },
+    () => window.matchMedia('(min-width: 1024px)').matches,
+    () => false
+  )
+  const selectedModuleIdRef = useRef(selectedModuleId)
+  selectedModuleIdRef.current = selectedModuleId
 
   const fetchProgram = useCallback(async () => {
     setError(null)
@@ -177,8 +188,9 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
       setTitle(data.title)
       setDescription(data.description ?? '')
       setStatus(data.status === 'published' ? 'published' : 'draft')
-      if (data.modules?.length && !selectedModuleId) {
-        setSelectedModuleId(data.modules[0].id)
+      const firstModule = data.modules?.[0]
+      if (data.modules?.length && !selectedModuleIdRef.current && firstModule) {
+        setSelectedModuleId(firstModule.id)
       }
     } catch {
       setError('Something went wrong — check your connection and try again')
@@ -193,6 +205,14 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
   }, [fetchProgram])
 
   const selectedModule = program?.modules?.find((m) => m.id === selectedModuleId)
+
+  const handleModuleSelect = (id: string) => {
+    if (isLgUp) {
+      setSelectedModuleId(id)
+    } else {
+      setSelectedModuleId((prev) => (prev === id ? null : id))
+    }
+  }
 
   const saveTitle = async () => {
     if (!program || title.trim() === program.title) return
@@ -308,7 +328,9 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
     if (oldIndex === -1 || newIndex === -1) return
     const reordered = arrayMove(program.modules, oldIndex, newIndex)
     setProgram((p) => (p ? { ...p, modules: reordered } : null))
-    const moduleId = reordered[newIndex].id
+    const moved = reordered[newIndex]
+    if (!moved) return
+    const moduleId = moved.id
     try {
       await fetch(`/api/programs/${programId}/modules/${moduleId}`, {
         method: 'PATCH',
@@ -342,9 +364,9 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* Left panel */}
-      <div className="w-full lg:w-1/3 flex-shrink-0 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-12rem)]">
+    <div className="relative flex flex-col gap-6 pb-24 lg:flex-row lg:pb-0">
+      {/* Left panel — modules first; on lg+ pairs with right editor */}
+      <div className="flex w-full flex-shrink-0 flex-col gap-4 lg:max-h-[calc(100vh-12rem)] lg:w-1/3 lg:overflow-y-auto">
         <div>
           <Input
             value={title}
@@ -369,7 +391,7 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
             onClick={toggleStatus}
             disabled={savingStatus}
             className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium',
+              'min-h-[44px] rounded-full px-4 py-2 text-sm font-medium',
               status === 'published'
                 ? 'bg-[var(--color-success)]/15 text-[var(--color-success)]'
                 : 'bg-[var(--color-muted)]/20 text-[var(--color-muted)]'
@@ -389,19 +411,46 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
               strategy={verticalListSortingStrategy}
             >
               {(program.modules || []).map((mod) => (
-                <ModuleRow
-                  key={mod.id}
-                  module={mod}
-                  isSelected={selectedModuleId === mod.id}
-                  onSelect={() => setSelectedModuleId(mod.id)}
-                  onDelete={() => handleDeleteModule(mod.id)}
-                />
+                <div key={mod.id} className="space-y-2">
+                  <ModuleRow
+                    module={mod}
+                    isSelected={selectedModuleId === mod.id}
+                    onSelect={() => handleModuleSelect(mod.id)}
+                    onDelete={() => handleDeleteModule(mod.id)}
+                    isDragDisabled={!isLgUp}
+                  />
+                  {!isLgUp && selectedModuleId === mod.id && selectedModule?.id === mod.id ? (
+                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+                      <ProgramModuleEditor
+                        programId={programId}
+                        workspaceId={program.workspace_id}
+                        module={selectedModule}
+                        onUpdate={(updated) => {
+                          setProgram((p) =>
+                            p
+                              ? {
+                                  ...p,
+                                  modules:
+                                    p.modules?.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)) ?? [],
+                                }
+                              : null
+                          )
+                        }}
+                        onRefresh={fetchProgram}
+                        editingContentId={editingContentId}
+                        setEditingContentId={setEditingContentId}
+                        addContentOpen={addContentOpen}
+                        setAddContentOpen={setAddContentOpen}
+                      />
+                    </div>
+                  ) : null}
+                </div>
               ))}
             </SortableContext>
           </DndContext>
           <Button
             variant="ghost"
-            className="w-full min-h-[44px] border border-dashed border-[var(--color-border)]"
+            className="hidden w-full min-h-[44px] border border-dashed border-[var(--color-border)] lg:flex"
             onClick={() => setAddModuleOpen(true)}
           >
             Add module
@@ -409,8 +458,8 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
         </div>
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 min-w-0 overflow-y-auto">
+      {/* Right panel — desktop only; mobile uses inline editors above */}
+      <div className="hidden min-w-0 flex-1 overflow-y-auto lg:block">
         {!selectedModule ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-12 text-center">
             <p className="font-medium text-[var(--color-ink)]">
@@ -441,11 +490,21 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
         )}
       </div>
 
+      <div className="safe-bottom fixed bottom-16 left-0 right-0 z-30 border-t border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 lg:hidden">
+        <Button
+          variant="ghost"
+          className="w-full min-h-[44px] border border-dashed border-[var(--color-border)]"
+          onClick={() => setAddModuleOpen(true)}
+        >
+          Add module
+        </Button>
+      </div>
+
       <Modal
         isOpen={addModuleOpen}
         onClose={() => setAddModuleOpen(false)}
         title="Add module"
-        className="max-w-md"
+        className="w-full max-w-none md:max-w-md"
       >
         <form onSubmit={handleAddModule} className="space-y-4">
           <div>
@@ -585,7 +644,11 @@ function ProgramModuleEditor({
   const contentBlocks = (module.content ?? []).sort((a, b) => a.position - b.position)
 
   return (
-    <Card variant="raised" padding="lg">
+    <Card
+      variant="flat"
+      padding="lg"
+      className="border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
+    >
       <Input
         value={moduleTitle}
         onChange={(e) => setModuleTitle(e.target.value)}
@@ -616,7 +679,6 @@ function ProgramModuleEditor({
               onRefresh()
               setEditingContentId(null)
             }}
-            programId={programId}
             workspaceId={workspaceId}
           />
         ))}
@@ -630,31 +692,31 @@ function ProgramModuleEditor({
           Add content
         </Button>
         {addContentOpen && (
-          <div className="absolute top-full left-0 mt-1 z-10 rounded-lg border border-[var(--color-border)] bg-white p-2 shadow-lg min-w-[200px]">
+          <div className="absolute top-full left-0 mt-1 z-10 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-2 shadow-lg min-w-[200px]">
             <button
               type="button"
-              className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--color-surface)] text-sm"
+              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
               onClick={() => addContent('text')}
             >
               + Add text / notes
             </button>
             <button
               type="button"
-              className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--color-surface)] text-sm"
+              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
               onClick={() => addContent('url')}
             >
               + Add URL
             </button>
             <button
               type="button"
-              className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--color-surface)] text-sm text-[var(--color-muted)]"
+              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm text-[var(--color-muted)] hover:bg-[var(--color-surface)]"
               onClick={() => addContent('video')}
             >
               + Add video (coming soon)
             </button>
             <button
               type="button"
-              className="block w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--color-surface)] text-sm"
+              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
               onClick={() => addContent('file')}
             >
               + Add file
@@ -673,7 +735,6 @@ function ContentBlockRow({
   onDelete,
   onCloseEditor,
   onSaved,
-  programId,
   workspaceId,
 }: {
   block: ProgramContent
@@ -682,7 +743,6 @@ function ContentBlockRow({
   onDelete: () => void
   onCloseEditor: () => void
   onSaved: () => void
-  programId: string
   workspaceId: string
 }) {
   const icon =
@@ -695,10 +755,10 @@ function ContentBlockRow({
           {icon}
         </span>
         <span className="flex-1 truncate text-sm text-[var(--color-ink)]">{label}</span>
-        <Button variant="ghost" className="min-h-[36px] text-sm" onClick={onEdit}>
+        <Button variant="ghost" className="min-h-[44px] text-sm" onClick={onEdit}>
           Edit
         </Button>
-        <Button variant="ghost" className="min-h-[36px] text-sm text-[var(--color-error)]" onClick={onDelete}>
+        <Button variant="ghost" className="min-h-[44px] text-sm text-[var(--color-error)]" onClick={onDelete}>
           Delete
         </Button>
       </div>
@@ -707,7 +767,6 @@ function ContentBlockRow({
           block={block}
           onClose={onCloseEditor}
           onSaved={onSaved}
-          programId={programId}
           workspaceId={workspaceId}
         />
       )}
@@ -750,7 +809,7 @@ function VideoBlockEditor({
     <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)]/10 p-4">
       <p className="text-sm text-[var(--color-muted)] mb-2">Select from video library</p>
       {block.video_id && block.url && (
-        <div className="mb-3 rounded-lg border border-[var(--color-border)] bg-white p-3 flex items-center gap-3">
+        <div className="mb-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3 flex items-center gap-3">
           <div className="h-14 w-24 shrink-0 rounded bg-[var(--color-border)] flex items-center justify-center overflow-hidden">
             <svg className="w-8 h-8 text-[var(--color-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M10 8l6 4-6 4V8z" />
@@ -786,13 +845,11 @@ function ContentBlockEditor({
   block,
   onClose,
   onSaved,
-  programId,
   workspaceId,
 }: {
   block: ProgramContent
   onClose: () => void
   onSaved: () => void
-  programId: string
   workspaceId: string
 }) {
   const [title, setTitle] = useState(block.title ?? '')
@@ -831,11 +888,13 @@ function ContentBlockEditor({
     try {
       const form = new FormData()
       form.set('file', file)
+      form.set('type', 'program-file')
       form.set('moduleId', block.module_id)
       form.set('workspaceId', workspaceId)
-      const res = await fetch('/api/programs/upload', { method: 'POST', body: form })
+      const res = await fetch('/api/upload', { method: 'POST', body: form, credentials: 'include' })
       const json = await res.json()
-      if (res.ok && json.data?.fileUrl) setFileUrl(json.data.fileUrl)
+      const nextUrl = json.data?.url ?? json.data?.fileUrl
+      if (res.ok && nextUrl) setFileUrl(nextUrl)
     } finally {
       setUploading(false)
     }

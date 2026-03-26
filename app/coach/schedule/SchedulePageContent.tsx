@@ -55,6 +55,9 @@ export function SchedulePageContent() {
   const [date, setDate] = useState(new Date())
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [bookModalOpen, setBookModalOpen] = useState(false)
+  const [bookModalRescheduleSessionId, setBookModalRescheduleSessionId] = useState<string | null>(null)
+  const [bookModalInitialClientId, setBookModalInitialClientId] = useState<string | null>(null)
+  const [bookModalInitialDuration, setBookModalInitialDuration] = useState<number | null>(null)
   const [selectedSession, setSelectedSession] = useState<SessionForDrawer | null>(null)
   const [materializeLoading, setMaterializeLoading] = useState(false)
   const [materializeMessage, setMaterializeMessage] = useState<string | null>(null)
@@ -157,12 +160,21 @@ export function SchedulePageContent() {
     return acc
   }, {})
   const sortedDates = Object.keys(sessionsByDate).sort()
-  const agendaSessions = sortedDates.flatMap((d) => sessionsByDate[d].map((s) => ({ date: d, session: s })))
+  const agendaSessions = sortedDates.flatMap((d) =>
+    (sessionsByDate[d] ?? []).map((s) => ({ date: d, session: s }))
+  )
 
   return (
     <div className="space-y-6">
       <PageHeader title="Schedule">
-        <Button onClick={() => setBookModalOpen(true)}>
+        <Button
+          onClick={() => {
+            setBookModalRescheduleSessionId(null)
+            setBookModalInitialClientId(null)
+            setBookModalInitialDuration(null)
+            setBookModalOpen(true)
+          }}
+        >
           Book session
         </Button>
       </PageHeader>
@@ -351,12 +363,33 @@ export function SchedulePageContent() {
       </section>
 
       <AddAvailabilityModal open={addModalOpen} onClose={() => setAddModalOpen(false)} onSaved={fetchAvailability} />
-      <BookSessionModal open={bookModalOpen} onClose={() => setBookModalOpen(false)} onBooked={load} />
+      <BookSessionModal
+        open={bookModalOpen}
+        onClose={() => {
+          setBookModalOpen(false)
+          setBookModalRescheduleSessionId(null)
+          setBookModalInitialClientId(null)
+          setBookModalInitialDuration(null)
+        }}
+        onBooked={load}
+        initialClientId={bookModalInitialClientId}
+        initialDate={null}
+        initialTime={null}
+        rescheduleFromSessionId={bookModalRescheduleSessionId}
+        initialDurationMinutes={bookModalInitialDuration}
+      />
       {selectedSession && (
         <SessionDetailDrawer
           session={selectedSession}
           onClose={() => setSelectedSession(null)}
           onUpdated={load}
+          onReschedule={() => {
+            setBookModalRescheduleSessionId(selectedSession.id)
+            setBookModalInitialClientId(selectedSession.client_id)
+            setBookModalInitialDuration(selectedSession.duration_minutes ?? 60)
+            setSelectedSession(null)
+            setBookModalOpen(true)
+          }}
         />
       )}
     </div>

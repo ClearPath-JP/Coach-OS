@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
 const ACCEPT_IMAGE = 'image/jpeg,image/png,image/gif,image/webp'
-const MAX_SIZE_MB = 2
+const MAX_SIZE_MB = 5
 const MAX_BYTES = MAX_SIZE_MB * 1024 * 1024
 
 export default function OnboardingStep1Page() {
@@ -61,20 +62,14 @@ export default function OnboardingStep1Page() {
     setLogoPreview(URL.createObjectURL(file))
   }
 
-  const uploadFile = async (
-    supabase: ReturnType<typeof createClient>,
-    userId: string,
-    file: File,
-    path: 'avatar' | 'logo'
-  ): Promise<string | null> => {
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const pathName = `${userId}/${path}.${ext}`
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(pathName, file, { upsert: true })
-    if (error) return null
-    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(data.path)
-    return urlData.publicUrl
+  const uploadFile = async (file: File, type: 'avatar' | 'logo'): Promise<string | null> => {
+    const form = new FormData()
+    form.set('file', file)
+    form.set('type', type)
+    const res = await fetch('/api/upload', { method: 'POST', body: form, credentials: 'include' })
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok || !json.data?.url) return null
+    return json.data.url as string
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,10 +91,10 @@ export default function OnboardingStep1Page() {
       let avatarUrl: string | null = null
       let logoUrl: string | null = null
       if (avatarFile) {
-        avatarUrl = await uploadFile(supabase, user.id, avatarFile, 'avatar')
+        avatarUrl = await uploadFile(avatarFile, 'avatar')
       }
       if (logoFile) {
-        logoUrl = await uploadFile(supabase, user.id, logoFile, 'logo')
+        logoUrl = await uploadFile(logoFile, 'logo')
       }
       const res = await fetch('/api/onboarding/workspace', {
         method: 'POST',
@@ -168,9 +163,15 @@ export default function OnboardingStep1Page() {
           className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--color-surface)] file:px-3 file:py-2 file:font-medium"
         />
         {avatarPreview && (
-          <div className="mt-2 h-24 w-24 overflow-hidden rounded-full border border-[var(--color-border)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={avatarPreview} alt="Profile preview" className="h-full w-full object-cover" />
+          <div className="relative mt-2 h-24 w-24 overflow-hidden rounded-full border border-[var(--color-border)]">
+            <Image
+              src={avatarPreview}
+              alt="Profile preview"
+              fill
+              className="object-cover"
+              sizes="96px"
+              unoptimized
+            />
           </div>
         )}
       </div>
@@ -186,9 +187,15 @@ export default function OnboardingStep1Page() {
           className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--color-surface)] file:px-3 file:py-2 file:font-medium"
         />
         {logoPreview && (
-          <div className="mt-2 h-16 w-32 overflow-hidden rounded-lg border border-[var(--color-border)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoPreview} alt="Logo preview" className="h-full w-full object-contain" />
+          <div className="relative mt-2 h-16 w-32 overflow-hidden rounded-lg border border-[var(--color-border)]">
+            <Image
+              src={logoPreview}
+              alt="Logo preview"
+              fill
+              className="object-contain"
+              sizes="128px"
+              unoptimized
+            />
           </div>
         )}
       </div>

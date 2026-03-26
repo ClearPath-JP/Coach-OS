@@ -1,0 +1,834 @@
+'use client'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input, Textarea } from '@/components/ui/Input'
+import { Modal } from '@/components/ui/Modal'
+import { createClient } from '@/lib/supabase'
+import { applyWorkspaceAccentVars } from '@/lib/accent-colors'
+import {
+  COACH_THEME_PRESETS,
+  DEFAULT_COACH_ACCENT,
+  findCoachThemeByAccent,
+  type CoachThemePreset,
+} from '@/lib/coach-themes'
+import { cn } from '@/lib/utils'
+
+type TabKey = 'profile' | 'workspace' | 'appearance' | 'notifications'
+type NotificationKey = 'newMessage' | 'sessionReminder' | 'clientActivity' | 'paymentReceived'
+
+type SettingsResponse = {
+  data: {
+    workspace: {
+      id: string
+      name: string | null
+      displayName: string | null
+      logoUrl: string | null
+      timezone: string
+      accentColor: string | null
+      accentColorLight: string | null
+      preferredPaymentMethods: string[]
+      publicBookingEnabled: boolean
+      brandName: string | null
+      brandTagline: string | null
+      clientPortalHeading: string | null
+      clientWelcomeMessage: string | null
+    }
+    profile: {
+      firstName: string
+      lastName: string
+      fullName: string | null
+      bio: string | null
+      phone: string | null
+      avatarUrl: string | null
+      email: string | null
+      notifications: Record<NotificationKey, boolean>
+    }
+  }
+}
+
+function mediaUrlUnoptimized(url: string | null | undefined): boolean {
+  if (!url) return false
+  return url.startsWith('blob:') || url.startsWith('data:')
+}
+
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+const BIO_MAX = 300
+const PAYMENT_METHODS = [
+  { label: 'Cash', value: 'cash' },
+  { label: 'Venmo', value: 'venmo' },
+  { label: 'CashApp', value: 'cashapp' },
+  { label: 'Zelle', value: 'zelle' },
+  { label: 'PayPal', value: 'paypal' },
+  { label: 'Bank Transfer', value: 'bank_transfer' },
+] as const
+
+const TIMEZONES = [
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Asia/Tokyo',
+  'Asia/Singapore',
+  'Australia/Sydney',
+] as const
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (next: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative h-[18px] w-[32px] rounded-full transition-colors duration-150 ease-in ${
+        checked ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-border)]'
+      }`}
+      aria-pressed={checked}
+    >
+      <span
+        className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-[var(--color-bg)] transition-all duration-150 ease-in ${
+          checked ? 'left-[16px]' : 'left-[2px]'
+        }`}
+      />
+    </button>
+  )
+}
+
+export function SettingsPageContent() {
+  const supabase = useMemo(() => createClient(), [])
+  const [activeTab, setActiveTab] = useState<TabKey>('profile')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [bio, setBio] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [savingProfile, setSavingProfile] = useState(false)
+
+  const [workspaceName, setWorkspaceName] = useState('')
+  const [workspaceLogoUrl, setWorkspaceLogoUrl] = useState('')
+  const [timezone, setTimezone] = useState('America/New_York')
+  const [preferredPaymentMethods, setPreferredPaymentMethods] = useState<string[]>([])
+  const [brandName, setBrandName] = useState('')
+  const [brandTagline, setBrandTagline] = useState('')
+  const [clientPortalHeading, setClientPortalHeading] = useState('')
+  const [clientWelcomeMessage, setClientWelcomeMessage] = useState('')
+  const [savingWorkspace, setSavingWorkspace] = useState(false)
+
+  const [accentColor, setAccentColor] = useState(DEFAULT_COACH_ACCENT)
+  const [savingTheme, setSavingTheme] = useState(false)
+
+  const [notifications, setNotifications] = useState<Record<NotificationKey, boolean>>({
+    newMessage: true,
+    sessionReminder: true,
+    clientActivity: true,
+    paymentReceived: true,
+  })
+  const [notificationSaved, setNotificationSaved] = useState<Record<NotificationKey, boolean>>({
+    newMessage: false,
+    sessionReminder: false,
+    clientActivity: false,
+    paymentReceived: false,
+  })
+  const saveDebounceRef = useRef<Partial<Record<NotificationKey, number>>>({})
+  const saveFadeRef = useRef<Partial<Record<NotificationKey, number>>>({})
+
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordStatus, setPasswordStatus] = useState<{ ok: boolean; message: string } | null>(null)
+  const [savingPassword, setSavingPassword] = useState(false)
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch('/api/settings', { cache: 'no-store', credentials: 'include' })
+        const json = (await res.json().catch(() => null)) as SettingsResponse | null
+        if (!res.ok || !json?.data) {
+          setError((json as { error?: string } | null)?.error ?? 'Could not load settings')
+          return
+        }
+        if (!mounted) return
+        setFirstName(json.data.profile.firstName || '')
+        setLastName(json.data.profile.lastName || '')
+        setBio(json.data.profile.bio || '')
+        setPhone(json.data.profile.phone || '')
+        setProfileAvatarUrl(json.data.profile.avatarUrl || '')
+        setEmail(json.data.profile.email || '')
+        setWorkspaceName(json.data.workspace.displayName || json.data.workspace.name || '')
+        setWorkspaceLogoUrl(json.data.workspace.logoUrl || '')
+        setTimezone(json.data.workspace.timezone || 'America/New_York')
+        setPreferredPaymentMethods(json.data.workspace.preferredPaymentMethods || [])
+        setBrandName(json.data.workspace.brandName || '')
+        setBrandTagline(json.data.workspace.brandTagline || '')
+        setClientPortalHeading(json.data.workspace.clientPortalHeading || '')
+        setClientWelcomeMessage(json.data.workspace.clientWelcomeMessage || '')
+        setAccentColor((json.data.workspace.accentColor || DEFAULT_COACH_ACCENT).toUpperCase())
+        setNotifications({
+          newMessage: json.data.profile.notifications.newMessage,
+          sessionReminder: json.data.profile.notifications.sessionReminder,
+          clientActivity: json.data.profile.notifications.clientActivity,
+          paymentReceived: json.data.profile.notifications.paymentReceived,
+        })
+      } catch {
+        setError('Something went wrong — check your connection and try again')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    load()
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = window.setTimeout(() => setToast(null), 3500)
+    return () => window.clearTimeout(t)
+  }, [toast])
+
+  useEffect(() => {
+    return () => {
+      /* Refs hold mutable timeout-id maps; cleanup must snapshot .current at unmount (not at mount). */
+      /* eslint-disable react-hooks/exhaustive-deps */
+      const debounceTimeouts = saveDebounceRef.current
+      const fadeTimeouts = saveFadeRef.current
+      /* eslint-enable react-hooks/exhaustive-deps */
+      Object.values(debounceTimeouts).forEach((id) => id && window.clearTimeout(id))
+      Object.values(fadeTimeouts).forEach((id) => id && window.clearTimeout(id))
+    }
+  }, [])
+
+  const uploadViaApi = async (file: File, type: 'avatar' | 'logo'): Promise<string> => {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      throw new Error('Image must be under 5MB')
+    }
+    const form = new FormData()
+    form.set('file', file)
+    form.set('type', type)
+    const res = await fetch('/api/upload', { method: 'POST', body: form, credentials: 'include' })
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      throw new Error(typeof json.error === 'string' ? json.error : 'Could not upload image')
+    }
+    const url = json.data?.url as string | undefined
+    if (!url) throw new Error('Could not upload image')
+    return url
+  }
+
+  const onAvatarFileChange = async (file: File | null) => {
+    if (!file) return
+    try {
+      const preview = URL.createObjectURL(file)
+      setProfileAvatarUrl(preview)
+      const url = await uploadViaApi(file, 'avatar')
+      setProfileAvatarUrl(url)
+    } catch (e) {
+      setToast(e instanceof Error ? e.message : 'Could not upload avatar')
+    }
+  }
+
+  const onWorkspaceLogoChange = async (file: File | null) => {
+    if (!file) return
+    try {
+      const preview = URL.createObjectURL(file)
+      setWorkspaceLogoUrl(preview)
+      const url = await uploadViaApi(file, 'logo')
+      setWorkspaceLogoUrl(url)
+    } catch (e) {
+      setToast(e instanceof Error ? e.message : 'Could not upload logo')
+    }
+  }
+
+  const saveProfile = async () => {
+    setSavingProfile(true)
+    try {
+      const res = await fetch('/api/settings/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          bio: bio.trim() || null,
+          phone: phone.trim() || null,
+          avatarUrl: profileAvatarUrl || null,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(json.error ?? 'Could not save profile')
+        return
+      }
+      setToast('Profile saved')
+    } catch {
+      setToast('Something went wrong — check your connection and try again')
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
+  const saveWorkspace = async () => {
+    setSavingWorkspace(true)
+    try {
+      const res = await fetch('/api/settings/workspace', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          displayName: workspaceName.trim(),
+          timezone,
+          logoUrl: workspaceLogoUrl || null,
+          preferredPaymentMethods,
+          brandName: brandName.trim() || null,
+          brandTagline: brandTagline.trim() || null,
+          clientPortalHeading: clientPortalHeading.trim() || null,
+          clientWelcomeMessage: clientWelcomeMessage.trim() || null,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(json.error ?? 'Could not save workspace settings')
+        return
+      }
+      setToast('Workspace settings saved')
+    } catch {
+      setToast('Something went wrong — check your connection and try again')
+    } finally {
+      setSavingWorkspace(false)
+    }
+  }
+
+  const selectColorTheme = async (preset: CoachThemePreset) => {
+    const normalized = preset.accent.toUpperCase()
+    const light = preset.light.toUpperCase()
+    setSavingTheme(true)
+    try {
+      const res = await fetch('/api/settings/workspace', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          accentColor: normalized,
+          accentColorLight: light,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(json.error ?? 'Could not save theme')
+        return
+      }
+      setAccentColor(normalized)
+      applyWorkspaceAccentVars(preset.accent, preset.light)
+      setToast('Theme saved')
+    } catch {
+      setToast('Something went wrong — check your connection and try again')
+    } finally {
+      setSavingTheme(false)
+    }
+  }
+
+  const saveNotification = (key: NotificationKey, nextValue: boolean) => {
+    setNotifications((prev) => ({ ...prev, [key]: nextValue }))
+    const existing = saveDebounceRef.current[key]
+    if (existing) window.clearTimeout(existing)
+
+    saveDebounceRef.current[key] = window.setTimeout(async () => {
+      const payload: Record<string, boolean> = {}
+      if (key === 'newMessage') payload.newMessage = nextValue
+      if (key === 'sessionReminder') payload.sessionReminder = nextValue
+      if (key === 'clientActivity') payload.clientActivity = nextValue
+      if (key === 'paymentReceived') payload.paymentReceived = nextValue
+
+      const res = await fetch('/api/settings/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(json.error ?? 'Could not save notification settings')
+        return
+      }
+      setNotificationSaved((prev) => ({ ...prev, [key]: true }))
+      const oldFade = saveFadeRef.current[key]
+      if (oldFade) window.clearTimeout(oldFade)
+      saveFadeRef.current[key] = window.setTimeout(
+        () => setNotificationSaved((prev) => ({ ...prev, [key]: false })),
+        2000
+      )
+    }, 500)
+  }
+
+  const updatePassword = async () => {
+    setSavingPassword(true)
+    setPasswordStatus(null)
+    try {
+      const res = await fetch('/api/settings/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setPasswordStatus({ ok: false, message: json.error ?? 'Could not update password' })
+        return
+      }
+      setPasswordStatus({ ok: true, message: 'Password updated successfully' })
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch {
+      setPasswordStatus({ ok: false, message: 'Something went wrong — check your connection and try again' })
+    } finally {
+      setSavingPassword(false)
+    }
+  }
+
+  const deleteAccount = async () => {
+    setDeletingAccount(true)
+    try {
+      const res = await fetch('/api/settings/account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ confirm: deleteConfirmInput }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(json.error ?? 'Could not delete account')
+        return
+      }
+      await supabase.auth.signOut()
+      window.location.href = 'https://clearpath.com?deleted=true'
+    } catch {
+      setToast('Something went wrong — check your connection and try again')
+    } finally {
+      setDeletingAccount(false)
+    }
+  }
+
+  const tabButtonClass = (key: TabKey) =>
+    `min-h-[44px] px-4 text-sm font-medium transition-colors border-b-2 -mb-px ${
+      activeTab === key
+        ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
+        : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+    }`
+
+  if (loading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        <div className="h-8 w-48 rounded-lg bg-[var(--color-border)]" />
+        <div className="h-10 w-full max-w-xl rounded-lg bg-[var(--color-border)]" />
+        <div className="h-64 w-full rounded-lg bg-[var(--color-border)]" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="max-w-2xl">
+        <p className="text-[var(--color-text-primary)]">{error}</p>
+        <Button className="mt-4" variant="secondary" onClick={() => window.location.reload()}>
+          Try again
+        </Button>
+      </Card>
+    )
+  }
+
+  return (
+    <>
+      <div className="space-y-6">
+        <h1 className="text-[22px] font-medium leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
+          Settings
+        </h1>
+
+        <div className="flex gap-1 border-b border-[var(--color-border)] overflow-x-auto">
+          <button type="button" className={tabButtonClass('profile')} onClick={() => setActiveTab('profile')}>Profile</button>
+          <button type="button" className={tabButtonClass('workspace')} onClick={() => setActiveTab('workspace')}>Workspace</button>
+          <button type="button" className={tabButtonClass('appearance')} onClick={() => setActiveTab('appearance')}>Appearance</button>
+          <button type="button" className={tabButtonClass('notifications')} onClick={() => setActiveTab('notifications')}>Notifications</button>
+        </div>
+
+        {activeTab === 'profile' && (
+          <div className="space-y-4 max-w-3xl">
+            <Card className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Avatar</label>
+                <div className="flex items-center gap-4">
+                  <div className="relative h-24 w-24 overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]">
+                    {profileAvatarUrl ? (
+                      <Image
+                        src={profileAvatarUrl}
+                        alt="Avatar preview"
+                        fill
+                        className="object-cover"
+                        sizes="96px"
+                        unoptimized={mediaUrlUnoptimized(profileAvatarUrl)}
+                      />
+                    ) : null}
+                  </div>
+                  <label className="inline-flex min-h-[44px] cursor-pointer items-center rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 text-sm font-medium">
+                    Upload avatar
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => onAvatarFileChange(e.target.files?.[0] ?? null)} />
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">First name</label>
+                  <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Last name</label>
+                  <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">Bio</label>
+                <Textarea value={bio} maxLength={BIO_MAX} onChange={(e) => setBio(e.target.value)} />
+                <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{bio.length}/{BIO_MAX}</p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">Phone</label>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">Email</label>
+                <Input value={email} readOnly />
+                <p className="mt-1 text-xs text-[var(--color-text-secondary)]">To change your email contact support</p>
+              </div>
+
+              <Button onClick={saveProfile} disabled={savingProfile}>{savingProfile ? 'Saving profile...' : 'Save profile'}</Button>
+            </Card>
+
+            <Card className="space-y-4">
+              <h2 className="text-lg font-medium">Change password</h2>
+              <div>
+                <label className="mb-1 block text-sm font-medium">Current password</label>
+                <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">New password</label>
+                <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">Confirm new password</label>
+                <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              </div>
+              <Button onClick={updatePassword} disabled={savingPassword}>{savingPassword ? 'Updating password...' : 'Update password'}</Button>
+              {passwordStatus && (
+                <p className={`text-sm ${passwordStatus.ok ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
+                  {passwordStatus.message}
+                </p>
+              )}
+            </Card>
+
+            <Card className="border-[var(--color-error)] space-y-3">
+              <h2 className="text-lg font-medium text-[var(--color-error)]">Danger zone</h2>
+              <Button variant="destructive-secondary" onClick={() => setDeleteModalOpen(true)}>
+                Delete account
+              </Button>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'workspace' && (
+          <div className="space-y-4 max-w-3xl">
+            <Card className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium">Workspace name</label>
+                <Input value={workspaceName} onChange={(e) => setWorkspaceName(e.target.value)} />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">Logo</label>
+                <label className="relative flex h-[80px] w-[240px] cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]">
+                  {workspaceLogoUrl ? (
+                    <Image
+                      src={workspaceLogoUrl}
+                      alt="Workspace logo preview"
+                      fill
+                      className="object-contain p-1"
+                      sizes="240px"
+                      unoptimized={mediaUrlUnoptimized(workspaceLogoUrl)}
+                    />
+                  ) : (
+                    <span className="text-xs text-[var(--color-text-secondary)]">Upload logo</span>
+                  )}
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => onWorkspaceLogoChange(e.target.files?.[0] ?? null)} />
+                </label>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">Timezone</label>
+                <select
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[15px]"
+                >
+                  {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">Preferred payment methods</label>
+                <div className="flex flex-wrap gap-2">
+                  {PAYMENT_METHODS.map((method) => {
+                    const selected = preferredPaymentMethods.includes(method.value)
+                    return (
+                      <button
+                        key={method.value}
+                        type="button"
+                        onClick={() => {
+                          setPreferredPaymentMethods((prev) =>
+                            selected ? prev.filter((v) => v !== method.value) : [...prev, method.value]
+                          )
+                        }}
+                        className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                          selected
+                            ? 'border-[var(--color-accent)] bg-[var(--color-accent)] text-white'
+                            : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-primary)]'
+                        }`}
+                      >
+                        {method.label}
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                  This shows clients how to pay when they receive an invoice.
+                </p>
+              </div>
+
+              <div className="border-t border-[var(--color-border)] pt-6">
+                <h2 className="text-lg font-medium text-[var(--color-text-primary)] mb-4">Client branding</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Your brand name</label>
+                    <Input
+                      value={brandName}
+                      onChange={(e) => setBrandName(e.target.value)}
+                      placeholder="Peak Performance Coaching"
+                    />
+                    <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                      What your clients see when they log in
+                    </p>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Tagline (optional)</label>
+                    <Input
+                      value={brandTagline}
+                      maxLength={100}
+                      onChange={(e) => setBrandTagline(e.target.value)}
+                      placeholder="Transform your performance"
+                    />
+                    <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                      {brandTagline.length}/100
+                    </p>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Portal heading (optional)</label>
+                    <Input
+                      value={clientPortalHeading}
+                      onChange={(e) => setClientPortalHeading(e.target.value)}
+                      placeholder="Welcome to [your brand]"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Welcome message (optional)</label>
+                    <Textarea
+                      value={clientWelcomeMessage}
+                      maxLength={200}
+                      onChange={(e) => setClientWelcomeMessage(e.target.value)}
+                      placeholder="A short message for your clients when they first log in"
+                    />
+                    <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                      {clientWelcomeMessage.length}/200
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={saveWorkspace} disabled={savingWorkspace}>
+                {savingWorkspace ? 'Saving workspace...' : 'Save workspace'}
+              </Button>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'appearance' && (
+          <div className="max-w-5xl space-y-4">
+            <p className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[13px] leading-snug text-[var(--color-text-secondary)]">
+              <span className="font-medium text-[var(--color-text-primary)]">Dark mode:</span> use the sun/moon toggle in the top bar.
+              Color theme is saved to your workspace and applies to buttons, nav, focus rings, and client-facing accents.
+            </p>
+            <h2 className="text-[18px] font-semibold leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
+              Color theme
+            </h2>
+            <p className="text-[15px] leading-[var(--leading-body)] text-[var(--color-text-secondary)]">
+              Pick a preset — it saves immediately to your workspace.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {COACH_THEME_PRESETS.map((t) => {
+                const selected = findCoachThemeByAccent(accentColor)?.id === t.id
+                const displayName = t.id === 'sky' ? 'Sky (default)' : t.label
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    disabled={savingTheme}
+                    onClick={() => void selectColorTheme(t)}
+                    className={cn(
+                      'w-[140px] shrink-0 cursor-pointer rounded-[var(--radius-lg)] border-[1.5px] p-3 text-left transition-all duration-[150ms] disabled:opacity-60',
+                      selected
+                        ? 'border-[var(--accent)] shadow-[var(--focus-ring)]'
+                        : 'border-transparent hover:-translate-y-px hover:border-[var(--border-strong)]'
+                    )}
+                  >
+                    <div
+                      className="flex h-16 w-full overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)]"
+                      aria-hidden
+                    >
+                      <div
+                        className="flex w-8 shrink-0 flex-col justify-center border-r border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-1 py-1.5"
+                      >
+                        <div
+                          className="mb-1 h-2 w-full rounded-sm"
+                          style={{ backgroundColor: t.light }}
+                        />
+                        <div
+                          className="h-2 w-full rounded-sm"
+                          style={{
+                            backgroundColor: t.light,
+                            boxShadow: selected ? `inset 2px 0 0 0 ${t.accent}` : undefined,
+                          }}
+                        />
+                      </div>
+                      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-2 py-1.5">
+                        <div
+                          className="h-5 w-full rounded-[4px]"
+                          style={{ backgroundColor: t.accent }}
+                        />
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
+                          <div className="h-full w-2/3 rounded-full" style={{ backgroundColor: t.accent }} />
+                        </div>
+                        <span
+                          className="inline-flex w-fit rounded-[var(--radius-full)] border px-2 py-0.5 text-[10px] font-medium"
+                          style={{
+                            backgroundColor: t.light,
+                            color: t.accent,
+                            borderColor: t.muted,
+                          }}
+                        >
+          Active
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-[12px] font-medium text-[var(--text-secondary)]">{displayName}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'notifications' && (
+          <div className="space-y-4 max-w-3xl">
+            <Card className="space-y-4">
+              {[
+                {
+                  key: 'newMessage' as const,
+                  title: 'New message from client',
+                  description: 'Get notified when a client sends you a message',
+                },
+                {
+                  key: 'sessionReminder' as const,
+                  title: 'Session reminders',
+                  description: 'Reminders 24 hours before each session',
+                },
+                {
+                  key: 'clientActivity' as const,
+                  title: 'Client activity',
+                  description: 'When a client completes a program module',
+                },
+                {
+                  key: 'paymentReceived' as const,
+                  title: 'Payment received',
+                  description: "When a client's invoice is marked as paid",
+                },
+              ].map((row) => (
+                <div key={row.key} className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] pb-4 last:border-0 last:pb-0">
+                  <div>
+                    <p className="font-medium">{row.title}</p>
+                    <p className="text-sm text-[var(--color-text-secondary)]">{row.description}</p>
+                    {notificationSaved[row.key] ? (
+                      <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Saved</p>
+                    ) : null}
+                  </div>
+                  <Toggle checked={notifications[row.key]} onChange={(next) => saveNotification(row.key, next)} />
+                </div>
+              ))}
+            </Card>
+          </div>
+        )}
+      </div>
+
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (!deletingAccount) setDeleteModalOpen(false)
+        }}
+        title="Delete account"
+        className="w-full max-w-none md:max-w-md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-[var(--color-text-primary)]">
+            This will permanently delete your workspace and all client data. This cannot be undone.
+          </p>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Type DELETE MY ACCOUNT to confirm</label>
+            <Input value={deleteConfirmInput} onChange={(e) => setDeleteConfirmInput(e.target.value)} />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setDeleteModalOpen(false)} disabled={deletingAccount}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={deleteAccount}
+              disabled={deleteConfirmInput !== 'DELETE MY ACCOUNT' || deletingAccount}
+            >
+              {deletingAccount ? 'Deleting account...' : 'Delete my account'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {toast ? (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-[var(--color-text-primary)] px-4 py-3 text-sm text-white">
+          {toast}
+        </div>
+      ) : null}
+    </>
+  )
+}

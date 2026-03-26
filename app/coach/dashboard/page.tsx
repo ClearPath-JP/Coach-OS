@@ -1,13 +1,24 @@
-import { CoachDashboardUpcoming } from './CoachDashboardUpcoming'
+import { createClient } from '@/lib/supabase-server'
+import { CoachDashboardContent } from './CoachDashboardContent'
 
-export default function CoachDashboardPage() {
+export default async function CoachDashboardPage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  let coachDisplayName = 'Coach'
+  if (user) {
+    const { data: p } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle()
+    coachDisplayName =
+      p?.full_name?.trim() || user.email?.split('@')[0]?.trim() || coachDisplayName
+  }
   return (
-    <main className="min-h-screen p-4 md:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl font-medium text-[var(--color-text-primary)]">Coach Dashboard</h1>
-        <p className="mt-1 text-[var(--color-text-secondary)]">Welcome to your dashboard.</p>
-      </div>
-      <CoachDashboardUpcoming />
-    </main>
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      <CoachDashboardContent coachDisplayName={coachDisplayName} />
+    </div>
   )
 }

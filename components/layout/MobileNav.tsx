@@ -77,25 +77,46 @@ function VideosIcon({ className }: { className?: string }) {
   )
 }
 
+function AnalyticsIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M3 3v18h18" />
+      <path d="M7 16l4-8 4 5 4-9" />
+    </svg>
+  )
+}
+
+function PaymentsIcon({ className }: { className?: string }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <rect width="20" height="14" x="2" y="5" rx="2" />
+      <path d="M2 10h20" />
+    </svg>
+  )
+}
+
 /** Default coach tabs (used when coach layout provides MobileNav) — includes Programs, Videos, Packages */
 export const coachTabs = [
   { href: '/coach/dashboard', label: 'Home', icon: HomeIcon },
+  { href: '/coach/analytics', label: 'Analytics', icon: AnalyticsIcon },
   { href: '/coach/clients', label: 'Clients', icon: ClientsIcon },
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarIcon },
   { href: '/coach/programs', label: 'Programs', icon: ProgramsIcon },
   { href: '/coach/videos', label: 'Videos', icon: VideosIcon },
   { href: '/coach/messages', label: 'Messages', icon: MessagesIcon },
   { href: '/coach/packages', label: 'Packages', icon: PackagesIcon },
+  { href: '/coach/invoices', label: 'Invoices', icon: InvoicesIcon },
+  { href: '/coach/payments', label: 'Payments', icon: PaymentsIcon },
   { href: '/billing', label: 'Billing', icon: BillingIcon },
 ] as const
 
 /** Client portal tabs (used in app/client/layout) */
 export const clientPortalTabs = [
   { href: '/client/portal', label: 'Home', icon: HomeIcon },
-  { href: '/client/programs', label: 'Programs', icon: ProgramsIcon },
   { href: '/client/messages', label: 'Messages', icon: MessagesIcon },
-  { href: '/client/invoices', label: 'Invoices', icon: InvoicesIcon },
   { href: '/client/sessions', label: 'Sessions', icon: CalendarIcon },
+  { href: '/client/programs', label: 'Programs', icon: ProgramsIcon },
+  { href: '/client/invoices', label: 'Invoices', icon: InvoicesIcon },
   { href: '/client/profile', label: 'Profile', icon: ProfileIcon },
 ] as const
 
@@ -204,7 +225,7 @@ export function MobileNav({ className, tabs = coachTabs, messageUnreadCount = 0 
   return (
     <nav
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-[var(--color-border)] bg-white py-2 lg:hidden',
+        'safe-bottom fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-[var(--color-border)] bg-[var(--color-bg)] py-2 lg:hidden',
         className
       )}
       role="navigation"

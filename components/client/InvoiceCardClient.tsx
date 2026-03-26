@@ -57,7 +57,7 @@ export function InvoiceCardClient({ data }: { data: InvoiceCardDataClient }) {
         </p>
       )}
       {!isPaid && !isCancelled && (
-        <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-white p-3">
+        <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
           <p className="text-sm font-medium text-[var(--color-ink)]">Pay</p>
           <p className="mt-1 text-sm text-[var(--color-muted)]">
             Contact your coach to complete payment. You can reply in this thread or use their preferred payment method.

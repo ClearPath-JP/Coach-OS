@@ -6,9 +6,24 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Input, Textarea } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Input'
 import { differenceInDays } from 'date-fns'
 import { AssignProgramToClientModal } from '@/components/coach/AssignProgramToClientModal'
+import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
+import {
+  PAYMENT_METHOD_LABELS,
+  PAYMENT_METHOD_STYLES,
+  type PaymentMethodValue,
+} from '@/lib/payment-methods'
+import { formatCents } from '@/lib/format-currency'
+
+type ClientPaymentRow = {
+  id: string
+  amount_cents: number
+  payment_method: string
+  payment_reference: string | null
+  payment_date: string
+}
 
 type Client = {
   id: string
@@ -42,6 +57,34 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
   const [inviteSending, setInviteSending] = useState(false)
   const [clientPrograms, setClientPrograms] = useState<{ programId: string; title: string; status: string; totalModules: number; modulesCompleted: number; assignedAt: string }[]>([])
   const [assignProgramOpen, setAssignProgramOpen] = useState(false)
+  const [tab, setTab] = useState<'overview' | 'payments'>('overview')
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [paymentsTotal, setPaymentsTotal] = useState<number | null>(null)
+  const [paymentRows, setPaymentRows] = useState<ClientPaymentRow[]>([])
+  const [paymentsLoading, setPaymentsLoading] = useState(false)
+
+  const loadPaymentsTab = useCallback(async () => {
+    setPaymentsLoading(true)
+    try {
+      const [sumRes, listRes] = await Promise.all([
+        fetch(`/api/payments/summary?period=all&clientId=${encodeURIComponent(clientId)}`),
+        fetch(`/api/payments?clientId=${encodeURIComponent(clientId)}`),
+      ])
+      const sumJson = await sumRes.json()
+      const listJson = await listRes.json()
+      if (sumJson.data) setPaymentsTotal(sumJson.data.totalRevenue ?? 0)
+      if (Array.isArray(listJson.data)) setPaymentRows(listJson.data)
+    } catch {
+      setPaymentsTotal(null)
+      setPaymentRows([])
+    } finally {
+      setPaymentsLoading(false)
+    }
+  }, [clientId])
+
+  useEffect(() => {
+    if (tab === 'payments') loadPaymentsTab()
+  }, [tab, loadPaymentsTab])
 
   const fetchClient = useCallback(async () => {
     setError(null)
@@ -203,9 +246,92 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
       </div>
 
       <PageHeader title={fullName}>
-        <Badge variant={statusBadgeVariant(client.status)}>{client.status}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={statusBadgeVariant(client.status)}>{client.status}</Badge>
+          {tab === 'payments' && (
+            <Button type="button" className="min-h-[44px]" onClick={() => setPaymentModalOpen(true)}>
+              Record payment
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
+      <div className="flex flex-wrap gap-2 border-b border-[var(--color-border)] pb-2" role="tablist" aria-label="Client sections">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'overview'}
+          onClick={() => setTab('overview')}
+          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
+            tab === 'overview'
+              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
+          }`}
+        >
+          Overview
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'payments'}
+          onClick={() => setTab('payments')}
+          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
+            tab === 'payments'
+              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
+          }`}
+        >
+          Payments
+        </button>
+      </div>
+
+      {tab === 'payments' && (
+        <div className="space-y-4">
+          <Card variant="raised" padding="lg">
+            <p className="text-[14px] text-[var(--color-muted)]">Total received from this client</p>
+            <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
+              {paymentsLoading ? '…' : paymentsTotal === null ? '—' : formatCents(paymentsTotal)}
+            </p>
+          </Card>
+          {paymentsLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-14 animate-pulse rounded-lg bg-[var(--color-border)]/50" />
+              ))}
+            </div>
+          ) : paymentRows.length === 0 ? (
+            <Card variant="raised" padding="lg" className="text-center">
+              <p className="text-[15px] text-[var(--color-ink)]">No payments recorded for this client yet.</p>
+              <Button type="button" className="mt-4 min-h-[44px]" onClick={() => setPaymentModalOpen(true)}>
+                Record payment
+              </Button>
+            </Card>
+          ) : (
+            <ul className="space-y-3">
+              {paymentRows.map((p) => (
+                <li key={p.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-lg font-medium text-[var(--color-ink)]">{formatCents(p.amount_cents)}</span>
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-[12px] font-medium ${
+                        PAYMENT_METHOD_STYLES[p.payment_method as PaymentMethodValue] ?? 'bg-neutral-200'
+                      }`}
+                    >
+                      {PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-[14px] text-[var(--color-muted)]">{p.payment_date}</p>
+                  {p.payment_reference ? (
+                    <p className="mt-1 text-[14px] text-[var(--color-muted)]">Ref: {p.payment_reference}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {tab === 'overview' && (
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left column — 2/3 */}
         <div className="lg:col-span-2 space-y-4">
@@ -269,7 +395,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
                   className={`min-h-[44px] rounded-lg border px-3 py-2 text-[14px] font-medium capitalize transition-colors disabled:opacity-50 ${
                     client.status === s
                       ? 'border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)]'
-                      : 'border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]'
+                      : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]'
                   }`}
                 >
                   {s}
@@ -367,6 +493,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           </Card>
         </div>
       </div>
+      )}
 
       <AssignProgramToClientModal
         clientId={clientId}
@@ -378,6 +505,13 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
             .then((r) => r.json())
             .then((json) => json.data && setClientPrograms(json.data))
         }}
+      />
+
+      <RecordPaymentModal
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        defaultClientId={clientId}
+        onRecorded={() => loadPaymentsTab()}
       />
     </div>
   )

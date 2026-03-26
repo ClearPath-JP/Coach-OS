@@ -5,7 +5,8 @@ import { createServiceClient } from '@/lib/supabase/service'
 export const dynamic = 'force-dynamic'
 
 function driveRedirectUri(): string {
-  const explicit = process.env.GOOGLE_DRIVE_REDIRECT_URI?.trim()
+  const explicit =
+    process.env.GOOGLE_REDIRECT_URI?.trim() || process.env.GOOGLE_DRIVE_REDIRECT_URI?.trim()
   if (explicit) return explicit
   const base = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/$/, '') ?? 'http://localhost:3000'
   return `${base}/api/integrations/google-drive/callback`
@@ -26,6 +27,13 @@ export async function GET() {
   } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.redirect(new URL('/login?next=/coach/videos', process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'))
+  }
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+  if (profile?.role !== 'coach') {
+    return NextResponse.redirect(
+      new URL('/client/portal?drive_error=forbidden', process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
+    )
   }
 
   const service = createServiceClient()

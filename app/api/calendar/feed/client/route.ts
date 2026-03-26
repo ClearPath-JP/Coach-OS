@@ -22,14 +22,17 @@ export async function GET() {
     if (profile?.role === 'coach') {
       return NextResponse.json({ error: 'Forbidden — use coach calendar feed' }, { status: 403 })
     }
+    if (profile?.role !== 'client') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const { data: client } = await supabase
       .from('clients')
-      .select('id')
+      .select('id, workspace_id')
       .eq('email', user.email ?? '')
       .limit(1)
       .maybeSingle()
-    if (!client) {
+    if (!client?.workspace_id) {
       return NextResponse.json({ error: 'Client record not found' }, { status: 404 })
     }
 
@@ -39,6 +42,7 @@ export async function GET() {
       .from('sessions')
       .select('id, scheduled_time, end_time, duration_minutes, status')
       .eq('client_id', client.id)
+      .eq('workspace_id', client.workspace_id)
       .gte('scheduled_time', now.toISOString())
       .lte('scheduled_time', oneYearLater.toISOString())
       .in('status', ['pending', 'confirmed'])

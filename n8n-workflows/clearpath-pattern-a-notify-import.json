@@ -1,0 +1,202 @@
+{
+  "name": "ClearPath - Notify from Google Drive (Pattern A)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## n8n Variables (Settings → Variables) or env\n- **CLEARPATH_APP_URL** — e.g. `https://app.example.com` (no trailing slash)\n- **N8N_CALLBACK_SECRET** — must match ClearPath `N8N_CALLBACK_SECRET`\n- **VERCEL_AUTOMATION_BYPASS_SECRET** (optional) — if Vercel Deployment Protection is on, same as app’s bypass secret\n\n## Coach setup in ClearPath\nSame Google account in n8n + **Connect Google Drive** on Video library. Import folder ID saved in ClearPath must match the folder this trigger watches.\n\n## Success response\n`POST /api/videos/import-from-drive` returns **202 Accepted** when processing starts (not 200). Playback appears when CloudConvert finishes and the app webhook updates the row.",
+        "height": 380,
+        "width": 460,
+        "color": 4
+      },
+      "id": "note-setup",
+      "name": "SETUP",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "REPLACE_WITH_DRIVE_FOLDER_ID",
+          "mode": "id",
+          "cachedResultName": "ClearPath import folder",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/REPLACE_WITH_DRIVE_FOLDER_ID"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "node-drive-trigger",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.mimeType || '' }}",
+              "rightValue": "video/",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "leftValue": "={{ ($json.name || '').toLowerCase() }}",
+              "rightValue": ".mp4",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "leftValue": "={{ ($json.name || '').toLowerCase() }}",
+              "rightValue": ".mov",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "leftValue": "={{ ($json.name || '').toLowerCase() }}",
+              "rightValue": ".webm",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "leftValue": "={{ ($json.name || '').toLowerCase() }}",
+              "rightValue": ".mkv",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "leftValue": "={{ ($json.name || '').toLowerCase() }}",
+              "rightValue": ".avi",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "leftValue": "={{ ($json.name || '').toLowerCase() }}",
+              "rightValue": ".m4v",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "node-if-video",
+      "name": "IF - Is Video?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ (String($vars.CLEARPATH_APP_URL || '').replace(/\\/+$/, '')) + '/api/videos/import-from-drive' + ($vars.VERCEL_AUTOMATION_BYPASS_SECRET ? '?x-vercel-protection-bypass=' + encodeURIComponent(String($vars.VERCEL_AUTOMATION_BYPASS_SECRET)) : '') }}",
+        "authentication": "none",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Clearpath-Secret",
+              "value": "={{ $vars.N8N_CALLBACK_SECRET }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ folderId: ($json.parents && $json.parents[0]) ? $json.parents[0] : 'REPLACE_WITH_DRIVE_FOLDER_ID', driveFileId: $json.id, driveFileName: $json.name || 'video.mp4' }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "node-post-clearpath",
+      "name": "POST to ClearPath",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        280
+      ]
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF - Is Video?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Is Video?": {
+      "main": [
+        [
+          {
+            "node": "POST to ClearPath",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

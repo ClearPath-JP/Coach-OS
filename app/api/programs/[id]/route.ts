@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { invalidateProgramsListCache } from '@/lib/api-cache'
 import { createClient } from '@/lib/supabase-server'
 import { updateProgramSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -39,11 +40,31 @@ export async function GET(request: Request, context: RouteContext) {
       )
     }
 
+    const { searchParams } = new URL(request.url)
+    const modulesOffset = Math.max(0, parseInt(searchParams.get('modulesOffset') ?? '0', 10) || 0)
+    const modulesLimit = Math.min(
+      200,
+      Math.max(1, parseInt(searchParams.get('modulesLimit') ?? '200', 10) || 200)
+    )
+
+    const { count: moduleCount, error: countError } = await supabase
+      .from('program_modules')
+      .select('id', { count: 'exact', head: true })
+      .eq('program_id', id)
+
+    if (countError) {
+      return NextResponse.json(
+        { error: countError.message || 'Could not load modules' },
+        { status: 500 }
+      )
+    }
+
     const { data: modules, error: modulesError } = await supabase
       .from('program_modules')
       .select('id, program_id, title, description, position, created_at, updated_at')
       .eq('program_id', id)
       .order('position', { ascending: true })
+      .range(modulesOffset, modulesOffset + modulesLimit - 1)
 
     if (modulesError) {
       return NextResponse.json(
@@ -51,6 +72,9 @@ export async function GET(request: Request, context: RouteContext) {
         { status: 500 }
       )
     }
+
+    const totalModules = moduleCount ?? 0
+    const hasMoreModules = modulesOffset + (modules ?? []).length < totalModules
 
     const moduleIds = (modules ?? []).map((m) => m.id)
     let content: { id: string; module_id: string; content_type: string; title: string | null; body: string | null; url: string | null; video_id: string | null; file_url: string | null; position: number }[] = []
@@ -72,6 +96,12 @@ export async function GET(request: Request, context: RouteContext) {
       data: {
         ...program,
         modules: modulesWithContent,
+        modulesPagination: {
+          offset: modulesOffset,
+          limit: modulesLimit,
+          total: totalModules,
+          hasMore: hasMoreModules,
+        },
       },
     })
   } catch {
@@ -148,6 +178,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 404 }
       )
     }
+    void invalidateProgramsListCache(coach.workspace_id)
     return NextResponse.json({ data: row })
   } catch {
     return NextResponse.json(
@@ -198,6 +229,7 @@ export async function DELETE(request: Request, context: RouteContext) {
         { status: 404 }
       )
     }
+    void invalidateProgramsListCache(coach.workspace_id)
     return NextResponse.json({ data: 'ok' })
   } catch {
     return NextResponse.json(

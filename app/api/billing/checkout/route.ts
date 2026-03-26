@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
+import type Stripe from 'stripe'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { billingCheckoutSchema } from '@/lib/validations'
 import { stripe, STRIPE_PRICES } from '@/lib/stripe'
-
-const planValues = ['starter', 'pro', 'scale'] as const
 
 /**
  * POST /api/billing/checkout — create Stripe Checkout session for subscription (coach only).
@@ -26,6 +26,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    if (profile?.role !== 'coach') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { success, retryAfter } = await checkRateLimitAsync(`billing-checkout:${user.id}`, {
       windowMs: 60 * 60 * 1000,
       max: 10,
@@ -39,15 +44,20 @@ export async function POST(request: Request) {
       return res
     }
 
-    const body = await request.json()
-    const plan = body?.plan as string | undefined
-    if (!plan || !planValues.includes(plan as typeof planValues[number])) {
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+    const parsed = billingCheckoutSchema.safeParse(body)
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Invalid plan — must be starter, pro, or scale' },
+        { error: parsed.error.issues[0]?.message ?? 'Invalid plan — must be starter, pro, or scale' },
         { status: 400 }
       )
     }
-    const key = plan as typeof planValues[number]
+    const key = parsed.data.plan
     const priceId = STRIPE_PRICES[key]
     if (!priceId || !stripe) {
       return NextResponse.json(
@@ -64,10 +74,13 @@ export async function POST(request: Request) {
 
     let stripeCustomerId = workspace?.stripe_customer_id ?? null
     if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({
-        email: user.email ?? undefined,
+      const createParams: Stripe.CustomerCreateParams = {
         metadata: { workspace_id: coach.workspace_id },
-      })
+      }
+      if (user.email) {
+        createParams.email = user.email
+      }
+      const customer = await stripe.customers.create(createParams)
       stripeCustomerId = customer.id
       const { error: updateErr } = await supabase
         .from('workspaces')
@@ -99,7 +112,7 @@ export async function POST(request: Request) {
       )
     }
     return NextResponse.json({ data: { url } })
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },
       { status: 500 }

@@ -9,7 +9,7 @@ import { OnboardingProgress } from './OnboardingProgress'
 export default function OnboardingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
-      <header className="border-b border-[var(--color-border)] bg-white px-4 py-4 md:px-6">
+      <header className="border-b border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-4 md:px-6">
         <div className="mx-auto flex max-w-[560px] items-center justify-between">
           <Link
             href="/onboarding"

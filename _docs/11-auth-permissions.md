@@ -114,7 +114,7 @@ All routes under **/client/** are client-only:
 
 Paths **not** in the matcher (e.g. `/`, `/auth/set-password`, `/auth/callback`) do **not** run middleware (no session check, no rate limit from middleware).
 
-- **Session check:** For paths starting with `/coach` or `/client`, middleware calls `supabase.auth.getSession()`. If there is no session, it redirects to `/login?next=<pathname>`.
+- **Session check:** For paths starting with `/coach` or `/client`, middleware calls `supabase.auth.getUser()`. **`getUser()` is the secure method:** it verifies the JWT with Supabase Auth servers on each call (rather than trusting only locally stored session data). If there is no valid user, it redirects to `/login?next=<pathname>`.
 - **Rate limits (in middleware):**  
   - `/login`, `/forgot-password`: 30 requests/min per IP (`checkRateLimitAsync('login:' + ip, { windowMs: 60_000, max: 30 })`).
 - **CSP:** In production, strict Content-Security-Policy is set.

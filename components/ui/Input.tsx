@@ -3,35 +3,49 @@
 import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-const inputBase =
-  'w-full rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-[15px] font-normal text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-0 focus:border-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-60'
+const inputTransition =
+  'transition-[border-color,box-shadow] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]'
 
-const inputError =
-  'border-2 border-[var(--color-error)] bg-[var(--color-error-light)] focus:ring-[var(--color-error)]'
+const inputBase = cn(
+  'w-full rounded-[var(--radius-md)] border-[1.5px] border-[var(--border-default)] bg-[var(--bg-app)]',
+  'px-3 font-normal text-[length:var(--text-14)] leading-[var(--leading-normal)] text-[var(--text-primary)] [font-family:var(--font)]',
+  'placeholder:text-[var(--text-placeholder)]',
+  inputTransition,
+  'hover:border-[var(--border-strong)]',
+  'focus:border-[var(--accent)] focus:outline-none focus:shadow-[var(--focus-ring)]',
+  'disabled:cursor-not-allowed disabled:bg-[var(--bg-subtle)] disabled:text-[var(--text-tertiary)]'
+)
+
+const inputError = cn(
+  'border-[var(--error)] shadow-[0_0_0_3px_rgba(220,38,38,0.1)]',
+  'focus:border-[var(--error)] focus:shadow-[0_0_0_3px_rgba(220,38,38,0.1)]'
+)
+
+export type InputSize = 'sm' | 'md' | 'lg'
+
+const inputHeights: Record<InputSize, string> = {
+  sm: 'h-8 min-h-8',
+  md: 'h-9 min-h-9',
+  lg: 'h-10 min-h-10',
+}
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean
-  errorMessage?: string
+  errorMessage?: string | undefined
+  inputSize?: InputSize
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, error, errorMessage, ...props }, ref) => {
+  ({ className, error, errorMessage, inputSize = 'md', ...props }, ref) => {
     return (
       <div className="w-full">
         <input
           ref={ref}
-          className={cn(
-            inputBase,
-            'h-10',
-            error && inputError,
-            className
-          )}
+          className={cn(inputBase, inputHeights[inputSize], error && inputError, className)}
           {...props}
         />
         {error && errorMessage && (
-          <p className="mt-1 text-[13px] text-[var(--color-error)]">
-            {errorMessage}
-          </p>
+          <p className="mt-1 text-[13px] text-[var(--error)]">{errorMessage}</p>
         )}
       </div>
     )
@@ -42,7 +56,7 @@ Input.displayName = 'Input'
 
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: boolean
-  errorMessage?: string
+  errorMessage?: string | undefined
 }
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
@@ -53,16 +67,14 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           className={cn(
             inputBase,
-            'min-h-[80px] resize-y',
+            'min-h-20 resize-y py-2.5',
             error && inputError,
             className
           )}
           {...props}
         />
         {error && errorMessage && (
-          <p className="mt-1 text-[13px] text-[var(--color-error)]">
-            {errorMessage}
-          </p>
+          <p className="mt-1 text-[13px] text-[var(--error)]">{errorMessage}</p>
         )}
       </div>
     )

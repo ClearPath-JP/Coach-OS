@@ -1,17 +1,29 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { createSessionSchema } from '@/lib/validations'
+import { normalizeEmail } from '@/lib/utils'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { addMinutes } from 'date-fns'
 
 /**
- * GET /api/coach/sessions — list coach's upcoming sessions (next 5). Coach only.
+ * GET /api/coach/sessions — list coach sessions. Coach only.
+ * Optional query: `from` and `to` (ISO datetimes) — sessions in that range (pending/confirmed), including past.
+ * Without params: upcoming only from now through ~12 weeks (dashboard / default).
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role !== 'coach') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
     const { data: coach } = await supabase
       .from('coaches')
@@ -21,15 +33,38 @@ export async function GET() {
     if (!coach?.workspace_id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-    const now = new Date().toISOString()
+
+    const { searchParams } = new URL(request.url)
+    const fromParam = searchParams.get('from')
+    const toParam = searchParams.get('to')
+
+    let rangeFrom: string
+    let rangeTo: string
+    if (fromParam && toParam) {
+      const fromT = new Date(fromParam)
+      const toT = new Date(toParam)
+      if (Number.isNaN(fromT.getTime()) || Number.isNaN(toT.getTime())) {
+        return NextResponse.json({ error: 'Invalid from or to date' }, { status: 400 })
+      }
+      rangeFrom = fromT.toISOString()
+      rangeTo = toT.toISOString()
+    } else {
+      rangeFrom = new Date().toISOString()
+      const twelveWeeks = new Date()
+      twelveWeeks.setDate(twelveWeeks.getDate() + 84)
+      rangeTo = twelveWeeks.toISOString()
+    }
+
     const { data } = await supabase
       .from('sessions')
-      .select('id, scheduled_time, end_time, duration_minutes, status, clients(first_name, last_name)')
+      .select('id, scheduled_time, end_time, duration_minutes, status, notes, client_id, clients(first_name, last_name)')
       .eq('coach_id', user.id)
-      .gte('scheduled_time', now)
+      .eq('workspace_id', coach.workspace_id)
+      .gte('scheduled_time', rangeFrom)
+      .lte('scheduled_time', rangeTo)
       .in('status', ['pending', 'confirmed'])
       .order('scheduled_time', { ascending: true })
-      .limit(5)
+      .limit(400)
     return NextResponse.json({ data: data ?? [] })
   } catch (err) {
     return NextResponse.json(
@@ -50,6 +85,28 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role !== 'coach') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { success, retryAfter } = await checkRateLimitAsync(`coach-sessions-post:${user.id}`, {
+      windowMs: 60_000,
+      max: 60,
+    })
+    if (!success) {
+      const res = NextResponse.json(
+        { error: 'Too many attempts — please wait a minute and try again' },
+        { status: 429 }
+      )
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
     }
 
     const { data: coach } = await supabase
@@ -131,6 +188,41 @@ export async function POST(request: Request) {
         { error: error.message || 'Could not create session' },
         { status: 500 }
       )
+    }
+
+    const { data: clientForMessage } = await supabase
+      .from('clients')
+      .select('email')
+      .eq('id', client_id)
+      .eq('workspace_id', coach.workspace_id)
+      .maybeSingle()
+
+    if (clientForMessage?.email) {
+      const { data: clientProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', normalizeEmail(clientForMessage.email))
+        .maybeSingle()
+
+      if (clientProfile?.id) {
+        const sessionCard = JSON.stringify({
+          type: 'session',
+          sessionId: inserted.id,
+          scheduledTime: startIso,
+          endTime: endIso,
+          durationMinutes: duration_minutes,
+          status,
+          notes: notes ?? null,
+        })
+        await supabase.from('messages').insert({
+          workspace_id: coach.workspace_id,
+          sender_id: user.id,
+          recipient_id: clientProfile.id,
+          client_id,
+          content: sessionCard,
+          message_type: 'session',
+        })
+      }
     }
 
     return NextResponse.json({ data: { id: inserted.id } })

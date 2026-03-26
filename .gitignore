@@ -38,4 +38,8 @@ supabase/.temp
 
 # Misc
 *.tsbuildinfo
+
+# Jest integration handoff between test files
+.test-context.json
+__tests__/.test-context.json
 next-env.d.ts

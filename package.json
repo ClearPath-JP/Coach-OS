@@ -7,9 +7,15 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "eslint .",
+    "analyze": "next build",
     "supabase": "supabase",
     "db:push": "supabase db push",
-    "db:pull": "supabase db pull"
+    "db:pull": "supabase db pull",
+    "db:status": "supabase migration list",
+    "test": "jest --config jest.config.cjs --runInBand --forceExit --testTimeout 120000",
+    "setup": "npx tsx scripts/setup.ts",
+    "reset:demo": "npx tsx scripts/reset-demo.ts",
+    "seed:demo": "npx tsx scripts/seed-demo-data.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -23,23 +29,36 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "next": "16.1.6",
+    "next": "16.1.7",
     "react": "19.2.3",
     "react-big-calendar": "^1.15.0",
     "react-dom": "19.2.3",
+    "recharts": "^3.8.0",
     "stripe": "^17.7.0",
     "tailwind-merge": "^2.6.0",
     "zod": "^4.3.6"
   },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.11"
+    }
+  },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.1",
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
+    "dotenv": "^17.3.1",
     "eslint": "^9.16.0",
     "eslint-config-next": "^16.1.7",
+    "jest": "^30.3.0",
+    "node-fetch": "^3.3.2",
     "postcss": "^8",
     "supabase": "^1.142.0",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
     "typescript": "5.9.3"
   }
 }

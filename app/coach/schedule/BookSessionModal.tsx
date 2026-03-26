@@ -2,31 +2,32 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
+import { SESSION_DURATIONS, TIME_SLOTS } from './sessionFormOptions'
 
 type Client = { id: string; first_name: string | null; last_name: string | null }
-
-const TIME_OPTIONS: string[] = []
-for (let h = 6; h <= 22; h++) {
-  for (const m of [0, 30]) {
-    if (h === 22 && m === 30) break
-    TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
-  }
-}
-
-const DURATIONS = [
-  { value: 30, label: '30 min' },
-  { value: 45, label: '45 min' },
-  { value: 60, label: '60 min' },
-  { value: 90, label: '90 min' },
-]
 
 export interface BookSessionModalProps {
   open: boolean
   onClose: () => void
   onBooked: () => void
+  initialClientId?: string | null
+  initialDate?: string | null
+  initialTime?: string | null
+  /** When set, after a new session is created the old session is removed (reschedule flow). */
+  rescheduleFromSessionId?: string | null
+  initialDurationMinutes?: number | null
 }
 
-export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalProps) {
+export function BookSessionModal({
+  open,
+  onClose,
+  onBooked,
+  initialClientId = null,
+  initialDate = null,
+  initialTime = null,
+  rescheduleFromSessionId = null,
+  initialDurationMinutes = null,
+}: BookSessionModalProps) {
   const [clients, setClients] = useState<Client[]>([])
   const [clientId, setClientId] = useState('')
   const [date, setDate] = useState('')
@@ -45,11 +46,25 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
       .then((json) => {
         if (json.data && Array.isArray(json.data)) {
           setClients(json.data)
-          if (json.data.length && !clientId) setClientId(json.data[0].id)
+          if (initialClientId) {
+            setClientId(initialClientId)
+          } else if (json.data.length && !clientId) {
+            setClientId(json.data[0].id)
+          }
         }
       })
       .finally(() => setClientsLoading(false))
-  }, [open])
+  }, [open, initialClientId, clientId])
+
+  useEffect(() => {
+    if (!open) return
+    if (initialDate) setDate(initialDate)
+    else setDate('')
+    if (initialTime) setStartTime(initialTime)
+    if (initialDurationMinutes != null && initialDurationMinutes > 0) {
+      setDurationMinutes(initialDurationMinutes)
+    }
+  }, [open, initialDate, initialTime, initialDurationMinutes])
 
   if (!open) return null
 
@@ -60,22 +75,18 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
       setError('Please select a client, date, and time')
       return
     }
-    const [h, min] = startTime.split(':').map(Number)
-    const scheduled = new Date(date)
-    scheduled.setHours(h, min, 0, 0)
-    const scheduled_time = scheduled.toISOString()
-
     setLoading(true)
     try {
-      const res = await fetch('/api/coach/sessions', {
+      const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          client_id: clientId,
-          scheduled_time,
-          duration_minutes: durationMinutes,
+          clientId,
+          date,
+          startTime,
+          durationMinutes,
+          type: 'video',
           notes: notes.trim() || null,
-          status: 'confirmed',
         }),
       })
       const json = await res.json()
@@ -88,6 +99,17 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
         setError(json.error ?? 'Could not book session')
         setLoading(false)
         return
+      }
+      if (rescheduleFromSessionId) {
+        const delRes = await fetch(`/api/sessions/${rescheduleFromSessionId}`, { method: 'DELETE' })
+        if (!delRes.ok) {
+          setError(
+            'The new session was booked, but the previous time could not be removed automatically. Delete the old session from your calendar.'
+          )
+          setLoading(false)
+          onBooked()
+          return
+        }
       }
       onBooked()
       onClose()
@@ -106,10 +128,19 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
   const today = new Date().toISOString().slice(0, 10)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="book-session-title">
-      <div className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-lg">
+    <div
+      className="fixed inset-0 z-50 flex max-md:flex-col max-md:justify-end md:items-center md:justify-center md:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="book-session-title"
+    >
+      <button type="button" className="absolute inset-0 bg-black/40" onClick={onClose} aria-label="Close dialog" tabIndex={-1} />
+      <div
+        className="relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-t-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-lg max-md:max-w-none md:max-w-md md:rounded-xl max-md:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 id="book-session-title" className="text-lg font-medium text-[var(--color-text-primary)]">
-          Book session
+          {rescheduleFromSessionId ? 'Reschedule session' : 'Book session'}
         </h2>
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
           <div>
@@ -119,7 +150,7 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
             <select
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
               required
               disabled={clientsLoading}
             >
@@ -140,7 +171,7 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
               value={date}
               onChange={(e) => setDate(e.target.value)}
               min={today}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
               required
             />
           </div>
@@ -151,10 +182,12 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
             <select
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
             >
-              {TIME_OPTIONS.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              {TIME_SLOTS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
               ))}
             </select>
           </div>
@@ -165,9 +198,9 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
             <select
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
             >
-              {DURATIONS.map((d) => (
+              {SESSION_DURATIONS.map((d) => (
                 <option key={d.value} value={d.value}>{d.label}</option>
               ))}
             </select>
@@ -181,7 +214,7 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Session focus, goals…"
               rows={3}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-white px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] resize-y"
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] resize-y"
               maxLength={2000}
             />
           </div>
@@ -193,7 +226,7 @@ export function BookSessionModal({ open, onClose, onBooked }: BookSessionModalPr
               Cancel
             </Button>
             <Button type="submit" disabled={loading || clientsLoading}>
-              {loading ? 'Booking…' : 'Book session'}
+              {loading ? 'Booking…' : rescheduleFromSessionId ? 'Book new time' : 'Book session'}
             </Button>
           </div>
         </form>

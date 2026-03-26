@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { emptyStrictBodySchema } from '@/lib/validations'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -13,6 +15,28 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`invoice-cancel:${user.id}`, {
+      windowMs: 60_000,
+      max: 60,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
+    }
+
+    let raw: unknown = {}
+    try {
+      const text = await request.text()
+      if (text.trim()) raw = JSON.parse(text) as unknown
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+    const bodyParsed = emptyStrictBodySchema.safeParse(raw)
+    if (!bodyParsed.success) {
+      return NextResponse.json({ error: 'Request body must be an empty JSON object' }, { status: 400 })
     }
 
     const { data: coach } = await supabase
@@ -48,10 +72,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .eq('workspace_id', coach.workspace_id)
 
     if (upErr) {
-      return NextResponse.json(
-        { error: upErr.message || 'Could not cancel invoice' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Could not cancel invoice' }, { status: 500 })
     }
 
     if (invoice.message_id) {

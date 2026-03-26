@@ -79,8 +79,7 @@ export function AssignProgramToClientModal({
       const program = programs.find((p) => p.id === programId)
       setSuccess(`Assigned "${program?.title ?? 'Program'}" to ${clientName}`)
       onAssigned()
-      const t = setTimeout(onClose, 1500)
-      return () => clearTimeout(t)
+      setTimeout(onClose, 1500)
     } catch {
       setError('Something went wrong — try again')
     } finally {
@@ -89,7 +88,7 @@ export function AssignProgramToClientModal({
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} title={`Assign program to ${clientName}`} className="max-w-md">
+    <Modal isOpen={open} onClose={onClose} title={`Assign program to ${clientName}`} className="w-full max-w-none md:max-w-md">
       {loading ? (
         <p className="text-[var(--color-muted)] text-sm">Loading…</p>
       ) : (
@@ -105,7 +104,7 @@ export function AssignProgramToClientModal({
                   <span className="font-medium text-[var(--color-ink)]">{prog.title}</span>
                   <Button
                     variant="secondary"
-                    className="min-h-[36px] shrink-0"
+                    className="min-h-[44px] shrink-0"
                     onClick={() => handleAssign(prog.id)}
                     disabled={assigning}
                   >

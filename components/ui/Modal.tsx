@@ -27,6 +27,11 @@ export function Modal({
   className,
 }: ModalProps) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   const getFocusableElements = useCallback(() => {
     if (!cardRef.current) return []
@@ -40,14 +45,16 @@ export function Modal({
 
     const previouslyFocused = document.activeElement as HTMLElement | null
     const focusable = getFocusableElements()
-    const first = focusable[0]
+    const preferredFirst =
+      cardRef.current?.querySelector<HTMLElement>('input, textarea, select, [autofocus]') ?? null
+    const first = preferredFirst ?? focusable[0]
     const last = focusable[focusable.length - 1]
 
     if (first) first.focus()
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
       if (e.key !== 'Tab') return
@@ -71,44 +78,44 @@ export function Modal({
       document.removeEventListener('keydown', handleKeyDown)
       previouslyFocused?.focus()
     }
-  }, [isOpen, onClose, getFocusableElements])
+  }, [isOpen, getFocusableElements])
 
   if (!isOpen) return null
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex max-md:flex-col max-md:justify-end md:items-center md:justify-center md:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      {/* Overlay backdrop */}
       <button
         type="button"
-        className="absolute inset-0 bg-[var(--color-ink)]/40"
+        className="absolute inset-0 bg-[rgba(0,0,0,0.4)] backdrop-blur-[4px] md:bg-[rgba(0,0,0,0.4)]"
         onClick={onClose}
         aria-label="Close modal"
         tabIndex={-1}
       />
-      {/* Centered white card */}
       <div
         ref={cardRef}
         className={cn(
-          'relative w-full max-w-md rounded-xl border border-[var(--color-border)] bg-white p-5',
+          'relative z-10 flex max-h-[90vh] w-full flex-col overflow-y-auto border border-[var(--color-border)] bg-[var(--color-bg)] shadow-[var(--shadow-card-raised)]',
+          'rounded-t-xl max-md:max-w-none md:mx-auto md:max-w-md md:rounded-xl',
+          'p-5 max-md:pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]',
           className
         )}
       >
         <div className="flex items-start justify-between gap-4">
           <h2
             id="modal-title"
-            className="text-[var(--color-ink)] font-medium leading-tight"
+            className="text-[var(--color-text-primary)] text-[18px] font-medium leading-[var(--leading-heading)]"
           >
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded-lg p-1 text-[var(--color-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)] focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg p-1 text-[var(--color-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
             aria-label="Close"
           >
             <svg

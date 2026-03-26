@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { createInvoiceSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { normalizeEmail } from '@/lib/utils'
 
 /**
  * GET /api/invoices — list invoices for the workspace. Coach only.
@@ -14,6 +15,25 @@ export async function GET(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`api-invoices-get:${user.id}`, {
+      windowMs: 60_000,
+      max: 100,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json(
+        { error: 'Too many attempts — please wait a minute and try again' },
+        { status: 429 }
+      )
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
+    }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    if (profile?.role !== 'coach') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const { data: coach } = await supabase
       .from('coaches')
       .select('workspace_id')
@@ -26,7 +46,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const clientId = searchParams.get('clientId')?.trim()
     const status = searchParams.get('status')?.trim()
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '50', 10) || 50))
+    const before = searchParams.get('before')?.trim()
 
+    const fetchSize = limit + 1
     let query = supabase
       .from('session_invoices')
       .select(`
@@ -38,6 +61,7 @@ export async function GET(request: Request) {
       `)
       .eq('workspace_id', coach.workspace_id)
       .order('created_at', { ascending: false })
+      .limit(fetchSize)
 
     if (clientId) {
       query = query.eq('client_id', clientId)
@@ -45,8 +69,11 @@ export async function GET(request: Request) {
     if (status && ['pending', 'paid', 'cancelled', 'refunded'].includes(status)) {
       query = query.eq('status', status)
     }
+    if (before) {
+      query = query.lt('created_at', before)
+    }
 
-    const { data, error } = await query
+    const { data: rows, error } = await query
 
     if (error) {
       return NextResponse.json(
@@ -54,7 +81,17 @@ export async function GET(request: Request) {
         { status: 500 }
       )
     }
-    return NextResponse.json({ data: data ?? [] })
+    const list = rows ?? []
+    const hasMore = list.length > limit
+    const slice = hasMore ? list.slice(0, limit) : list
+    const nextCursor = slice.length > 0 ? slice[slice.length - 1]?.created_at ?? null : null
+    const res = NextResponse.json({
+      data: slice,
+      hasMore,
+      nextCursor,
+    })
+    res.headers.set('Cache-Control', 'private, max-age=30')
+    return res
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },
@@ -135,13 +172,21 @@ export async function POST(request: Request) {
       )
     }
 
+    const emailNorm = normalizeEmail(client.email)
     const { data: clientProfile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('email', client.email)
+      .eq('email', emailNorm)
       .maybeSingle()
 
-    const recipientId = clientProfile?.id ?? user.id
+    if (!clientProfile?.id) {
+      return NextResponse.json(
+        { error: "This client doesn't have a login yet — they need a client account before you can send an invoice in chat" },
+        { status: 400 }
+      )
+    }
+
+    const recipientId = clientProfile.id
 
     const dueDateValue = dueDate ? new Date(dueDate).toISOString() : null
 

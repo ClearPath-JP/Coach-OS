@@ -1,4 +1,7 @@
+import { format } from 'date-fns'
 import { NextResponse } from 'next/server'
+import { invalidateCoachAnalyticsCaches, invalidatePaymentSummaryCaches } from '@/lib/api-cache'
+import { logAuditEvent } from '@/lib/audit-log'
 import { createClient } from '@/lib/supabase-server'
 import { markInvoicePaidSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -130,6 +133,39 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
     }
 
+    const { data: invForPayment } = await supabase
+      .from('session_invoices')
+      .select('id, client_id, session_id, amount_cents')
+      .eq('id', invoiceId)
+      .eq('workspace_id', coach.workspace_id)
+      .single()
+
+    if (invForPayment) {
+      const { data: existingPayment } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('invoice_id', invoiceId)
+        .maybeSingle()
+
+      if (!existingPayment) {
+        const amountFinal = parsed.data.amountCents ?? invForPayment.amount_cents
+        const { error: payErr } = await supabase.from('payments').insert({
+          workspace_id: coach.workspace_id,
+          coach_id: user.id,
+          client_id: invForPayment.client_id,
+          invoice_id: invoiceId,
+          session_id: invForPayment.session_id,
+          amount_cents: amountFinal,
+          currency: 'usd',
+          payment_method: parsed.data.paymentMethod,
+          payment_reference: parsed.data.paymentReference ?? null,
+          notes: parsed.data.paymentMethodNote ?? null,
+          payment_date: format(new Date(), 'yyyy-MM-dd'),
+        })
+        void payErr // best-effort row; invoice is already marked paid
+      }
+    }
+
     if (invoice.message_id) {
       const { data: inv } = await supabase
         .from('session_invoices')
@@ -168,6 +204,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       .select('id, status, paid_at, payment_method, session_id')
       .eq('id', invoiceId)
       .single()
+
+    void logAuditEvent(
+      'invoice_paid',
+      user.id,
+      coach.workspace_id,
+      { invoiceId },
+      request
+    )
+    void invalidatePaymentSummaryCaches(coach.workspace_id)
+    void invalidateCoachAnalyticsCaches(coach.workspace_id)
 
     return NextResponse.json({ data: updated })
   } catch {

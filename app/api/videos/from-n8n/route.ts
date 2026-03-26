@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const parsed = fromN8nBodySchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid body', details: parsed.error.issues }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
     }
 
     const supabase = createServiceClient()
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message ?? 'Could not create video' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not create video' }, { status: 500 })
     }
     return NextResponse.json({ data: { id: video.id } }, { status: 201 })
   } catch {
