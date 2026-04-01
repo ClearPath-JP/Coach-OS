@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { isAdminEmail } from '@/lib/admin-email'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { enforceCoachSessionFingerprint } from '@/lib/session-fingerprint'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createServerClientForMiddleware } from '@/lib/supabase-server'
 
 function isSupabaseNotConfigured(err: unknown): boolean {
@@ -19,6 +21,26 @@ const AUTH_PUBLIC_PATHS = [
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  // Root: send guests to login immediately (same as app/page.tsx; avoids extra RSC work).
+  if (pathname === '/' && request.method === 'GET') {
+    const response = NextResponse.next({ request })
+    let supabase
+    try {
+      supabase = createServerClientForMiddleware(request, response)
+    } catch (err) {
+      if (isSupabaseNotConfigured(err)) return NextResponse.next({ request })
+      throw err
+    }
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (!user || authError) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    return response
+  }
 
   // Rate limit auth pages: 30 requests/min per IP (11-auth-permissions §4.1)
   if (AUTH_PUBLIC_PATHS.includes(pathname as (typeof AUTH_PUBLIC_PATHS)[number])) {
@@ -45,6 +67,10 @@ export async function proxy(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
     if (user) {
+      if (isAdminEmail(user.email)) {
+        return NextResponse.redirect(new URL('/admin/overview', request.url))
+      }
+
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
 
       if (pathname === '/client-login') {
@@ -61,16 +87,12 @@ export async function proxy(request: NextRequest) {
           return NextResponse.redirect(new URL('/client/portal', request.url))
         }
         if (profile?.role === 'coach') {
-          const { data: coach } = await supabase
-            .from('coaches')
-            .select('workspace_id')
-            .eq('user_id', user.id)
-            .maybeSingle()
-          if (coach?.workspace_id) {
+          const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+          if (workspaceId) {
             const { data: workspace } = await supabase
               .from('workspaces')
               .select('completed_onboarding')
-              .eq('id', coach.workspace_id)
+              .eq('id', workspaceId)
               .maybeSingle()
             if (!workspace?.completed_onboarding) {
               return NextResponse.redirect(new URL('/onboarding', request.url))
@@ -111,24 +133,51 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
+    if (isAdminEmail(user.email)) {
+      return NextResponse.redirect(new URL('/admin/overview', request.url))
+    }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
     if (profile?.role !== 'coach') {
       return NextResponse.redirect(new URL('/client/portal', request.url))
     }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (coach?.workspace_id) {
+    const onboardingWorkspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (onboardingWorkspaceId) {
       const { data: workspace } = await supabase
         .from('workspaces')
         .select('completed_onboarding')
-        .eq('id', coach.workspace_id)
+        .eq('id', onboardingWorkspaceId)
         .maybeSingle()
       if (workspace?.completed_onboarding) {
         return NextResponse.redirect(new URL('/coach/dashboard', request.url))
       }
+    }
+    return response
+  }
+
+  // /admin — only ADMIN_EMAIL; non-matching signed-in users get opaque 403 (no redirect to login).
+  if (pathname.startsWith('/admin')) {
+    if (pathname === '/admin/not-authorized' || pathname.startsWith('/admin/not-authorized/')) {
+      return NextResponse.next({ request })
+    }
+    const response = NextResponse.next({ request })
+    let supabase
+    try {
+      supabase = createServerClientForMiddleware(request, response)
+    } catch (err) {
+      if (isSupabaseNotConfigured(err)) return NextResponse.next({ request })
+      throw err
+    }
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (!user || authError) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    if (!isAdminEmail(user.email)) {
+      return NextResponse.redirect(new URL('/admin/not-authorized', request.url))
     }
     return response
   }
@@ -152,6 +201,9 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
+    if (isAdminEmail(user.email)) {
+      return NextResponse.redirect(new URL('/admin/overview', request.url))
+    }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
 
     if (pathname.startsWith('/coach')) {
@@ -160,7 +212,7 @@ export async function proxy(request: NextRequest) {
       }
     }
     if (pathname.startsWith('/client')) {
-      if (profile?.role !== 'client' && profile?.role !== 'coach') {
+      if (profile?.role !== 'client') {
         return NextResponse.redirect(new URL('/login', request.url))
       }
     }
@@ -184,26 +236,34 @@ export async function proxy(request: NextRequest) {
     }
     // Coach with incomplete onboarding → /onboarding
     if (profile?.role === 'coach') {
-      const { data: coach } = await supabase
-        .from('coaches')
-        .select('workspace_id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-      if (coach?.workspace_id) {
+      const coachWorkspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+      if (coachWorkspaceId) {
         const { data: workspace } = await supabase
           .from('workspaces')
           .select('completed_onboarding')
-          .eq('id', coach.workspace_id)
+          .eq('id', coachWorkspaceId)
           .maybeSingle()
         if (!workspace?.completed_onboarding) {
           return NextResponse.redirect(new URL('/onboarding', request.url))
         }
         // Subscription check for /coach/* only (not /billing)
         if (pathname.startsWith('/coach')) {
+          const { data: wsRow } = await supabase
+            .from('workspaces')
+            .select('status')
+            .eq('id', coachWorkspaceId)
+            .maybeSingle()
+          if (wsRow?.status === 'suspended' && !pathname.startsWith('/coach/suspended')) {
+            return NextResponse.redirect(new URL('/coach/suspended', request.url))
+          }
+          if (wsRow?.status !== 'suspended' && pathname.startsWith('/coach/suspended')) {
+            return NextResponse.redirect(new URL('/coach/dashboard', request.url))
+          }
+
           const { data: sub } = await supabase
             .from('subscriptions')
             .select('status, trial_ends_at, current_period_end')
-            .eq('workspace_id', coach.workspace_id)
+            .eq('workspace_id', coachWorkspaceId)
             .maybeSingle()
 
           // No row: coach is pre-Stripe or in implicit free trial — allow access until they subscribe via Stripe.
@@ -265,9 +325,12 @@ export default proxy
 
 export const config = {
   matcher: [
+    '/',
     '/api/:path*',
     '/coach/:path*',
     '/client/:path*',
+    '/admin',
+    '/admin/:path*',
     '/billing',
     '/onboarding',
     '/onboarding/:path*',

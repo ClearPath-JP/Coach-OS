@@ -2,8 +2,15 @@
 
 import { usePathname } from 'next/navigation'
 
+const STEPS = [
+  { label: 'Workspace', num: 1, hint: 'Brand your practice' },
+  { label: 'Focus', num: 2, hint: 'Shape your dashboard' },
+  { label: 'Client', num: 3, hint: 'Optional first invite' },
+  { label: 'Launch', num: 4, hint: 'Pick your first move' },
+] as const
+
 /**
- * Progress indicator: 4 steps as pills. Active = filled, others = outlined.
+ * Step indicator with labels — display only (complete steps in order).
  */
 export function OnboardingProgress() {
   const pathname = usePathname()
@@ -18,19 +25,71 @@ export function OnboardingProgress() {
             ? 4
             : 1
 
+  const activeMeta = STEPS.find((s) => s.num === step)
+
   return (
-    <nav className="flex items-center justify-center gap-2" aria-label="Onboarding progress">
-      {[1, 2, 3, 4].map((i) => (
+    <nav className="w-full" aria-label="Onboarding progress">
+      <div className="relative mx-auto max-w-[640px]">
         <div
-          key={i}
-          className={`h-2 w-10 rounded-full ${
-            i === step
-              ? 'bg-[var(--color-accent)]'
-              : 'border border-[var(--color-border)] bg-[var(--color-bg)]'
-          }`}
-          aria-current={i === step ? 'step' : undefined}
+          className="pointer-events-none absolute left-[12%] right-[12%] top-[13px] hidden h-0.5 sm:block"
+          style={{
+            background: 'linear-gradient(90deg, var(--accent-muted), var(--border-default), var(--accent-muted))',
+          }}
+          aria-hidden
         />
-      ))}
+        <ol className="relative flex flex-wrap items-start justify-center gap-2 sm:gap-1">
+          {STEPS.map((s, i) => {
+            const active = s.num === step
+            const done = s.num < step
+            return (
+              <li key={s.num} className="flex flex-1 flex-col items-center sm:min-w-0 sm:flex-initial">
+                {i > 0 ? (
+                  <span className="my-2 hidden h-8 w-px bg-[var(--border-default)] sm:hidden" aria-hidden />
+                ) : null}
+                <div
+                  className={`flex w-full flex-col items-center gap-1.5 rounded-2xl px-2 py-2 sm:w-auto sm:flex-row sm:gap-2 sm:rounded-full sm:px-3 sm:py-1.5 ${
+                    active
+                      ? 'bg-[var(--accent-light)] text-[var(--accent)] ring-1 ring-[var(--accent)]/20'
+                      : done
+                        ? 'text-[var(--text-secondary)]'
+                        : 'text-[var(--text-tertiary)]'
+                  }`}
+                >
+                  <span
+                    className={`flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                      active
+                        ? 'bg-[var(--accent)] text-[var(--text-on-accent)] shadow-sm'
+                        : done
+                          ? 'bg-[var(--accent-muted)] text-[var(--accent)]'
+                          : 'border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-tertiary)]'
+                    }`}
+                  >
+                    {done ? '✓' : s.num}
+                  </span>
+                  <div className="min-w-0 text-center sm:text-left">
+                    <span className="block text-[11px] font-semibold sm:inline sm:text-[12px]">{s.label}</span>
+                    {active ? (
+                      <span className="mt-0.5 block text-[10px] font-normal leading-tight text-[var(--text-tertiary)] sm:hidden">
+                        {s.hint}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+
+      {activeMeta ? (
+        <p className="mt-4 text-center text-[13px] text-[var(--text-secondary)] sm:mt-5">
+          <span className="font-medium text-[var(--text-primary)]">Step {step} of {STEPS.length}</span>
+          <span className="mx-2 text-[var(--border-strong)]" aria-hidden>
+            ·
+          </span>
+          <span className="text-[var(--text-tertiary)]">{activeMeta.hint}</span>
+        </p>
+      ) : null}
     </nav>
   )
 }

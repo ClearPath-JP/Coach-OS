@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase'
 import { applyWorkspaceAccentVars } from '@/lib/accent-colors'
+import { useWorkspace } from '@/lib/workspace-context'
 import {
   COACH_THEME_PRESETS,
   DEFAULT_COACH_ACCENT,
@@ -15,8 +17,9 @@ import {
   type CoachThemePreset,
 } from '@/lib/coach-themes'
 import { cn } from '@/lib/utils'
+import { WorkspaceStorageSection } from '@/components/coach/WorkspaceStorageSection'
 
-type TabKey = 'profile' | 'workspace' | 'appearance' | 'notifications'
+type TabKey = 'profile' | 'workspace' | 'payments' | 'appearance' | 'notifications'
 type NotificationKey = 'newMessage' | 'sessionReminder' | 'clientActivity' | 'paymentReceived'
 
 type SettingsResponse = {
@@ -35,6 +38,12 @@ type SettingsResponse = {
       brandTagline: string | null
       clientPortalHeading: string | null
       clientWelcomeMessage: string | null
+      cashappUsername: string | null
+      venmoUsername: string | null
+      paypalEmail: string | null
+      zelleEmailOrPhone: string | null
+      stripeConnected: boolean
+      paymentInstructions: string | null
     }
     profile: {
       firstName: string
@@ -56,6 +65,7 @@ function mediaUrlUnoptimized(url: string | null | undefined): boolean {
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 const BIO_MAX = 300
+const PAYMENT_INSTRUCTIONS_MAX = 300
 const PAYMENT_METHODS = [
   { label: 'Cash', value: 'cash' },
   { label: 'Venmo', value: 'venmo' },
@@ -98,7 +108,9 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (next: bool
 }
 
 export function SettingsPageContent() {
+  const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
+  const { updateSettings, refetchSettings } = useWorkspace()
   const [activeTab, setActiveTab] = useState<TabKey>('profile')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -121,6 +133,13 @@ export function SettingsPageContent() {
   const [clientPortalHeading, setClientPortalHeading] = useState('')
   const [clientWelcomeMessage, setClientWelcomeMessage] = useState('')
   const [savingWorkspace, setSavingWorkspace] = useState(false)
+  const [cashappUsername, setCashappUsername] = useState('')
+  const [venmoUsername, setVenmoUsername] = useState('')
+  const [paypalEmail, setPaypalEmail] = useState('')
+  const [zelleEmailOrPhone, setZelleEmailOrPhone] = useState('')
+  const [stripeConnected, setStripeConnected] = useState(false)
+  const [paymentInstructions, setPaymentInstructions] = useState('')
+  const [savingPayments, setSavingPayments] = useState(false)
 
   const [accentColor, setAccentColor] = useState(DEFAULT_COACH_ACCENT)
   const [savingTheme, setSavingTheme] = useState(false)
@@ -177,6 +196,12 @@ export function SettingsPageContent() {
         setBrandTagline(json.data.workspace.brandTagline || '')
         setClientPortalHeading(json.data.workspace.clientPortalHeading || '')
         setClientWelcomeMessage(json.data.workspace.clientWelcomeMessage || '')
+        setCashappUsername(json.data.workspace.cashappUsername || '')
+        setVenmoUsername(json.data.workspace.venmoUsername || '')
+        setPaypalEmail(json.data.workspace.paypalEmail || '')
+        setZelleEmailOrPhone(json.data.workspace.zelleEmailOrPhone || '')
+        setStripeConnected(json.data.workspace.stripeConnected || false)
+        setPaymentInstructions(json.data.workspace.paymentInstructions || '')
         setAccentColor((json.data.workspace.accentColor || DEFAULT_COACH_ACCENT).toUpperCase())
         setNotifications({
           newMessage: json.data.profile.notifications.newMessage,
@@ -233,25 +258,70 @@ export function SettingsPageContent() {
 
   const onAvatarFileChange = async (file: File | null) => {
     if (!file) return
+    const previousUrl = profileAvatarUrl
+    let blobPreview: string | null = null
     try {
-      const preview = URL.createObjectURL(file)
-      setProfileAvatarUrl(preview)
+      blobPreview = URL.createObjectURL(file)
+      setProfileAvatarUrl(blobPreview)
       const url = await uploadViaApi(file, 'avatar')
+      if (blobPreview.startsWith('blob:')) URL.revokeObjectURL(blobPreview)
+      blobPreview = null
       setProfileAvatarUrl(url)
+
+      const res = await fetch('/api/settings/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ avatarUrl: url }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(typeof json.error === 'string' ? json.error : 'Could not save profile photo')
+      }
+      setToast('Profile photo saved')
+      void refetchSettings()
+      router.refresh()
     } catch (e) {
-      setToast(e instanceof Error ? e.message : 'Could not upload avatar')
+      if (blobPreview?.startsWith('blob:')) URL.revokeObjectURL(blobPreview)
+      setProfileAvatarUrl(previousUrl)
+      setToast(e instanceof Error ? e.message : 'Could not update profile photo')
     }
   }
 
   const onWorkspaceLogoChange = async (file: File | null) => {
     if (!file) return
+    const previousUrl = workspaceLogoUrl
+    let blobPreview: string | null = null
     try {
-      const preview = URL.createObjectURL(file)
-      setWorkspaceLogoUrl(preview)
+      blobPreview = URL.createObjectURL(file)
+      setWorkspaceLogoUrl(blobPreview)
       const url = await uploadViaApi(file, 'logo')
+      if (blobPreview.startsWith('blob:')) URL.revokeObjectURL(blobPreview)
+      blobPreview = null
       setWorkspaceLogoUrl(url)
+
+      const res = await fetch('/api/settings/workspace', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ logoUrl: url }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(typeof json.error === 'string' ? json.error : 'Could not save workspace logo')
+      }
+      updateSettings({
+        workspaceDisplayName: workspaceName.trim() || null,
+        brandName: brandName.trim() || null,
+        logoUrl: url,
+      })
+      setToast('Workspace logo saved')
+      void refetchSettings()
+      router.refresh()
     } catch (e) {
-      setToast(e instanceof Error ? e.message : 'Could not upload logo')
+      if (blobPreview?.startsWith('blob:')) URL.revokeObjectURL(blobPreview)
+      setWorkspaceLogoUrl(previousUrl)
+      setToast(e instanceof Error ? e.message : 'Could not update workspace logo')
     }
   }
 
@@ -276,6 +346,8 @@ export function SettingsPageContent() {
         return
       }
       setToast('Profile saved')
+      void refetchSettings()
+      router.refresh()
     } catch {
       setToast('Something went wrong — check your connection and try again')
     } finally {
@@ -291,14 +363,15 @@ export function SettingsPageContent() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          displayName: workspaceName.trim(),
+          // Empty string fails zod .min(1); use null so branding-only saves still persist.
+          displayName: workspaceName.trim().length > 0 ? workspaceName.trim() : null,
           timezone,
           logoUrl: workspaceLogoUrl || null,
           preferredPaymentMethods,
-          brandName: brandName.trim() || null,
-          brandTagline: brandTagline.trim() || null,
-          clientPortalHeading: clientPortalHeading.trim() || null,
-          clientWelcomeMessage: clientWelcomeMessage.trim() || null,
+          brandName: brandName.trim().length > 0 ? brandName.trim() : null,
+          brandTagline: brandTagline.trim().length > 0 ? brandTagline.trim() : null,
+          clientPortalHeading: clientPortalHeading.trim().length > 0 ? clientPortalHeading.trim() : null,
+          clientWelcomeMessage: clientWelcomeMessage.trim().length > 0 ? clientWelcomeMessage.trim() : null,
         }),
       })
       const json = await res.json().catch(() => ({}))
@@ -306,11 +379,49 @@ export function SettingsPageContent() {
         setToast(json.error ?? 'Could not save workspace settings')
         return
       }
+
+      updateSettings({
+        workspaceDisplayName: workspaceName.trim() || null,
+        brandName: brandName.trim() || null,
+        logoUrl: workspaceLogoUrl || null,
+      })
       setToast('Workspace settings saved')
+      void refetchSettings()
+      router.refresh()
     } catch {
       setToast('Something went wrong — check your connection and try again')
     } finally {
       setSavingWorkspace(false)
+    }
+  }
+
+  const savePaymentSettings = async () => {
+    setSavingPayments(true)
+    try {
+      const res = await fetch('/api/settings/workspace', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          cashappUsername: cashappUsername.trim() || null,
+          venmoUsername: venmoUsername.trim() || null,
+          paypalEmail: paypalEmail.trim() || null,
+          zelleEmailOrPhone: zelleEmailOrPhone.trim() || null,
+          stripeConnected,
+          paymentInstructions: paymentInstructions.trim() || null,
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(json.error ?? 'Could not save payment settings')
+        return
+      }
+      setToast('Payment settings saved')
+      router.refresh()
+    } catch {
+      setToast('Something went wrong — check your connection and try again')
+    } finally {
+      setSavingPayments(false)
     }
   }
 
@@ -333,9 +444,18 @@ export function SettingsPageContent() {
         setToast(json.error ?? 'Could not save theme')
         return
       }
+
+      updateSettings({
+        accentColor: normalized,
+        accentColorLight: light,
+      })
+      document.documentElement.style.setProperty('--accent', normalized)
+      document.documentElement.style.setProperty('--accent-light', light)
       setAccentColor(normalized)
-      applyWorkspaceAccentVars(preset.accent, preset.light)
+      applyWorkspaceAccentVars(normalized, light)
       setToast('Theme saved')
+      void refetchSettings()
+      router.refresh()
     } catch {
       setToast('Something went wrong — check your connection and try again')
     } finally {
@@ -463,12 +583,13 @@ export function SettingsPageContent() {
         <div className="flex gap-1 border-b border-[var(--color-border)] overflow-x-auto">
           <button type="button" className={tabButtonClass('profile')} onClick={() => setActiveTab('profile')}>Profile</button>
           <button type="button" className={tabButtonClass('workspace')} onClick={() => setActiveTab('workspace')}>Workspace</button>
+          <button type="button" className={tabButtonClass('payments')} onClick={() => setActiveTab('payments')}>Payments</button>
           <button type="button" className={tabButtonClass('appearance')} onClick={() => setActiveTab('appearance')}>Appearance</button>
           <button type="button" className={tabButtonClass('notifications')} onClick={() => setActiveTab('notifications')}>Notifications</button>
         </div>
 
         {activeTab === 'profile' && (
-          <div className="space-y-4 max-w-3xl">
+          <div className="space-y-8 max-w-3xl">
             <Card className="space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-medium">Avatar</label>
@@ -554,8 +675,125 @@ export function SettingsPageContent() {
           </div>
         )}
 
+        {activeTab === 'payments' && (
+          <div className="space-y-8 max-w-3xl">
+            <Card className="space-y-2">
+              <h2 className="text-lg font-medium">How clients pay you</h2>
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Add your payment details so clients see exactly how to send money when they receive an invoice.
+              </p>
+            </Card>
+
+            <Card className="space-y-4 border border-[var(--color-border)]">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-base font-bold text-[#635BFF]">Stripe</span>
+                <span className="rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-light)] px-2 py-0.5 text-xs font-medium text-[var(--color-accent)]">
+                  Recommended
+                </span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${stripeConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)]'}`}>
+                  {stripeConnected ? 'Connected' : 'Not connected'}
+                </span>
+              </div>
+              {!stripeConnected ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    Accept card payments directly through ClearPath. Clients pay instantly - no back and forth.
+                  </p>
+                  <ul className="space-y-1 text-sm text-[var(--color-text-secondary)]">
+                    <li>✓ Automatic payment confirmation</li>
+                    <li>✓ Instant receipts to clients</li>
+                    <li>✓ Revenue tracked automatically</li>
+                  </ul>
+                  <a href="/api/billing/stripe-connect">
+                    <Button>Connect Stripe</Button>
+                  </a>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href="https://dashboard.stripe.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm font-medium text-[var(--color-accent)] hover:underline"
+                  >
+                    Manage in Stripe →
+                  </a>
+                  <Button
+                    variant="ghost"
+                    className="text-sm"
+                    onClick={() => setStripeConnected(false)}
+                  >
+                    Disconnect
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            <Card className="space-y-4">
+              <div>
+                <h3 className="text-base font-medium">Manual payment methods</h3>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  Add your handles so clients know where to send payment.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 flex items-center gap-2 text-sm font-medium">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700">$</span>
+                    CashApp
+                  </label>
+                  <Input value={cashappUsername} onChange={(e) => setCashappUsername(e.target.value)} placeholder="$yourcashtag" />
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Your $Cashtag username</p>
+                </div>
+                <div>
+                  <label className="mb-1 flex items-center gap-2 text-sm font-medium">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-100 text-sky-700">V</span>
+                    Venmo
+                  </label>
+                  <Input value={venmoUsername} onChange={(e) => setVenmoUsername(e.target.value)} placeholder="@yourvenmo" />
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Your @username</p>
+                </div>
+                <div>
+                  <label className="mb-1 flex items-center gap-2 text-sm font-medium">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-700">P</span>
+                    PayPal
+                  </label>
+                  <Input value={paypalEmail} onChange={(e) => setPaypalEmail(e.target.value)} placeholder="your@email.com" />
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Email address or PayPal.me link</p>
+                </div>
+                <div>
+                  <label className="mb-1 flex items-center gap-2 text-sm font-medium">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 text-violet-700">Z</span>
+                    Zelle
+                  </label>
+                  <Input value={zelleEmailOrPhone} onChange={(e) => setZelleEmailOrPhone(e.target.value)} placeholder="Phone or email" />
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">Phone number or email registered with Zelle</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium">Payment note to clients</label>
+                <Textarea
+                  value={paymentInstructions}
+                  maxLength={PAYMENT_INSTRUCTIONS_MAX}
+                  onChange={(e) => setPaymentInstructions(e.target.value)}
+                  placeholder="e.g. Please send payment within 24 hours. Include your name in the memo."
+                />
+                <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                  {paymentInstructions.length}/{PAYMENT_INSTRUCTIONS_MAX}
+                </p>
+              </div>
+              <Button onClick={savePaymentSettings} disabled={savingPayments}>
+                {savingPayments ? 'Saving payment settings...' : 'Save payment settings'}
+              </Button>
+            </Card>
+          </div>
+        )}
+
         {activeTab === 'workspace' && (
-          <div className="space-y-4 max-w-3xl">
+          <div className="space-y-8 max-w-3xl">
             <Card className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">Workspace name</label>
@@ -622,6 +860,8 @@ export function SettingsPageContent() {
                 </p>
               </div>
 
+              <WorkspaceStorageSection />
+
               <div className="border-t border-[var(--color-border)] pt-6">
                 <h2 className="text-lg font-medium text-[var(--color-text-primary)] mb-4">Client branding</h2>
                 <div className="space-y-4">
@@ -679,7 +919,7 @@ export function SettingsPageContent() {
         )}
 
         {activeTab === 'appearance' && (
-          <div className="max-w-5xl space-y-4">
+          <div className="max-w-5xl space-y-8">
             <p className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[13px] leading-snug text-[var(--color-text-secondary)]">
               <span className="font-medium text-[var(--color-text-primary)]">Dark mode:</span> use the sun/moon toggle in the top bar.
               Color theme is saved to your workspace and applies to buttons, nav, focus rings, and client-facing accents.
@@ -751,11 +991,26 @@ export function SettingsPageContent() {
                 )
               })}
             </div>
+            <div className="pt-2">
+              <div className="w-[200px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] p-3">
+                <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-2">
+                  <span className="inline-flex size-5 rounded-[6px]" style={{ backgroundColor: accentColor }} />
+                  <span className="truncate text-[12px] font-medium text-[var(--text-primary)]">{brandName.trim() || 'ClearPath'}</span>
+                </div>
+                <div className="mt-2 space-y-1">
+                  <div className="h-5 rounded-[6px]" style={{ backgroundColor: 'var(--accent-light)' }} />
+                  <div className="h-5 rounded-[6px] bg-[var(--bg-muted)]" />
+                  <div className="h-5 rounded-[6px] bg-[var(--bg-muted)]" />
+                </div>
+                <p className="mt-3 text-center text-[10px] text-[var(--text-quaternary)]">Powered by ClearPath</p>
+              </div>
+              <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">Preview — how clients see your portal</p>
+            </div>
           </div>
         )}
 
         {activeTab === 'notifications' && (
-          <div className="space-y-4 max-w-3xl">
+          <div className="space-y-8 max-w-3xl">
             <Card className="space-y-4">
               {[
                 {

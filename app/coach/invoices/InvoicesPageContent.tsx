@@ -2,8 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { DataTable } from '@/components/ui/DataTable'
+import { StatusDot } from '@/components/ui/StatusDot'
 
 type ClientRow = { id: string; first_name: string | null; last_name: string | null; email: string | null }
 type PackageRow = { id: string; title: string | null; description: string | null }
@@ -127,18 +130,13 @@ export function InvoicesPageContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-medium text-[var(--color-ink)]">Invoice history</h1>
-          <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-            View and export all invoices. Filter by status or client.
-          </p>
-        </div>
+      <PageHeader title="Invoices" contextInfo={`${pending.length} pending · ${paid.length} paid`}>
         <div className="flex flex-wrap gap-2">
           <Link href="/coach/packages">
-            <Button variant="secondary">Packages</Button>
+            <Button variant="secondary" size="sm">Packages</Button>
           </Link>
           <Button
+            size="sm"
             variant="secondary"
             onClick={() => exportToCsv(invoices)}
             disabled={invoices.length === 0}
@@ -146,7 +144,7 @@ export function InvoicesPageContent() {
             Export to CSV
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       {!loading && !error && invoices.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -212,11 +210,10 @@ export function InvoicesPageContent() {
       )}
 
       {!loading && !error && invoices.length === 0 && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
-          <p className="font-medium text-[var(--color-ink)]">No invoices yet</p>
-          <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-            Send an invoice from a session package to see it here.
-          </p>
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-12 text-center">
+          <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">💰</div>
+          <p className="mt-4 text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">No invoices yet</p>
+          <p className="mx-auto mt-2 max-w-[320px] text-[14px] leading-[1.6] text-[var(--text-tertiary)]">Send an invoice from a session package to see it here.</p>
           <Link href="/coach/packages">
             <Button className="mt-4">Go to packages</Button>
           </Link>
@@ -224,48 +221,26 @@ export function InvoicesPageContent() {
       )}
 
       {!loading && !error && invoices.length > 0 && (
-        <Card variant="raised" padding="default" className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-left text-[15px]">
-            <thead>
-              <tr className="border-b border-[var(--color-border)]">
-                <th className="pb-3 pr-4 font-medium text-[var(--color-ink)]">Client</th>
-                <th className="pb-3 pr-4 font-medium text-[var(--color-ink)]">Package</th>
-                <th className="pb-3 pr-4 font-medium text-[var(--color-ink)]">Amount</th>
-                <th className="pb-3 pr-4 font-medium text-[var(--color-ink)]">Status</th>
-                <th className="pb-3 pr-4 font-medium text-[var(--color-ink)]">Payment method</th>
-                <th className="pb-3 pr-4 font-medium text-[var(--color-ink)]">Sent</th>
-                <th className="pb-3 font-medium text-[var(--color-ink)]">Paid</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((inv) => (
-                <tr key={inv.id} className="border-b border-[var(--color-border)] last:border-0">
-                  <td className="py-3 pr-4 text-[var(--color-ink)]">{clientName(inv.clients)}</td>
-                  <td className="py-3 pr-4 text-[var(--color-muted)]">{inv.session_packages?.title ?? '—'}</td>
-                  <td className="py-3 pr-4 text-[var(--color-ink)]">{formatAmount(inv.amount_cents, inv.currency)}</td>
-                  <td className="py-3 pr-4">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        inv.status === 'paid'
-                          ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
-                          : inv.status === 'cancelled' || inv.status === 'refunded'
-                            ? 'bg-[var(--color-border)] text-[var(--color-muted)]'
-                            : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-4 text-[var(--color-muted)]">
-                    {inv.payment_method ? PAYMENT_METHOD_LABELS[inv.payment_method] ?? inv.payment_method : '—'}
-                  </td>
-                  <td className="py-3 pr-4 text-[var(--color-muted)]">{formatDate(inv.created_at)}</td>
-                  <td className="py-3 text-[var(--color-muted)]">{formatDate(inv.paid_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+        <DataTable
+          rows={invoices}
+          loading={loading}
+          emptyTitle="No invoices yet"
+          emptyDescription="Send an invoice from a session package to see it here."
+          columns={[
+            { key: 'client', header: 'Client', sortValue: (r) => clientName(r.clients), render: (inv) => clientName(inv.clients) },
+            { key: 'package', header: 'Package', render: (inv) => <span className="text-[var(--text-tertiary)]">{inv.session_packages?.title ?? '—'}</span> },
+            { key: 'amount', header: 'Amount', sortValue: (r) => r.amount_cents, render: (inv) => formatAmount(inv.amount_cents, inv.currency) },
+            {
+              key: 'status',
+              header: 'Status',
+              sortValue: (r) => r.status,
+              render: (inv) => <span className="inline-flex items-center gap-2 text-[13px]"><StatusDot tone={inv.status === 'paid' ? 'active' : inv.status === 'pending' ? 'pending' : 'inactive'} />{inv.status}</span>,
+            },
+            { key: 'method', header: 'Method', render: (inv) => inv.payment_method ? PAYMENT_METHOD_LABELS[inv.payment_method] ?? inv.payment_method : '—' },
+            { key: 'date', header: 'Date', sortValue: (r) => r.created_at, render: (inv) => formatDate(inv.created_at) },
+            { key: 'actions', header: 'Actions', render: () => <Button size="xs" variant="ghost">Open</Button> },
+          ]}
+        />
       )}
     </div>
   )

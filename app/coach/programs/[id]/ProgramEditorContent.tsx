@@ -25,6 +25,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { AssignProgramModal } from '@/components/coach/AssignProgramModal'
 import { VideoSelectModal, type VideoOption } from '@/components/coach/VideoSelectModal'
+import { DriveFileBrowser } from '@/components/coach/DriveFileBrowser'
 import { cn } from '@/lib/utils'
 
 type ProgramModule = {
@@ -679,6 +680,7 @@ function ProgramModuleEditor({
               onRefresh()
               setEditingContentId(null)
             }}
+            onRefreshProgram={onRefresh}
             workspaceId={workspaceId}
           />
         ))}
@@ -709,10 +711,10 @@ function ProgramModuleEditor({
             </button>
             <button
               type="button"
-              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm text-[var(--color-muted)] hover:bg-[var(--color-surface)]"
+              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
               onClick={() => addContent('video')}
             >
-              + Add video (coming soon)
+              + Add video
             </button>
             <button
               type="button"
@@ -735,6 +737,7 @@ function ContentBlockRow({
   onDelete,
   onCloseEditor,
   onSaved,
+  onRefreshProgram,
   workspaceId,
 }: {
   block: ProgramContent
@@ -743,6 +746,7 @@ function ContentBlockRow({
   onDelete: () => void
   onCloseEditor: () => void
   onSaved: () => void
+  onRefreshProgram: () => void
   workspaceId: string
 }) {
   const icon =
@@ -767,6 +771,7 @@ function ContentBlockRow({
           block={block}
           onClose={onCloseEditor}
           onSaved={onSaved}
+          onRefreshProgram={onRefreshProgram}
           workspaceId={workspaceId}
         />
       )}
@@ -778,16 +783,22 @@ function VideoBlockEditor({
   block,
   onClose,
   onSaved,
+  onRefreshProgram,
 }: {
   block: ProgramContent
   onClose: () => void
   onSaved: () => void
+  onRefreshProgram: () => void
 }) {
   const [videoSelectOpen, setVideoSelectOpen] = useState(false)
+  const [driveOpen, setDriveOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [driveSuccess, setDriveSuccess] = useState<string | null>(null)
+  const [driveLinkError, setDriveLinkError] = useState<string | null>(null)
 
   const handleSelectVideo = async (video: VideoOption) => {
-    if (!video.playback_url) return
+    const hasSource = Boolean(video.drive_file_id?.trim()) || Boolean(video.playback_url?.trim())
+    if (!hasSource) return
     setSaving(true)
     try {
       const res = await fetch(`/api/content/${block.id}`, {
@@ -795,7 +806,7 @@ function VideoBlockEditor({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           videoId: video.id,
-          url: video.playback_url,
+          url: video.playback_url?.trim() || null,
           title: video.title,
         }),
       })
@@ -807,8 +818,8 @@ function VideoBlockEditor({
 
   return (
     <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)]/10 p-4">
-      <p className="text-sm text-[var(--color-muted)] mb-2">Select from video library</p>
-      {block.video_id && block.url && (
+      <p className="text-sm text-[var(--color-muted)] mb-2">Link a video from your library or browse Google Drive.</p>
+      {block.video_id && (
         <div className="mb-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3 flex items-center gap-3">
           <div className="h-14 w-24 shrink-0 rounded bg-[var(--color-border)] flex items-center justify-center overflow-hidden">
             <svg className="w-8 h-8 text-[var(--color-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -818,17 +829,42 @@ function VideoBlockEditor({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-[var(--color-ink)] truncate">{block.title || 'Video'}</p>
-            <p className="text-xs text-[var(--color-muted)]">Video selected</p>
+            <p className="text-xs text-[var(--color-muted)]">Video linked</p>
           </div>
         </div>
       )}
+      {driveLinkError ? (
+        <p className="mb-3 text-sm text-[var(--color-error)]" role="alert">
+          {driveLinkError}
+        </p>
+      ) : null}
+      {driveSuccess ? (
+        <p className="mb-3 text-sm font-medium text-[var(--color-success)]" role="status">
+          {driveSuccess}
+        </p>
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <Button
           variant="secondary"
-          onClick={() => setVideoSelectOpen(true)}
+          onClick={() => {
+            setDriveSuccess(null)
+            setVideoSelectOpen(true)
+          }}
           disabled={saving}
         >
-          {block.video_id ? 'Change video' : 'Select video'}
+          {block.video_id ? 'Change video' : 'Select from library'}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            setDriveSuccess(null)
+            setDriveLinkError(null)
+            setDriveOpen(true)
+          }}
+          disabled={saving}
+        >
+          Browse Drive
         </Button>
         <Button variant="ghost" onClick={onClose}>Cancel</Button>
       </div>
@@ -836,6 +872,39 @@ function VideoBlockEditor({
         open={videoSelectOpen}
         onClose={() => setVideoSelectOpen(false)}
         onSelect={handleSelectVideo}
+      />
+      <DriveFileBrowser
+        open={driveOpen}
+        onClose={() => setDriveOpen(false)}
+        pickForProgramBlock
+        onProgramBlockPicked={async ({ videoId, title: rawName }) => {
+          setSaving(true)
+          setDriveSuccess(null)
+          setDriveLinkError(null)
+          try {
+            const displayTitle =
+              rawName.trim().replace(/\.(mp4|mov|webm|mkv|avi|m4v)$/i, '') || 'Video'
+            const res = await fetch(`/api/content/${block.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                videoId,
+                title: displayTitle,
+                url: null,
+              }),
+            })
+            if (!res.ok) {
+              const j = (await res.json().catch(() => ({}))) as { error?: string }
+              setDriveLinkError(j.error ?? 'Could not add video to this module')
+              return
+            }
+            setDriveOpen(false)
+            setDriveSuccess('Imported and added ✓')
+            onRefreshProgram()
+          } finally {
+            setSaving(false)
+          }
+        }}
       />
     </div>
   )
@@ -845,11 +914,13 @@ function ContentBlockEditor({
   block,
   onClose,
   onSaved,
+  onRefreshProgram,
   workspaceId,
 }: {
   block: ProgramContent
   onClose: () => void
   onSaved: () => void
+  onRefreshProgram: () => void
   workspaceId: string
 }) {
   const [title, setTitle] = useState(block.title ?? '')
@@ -906,6 +977,7 @@ function ContentBlockEditor({
         block={block}
         onClose={onClose}
         onSaved={onSaved}
+        onRefreshProgram={onRefreshProgram}
       />
     )
   }

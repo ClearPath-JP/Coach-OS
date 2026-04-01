@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
+import { coachHasWorkspaceAccess } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
-import { createServiceClient } from '@/lib/supabase/service'
+import { resolveCoachUserIdForClientRow } from '@/lib/resolve-coach-user-for-client'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { normalizeEmail } from '@/lib/utils'
 import { sendMessageSchema } from '@/lib/validations'
@@ -49,7 +50,7 @@ export async function GET(request: Request) {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, workspace_id, email')
+      .select('id, workspace_id, email, coach_id')
       .eq('id', clientId)
       .maybeSingle()
 
@@ -60,15 +61,9 @@ export async function GET(request: Request) {
       )
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('user_id')
-      .eq('workspace_id', client.workspace_id)
-      .maybeSingle()
-
-    const isCoach = coach?.user_id === user.id
+    const isCoach = await coachHasWorkspaceAccess(supabase, user.id, client.workspace_id)
     const isClient =
-      !!user.email && normalizeEmail(client.email) === normalizeEmail(user.email)
+      !!user.email && normalizeEmail(client.email ?? '') === normalizeEmail(user.email)
     if (!isCoach && !isClient) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
@@ -148,12 +143,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    const { clientId, content } = parsed.data
+    const { clientId, content, messageType } = parsed.data
     const contentStored = content.slice(0, 2000)
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, workspace_id, email')
+      .select('id, workspace_id, email, coach_id')
       .eq('id', clientId)
       .maybeSingle()
 
@@ -164,13 +159,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: coachViaRls } = await supabase
-      .from('coaches')
-      .select('user_id')
-      .eq('workspace_id', client.workspace_id)
-      .maybeSingle()
-
-    const isCoach = coachViaRls?.user_id === user.id
+    const isCoach = await coachHasWorkspaceAccess(supabase, user.id, client.workspace_id)
     const isClient =
       !!user.email &&
       normalizeEmail(user.email) === normalizeEmail(client.email ?? '')
@@ -179,21 +168,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    let coach = coachViaRls
-    if (!coach && isClient) {
-      const svc = createServiceClient()
-      const { data } = await svc
-        .from('coaches')
-        .select('user_id')
-        .eq('workspace_id', client.workspace_id)
-        .limit(1)
-        .maybeSingle()
-      coach = data ?? null
-    }
+    const coachUserId = isClient
+      ? await resolveCoachUserIdForClientRow({
+          workspace_id: client.workspace_id,
+          coach_id: client.coach_id,
+        })
+      : user.id
 
-    if (!coach) {
+    if (!coachUserId) {
       return NextResponse.json(
-        { error: 'Workspace not found' },
+        { error: 'No coach is linked for this client — contact support.' },
         { status: 404 }
       )
     }
@@ -219,7 +203,7 @@ export async function POST(request: Request) {
       }
       recipient_id = clientProfile.id
     } else {
-      recipient_id = coach.user_id
+      recipient_id = coachUserId
     }
 
     const { data: message, error } = await supabase
@@ -230,6 +214,7 @@ export async function POST(request: Request) {
         recipient_id,
         client_id: clientId,
         content: contentStored,
+        message_type: messageType ?? 'text',
       })
       .select('id, workspace_id, sender_id, recipient_id, client_id, content, read_at, created_at, message_type')
       .single()

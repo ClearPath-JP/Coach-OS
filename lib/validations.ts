@@ -1,5 +1,24 @@
 import { z } from 'zod'
 
+/** Public image URLs (e.g. Supabase Storage) — tolerant of encodings z.string().url() can reject. */
+export const storedImageUrlSchema = z
+  .string()
+  .trim()
+  .max(2048)
+  .refine(
+    (s) => {
+      try {
+        const u = new URL(s)
+        return u.protocol === 'http:' || u.protocol === 'https:'
+      } catch {
+        return false
+      }
+    },
+    { message: 'Must be a valid http(s) URL' }
+  )
+
+export const optionalStoredImageUrlSchema = z.union([z.null(), storedImageUrlSchema]).optional()
+
 /** Add client form — Phase 2 / Session 5 */
 export const addClientSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -19,7 +38,7 @@ export const updateClientSchema = z.object({
   goals: z.string().nullable().optional(),
   status: z.enum(['active', 'paused', 'completed']).optional(),
   notes: z.string().nullable().optional(),
-  profile_photo_url: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
+  profile_photo_url: z.union([z.literal(''), z.null(), storedImageUrlSchema]).optional(),
 })
 export type UpdateClientInput = z.infer<typeof updateClientSchema>
 
@@ -89,6 +108,7 @@ export const sendMessageSchema = z.object({
     .string()
     .min(1, 'Message cannot be empty')
     .max(2000, 'Message must be 2000 characters or less'),
+  messageType: z.enum(['text', 'invoice', 'session', 'session_request']).optional(),
 })
 export type SendMessageInput = z.infer<typeof sendMessageSchema>
 
@@ -163,6 +183,7 @@ export const createPackageSchema = z.object({
   currency: z.string().length(3).optional().default('usd'),
   duration_minutes: z.number().int().min(5).max(480).optional().default(60),
   session_type: z.string().max(100).optional().nullable(),
+  is_virtual: z.boolean().optional().default(true),
   is_active: z.boolean().optional().default(true),
 })
 export type CreatePackageInput = z.infer<typeof createPackageSchema>
@@ -273,12 +294,18 @@ export const updateWorkspaceSettingsSchema = z.object({
   accentColor: z.string().regex(hexColorRegex, 'Accent color must be a valid hex color').nullable().optional(),
   accentColorLight: z.string().regex(hexColorRegex, 'Accent light color must be a valid hex color').nullable().optional(),
   timezone: timezoneEnum.optional(),
-  logoUrl: z.union([z.string().url(), z.null()]).optional(),
+  logoUrl: optionalStoredImageUrlSchema,
   preferredPaymentMethods: z.array(paymentMethodsEnum).max(6).nullable().optional(),
   brandName: z.string().max(120).nullable().optional(),
   brandTagline: z.string().max(100).nullable().optional(),
   clientPortalHeading: z.string().max(200).nullable().optional(),
   clientWelcomeMessage: z.string().max(200).nullable().optional(),
+  cashappUsername: z.string().max(120).nullable().optional(),
+  venmoUsername: z.string().max(120).nullable().optional(),
+  paypalEmail: z.string().max(255).nullable().optional(),
+  zelleEmailOrPhone: z.string().max(255).nullable().optional(),
+  stripeConnected: z.boolean().optional(),
+  paymentInstructions: z.string().max(300).nullable().optional(),
 })
 export type UpdateWorkspaceSettingsInput = z.infer<typeof updateWorkspaceSettingsSchema>
 
@@ -287,7 +314,7 @@ export const updateProfileSettingsSchema = z.object({
   lastName: z.string().min(1, 'Last name is required').max(100).optional(),
   bio: z.string().max(300).nullable().optional(),
   phone: z.string().max(50).nullable().optional(),
-  avatarUrl: z.union([z.string().url(), z.null()]).optional(),
+  avatarUrl: optionalStoredImageUrlSchema,
 })
 export type UpdateProfileSettingsInput = z.infer<typeof updateProfileSettingsSchema>
 
@@ -351,6 +378,7 @@ export const updateSessionSchema = z
   .object({
     notes: z.string().max(2000).nullable().optional(),
     status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+    paid: z.boolean().optional(),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
     startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
     durationMinutes: z.number().int().min(15).max(240).optional(),
@@ -398,4 +426,49 @@ export const emptyStrictBodySchema = z.object({}).strict()
 export const programUploadFieldsSchema = z.object({
   moduleId: z.string().uuid('Invalid module'),
   workspaceId: z.string().uuid('Invalid workspace'),
+})
+
+const assignmentTypeSchema = z.enum(['text', 'video', 'file', 'checklist'])
+
+/** Coach: create assignment template */
+export const createAssignmentTemplateSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(500),
+  instructions: z.string().max(8000).optional().nullable(),
+  assignmentType: assignmentTypeSchema.optional().default('text'),
+  checklistItems: z.array(z.string().min(1).max(500)).max(50).optional().nullable(),
+  dueDaysAfterAssign: z.number().int().min(0).max(365).optional().default(7),
+  points: z.number().int().min(0).max(1000).optional().default(10),
+  programId: z.string().uuid().optional().nullable(),
+  moduleId: z.string().uuid().optional().nullable(),
+  isRequired: z.boolean().optional().default(true),
+  position: z.number().int().min(0).optional().default(0),
+})
+export type CreateAssignmentTemplateInput = z.infer<typeof createAssignmentTemplateSchema>
+
+export const updateAssignmentTemplateSchema = createAssignmentTemplateSchema.partial()
+export type UpdateAssignmentTemplateInput = z.infer<typeof updateAssignmentTemplateSchema>
+
+/** Coach: assign template to client */
+export const assignToClientSchema = z.object({
+  templateId: z.string().uuid('Invalid template'),
+  clientId: z.string().uuid('Invalid client'),
+  clientProgramId: z.string().uuid().optional().nullable(),
+  dueAt: z.string().refine((s) => !Number.isNaN(Date.parse(s)), 'Invalid date').optional().nullable(),
+})
+
+/** Coach: review submission */
+export const assignmentReviewSchema = z.object({
+  status: z.enum(['approved', 'returned']),
+  coachFeedback: z.string().max(8000).optional().nullable(),
+  pointsAwarded: z.number().int().min(0).max(2000).optional().default(0),
+})
+
+/** Client: submit assignment */
+export const assignmentSubmitSchema = z.object({
+  submissionType: assignmentTypeSchema,
+  textContent: z.string().max(20000).optional().nullable(),
+  videoId: z.string().uuid().optional().nullable(),
+  fileUrl: z.string().url().max(2000).optional().nullable(),
+  fileSizeBytes: z.number().int().nonnegative().optional().nullable(),
+  checklistResponses: z.record(z.string(), z.boolean()).optional().nullable(),
 })

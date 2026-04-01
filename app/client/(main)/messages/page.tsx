@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
-import { createServiceClient } from '@/lib/supabase/service'
+import { resolveCoachUserIdForClientRow } from '@/lib/resolve-coach-user-for-client'
 import { normalizeEmail } from '@/lib/utils'
 import { ClientMessagesContent } from './ClientMessagesContent'
 
@@ -8,9 +8,7 @@ import { ClientMessagesContent } from './ClientMessagesContent'
  * Client messages page: single thread with their coach.
  * Resolves client by user email, then coach user_id from workspace.
  *
- * Note: `coaches` RLS only allows SELECT where user_id = auth.uid() (the coach).
- * Clients cannot read coach rows with the user-scoped client — use service role
- * for the coach lookup after the client row is verified (same as POST /api/messages).
+ * Resolves the assigned coach via `clients.coach_id`, with service fallback if unset.
  */
 export default async function ClientMessagesPage() {
   const supabase = await createClient()
@@ -23,8 +21,10 @@ export default async function ClientMessagesPage() {
 
   const { data: client } = await supabase
     .from('clients')
-    .select('id, workspace_id')
+    .select('id, workspace_id, coach_id')
     .eq('email', lookupEmail)
+    .order('created_at', { ascending: true })
+    .limit(1)
     .maybeSingle()
 
   if (!client) {
@@ -37,18 +37,12 @@ export default async function ClientMessagesPage() {
     )
   }
 
-  // RLS blocks clients from reading `coaches`; resolve with service client after client is verified.
-  const svc = createServiceClient()
-  const { data: coachRows } = await svc
-    .from('coaches')
-    .select('user_id, role')
-    .eq('workspace_id', client.workspace_id)
-    .order('role', { ascending: true })
-    .limit(1)
+  const coachUserId = await resolveCoachUserIdForClientRow({
+    workspace_id: client.workspace_id,
+    coach_id: client.coach_id,
+  })
 
-  const coachRow = coachRows?.[0] ?? null
-
-  if (!coachRow?.user_id) {
+  if (!coachUserId) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center p-6 text-center">
         <p className="max-w-md text-[15px] text-[var(--color-muted)]">
@@ -62,7 +56,7 @@ export default async function ClientMessagesPage() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('full_name, display_name')
-    .eq('id', coachRow.user_id)
+    .eq('id', coachUserId)
     .maybeSingle()
   if (profile) {
     coachName = profile.display_name?.trim() || profile.full_name?.trim() || coachName

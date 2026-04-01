@@ -5,15 +5,14 @@
  * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local.
  */
 
-import { config as loadEnv } from 'dotenv'
 import readline from 'readline'
-import { resolve } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import { createClient } from '@supabase/supabase-js'
 import { seedDemoWorkspaceContent } from './lib/demo-workspace-seed'
+import { loadProjectDotenv } from './load-dotenv'
 
-loadEnv({ path: resolve(process.cwd(), '.env.local') })
+loadProjectDotenv(import.meta.url)
 
 const DEFAULT_ACCENT = '#2D7A6F'
 

@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg || 'Invalid input' }, { status: 400 })
     }
 
-    const { clientId, date, startTime, durationMinutes: rawDuration, notes } = parsed.data
+    const { clientId, date, startTime, durationMinutes: rawDuration, type, notes } = parsed.data
     const durationMinutes = rawDuration ?? 60
 
     const { data: clientRow } = await supabase
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
         scheduled_time: scheduled.toISOString(),
         end_time: endTime.toISOString(),
         duration_minutes: durationMinutes,
+        session_type: type ?? 'video',
         notes: notes ?? null,
         status: 'confirmed',
       })

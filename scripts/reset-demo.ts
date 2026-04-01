@@ -5,13 +5,12 @@
  * Run: pnpm run reset:demo
  */
 
-import { config as loadEnv } from 'dotenv'
-import { resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { DEMO_COACH_EMAIL, DEMO_SEED_CLIENT_EMAILS } from './lib/demo-workspace-seed'
+import { loadProjectDotenv } from './load-dotenv'
 
-loadEnv({ path: resolve(process.cwd(), '.env.local') })
+loadProjectDotenv(import.meta.url)
 
 async function findUserIdByEmail(admin: SupabaseClient, email: string): Promise<string | null> {
   let page = 1

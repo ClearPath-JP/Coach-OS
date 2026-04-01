@@ -17,7 +17,7 @@ function ClientCardSkeleton() {
 
 export default function CoachClientsLoading() {
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen p-6 lg:p-8">
       <Skeleton className="mb-4 h-10 w-full rounded-[var(--radius-md)]" />
       <div className="mb-6 flex flex-wrap gap-2">
         {[1, 2, 3, 4].map((i) => (

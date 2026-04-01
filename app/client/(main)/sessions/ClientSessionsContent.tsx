@@ -1,158 +1,155 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
+import {
+  ClientSessionsMonthCalendar,
+  type ClientCalendarSession,
+} from '@/components/client/ClientSessionsMonthCalendar'
+import { RequestSessionModal } from '@/components/client/RequestSessionModal'
+import { ClientUnavailabilitySummary } from '@/components/unavailability/ClientUnavailabilitySummary'
+import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 
-type Session = {
-  id: string
-  scheduled_time: string
-  end_time: string | null
-  duration_minutes: number | null
-  status: string
-  notes: string | null
+type ApiSession = ClientCalendarSession & {
+  end_time?: string | null
+  session_type?: string | null
+  date?: string
+}
+
+function SessionDetailReadOnly({ session, onClose }: { session: ApiSession | null; onClose: () => void }) {
+  if (!session) return null
+  const start = parseISO(session.scheduled_time)
+  const end = session.end_time
+    ? parseISO(session.end_time)
+    : session.duration_minutes
+      ? new Date(start.getTime() + session.duration_minutes * 60 * 1000)
+      : new Date(start.getTime() + 60 * 60 * 1000)
+  const statusVariant =
+    session.status === 'confirmed'
+      ? 'confirmed'
+      : session.status === 'completed'
+        ? 'completed'
+        : session.status === 'cancelled'
+          ? 'cancelled'
+          : 'pending'
+
+  return (
+    <Modal isOpen onClose={onClose} title="Session">
+      <div className="space-y-2 text-sm">
+        <p className="font-medium text-[var(--color-ink)]">{format(start, 'EEEE, MMM d, yyyy')}</p>
+        <p className="text-[var(--color-muted)]">
+          {format(start, 'h:mm a')} – {format(end, 'h:mm a')}
+        </p>
+        {session.type ? <p className="text-[var(--color-muted)]">Type: {session.type}</p> : null}
+        {session.notes ? <p className="text-[var(--color-muted)]">{session.notes}</p> : null}
+        <span
+          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+            statusVariant === 'confirmed'
+              ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+              : statusVariant === 'completed'
+                ? 'bg-[var(--color-border)] text-[var(--color-muted)]'
+                : statusVariant === 'cancelled'
+                  ? 'bg-[var(--color-error-light)] text-[var(--color-error)]'
+                  : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+          }`}
+        >
+          {session.status}
+        </span>
+        <div className="flex justify-end pt-2">
+          <Button variant="secondary" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
 }
 
 export function ClientSessionsContent() {
-  const [upcoming, setUpcoming] = useState<Session[]>([])
-  const [past, setPast] = useState<Session[]>([])
+  const [sessions, setSessions] = useState<ApiSession[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
+  const [requestOpen, setRequestOpen] = useState(false)
+  const [requestInitialDate, setRequestInitialDate] = useState<string | null>(null)
+  const [detailSession, setDetailSession] = useState<ApiSession | null>(null)
 
-  useEffect(() => {
-    void (async () => {
-      setLoading(true)
-      try {
-        const res = await fetch('/api/client/sessions')
-        const json = await res.json()
-        if (json.data) {
-          setUpcoming(json.data.upcoming ?? [])
-          setPast(json.data.past ?? [])
-        }
-      } finally {
-        setLoading(false)
+  const loadSessions = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/client/sessions')
+      const json = await res.json()
+      if (json.data) {
+        const up = (json.data.upcoming ?? []) as ApiSession[]
+        const past = (json.data.past ?? []) as ApiSession[]
+        setSessions([...up, ...past])
       }
-    })()
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  const calendarUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/calendar/feed/client` : '/api/calendar/feed/client'
+  useEffect(() => {
+    void loadSessions()
+  }, [loadSessions])
+
+  const calendarSessions = useMemo(() => sessions as ClientCalendarSession[], [sessions])
+
+  const openRequest = (dateKey: string | null) => {
+    setRequestInitialDate(dateKey)
+    setRequestOpen(true)
+  }
+
+  const closeRequest = () => {
+    setRequestOpen(false)
+    setRequestInitialDate(null)
+  }
+
+  const calendarUrl =
+    typeof window !== 'undefined' ? `${window.location.origin}/api/calendar/feed/client` : '/api/calendar/feed/client'
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg font-medium text-[var(--color-ink)]">Sessions</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-lg font-medium text-[var(--color-ink)]">Sessions</h1>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            Your sessions on the calendar below. Request opens a quick picker — day, time slot, video or in person — and your coach confirms in Messages.
+          </p>
+        </div>
+        <Button type="button" variant="primary" className="shrink-0 self-start" onClick={() => openRequest(null)}>
+          Request a session
+        </Button>
+      </div>
+
+      <ClientUnavailabilitySummary />
+
+      <ClientSessionsMonthCalendar
+        sessions={calendarSessions}
+        loading={loading}
+        onSelectDayForRequest={(d) => openRequest(format(d, 'yyyy-MM-dd'))}
+        onSelectSession={(s) => setDetailSession(s as ApiSession)}
+      />
+
+      <p className="text-center text-[12px] text-[var(--color-muted)]">
         <a
           href={calendarUrl}
           target="_blank"
           rel="noopener noreferrer"
           download="my-sessions.ics"
-          className="inline-flex items-center justify-center min-h-10 h-10 rounded-lg px-4 text-sm font-medium border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
+          className="link-nav font-medium"
         >
-          Add to Google Calendar
+          Add booked sessions to Google Calendar (ICS)
         </a>
-      </div>
-
-      <p className="text-sm text-[var(--color-muted)]">
-        Subscribe to your sessions or download the calendar file and import it into Google Calendar.
       </p>
 
-      <div className="flex gap-2 border-b border-[var(--color-border)]">
-        <button
-          type="button"
-          onClick={() => setTab('upcoming')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px min-h-[44px] ${
-            tab === 'upcoming'
-              ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
-              : 'border-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)]'
-          }`}
-        >
-          Upcoming
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('past')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px min-h-[44px] ${
-            tab === 'past'
-              ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
-              : 'border-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)]'
-          }`}
-        >
-          Past
-        </button>
-      </div>
+      <RequestSessionModal
+        open={requestOpen}
+        onClose={closeRequest}
+        initialPreferredDate={requestInitialDate}
+        onSent={() => void loadSessions()}
+      />
 
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl bg-[var(--color-surface)]" />
-          ))}
-        </div>
-      ) : tab === 'upcoming' ? (
-        upcoming.length === 0 ? (
-          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
-            <h2 className="font-medium text-[var(--color-ink)]">No upcoming sessions</h2>
-            <p className="mt-1 text-sm text-[var(--color-muted)]">When your coach books a session, it will appear here.</p>
-          </div>
-        ) : (
-          <ul className="space-y-3">
-            {upcoming.map((s) => (
-              <SessionCard key={s.id} session={s} />
-            ))}
-          </ul>
-        )
-      ) : past.length === 0 ? (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
-          <h2 className="font-medium text-[var(--color-ink)]">No past sessions</h2>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">Your completed sessions will appear here.</p>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {past.map((s) => (
-            <SessionCard key={s.id} session={s} />
-          ))}
-        </ul>
-      )}
+      <SessionDetailReadOnly session={detailSession} onClose={() => setDetailSession(null)} />
     </div>
-  )
-}
-
-function SessionCard({ session }: { session: Session }) {
-  const start = parseISO(session.scheduled_time)
-  const end = session.end_time ? parseISO(session.end_time) : session.duration_minutes
-    ? new Date(start.getTime() + session.duration_minutes * 60 * 1000)
-    : new Date(start.getTime() + 60 * 60 * 1000)
-  const statusVariant =
-    session.status === 'confirmed' ? 'confirmed' :
-    session.status === 'completed' ? 'completed' :
-    session.status === 'cancelled' ? 'cancelled' : 'pending'
-
-  return (
-    <li className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="font-medium text-[var(--color-ink)]">
-            {format(start, 'EEEE, MMM d, yyyy')}
-          </p>
-          <p className="text-sm text-[var(--color-muted)]">
-            {format(start, 'h:mm a')} – {format(end, 'h:mm a')}
-          </p>
-          {session.notes && (
-            <p className="mt-2 text-sm text-[var(--color-muted)]">{session.notes}</p>
-          )}
-        </div>
-        <span
-          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            statusVariant === 'confirmed'
-              ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
-              : statusVariant === 'completed'
-              ? 'bg-[var(--color-border)] text-[var(--color-muted)]'
-              : statusVariant === 'cancelled'
-              ? 'bg-[var(--color-error-light)] text-[var(--color-error)]'
-              : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
-          }`}
-        >
-          {session.status}
-        </span>
-      </div>
-    </li>
   )
 }

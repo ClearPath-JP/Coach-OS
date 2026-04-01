@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { emptyStrictBodySchema } from '@/lib/validations'
 
@@ -36,19 +37,15 @@ export async function PATCH(request: Request) {
     if (!bodyParsed.success) {
       return NextResponse.json({ error: 'Request body must be an empty JSON object' }, { status: 400 })
     }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
+    const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (!workspaceId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const { error } = await supabase
       .from('workspaces')
       .update({ completed_onboarding: true })
-      .eq('id', coach.workspace_id)
+      .eq('id', workspaceId)
 
     if (error) {
       return NextResponse.json({ error: 'Could not complete onboarding' }, { status: 500 })

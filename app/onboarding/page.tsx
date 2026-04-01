@@ -15,13 +15,29 @@ export default function OnboardingStep1Page() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [ensuringSignup, setEnsuringSignup] = useState(true)
+  const [bootstrapError, setBootstrapError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/auth/signup-complete', { method: 'POST', credentials: 'include' })
-      .then((res) => {
-        if (res.ok) router.refresh()
-      })
-      .finally(() => setEnsuringSignup(false))
+    let cancelled = false
+    void (async () => {
+      const res = await fetch('/api/auth/signup-complete', { method: 'POST', credentials: 'include' })
+      if (cancelled) return
+      if (res.status === 401) {
+        router.push('/login?next=/onboarding')
+        return
+      }
+      if (res.ok) {
+        router.refresh()
+        setEnsuringSignup(false)
+        return
+      }
+      const json = (await res.json().catch(() => ({}))) as { error?: string }
+      setBootstrapError(json.error ?? 'Could not prepare your workspace. Try again.')
+      setEnsuringSignup(false)
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [router])
   const [nameError, setNameError] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
@@ -128,81 +144,166 @@ export default function OnboardingStep1Page() {
     )
   }
 
+  if (bootstrapError) {
+    return (
+      <div className="space-y-4 rounded-xl border border-[var(--color-border)] bg-[var(--bg-app)] p-6">
+        <h1 className="text-[var(--text-h3)] font-medium text-[var(--color-text-primary)]">Could not start onboarding</h1>
+        <p className="text-[15px] text-[var(--color-text-secondary)]">{bootstrapError}</p>
+        <Button
+          type="button"
+          onClick={() => {
+            setBootstrapError(null)
+            setEnsuringSignup(true)
+            void fetch('/api/auth/signup-complete', { method: 'POST', credentials: 'include' }).then(async (res) => {
+              if (res.status === 401) {
+                router.push('/login?next=/onboarding')
+                return
+              }
+              if (res.ok) {
+                router.refresh()
+                setEnsuringSignup(false)
+                return
+              }
+              const json = (await res.json().catch(() => ({}))) as { error?: string }
+              setBootstrapError(json.error ?? 'Still could not prepare your workspace.')
+              setEnsuringSignup(false)
+            })
+          }}
+        >
+          Try again
+        </Button>
+      </div>
+    )
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <h1 className="text-[var(--text-h3)] font-medium tracking-[var(--tracking-heading)] text-[var(--color-text-primary)]">
-        Set up your workspace
-      </h1>
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_min(100%,300px)] lg:items-start">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-8 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8"
+      >
+        <div className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,var(--bg-app)_55%)] p-5 md:p-6">
+          <div
+            className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[var(--accent)]/15 blur-2xl"
+            aria-hidden
+          />
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">Workspace</p>
+          <h1 className="mt-1 text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] md:text-[24px]">
+            Set up your workspace
+          </h1>
+          <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[var(--text-secondary)]">
+            Name your coaching business and add a photo or logo — you can change these anytime in settings.
+          </p>
+        </div>
 
-      <div>
-        <label htmlFor="workspace-name" className="mb-1 block text-[15px] font-medium text-[var(--color-text-primary)]">
-          Workspace name <span className="text-[var(--color-error)]">*</span>
-        </label>
-        <Input
-          id="workspace-name"
-          type="text"
-          placeholder="Your coaching business name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          error={!!nameError}
-          errorMessage={nameError}
-          minLength={2}
-          required
-          className="w-full"
-        />
-      </div>
+        <div>
+          <label htmlFor="workspace-name" className="mb-1 block text-[15px] font-medium text-[var(--text-primary)]">
+            Workspace name <span className="text-[var(--color-error)]">*</span>
+          </label>
+          <Input
+            id="workspace-name"
+            type="text"
+            placeholder="Your coaching business name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            error={!!nameError}
+            errorMessage={nameError}
+            minLength={2}
+            required
+            className="w-full"
+          />
+        </div>
 
-      <div>
-        <label className="mb-1 block text-[15px] font-medium text-[var(--color-text-primary)]">
-          Profile photo (optional)
-        </label>
-        <input
-          type="file"
-          accept={ACCEPT_IMAGE}
-          onChange={handleAvatarChange}
-          className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--color-surface)] file:px-3 file:py-2 file:font-medium"
-        />
-        {avatarPreview && (
-          <div className="relative mt-2 h-24 w-24 overflow-hidden rounded-full border border-[var(--color-border)]">
-            <Image
-              src={avatarPreview}
-              alt="Profile preview"
-              fill
-              className="object-cover"
-              sizes="96px"
-              unoptimized
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/80 p-4">
+            <label className="mb-2 block text-[14px] font-medium text-[var(--text-primary)]">
+              Profile photo <span className="font-normal text-[var(--text-tertiary)]">(optional)</span>
+            </label>
+            <p className="mb-3 text-[12px] leading-relaxed text-[var(--text-tertiary)]">
+              Shown to clients in messages and the portal — builds trust fast.
+            </p>
+            <input
+              type="file"
+              accept={ACCEPT_IMAGE}
+              onChange={handleAvatarChange}
+              className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--bg-app)] file:px-3 file:py-2 file:font-medium file:shadow-sm"
             />
+            {avatarPreview && (
+              <div className="relative mt-3 h-24 w-24 overflow-hidden rounded-full border border-[var(--color-border)] shadow-sm">
+                <Image
+                  src={avatarPreview}
+                  alt="Profile preview"
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                  unoptimized
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div>
-        <label className="mb-1 block text-[15px] font-medium text-[var(--color-text-primary)]">
-          Logo (optional)
-        </label>
-        <input
-          type="file"
-          accept={ACCEPT_IMAGE}
-          onChange={handleLogoChange}
-          className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--color-surface)] file:px-3 file:py-2 file:font-medium"
-        />
-        {logoPreview && (
-          <div className="relative mt-2 h-16 w-32 overflow-hidden rounded-lg border border-[var(--color-border)]">
-            <Image
-              src={logoPreview}
-              alt="Logo preview"
-              fill
-              className="object-contain"
-              sizes="128px"
-              unoptimized
+          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]/80 p-4">
+            <label className="mb-2 block text-[14px] font-medium text-[var(--text-primary)]">
+              Logo <span className="font-normal text-[var(--text-tertiary)]">(optional)</span>
+            </label>
+            <p className="mb-3 text-[12px] leading-relaxed text-[var(--text-tertiary)]">
+              Keeps invoices, emails, and shared links feeling like your brand.
+            </p>
+            <input
+              type="file"
+              accept={ACCEPT_IMAGE}
+              onChange={handleLogoChange}
+              className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--bg-app)] file:px-3 file:py-2 file:font-medium file:shadow-sm"
             />
+            {logoPreview && (
+              <div className="relative mt-3 h-16 w-32 overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--bg-app)] shadow-sm">
+                <Image
+                  src={logoPreview}
+                  alt="Logo preview"
+                  fill
+                  className="object-contain p-1"
+                  sizes="128px"
+                  unoptimized
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
 
-      <Button type="submit" disabled={submitting} fullWidth>
-        {submitting ? 'Saving…' : 'Continue'}
-      </Button>
-    </form>
+        <Button type="submit" disabled={submitting} fullWidth size="lg">
+          {submitting ? 'Saving…' : 'Continue'}
+        </Button>
+      </form>
+
+      <aside className="space-y-4 lg:sticky lg:top-24">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5 shadow-[var(--shadow-sm)]">
+          <h2 className="text-[14px] font-semibold text-[var(--text-primary)]">Why this matters</h2>
+          <ul className="mt-3 space-y-3 text-[13px] leading-relaxed text-[var(--text-secondary)]">
+            <li className="flex gap-2">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--accent)]">
+                1
+              </span>
+              <span>Your workspace name is how you&apos;ll spot this account in ClearPath and on client-facing surfaces.</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--accent)]">
+                2
+              </span>
+              <span>Photos and logos are optional — skip them now if you&apos;re in a hurry; you can upload later in settings.</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--accent)]">
+                3
+              </span>
+              <span>We accept JPEG, PNG, GIF, or WebP up to {MAX_SIZE_MB} MB per file.</span>
+            </li>
+          </ul>
+        </div>
+        <div className="rounded-2xl border border-dashed border-[var(--accent-muted)] bg-[var(--accent-light)]/40 px-5 py-4 text-[12px] leading-relaxed text-[var(--text-secondary)]">
+          <span className="font-medium text-[var(--text-primary)]">Tip:</span> Use the same name clients already know you by —
+          it reduces confusion when they get invites or receipts.
+        </div>
+      </aside>
+    </div>
   )
 }

@@ -54,15 +54,41 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (parsed.data.currency !== undefined) updates.currency = parsed.data.currency
     if (parsed.data.duration_minutes !== undefined) updates.duration_minutes = parsed.data.duration_minutes
     if (parsed.data.session_type !== undefined) updates.session_type = parsed.data.session_type
+    if (parsed.data.is_virtual !== undefined) updates.is_virtual = parsed.data.is_virtual
     if (parsed.data.is_active !== undefined) updates.is_active = parsed.data.is_active
 
-    const { data: row, error } = await supabase
+    const selectFull =
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_virtual, is_active, created_at'
+    const selectBase =
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at'
+
+    let rowResult = await supabase
       .from('session_packages')
       .update(updates)
       .eq('id', id)
       .eq('workspace_id', coach.workspace_id)
-      .select('id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at')
+      .select(selectFull)
       .single()
+
+    if (rowResult.error && /is_virtual|schema cache/i.test(rowResult.error.message)) {
+      const updatesNoVirtual = { ...updates } as Record<string, unknown>
+      delete updatesNoVirtual.is_virtual
+      if (Object.keys(updatesNoVirtual).length === 0) {
+        return NextResponse.json(
+          { error: 'Workspace needs the latest database migration to change session format (online vs in-person).' },
+          { status: 400 }
+        )
+      }
+      rowResult = await supabase
+        .from('session_packages')
+        .update(updatesNoVirtual)
+        .eq('id', id)
+        .eq('workspace_id', coach.workspace_id)
+        .select(selectBase)
+        .single()
+    }
+
+    const { data: row, error } = rowResult
 
     if (error) {
       return NextResponse.json(

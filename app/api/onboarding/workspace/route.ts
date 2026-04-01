@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { ensureCoachWorkspaceForOnboarding } from '@/lib/onboarding-ensure-coach'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { onboardingWorkspaceSchema } from '@/lib/validations'
 
@@ -25,14 +26,11 @@ export async function POST(request: Request) {
       return res
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const ensured = await ensureCoachWorkspaceForOnboarding(supabase, user)
+    if ('error' in ensured) {
+      return NextResponse.json({ error: ensured.error }, { status: ensured.status })
     }
+    const coachWorkspaceId = ensured.workspaceId
 
     let raw: unknown
     try {
@@ -64,13 +62,24 @@ export async function POST(request: Request) {
     const { error: workspaceError } = await supabase
       .from('workspaces')
       .update({ name, logo_url: logoUrl })
-      .eq('id', coach.workspace_id)
+      .eq('id', coachWorkspaceId)
 
     if (workspaceError) {
       return NextResponse.json({ error: 'Could not update workspace' }, { status: 500 })
     }
 
     if (avatarUrl !== null) {
+      const { error: profileAvatarErr } = await supabase
+        .from('profiles')
+        .update({ logo_url: avatarUrl, updated_at: new Date().toISOString() })
+        .eq('id', user.id)
+      if (profileAvatarErr) {
+        return NextResponse.json(
+          { error: profileAvatarErr.message || 'Could not save profile photo' },
+          { status: 500 }
+        )
+      }
+
       const { data: existing } = await supabase
         .from('coach_profiles')
         .select('coach_id')
@@ -84,7 +93,7 @@ export async function POST(request: Request) {
       } else {
         await supabase.from('coach_profiles').insert({
           coach_id: user.id,
-          workspace_id: coach.workspace_id,
+          workspace_id: coachWorkspaceId,
           profile_image_url: avatarUrl,
         })
       }

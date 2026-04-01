@@ -62,14 +62,7 @@ export function CoachKeyboardShortcuts() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) {
-        if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
-          e.preventDefault()
-          setHelpOpen(true)
-          clearChord()
-        }
-        return
-      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return
 
       if (helpOpen && e.key === 'Escape') {
         setHelpOpen(false)

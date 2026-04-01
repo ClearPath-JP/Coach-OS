@@ -69,7 +69,16 @@ export function AnalyticsRevenueChartCard({ chartData }: RevenueProps) {
                 return format(parseISO(d), 'MMMM d, yyyy')
               }}
             />
-            <Line type="monotone" dataKey="dollars" stroke="var(--color-accent)" strokeWidth={2} dot={false} />
+            <Line
+              type="monotone"
+              dataKey="dollars"
+              stroke="var(--color-accent)"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive
+              animationDuration={900}
+              animationEasing="ease-out"
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -99,6 +108,9 @@ export function AnalyticsPaymentMethodsChartCard({ donutData, methodEntries, met
               innerRadius={52}
               outerRadius={80}
               paddingAngle={donutData.length > 1 ? 2 : 0}
+              isAnimationActive
+              animationDuration={900}
+              animationEasing="ease-out"
             >
               {donutData.map((entry, index) => (
                 <Cell

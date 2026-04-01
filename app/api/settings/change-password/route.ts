@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { logAuditEvent } from '@/lib/audit-log'
 import { applyAuthNoStoreHeaders } from '@/lib/auth-response'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { changePasswordSchema } from '@/lib/validations'
@@ -30,12 +31,8 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return applyAuthNoStoreHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
+    const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (!workspaceId) {
       return applyAuthNoStoreHeaders(NextResponse.json({ error: 'Forbidden' }, { status: 403 }))
     }
 
@@ -87,7 +84,7 @@ export async function POST(request: Request) {
       )
     }
 
-    void logAuditEvent('password_changed', user.id, coach.workspace_id, {}, request)
+    void logAuditEvent('password_changed', user.id, workspaceId, {}, request)
 
     return applyAuthNoStoreHeaders(NextResponse.json({ data: 'Password updated' }))
   } catch {

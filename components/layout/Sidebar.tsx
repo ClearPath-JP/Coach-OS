@@ -2,8 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 import { useTheme } from '@/components/ThemeProvider'
+import { ClearPathLogo } from '@/components/layout/ClearPathLogo'
+import { SignOutButton } from '@/components/layout/SignOutButton'
 import { cn } from '@/lib/utils'
+import { useWorkspace } from '@/lib/workspace-context'
 
 export interface SidebarNavItem {
   href: string
@@ -113,6 +117,74 @@ function SidebarThemeToggle() {
   )
 }
 
+/** Workspace image logo or default ClearPath mark; updates from WorkspaceProvider when settings change. */
+function SidebarBrandMark() {
+  const { settings } = useWorkspace()
+  const url = settings.logoUrl?.trim() ?? ''
+  const [failedForUrl, setFailedForUrl] = useState<string | null>(null)
+  const showCustomLogo = Boolean(url && failedForUrl !== url)
+
+  if (showCustomLogo) {
+    return (
+      <span className="relative flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[7px] border border-[var(--border-default)] bg-[var(--bg-app)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt=""
+          width={28}
+          height={28}
+          className="h-full w-full object-contain p-0.5"
+          onError={() => setFailedForUrl(url)}
+          loading="lazy"
+        />
+      </span>
+    )
+  }
+  return <ClearPathLogo size={28} />
+}
+
+function SidebarWordmark() {
+  const { settings } = useWorkspace()
+  const displayName = settings.workspaceDisplayName || settings.brandName || 'ClearPath'
+  const showPoweredBy = !!(settings.workspaceDisplayName || settings.brandName)
+
+  return (
+    <div className="flex items-center gap-2">
+      <SidebarBrandMark />
+      <div className="min-w-0">
+        <span
+          style={{
+            fontSize: '15px',
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+            color: 'var(--text-primary)',
+            maxWidth: '160px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'block',
+          }}
+        >
+          {displayName}
+        </span>
+        {showPoweredBy ? (
+          <span
+            style={{
+              fontSize: '10px',
+              color: 'var(--text-quaternary)',
+              letterSpacing: '0.02em',
+              display: 'block',
+              marginTop: '1px',
+            }}
+          >
+            Powered by ClearPath
+          </span>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 function NavRows({
   items,
   pathname,
@@ -171,11 +243,8 @@ export function Sidebar({
       )}
     >
       {wordmark ? (
-        <div className="flex h-[52px] shrink-0 items-center border-b border-[var(--border-subtle)] px-4">
-          <div className="size-5 shrink-0 rounded-[var(--radius-md)] bg-[var(--accent)]" aria-hidden />
-          <span className="ml-2 text-[15px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
-            ClearPath
-          </span>
+        <div className="flex shrink-0 items-start border-b border-[var(--border-subtle)] px-4 py-3">
+          <SidebarWordmark />
         </div>
       ) : null}
       {header ? (
@@ -227,6 +296,13 @@ export function Sidebar({
             <SettingsGearIcon className="shrink-0 text-[var(--text-tertiary)]" />
           </Link>
           <SidebarThemeToggle />
+          <div className="mt-2 px-1">
+            <SignOutButton
+              variant="sidebar"
+              className="min-h-[40px] rounded-[var(--radius-md)] px-2 py-2 text-[13px] text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+            />
+          </div>
+          <p className="mt-1 px-1 text-[11px] text-[var(--text-quaternary)]">⌘K Quick actions</p>
         </div>
       ) : null}
 

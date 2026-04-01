@@ -64,7 +64,22 @@ export async function GET(request: Request) {
         { status: 500 }
       )
     }
-    const res = NextResponse.json({ data: data ?? [] })
+    const list = data ?? []
+    const ids = list.map((c) => c.id)
+    let merged = list
+    if (ids.length > 0) {
+      const { data: rewardRows } = await supabase
+        .from('client_rewards')
+        .select('client_id, total_xp, level')
+        .eq('workspace_id', workspaceId)
+        .in('client_id', ids)
+      const rmap = new Map((rewardRows ?? []).map((r) => [r.client_id, r]))
+      merged = list.map((c) => ({
+        ...c,
+        rewards: rmap.get(c.id) ?? null,
+      }))
+    }
+    const res = NextResponse.json({ data: merged })
     res.headers.set('Cache-Control', 'private, max-age=30')
     return res
   } catch {

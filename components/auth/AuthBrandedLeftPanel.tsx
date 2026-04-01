@@ -1,33 +1,120 @@
 import type { ReactNode } from 'react'
+import { AuthWordmark } from '@/components/auth/AuthWordmark'
+
+const DEFAULT_HEADLINE = (
+  <>
+    Run your coaching
+    <br />
+    business better.
+  </>
+)
+
+const DEFAULT_SUBTEXT = (
+  <>
+    Client management, scheduling, programs, and payments.
+    <br />
+    Everything in one place.
+  </>
+)
+
+const COACH_LOGIN_HEADLINE = (
+  <>
+    Your coaching
+    <br />
+    command center.
+  </>
+)
+
+const COACH_LOGIN_SUBTEXT = (
+  <>
+    <span className="font-medium text-white">ClearPath Coach OS</span> — manage clients, sessions, programs, and payments
+    in one workspace built for coaches.
+  </>
+)
+
+/** Deeper blue than signup — coach login left column + mobile bar. */
+const COACH_LOGIN_BLUE_BG =
+  'linear-gradient(155deg, #041a33 0%, #082952 28%, #0B2D5E 55%, #0d47a1 88%, #115293 100%)'
 
 /**
- * Marketing column for coach login / signup (desktop).
+ * Marketing column for auth. `marketing-blue` (default): brighter gradient (signup). `coach-login-light`: darker blue
+ * column + light text — coach login only.
  */
 export function AuthBrandedLeftPanel({
-  headline = (
-    <>
-      Run your coaching
-      <br />
-      business better.
-    </>
-  ),
-  subtext = (
-    <>
-      Client management, scheduling, programs, and payments.
-      <br />
-      Everything in one place.
-    </>
-  ),
+  headline,
+  subtext,
+  variant = 'marketing-blue',
 }: {
   headline?: ReactNode
   subtext?: ReactNode
+  variant?: 'marketing-blue' | 'coach-login-light'
 }) {
+  const isLight = variant === 'coach-login-light'
+  const h = headline ?? (isLight ? COACH_LOGIN_HEADLINE : DEFAULT_HEADLINE)
+  const s = subtext ?? (isLight ? COACH_LOGIN_SUBTEXT : DEFAULT_SUBTEXT)
+
   const features = [
     'Manage all your clients in one place',
     'Schedule sessions with drag & drop',
     'Track payments and revenue',
     'Build and assign coaching programs',
   ]
+
+  if (isLight) {
+    return (
+      <div
+        className="relative hidden min-h-screen w-full flex-col justify-between border-r border-white/10 p-10 text-white lg:flex lg:py-14 lg:pl-12 lg:pr-10 xl:pl-14 xl:pr-12"
+        style={{ background: COACH_LOGIN_BLUE_BG }}
+      >
+        <div className="flex items-center pt-1">
+          <AuthWordmark
+            variant="panel"
+            tone="onDark"
+            className="!text-[1.65rem] sm:!text-[1.85rem] lg:!text-[2rem]"
+          />
+        </div>
+
+        <div className="flex max-w-xl flex-1 flex-col justify-center py-10 lg:py-14">
+          <h2 className="text-[2.25rem] font-bold leading-[1.08] tracking-[-0.035em] sm:text-[2.75rem] lg:text-[3.15rem] xl:text-[3.35rem]">
+            {h}
+          </h2>
+          <p className="mt-5 text-[17px] font-normal leading-[1.65] text-white/85 sm:text-[18px]">{s}</p>
+
+          <ul className="mt-10 flex flex-col gap-3.5">
+            {features.map((line) => (
+              <li
+                key={line}
+                className="flex items-start gap-3 text-[15px] font-normal leading-snug text-white/95 sm:text-[15.5px]"
+              >
+                <span
+                  className="mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full border border-white/35 bg-white/10"
+                  aria-hidden
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div
+          className="rounded-2xl border border-white/20 p-5"
+          style={{
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <p className="text-[15px] italic leading-[1.65] text-white/90">
+            &ldquo;ClearPath changed how I run my business. My clients feel more supported than ever.&rdquo;
+          </p>
+          <p className="mt-3 text-[13px] font-medium text-white/70">— Sarah M., Performance Coach</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -37,18 +124,13 @@ export function AuthBrandedLeftPanel({
         background: 'linear-gradient(145deg, #1565C0 0%, #2196F3 40%, #64B5F6 100%)',
       }}
     >
-      <div className="flex items-center gap-3">
-        <div
-          className="size-7 shrink-0 rounded-[8px]"
-          style={{ background: 'rgba(255,255,255,0.2)' }}
-          aria-hidden
-        />
-        <span className="text-[20px] font-bold text-white">ClearPath</span>
+      <div className="flex items-center">
+        <AuthWordmark variant="panel" tone="onDark" />
       </div>
 
       <div className="flex max-w-xl flex-1 flex-col justify-center py-12">
-        <h2 className="text-[44px] font-bold leading-[1.1] tracking-[-0.03em] text-white">{headline}</h2>
-        <p className="mt-4 text-[16px] font-normal leading-[1.7] text-white/80">{subtext}</p>
+        <h2 className="text-[44px] font-bold leading-[1.1] tracking-[-0.03em] text-white">{h}</h2>
+        <p className="mt-4 text-[16px] font-normal leading-[1.7] text-white/80">{s}</p>
 
         <ul className="mt-8 flex flex-col gap-3">
           {features.map((line) => (

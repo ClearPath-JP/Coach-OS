@@ -61,6 +61,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
     if (typeof patch.notes !== 'undefined') updates.notes = patch.notes
     if (patch.status) updates.status = patch.status
+    if (typeof patch.paid === 'boolean') {
+      updates.paid_at = patch.paid ? new Date().toISOString() : null
+    }
 
     const hasNewStart = Boolean(patch.date && patch.startTime)
     const newStart = hasNewStart ? new Date(`${patch.date}T${patch.startTime}:00`) : new Date(current.scheduled_time)

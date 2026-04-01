@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { getClientWorkspaceBranding } from '@/lib/client-workspace-branding'
 import { normalizeEmail } from '@/lib/utils'
 import { ClientBrandingProvider } from '@/components/client/ClientBrandingContext'
+import { CoachClientErrorReportingShell } from '@/components/shared/CoachClientErrorReporting'
 
 /**
  * Client layout: require auth + role !== 'coach' (11-auth §4.2).
@@ -49,7 +50,7 @@ export default async function ClientLayout({
         userDisplayName: clientDisplayName,
       }}
     >
-      {children}
+      <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
     </ClientBrandingProvider>
   )
 }

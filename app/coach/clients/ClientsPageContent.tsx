@@ -4,9 +4,11 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { DataTable, type DataColumn } from '@/components/ui/DataTable'
+import { StatusDot } from '@/components/ui/StatusDot'
 import { AddClientModal } from './AddClientModal'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -22,6 +24,7 @@ type Client = {
   profile_photo_url: string | null
   created_at: string
   updated_at: string
+  rewards?: { total_xp: number; level: number } | null
 }
 
 type StatusFilter = '' | 'active' | 'paused' | 'completed'
@@ -36,7 +39,7 @@ function getInitials(first: string | null, last: string | null, email: string | 
   return '?'
 }
 
-function statusBadgeVariant(status: string): 'active' | 'inactive' | 'pending' {
+function statusTone(status: string): 'active' | 'pending' | 'inactive' {
   if (status === 'active') return 'active'
   if (status === 'paused') return 'pending'
   return 'inactive'
@@ -99,8 +102,14 @@ export function CoachClientsPageContent() {
 
   return (
     <>
-      <PageHeader title="Clients" subtitle="Manage your roster">
-        <Button className="w-full min-[480px]:w-auto" onClick={() => setAddModalOpen(true)}>
+      <PageHeader
+        title="Clients"
+        contextInfo={`${clients.filter((c) => c.status === 'active').length} active · ${clients.filter((c) => c.status === 'paused').length} paused`}
+      >
+        <Button size="sm" variant="secondary" onClick={() => fetchClients()}>
+          Refresh
+        </Button>
+        <Button size="sm" className="w-full min-[480px]:w-auto" onClick={() => setAddModalOpen(true)}>
           Add client
         </Button>
       </PageHeader>
@@ -151,66 +160,75 @@ export function CoachClientsPageContent() {
           </Card>
         )}
         {!loading && !error && clients.length === 0 && (
-          <Card className="rounded-xl border border-[var(--color-border)] p-8 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
-              👥
-            </div>
-            <h2 className="text-[18px] font-medium text-[var(--color-text-primary)]">
-              No clients yet
-            </h2>
-            <p className="mt-2 text-[15px] text-[var(--color-text-secondary)]">
-              Add your first client to start managing your roster.
-            </p>
-            <Button className="mt-6" onClick={() => setAddModalOpen(true)}>
-              Add your first client
-            </Button>
+          <Card className="p-12 text-center">
+            <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">👥</div>
+            <h2 className="mt-4 text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Add your first client</h2>
+            <p className="mx-auto mt-2 max-w-[320px] text-[14px] leading-[1.6] text-[var(--text-tertiary)]">Invite clients to access their programs, schedule sessions, and stay connected through ClearPath.</p>
+            <Button className="mt-6" onClick={() => setAddModalOpen(true)}>Add client</Button>
           </Card>
         )}
         {!loading && !error && clients.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {clients.map((client) => (
-              <Link
-                key={client.id}
-                href={`/coach/clients/${client.id}`}
-                className="block min-w-0 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 rounded-xl"
-              >
-                <Card
-                  variant="flat"
-                  padding="lg"
-                  className="h-full border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
-                >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-[15px] font-medium text-[var(--color-accent)]"
-                      aria-hidden
-                    >
-                      {getInitials(client.first_name, client.last_name, client.email)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-[var(--color-text-primary)]">
-                        {[client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'}
-                      </p>
-                      {client.email && (
-                        <p className="mt-0.5 truncate text-[13px] text-[var(--color-text-secondary)]">
-                          {client.email}
-                        </p>
-                      )}
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <Badge variant={statusBadgeVariant(client.status)}>
-                          {client.status}
-                        </Badge>
-                        <span className="text-[13px] text-[var(--color-text-secondary)]">
-                          {client.updated_at
-                            ? `Active ${formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })}`
-                            : '—'}
-                        </span>
-                      </div>
+          <DataTable
+            rows={clients}
+            loading={loading}
+            rowHref={(row) => `/coach/clients/${row.id}`}
+            emptyTitle="Add your first client"
+            emptyDescription="Invite clients to access their programs, schedule sessions, and stay connected through ClearPath."
+            columns={[
+              {
+                key: 'name',
+                header: 'Name',
+                sortValue: (r) => `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim(),
+                render: (client) => (
+                  <div className="flex items-center gap-2">
+                    <div className="flex size-7 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-semibold text-[var(--accent)]">{getInitials(client.first_name, client.last_name, client.email)}</div>
+                    <div className="min-w-0">
+                      <p className="truncate">{[client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'}</p>
+                      <p className="truncate text-[12px] text-[var(--text-tertiary)]">{client.email || '—'}</p>
                     </div>
                   </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                ),
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                sortValue: (r) => r.status,
+                render: (client) => <span className="inline-flex items-center gap-2 text-[13px] text-[var(--text-secondary)]"><StatusDot tone={statusTone(client.status)} />{client.status}</span>,
+              },
+              {
+                key: 'xp',
+                header: 'XP',
+                sortValue: (r) => r.rewards?.total_xp ?? 0,
+                render: (client) => (
+                  <div className="flex items-center gap-2">
+                    <span className="tabular-nums text-[13px] text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</span>
+                    <Badge variant="accent">L{client.rewards?.level ?? 1}</Badge>
+                  </div>
+                ),
+              },
+              { key: 'sessions', header: 'Sessions', render: () => <span className="text-[var(--text-tertiary)]">—</span> },
+              { key: 'program', header: 'Program', render: () => <span className="text-[var(--text-tertiary)]">General</span> },
+              {
+                key: 'lastActive',
+                header: 'Last active',
+                sortValue: (r) => r.updated_at,
+                render: (client) => <span className="text-[13px] text-[var(--text-tertiary)]">{client.updated_at ? formatDistanceToNow(new Date(client.updated_at), { addSuffix: true }) : '—'}</span>,
+              },
+              {
+                key: 'actions',
+                header: 'Actions',
+                render: (client) => (
+                  <Link
+                    href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`}
+                    className="text-[13px] font-medium text-[var(--color-accent)] hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Message
+                  </Link>
+                ),
+              },
+            ] as DataColumn<Client>[]}
+          />
         )}
       </div>
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { requireCoach } from '@/lib/api-helpers'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -11,25 +11,15 @@ type ClientRef = { clientId: string; firstName: string | null; lastName: string 
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id: videoId } = await context.params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { workspaceId, supabase } = auth
 
     const { data: video, error: vErr } = await supabase
       .from('videos')
       .select('id')
       .eq('id', videoId)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
       .is('deleted_at', null)
       .maybeSingle()
 
@@ -41,7 +31,7 @@ export async function GET(_request: Request, context: RouteContext) {
       .from('video_assignments')
       .select('id, client_id, clients(first_name, last_name)')
       .eq('video_id', videoId)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
 
     const direct = (directRows ?? []).map((r) => {
       const raw = r.clients as unknown
@@ -61,7 +51,7 @@ export async function GET(_request: Request, context: RouteContext) {
       .from('program_content')
       .select('id, title, module_id')
       .eq('video_id', videoId)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
 
     const moduleIds = [...new Set((contentRows ?? []).map((r) => r.module_id as string))]
     let modules: { id: string; title: string; program_id: string }[] = []
@@ -70,7 +60,7 @@ export async function GET(_request: Request, context: RouteContext) {
         .from('program_modules')
         .select('id, title, program_id')
         .in('id', moduleIds)
-        .eq('workspace_id', coach.workspace_id)
+        .eq('workspace_id', workspaceId)
       modules = (modData ?? []) as typeof modules
     }
 
@@ -83,7 +73,7 @@ export async function GET(_request: Request, context: RouteContext) {
         .from('programs')
         .select('id, title')
         .in('id', programIds)
-        .eq('workspace_id', coach.workspace_id)
+        .eq('workspace_id', workspaceId)
       for (const p of progs ?? []) {
         programTitles.set(p.id as string, (p.title as string) ?? 'Program')
       }
@@ -96,7 +86,7 @@ export async function GET(_request: Request, context: RouteContext) {
         .from('client_programs')
         .select('program_id, client_id, clients(first_name, last_name)')
         .in('program_id', programIds)
-        .eq('workspace_id', coach.workspace_id)
+        .eq('workspace_id', workspaceId)
         .eq('status', 'active')
 
       for (const row of cpRows ?? []) {

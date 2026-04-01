@@ -16,6 +16,8 @@ export async function completeCoachSignup(
     .from('coaches')
     .select('id, workspace_id')
     .eq('user_id', user.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
     .maybeSingle()
 
   if (existingCoach?.workspace_id) {

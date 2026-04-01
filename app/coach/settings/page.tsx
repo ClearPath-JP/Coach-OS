@@ -3,7 +3,7 @@ import { SettingsPageContent } from './SettingsPageContent'
 
 export default function CoachSettingsPage() {
   return (
-    <main className="min-h-screen p-4 md:p-6">
+    <main className="min-h-screen p-4 md:p-6 lg:p-8">
       <div className="mb-4">
         <Link
           href="/coach/dashboard"

@@ -1,11 +1,14 @@
 'use client'
 
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 import { format } from 'date-fns'
+import { useMemo, useState } from 'react'
 
 export type InvoiceCardDataClient = {
   type: 'invoice'
   invoiceId: string
+  clientId?: string
   packageTitle: string
   packageDescription?: string | null
   amountCents: number
@@ -15,6 +18,15 @@ export type InvoiceCardDataClient = {
   paidAt?: string | null
 }
 
+export type InvoicePaymentDetails = {
+  stripeConnected?: boolean
+  cashappUsername?: string | null
+  venmoUsername?: string | null
+  paypalEmail?: string | null
+  zelleEmailOrPhone?: string | null
+  paymentInstructions?: string | null
+}
+
 function formatAmount(cents: number, currency: string): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -22,9 +34,57 @@ function formatAmount(cents: number, currency: string): string {
   }).format(cents / 100)
 }
 
-export function InvoiceCardClient({ data }: { data: InvoiceCardDataClient }) {
+export function InvoiceCardClient({
+  data,
+  paymentDetails,
+}: {
+  data: InvoiceCardDataClient
+  paymentDetails?: InvoicePaymentDetails
+}) {
   const isPaid = data.status === 'paid'
   const isCancelled = data.status === 'cancelled'
+  const [selectedMethod, setSelectedMethod] = useState<string>('card')
+
+  const methods = useMemo(
+    () =>
+      [
+        { key: 'cashapp', label: 'CashApp', value: paymentDetails?.cashappUsername ?? null, icon: '$', iconClass: 'bg-green-100 text-green-700' },
+        { key: 'venmo', label: 'Venmo', value: paymentDetails?.venmoUsername ?? null, icon: 'V', iconClass: 'bg-sky-100 text-sky-700' },
+        { key: 'paypal', label: 'PayPal', value: paymentDetails?.paypalEmail ?? null, icon: 'P', iconClass: 'bg-blue-100 text-blue-700' },
+        { key: 'zelle', label: 'Zelle', value: paymentDetails?.zelleEmailOrPhone ?? null, icon: 'Z', iconClass: 'bg-violet-100 text-violet-700' },
+      ].filter((m) => Boolean(m.value?.trim())),
+    [paymentDetails]
+  )
+
+  const copyToClipboard = async (methodKey: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value)
+      setSelectedMethod(methodKey)
+    } catch {
+      /* no-op */
+    }
+  }
+
+  const sendPaymentConfirmation = async () => {
+    if (!data.clientId) return
+    const ok = window.confirm('Have you already sent the payment?')
+    if (!ok) return
+    const labelMap: Record<string, string> = {
+      card: 'card',
+      cashapp: 'CashApp',
+      venmo: 'Venmo',
+      paypal: 'PayPal',
+      zelle: 'Zelle',
+    }
+    await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientId: data.clientId,
+        content: `Hi, I've sent payment via ${labelMap[selectedMethod] ?? 'a payment method'}`,
+      }),
+    }).catch(() => null)
+  }
 
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 min-w-[260px] max-w-[320px]">
@@ -57,11 +117,53 @@ export function InvoiceCardClient({ data }: { data: InvoiceCardDataClient }) {
         </p>
       )}
       {!isPaid && !isCancelled && (
-        <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-          <p className="text-sm font-medium text-[var(--color-ink)]">Pay</p>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">
-            Contact your coach to complete payment. You can reply in this thread or use their preferred payment method.
-          </p>
+        <div className="mt-3 space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+          <div>
+            <p className="text-sm font-medium text-[var(--color-ink)]">How to pay</p>
+            <p className="mt-1 text-sm text-[var(--color-muted)]">
+              Send {formatAmount(data.amountCents, data.currency)} to:
+            </p>
+          </div>
+
+          {paymentDetails?.stripeConnected ? (
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-2">
+              <button
+                type="button"
+                className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white"
+                onClick={() => setSelectedMethod('card')}
+              >
+                Pay by card {formatAmount(data.amountCents, data.currency)}
+              </button>
+              <p className="mt-1 text-xs text-indigo-700">Instant - pay with any card</p>
+            </div>
+          ) : null}
+
+          {methods.map((method) => (
+            <div key={method.key} className="flex items-center gap-2 text-sm">
+              <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${method.iconClass}`}>
+                {method.icon}
+              </span>
+              <span className="min-w-[56px] text-[var(--color-ink)]">{method.label}</span>
+              <span className="flex-1 truncate font-semibold text-[var(--color-ink)]">{method.value}</span>
+              <Button
+                variant="secondary"
+                className="h-7 px-2 py-0 text-xs"
+                onClick={() => void copyToClipboard(method.key, method.value as string)}
+              >
+                Copy
+              </Button>
+            </div>
+          ))}
+
+          {paymentDetails?.paymentInstructions ? (
+            <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-2 text-xs text-[var(--color-muted)]">
+              📝 {paymentDetails.paymentInstructions}
+            </div>
+          ) : null}
+
+          <Button variant="secondary" className="w-full" onClick={() => void sendPaymentConfirmation()}>
+            I&apos;ve sent payment
+          </Button>
         </div>
       )}
     </div>

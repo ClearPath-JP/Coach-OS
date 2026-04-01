@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { stripe } from '@/lib/stripe'
@@ -9,12 +10,8 @@ export async function DELETE(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
+    const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (!workspaceId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -39,7 +36,7 @@ export async function DELETE(request: Request) {
     const { data: subscription } = await supabase
       .from('subscriptions')
       .select('stripe_subscription_id')
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
       .in('status', ['active', 'trialing', 'past_due'])
       .order('updated_at', { ascending: false })
       .limit(1)
@@ -50,13 +47,13 @@ export async function DELETE(request: Request) {
       await supabase
         .from('subscriptions')
         .update({ status: 'cancelled', cancel_at_period_end: true, updated_at: new Date().toISOString() })
-        .eq('workspace_id', coach.workspace_id)
+        .eq('workspace_id', workspaceId)
     }
 
     const { error } = await supabase
       .from('workspaces')
       .update({ status: 'deleted' })
-      .eq('id', coach.workspace_id)
+      .eq('id', workspaceId)
     if (error) {
       return NextResponse.json({ error: error.message || 'Could not delete account' }, { status: 500 })
     }

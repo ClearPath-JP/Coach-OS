@@ -12,6 +12,10 @@ export const COACH_PASSWORD = 'TestCoach123!'
 export const CLIENT_EMAIL = 'test-client@clearpath.test'
 export const CLIENT_PASSWORD = 'TestClient123!'
 
+// Next dev can spend >20s compiling heavy routes on first hit; keep API tests from aborting early.
+const FETCH_TIMEOUT_MS = 45_000
+const FETCH_RETRIES = 3
+
 export type TestContext = {
   coachCookie: string
   clientCookie: string
@@ -101,6 +105,57 @@ export function mergeCookieJar(jar: string, response: Response): string {
   return [...map.entries()].map(([k, v]) => `${k}=${v}`).join('; ')
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function toErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  return String(err)
+}
+
+function isRetryableFetchError(err: unknown): boolean {
+  const msg = toErrorMessage(err).toLowerCase()
+  return (
+    msg.includes('econnreset') ||
+    msg.includes('socket hang up') ||
+    msg.includes('und_err') ||
+    msg.includes('network error') ||
+    msg.includes('fetch failed')
+  )
+}
+
+async function fetchWithTimeoutAndRetry(
+  input: string,
+  init: RequestInit = {},
+  timeoutMs = FETCH_TIMEOUT_MS
+): Promise<Response> {
+  let lastErr: unknown = null
+  for (let attempt = 0; attempt <= FETCH_RETRIES; attempt += 1) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs)
+    try {
+      const headers = new Headers(init.headers as HeadersInit | undefined)
+      headers.set('Connection', 'close')
+      const res = await fetch(input, {
+        ...init,
+        headers,
+        signal: controller.signal,
+      })
+      return res
+    } catch (err) {
+      lastErr = err
+      if (attempt >= FETCH_RETRIES || !isRetryableFetchError(err)) {
+        throw err
+      }
+      await sleep(250 * (attempt + 1))
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('Unknown fetch failure')
+}
+
 /**
  * Password grant at Supabase + POST /api/auth/session so Set-Cookie works in Node fetch tests.
  */
@@ -115,7 +170,7 @@ export async function sessionCookiesFromPassword(
       'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required for API tests'
     )
   }
-  const tokenRes = await fetch(`${url.replace(/\/$/, '')}/auth/v1/token?grant_type=password`, {
+  const tokenRes = await fetchWithTimeoutAndRetry(`${url.replace(/\/$/, '')}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     headers: {
       apikey: key,
@@ -140,7 +195,7 @@ export async function sessionCookiesFromPassword(
         `Password grant failed (${tokenRes.status})`
     )
   }
-  const sessionRes = await fetch(`${BASE_URL}/api/auth/session`, {
+  const sessionRes = await fetchWithTimeoutAndRetry(`${BASE_URL}/api/auth/session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -163,7 +218,7 @@ export async function fetchJson(
   const { cookieJar = '', ...rest } = init
   const headers = new Headers(rest.headers as HeadersInit | undefined)
   if (cookieJar) headers.set('Cookie', cookieJar)
-  const res = await fetch(`${BASE_URL}${path}`, { ...rest, headers })
+  const res = await fetchWithTimeoutAndRetry(`${BASE_URL}${path}`, { ...rest, headers })
   const nextJar = mergeCookieJar(cookieJar, res)
   const text = await res.text()
   let json: unknown

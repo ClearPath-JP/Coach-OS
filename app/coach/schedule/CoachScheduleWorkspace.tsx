@@ -94,17 +94,25 @@ function ClientRowButton({
 
 function SessionCalendarCard({ session, onOpen }: { session: SessionRow; onOpen: (session: SessionRow) => void }) {
   const name = fullName(session.clients ?? { first_name: null, last_name: null })
+  const statusClass =
+    session.status === 'completed'
+      ? 'bg-emerald-500'
+      : session.status === 'cancelled'
+        ? 'bg-slate-500'
+        : session.status === 'no_show'
+          ? 'bg-amber-500'
+          : 'bg-[var(--color-accent)]'
   return (
     <button
       type="button"
-      className="w-full rounded bg-[var(--color-accent)] px-2 py-1.5 text-left text-xs text-white hover:brightness-95"
+      className={`w-full rounded px-2 py-1.5 text-left text-xs text-white hover:brightness-95 ${statusClass}`}
       onClick={(e) => {
         e.stopPropagation()
         onOpen(session)
       }}
     >
       <span className="block truncate font-medium">{name}</span>
-      <span className="block truncate text-[10px] text-white/90">Video session · tap to edit</span>
+                    <span className="block truncate text-[10px] text-white/90">{session.status} · tap to edit</span>
     </button>
   )
 }
@@ -737,7 +745,7 @@ export function CoachScheduleWorkspace() {
                           {format(parseISO(session.scheduled_time), 'h:mm a')} · {session.duration_minutes ?? 60} min
                         </p>
                       </div>
-                      <Badge variant={session.status === 'confirmed' ? 'active' : session.status === 'completed' ? 'inactive' : 'pending'}>
+                      <Badge variant={session.status === 'confirmed' ? 'active' : session.status === 'completed' ? 'active' : 'pending'}>
                         {session.status}
                       </Badge>
                     </button>

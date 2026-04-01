@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { ensureCoachWorkspaceForOnboarding } from '@/lib/onboarding-ensure-coach'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { onboardingCoachingSchema } from '@/lib/validations'
 
@@ -25,14 +26,11 @@ export async function POST(request: Request) {
       return res
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const ensured = await ensureCoachWorkspaceForOnboarding(supabase, user)
+    if ('error' in ensured) {
+      return NextResponse.json({ error: ensured.error }, { status: ensured.status })
     }
+    const coachWorkspaceId = ensured.workspaceId
 
     let raw: unknown
     try {
@@ -65,7 +63,7 @@ export async function POST(request: Request) {
         coaching_types: coachingTypes.length > 0 ? coachingTypes : null,
         current_client_count: validCount,
       })
-      .eq('id', coach.workspace_id)
+      .eq('id', coachWorkspaceId)
 
     if (error) {
       return NextResponse.json({ error: 'Could not update workspace' }, { status: 500 })

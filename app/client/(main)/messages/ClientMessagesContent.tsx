@@ -11,6 +11,10 @@ import {
   type SessionBookingCardData,
 } from '@/components/shared/SessionBookingMessageCard'
 import { mergeByIdSortByCreatedAt } from '@/lib/utils'
+import {
+  ClientAssignmentChatCard,
+  ClientAssignmentFeedbackCard,
+} from '@/components/shared/AssignmentChatCards'
 
 type Message = {
   id: string
@@ -21,6 +25,15 @@ type Message = {
   read_at: string | null
   created_at: string
   message_type?: string | null
+}
+
+type WorkspaceBrandingPayments = {
+  stripeConnected: boolean
+  cashappUsername: string | null
+  venmoUsername: string | null
+  paypalEmail: string | null
+  zelleEmailOrPhone: string | null
+  paymentInstructions: string | null
 }
 
 export function ClientMessagesContent({
@@ -40,6 +53,7 @@ export function ClientMessagesContent({
   const [hasMoreOlder, setHasMoreOlder] = useState(false)
   const [oldestCursor, setOldestCursor] = useState<string | null>(null)
   const [loadingOlder, setLoadingOlder] = useState(false)
+  const [paymentDetails, setPaymentDetails] = useState<WorkspaceBrandingPayments | null>(null)
   const threadScrollRef = useRef<HTMLDivElement>(null)
   const threadEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
@@ -101,6 +115,34 @@ export function ClientMessagesContent({
   useEffect(() => {
     fetchMessages()
   }, [fetchMessages])
+
+  const loadWorkspaceBrandingPayments = useCallback(() => {
+    fetch('/api/client/workspace-branding', { credentials: 'include', cache: 'no-store' })
+      .then(async (res) => {
+        const json = await res.json().catch(() => ({}))
+        if (!res.ok || !json?.data) return
+        setPaymentDetails({
+          stripeConnected: json.data.stripeConnected ?? false,
+          cashappUsername: json.data.cashappUsername ?? null,
+          venmoUsername: json.data.venmoUsername ?? null,
+          paypalEmail: json.data.paypalEmail ?? null,
+          zelleEmailOrPhone: json.data.zelleEmailOrPhone ?? null,
+          paymentInstructions: json.data.paymentInstructions ?? null,
+        })
+      })
+      .catch(() => null)
+  }, [])
+
+  useEffect(() => {
+    loadWorkspaceBrandingPayments()
+    const interval = window.setInterval(loadWorkspaceBrandingPayments, 60_000)
+    const onFocus = () => loadWorkspaceBrandingPayments()
+    window.addEventListener('focus', onFocus)
+    return () => {
+      window.clearInterval(interval)
+      window.removeEventListener('focus', onFocus)
+    }
+  }, [loadWorkspaceBrandingPayments])
 
   useEffect(() => {
     fetch(`/api/messages/read`, {
@@ -271,6 +313,8 @@ export function ClientMessagesContent({
                   {msgs.map((msg) => {
                     const isInvoice = msg.message_type === 'invoice'
                     const isSession = msg.message_type === 'session'
+                    const isAssignment = msg.message_type === 'assignment'
+                    const isAssignmentFeedback = msg.message_type === 'assignment_feedback'
                     let invoiceData: Parameters<typeof InvoiceCardClient>[0]['data'] | null = null
                     let sessionData: SessionBookingCardData | null = null
                     if (isInvoice) {
@@ -280,6 +324,7 @@ export function ClientMessagesContent({
                           invoiceData = {
                             type: 'invoice',
                             invoiceId: parsed.invoiceId,
+                            clientId: msg.client_id,
                             packageTitle: parsed.packageTitle ?? 'Invoice',
                             packageDescription: parsed.packageDescription ?? null,
                             amountCents: parsed.amountCents ?? 0,
@@ -326,7 +371,7 @@ export function ClientMessagesContent({
                       >
                         {invoiceData ? (
                           <div className="max-w-[320px]">
-                            <InvoiceCardClient data={invoiceData} />
+                            <InvoiceCardClient data={invoiceData} paymentDetails={paymentDetails ?? {}} />
                             <p className="mt-1 text-[12px] text-[var(--color-muted)]">
                               {format(new Date(msg.created_at), 'h:mm a')}
                             </p>
@@ -337,6 +382,20 @@ export function ClientMessagesContent({
                             <p className="mt-1 text-[12px] text-[var(--color-muted)]">
                               {format(new Date(msg.created_at), 'h:mm a')}
                             </p>
+                          </div>
+                        ) : isAssignment ? (
+                          <div className="max-w-[320px]">
+                            <ClientAssignmentChatCard
+                              content={msg.content}
+                              createdAt={msg.created_at}
+                              userId={userId}
+                              senderId={msg.sender_id}
+                              fetchMessages={fetchMessages}
+                            />
+                          </div>
+                        ) : isAssignmentFeedback ? (
+                          <div className="max-w-[320px]">
+                            <ClientAssignmentFeedbackCard content={msg.content} createdAt={msg.created_at} />
                           </div>
                         ) : (
                           <div

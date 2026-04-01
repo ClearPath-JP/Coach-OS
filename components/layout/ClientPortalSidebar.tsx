@@ -23,7 +23,7 @@ const settingsIcon = (
 
 /** Desktop (lg+) left rail: same destinations as bottom tabs, Settings → profile, Log out in footer. */
 export function ClientPortalDesktopSidebar({ className }: { className?: string }) {
-  const primary = clientPortalTabs.slice(0, 5)
+  const primary = clientPortalTabs.slice(0, -1)
   const items = primary.map(({ href, label, icon: Icon }) => ({
     href,
     label,

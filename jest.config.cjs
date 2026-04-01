@@ -18,7 +18,9 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/__tests__/setup.ts'],
-  testTimeout: 120_000,
+  // Must be >= FETCH_TIMEOUT_MS in __tests__/setup.ts (Next dev first-compile can be slow).
+  testTimeout: 60000,
+  openHandlesTimeout: 5000,
   maxWorkers: 1,
   transform: {
     '^.+\\.tsx?$': [

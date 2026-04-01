@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { updateWorkspaceSettingsSchema } from '@/lib/validations'
@@ -9,12 +10,8 @@ export async function PATCH(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
+    const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (!workspaceId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -38,7 +35,17 @@ export async function PATCH(request: Request) {
     }
 
     const updates: Record<string, unknown> = {}
-    if (parsed.data.displayName !== undefined) updates.workspace_display_name = parsed.data.displayName
+    if (parsed.data.displayName !== undefined) {
+      updates.workspace_display_name = parsed.data.displayName
+      if (parsed.data.displayName === null) {
+        // Allow clearing display name without overwriting internal workspace name
+      } else {
+        const trimmed = parsed.data.displayName.trim()
+        if (trimmed.length > 0) {
+          updates.name = trimmed
+        }
+      }
+    }
     if (parsed.data.accentColor !== undefined) updates.accent_color = parsed.data.accentColor
     if (parsed.data.accentColorLight !== undefined) updates.accent_color_light = parsed.data.accentColorLight
     if (parsed.data.timezone !== undefined) updates.timezone = parsed.data.timezone
@@ -54,6 +61,12 @@ export async function PATCH(request: Request) {
     if (parsed.data.clientWelcomeMessage !== undefined) {
       updates.client_welcome_message = parsed.data.clientWelcomeMessage
     }
+    if (parsed.data.cashappUsername !== undefined) updates.cashapp_username = parsed.data.cashappUsername
+    if (parsed.data.venmoUsername !== undefined) updates.venmo_username = parsed.data.venmoUsername
+    if (parsed.data.paypalEmail !== undefined) updates.paypal_email = parsed.data.paypalEmail
+    if (parsed.data.zelleEmailOrPhone !== undefined) updates.zelle_email_or_phone = parsed.data.zelleEmailOrPhone
+    if (parsed.data.stripeConnected !== undefined) updates.stripe_connected = parsed.data.stripeConnected
+    if (parsed.data.paymentInstructions !== undefined) updates.payment_instructions = parsed.data.paymentInstructions
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ data: 'No changes' })
@@ -62,7 +75,7 @@ export async function PATCH(request: Request) {
     const { error } = await supabase
       .from('workspaces')
       .update(updates)
-      .eq('id', coach.workspace_id)
+      .eq('id', workspaceId)
 
     if (error) return NextResponse.json({ error: error.message || 'Could not update workspace settings' }, { status: 500 })
     return NextResponse.json({ data: 'Workspace settings updated' })

@@ -931,7 +931,37 @@ Public coach profile (bio, specialties, social).
 
 ---
 
-## 10. Storage
+## 10. V2 — Assignments, rewards, packages (ClearPath-V2)
+
+The following objects are defined in migrations such as `20240328000019_assignments.sql`, `20240328000024_session_packages_is_virtual.sql`, and related files. They use workspace-scoped RLS patterns (`current_workspace_id()`, coach membership) consistent with the rest of ClearPath-V2.
+
+### 10.1 `public.assignment_templates`
+
+Coach-defined templates (title, instructions, type: text | video | file | checklist, checklist JSON, due offset, points, optional program/module link). Supports soft delete via `deleted_at` where implemented in migration.
+
+### 10.2 `public.client_assignments`
+
+Rows linking a client to a template: status (`pending`, `submitted`, `approved`, `returned`, `overdue`), due/submitted/reviewed timestamps, coach feedback, `points_awarded`.
+
+### 10.3 `public.assignment_submissions`
+
+Versioned submission payload per assignment: text, `video_id` → `videos`, `file_url` / `file_size_bytes`, checklist responses JSON.
+
+### 10.4 `public.client_rewards`
+
+One row per `(client_id, workspace_id)` (unique): `total_xp`, streak fields, assignment completion counts, `level`.
+
+### 10.5 `public.workspaces` — storage
+
+- **`storage_used_bytes`** (BIGINT, default 0): aggregate of video + assignment submission file bytes; updated via `recalc_workspace_storage` trigger on `videos` and `assignment_submissions`.
+
+### 10.6 `public.session_packages`
+
+Session products for invoicing (`title`, `price_cents`, `duration_minutes`, etc.). **`is_virtual`** BOOLEAN DEFAULT true — online vs in-person pricing/UX.
+
+---
+
+## 11. Storage
 
 - **Bucket `avatars`:** Public; 2MB limit; MIME types: jpeg, png, gif, webp.  
 - **RLS on `storage.objects`:** Users can INSERT/UPDATE/DELETE only objects under path `{auth.uid()}/...` in bucket `avatars`. Public read via bucket setting.
@@ -940,28 +970,28 @@ Video files are not stored in Supabase Storage in the current schema; `videos.ur
 
 ---
 
-## 11. Helper function
+## 12. Helper function
 
 - **`get_current_client_id()`** (SECURITY DEFINER): Returns `current_setting('app.client_id', true)` or, if unset, `profiles.tenant_id` for `auth.uid()`. Used by RLS to scope rows by tenant. The app must set `app.client_id` (e.g. via `SET LOCAL`) when using a specific tenant.
 
 ---
 
-## 12. Missing or incomplete areas
+## 13. Missing or incomplete areas
 
-### 12.1 Client management
+### 13.1 Client management
 
 - **Present:** `clients` (with coach, contact, notes, tenant).  
 - **Missing / inconsistent:**  
   - **Client profile fields:** Validations reference `height`, `weight_kg`, `date_of_birth` on client profile; these columns do **not** exist on `clients`. Add them in a migration or remove from validation and UI.
 
-### 12.2 Messaging
+### 13.2 Messaging
 
 - **Present:** `messages` (1:1), `coach_daily_messages`, `coach_message_templates`, `coach_broadcasts`, `coach_broadcast_recipients`.  
 - **Gaps:**  
   - **messages:** No RLS for UPDATE (e.g. marking `read_at`); app uses update in code—add recipient UPDATE policy or rely on service role.  
   - **coach_broadcast_recipients:** Only SELECT for coaches; INSERT/UPDATE (delivery status) likely done with service role.
 
-### 12.3 Calendar / scheduling
+### 13.3 Calendar / scheduling
 
 - **Present:** `availability_slots`, `sessions`, `session_products`, `session_requests`, `client_time_requests`; FKs and tenant RLS are in place.  
 - **Gaps:**  
@@ -969,14 +999,14 @@ Video files are not stored in Supabase Storage in the current schema; `videos.ur
   - No **calendar event** or **sync** table (e.g. for iCal/Google); calendar feed is built from `sessions` and `availability_slots` in app/API.  
   - **Index naming:** `idx_sessions_client_id` indexes `sessions.client_id` (UUID FK to `clients`), not tenant; name can be misleading.
 
-### 12.4 Video storage
+### 13.4 Video storage
 
 - **Present:** `videos` (metadata + `url`, `thumbnail_url`), `video_assignments`, `video_completions`.  
 - **Missing:**  
   - No Supabase Storage bucket or table for **uploaded video files**; all video is external URL–based.  
   - No **transcoding/encoding status** or **storage path** column if you later add uploads.
 
-### 12.5 Program creation
+### 13.5 Program creation
 
 - **Present:** `programs`, `program_lessons`, `program_assignments`.  
 - **Gaps:**  
@@ -985,7 +1015,7 @@ Video files are not stored in Supabase Storage in the current schema; `videos.ur
 
 ---
 
-## 13. Incomplete or inconsistent tables (summary)
+## 14. Incomplete or inconsistent tables (summary)
 
 | Table / area | Issue |
 |--------------|--------|

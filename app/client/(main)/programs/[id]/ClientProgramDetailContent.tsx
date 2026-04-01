@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { VideoPlayer } from '@/components/ui/VideoPlayer'
 
 type VideoDetail = {
   id: string
@@ -14,6 +15,9 @@ type VideoDetail = {
   processing_status: string
   playback_url: string | null
   thumbnail_url: string | null
+  drive_thumbnail_url?: string | null
+  drive_file_id?: string | null
+  uses_stream_proxy?: boolean
   duration_seconds: number | null
   file_size_bytes: number | null
 }
@@ -302,7 +306,8 @@ function ClientVideoBlock({ block }: { block: ContentBlock }) {
       </div>
     )
   }
-  if (video.processing_status === 'ready' && video.playback_url) {
+  const poster = video.drive_thumbnail_url ?? video.thumbnail_url
+  if (video.processing_status === 'ready' || video.drive_file_id) {
     return (
       <ErrorBoundary
         fallback={
@@ -323,7 +328,11 @@ function ClientVideoBlock({ block }: { block: ContentBlock }) {
               {video.description}
             </p>
           ) : null}
-          <video src={video.playback_url} controls className="w-full" playsInline />
+          <VideoPlayer
+            videoId={video.id}
+            title={block.title ?? video.title}
+            thumbnailUrl={poster}
+          />
         </div>
       </ErrorBoundary>
     )

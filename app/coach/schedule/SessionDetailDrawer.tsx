@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { format } from 'date-fns'
+import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
+import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
 
 export type SessionForDrawer = {
   id: string
@@ -32,12 +34,51 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
   const [confirmCancel, setConfirmCancel] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
+  const [paymentState, setPaymentState] = useState<'none' | 'invoice_pending' | 'paid'>('none')
+  const [paymentAmountCents, setPaymentAmountCents] = useState<number | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
+  const [paymentDate, setPaymentDate] = useState<string | null>(null)
+  const [invoiceId, setInvoiceId] = useState<string | null>(null)
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
+  const [markPaidOpen, setMarkPaidOpen] = useState(false)
 
   useEffect(() => {
     if (!session) return
     setNotes(session.notes ?? '')
     setConfirmCancel(false)
     setConfirmRemove(false)
+  }, [session])
+
+  useEffect(() => {
+    if (!session) return
+    fetch(`/api/payments?clientId=${encodeURIComponent(session.client_id)}`)
+      .then((res) => res.json())
+      .then((json) => {
+        const payment = (json.data ?? []).find((p: { session_id?: string | null; amount_cents?: number; payment_method?: string | null; payment_date?: string | null }) => p.session_id === session.id)
+        if (payment) {
+          setPaymentState('paid')
+          setPaymentAmountCents(payment.amount_cents ?? null)
+          setPaymentMethod(payment.payment_method ?? null)
+          setPaymentDate(payment.payment_date ?? null)
+          return
+        }
+        return fetch(`/api/invoices?clientId=${encodeURIComponent(session.client_id)}&status=pending`)
+          .then((r) => r.json())
+          .then((invJson) => {
+            const inv = (invJson.data ?? [])[0]
+            if (inv) {
+              setPaymentState('invoice_pending')
+              setInvoiceId(inv.id ?? null)
+              setPaymentAmountCents(inv.amount_cents ?? null)
+              setPaymentDate(inv.created_at ?? null)
+            } else {
+              setPaymentState('none')
+            }
+          })
+      })
+      .catch(() => {
+        setPaymentState('none')
+      })
   }, [session])
 
   if (!session) return null
@@ -66,12 +107,25 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
   }
 
   const markComplete = async () => {
+    const answer = window.prompt('Was payment received for this session?\nType: yes, already, or no')
+    if (answer == null) return
+    const normalized = answer.trim().toLowerCase()
+    if (normalized === 'yes') {
+      setRecordPaymentOpen(true)
+      return
+    }
+    if (normalized !== 'already' && normalized !== 'no') {
+      onToast?.('Please answer yes, already, or no', 'warning')
+      return
+    }
     setActionLoading(true)
     try {
+      const payload: Record<string, unknown> = { status: 'completed' }
+      if (normalized === 'no') payload.paid = false
       const res = await fetch(`/api/sessions/${session.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'completed' }),
+        body: JSON.stringify(payload),
       })
       if (res.ok) {
         onUpdated()
@@ -169,6 +223,44 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
           <p className="text-sm text-[var(--color-text-secondary)]">Type</p>
           <p className="text-[var(--color-text-primary)]">video</p>
         </div>
+        <div className="space-y-2 border-t border-[var(--color-border)] pt-4">
+          <p className="text-sm font-medium text-[var(--color-text-primary)]">Payment</p>
+          {paymentState === 'none' ? (
+            <div className="space-y-2">
+              <p className="text-sm text-[var(--color-text-secondary)]">No payment recorded</p>
+              <div className="flex gap-2">
+                <Button variant="secondary" className="text-xs" onClick={() => setMarkPaidOpen(true)}>Send invoice</Button>
+                <Button variant="secondary" className="text-xs" onClick={() => setRecordPaymentOpen(true)}>Record payment</Button>
+              </div>
+            </div>
+          ) : null}
+          {paymentState === 'invoice_pending' ? (
+            <div className="space-y-2">
+              <p className="text-sm text-[var(--color-text-primary)]">Invoice sent — pending payment</p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                {(paymentAmountCents != null ? `$${(paymentAmountCents / 100).toFixed(2)}` : 'Amount pending')}
+                {paymentDate ? ` · sent ${format(new Date(paymentDate), 'MMM d, yyyy')}` : ''}
+              </p>
+              <div className="flex gap-2">
+                <Button variant="secondary" className="text-xs" onClick={() => setMarkPaidOpen(true)}>Resend invoice</Button>
+                <Button variant="secondary" className="text-xs" onClick={() => setMarkPaidOpen(true)}>Mark as paid</Button>
+              </div>
+            </div>
+          ) : null}
+          {paymentState === 'paid' ? (
+            <div className="space-y-2">
+              <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Paid</span>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                {(paymentAmountCents != null ? `$${(paymentAmountCents / 100).toFixed(2)}` : 'Paid')}
+                {paymentMethod ? ` · ${paymentMethod}` : ''}
+                {paymentDate ? ` · ${format(new Date(paymentDate), 'MMM d, yyyy')}` : ''}
+              </p>
+              <Link href="/coach/payments" className="text-xs font-medium text-[var(--color-accent)] hover:underline">
+                View payment
+              </Link>
+            </div>
+          ) : null}
+        </div>
         <div>
           <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Notes</label>
           <textarea
@@ -233,6 +325,31 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
           </Button>
         </div>
       </div>
+      <RecordPaymentModal
+        open={recordPaymentOpen}
+        onClose={() => setRecordPaymentOpen(false)}
+        defaultClientId={session.client_id}
+        onRecorded={() => {
+          setRecordPaymentOpen(false)
+          onUpdated()
+          onToast?.('Payment recorded', 'success')
+        }}
+      />
+      {invoiceId ? (
+        <MarkPaidModal
+          isOpen={markPaidOpen}
+          onClose={() => setMarkPaidOpen(false)}
+          invoiceId={invoiceId}
+          clientName={clientName}
+          amountCents={paymentAmountCents ?? 0}
+          currency="usd"
+          onSuccess={() => {
+            setMarkPaidOpen(false)
+            onUpdated()
+            onToast?.('Invoice marked paid', 'success')
+          }}
+        />
+      ) : null}
     </div>
   )
 }

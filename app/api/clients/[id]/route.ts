@@ -43,7 +43,17 @@ export async function GET(_request: Request, { params }: Params) {
         { status: 404 }
       )
     }
-    return NextResponse.json({ data })
+
+    const { data: rewards } = await supabase
+      .from('client_rewards')
+      .select(
+        'total_xp, level, current_streak_days, longest_streak_days, assignments_completed, assignments_total, last_activity_at'
+      )
+      .eq('client_id', id)
+      .eq('workspace_id', data.workspace_id)
+      .maybeSingle()
+
+    return NextResponse.json({ data: { ...data, rewards: rewards ?? null } })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },

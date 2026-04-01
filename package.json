@@ -2,6 +2,7 @@
   "name": "clearpath-v2",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev -p 3000 --webpack",
     "build": "next build",
@@ -12,8 +13,13 @@
     "db:push": "supabase db push",
     "db:pull": "supabase db pull",
     "db:status": "supabase migration list",
-    "test": "jest --config jest.config.cjs --runInBand --forceExit --testTimeout 120000",
+    "test": "jest --config jest.config.cjs --runInBand --detectOpenHandles",
     "setup": "npx tsx scripts/setup.ts",
+    "create:demo": "npx tsx scripts/create-demo-coach.ts",
+    "setup:admin": "npx tsx scripts/setup-admin.ts",
+    "create:admin": "npx tsx scripts/setup-admin.ts",
+    "wipe:dev": "npx tsx scripts/wipe-dev-data.ts",
+    "seed:test-client": "npx tsx scripts/seed-test-client.ts",
     "reset:demo": "npx tsx scripts/reset-demo.ts",
     "seed:demo": "npx tsx scripts/seed-demo-data.ts"
   },

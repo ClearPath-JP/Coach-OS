@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { AppLoadingScreen } from '@/components/layout/AppLoadingScreen'
 
 export const metadata: Metadata = {
   title: 'ClearPath — Coach OS & client portal',
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider>
+          <AppLoadingScreen />
           <div className="page-enter min-h-screen">{children}</div>
         </ThemeProvider>
       </body>

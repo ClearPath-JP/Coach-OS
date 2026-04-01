@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
+import { VideoPlayer } from '@/components/ui/VideoPlayer'
+import { DriveFileBrowser } from '@/components/coach/DriveFileBrowser'
 import type { Video } from './types'
 
 type AccessDirect = {
@@ -48,6 +50,7 @@ export function VideosPageContent() {
   const [manageVideo, setManageVideo] = useState<Video | null>(null)
   const [deleteVideo, setDeleteVideo] = useState<Video | null>(null)
   const [infoOpen, setInfoOpen] = useState(false)
+  const [driveImportOpen, setDriveImportOpen] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -136,7 +139,7 @@ export function VideosPageContent() {
             next[idx] = { ...next[idx], ...row } as Video
             return next
           })
-          if (status === 'ready' && title) setToast(`Video ready: ${title}`)
+          if (status === 'ready' && title) setToast(`Updated: ${title}`)
         }
       )
       .subscribe()
@@ -179,6 +182,9 @@ export function VideosPageContent() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-xl font-medium text-[var(--color-ink)]">Video library</h1>
           <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" className="min-h-[44px]" onClick={() => setDriveImportOpen(true)}>
+              Import from Google Drive
+            </Button>
             <Link
               href="/coach/settings"
               className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-surface)] min-h-[44px]"
@@ -252,7 +258,7 @@ export function VideosPageContent() {
           <Card padding="lg" className="text-center max-w-md mx-auto">
             <p className="font-medium text-[var(--color-ink)] mb-1">No videos yet</p>
             <p className="text-sm text-[var(--color-muted)] mb-4">
-              Set your import folder in Settings, then upload videos to that folder from your phone or computer. They&apos;ll appear here in a few minutes.
+              Set your import folder in Settings, put videos in that Drive folder, then click <strong>Import from Google Drive</strong> to add them instantly — no upload to our servers.
             </p>
             <Button variant="secondary" onClick={() => setInfoOpen(true)}>
               How do I add videos from my phone?
@@ -302,7 +308,9 @@ export function VideosPageContent() {
               </Link>
               , paste it in the Google Drive import folder field, and click Save.
             </li>
-            <li>Upload videos to that folder from your phone or computer. New videos are converted to MP4 and appear here in a few minutes.</li>
+            <li>
+              Open the video library and click <strong>Import from Google Drive</strong>. Select files — they appear as ready immediately (streamed from Drive).
+            </li>
           </ol>
           <div className="mt-4">
             <Button variant="ghost" onClick={() => setInfoOpen(false)}>
@@ -312,25 +320,46 @@ export function VideosPageContent() {
         </Modal>
       )}
 
-      {playerVideo?.playback_url && (
+      {playerVideo &&
+        playerVideo.processing_status === 'ready' &&
+        (Boolean(playerVideo.drive_file_id?.trim()) || Boolean(playerVideo.playback_url?.trim())) && (
         <Modal
           isOpen={!!playerVideo}
           onClose={() => setPlayerVideo(null)}
           title={playerVideo.title}
           className="w-full max-w-none md:w-[min(96vw,1400px)]"
         >
-          <video
-            src={playerVideo.playback_url}
-            controls
-            className="w-full max-h-[75vh] rounded-lg bg-black object-contain"
-            playsInline
-          />
+          {playerVideo.drive_file_id?.trim() ? (
+            <VideoPlayer
+              videoId={playerVideo.id}
+              title={playerVideo.title}
+              thumbnailUrl={playerVideo.drive_thumbnail_url ?? playerVideo.thumbnail_url}
+              className="max-h-[75vh]"
+            />
+          ) : (
+            <video
+              src={playerVideo.playback_url ?? undefined}
+              controls
+              className="w-full max-h-[75vh] rounded-lg bg-black object-contain"
+              playsInline
+            />
+          )}
           <div className="mt-3 flex gap-4 text-sm text-[var(--color-muted)]">
             {playerVideo.duration_seconds != null && <span>Duration: {formatDuration(playerVideo.duration_seconds)}</span>}
             {playerVideo.file_size_bytes != null && <span>Size: {formatFileSize(playerVideo.file_size_bytes)}</span>}
           </div>
         </Modal>
       )}
+
+      <DriveFileBrowser
+        open={driveImportOpen}
+        onClose={() => setDriveImportOpen(false)}
+        onImported={(n) => {
+          setToast(`${n} video${n === 1 ? '' : 's'} imported ✓`)
+          void fetchVideos()
+          setDriveImportOpen(false)
+        }}
+      />
 
       {addToProgramVideo && (
         <AddVideoToProgramModal
@@ -1025,9 +1054,12 @@ function VideoCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const previewRef = useRef<HTMLVideoElement | null>(null)
+  const isDrive = Boolean(video.drive_file_id?.trim())
   const isReady = video.processing_status === 'ready'
   const isFailed = video.processing_status === 'failed'
-  const isProcessing = video.processing_status === 'processing' || video.processing_status === 'queued'
+  const isProcessing =
+    !isDrive && (video.processing_status === 'processing' || video.processing_status === 'queued')
+  const canPlay = isReady && (isDrive || Boolean(video.playback_url?.trim()))
 
   const startPreview = async () => {
     const el = previewRef.current
@@ -1055,16 +1087,17 @@ function VideoCard({
             Select
           </label>
         )}
-        {video.thumbnail_url ? (
+        {video.drive_thumbnail_url || video.thumbnail_url ? (
           <Image
-            src={video.thumbnail_url}
+            src={(video.drive_thumbnail_url || video.thumbnail_url) as string}
             alt=""
             fill
             loading="lazy"
             className="object-cover"
             sizes="(max-width: 768px) 50vw, 33vw"
+            unoptimized={!!video.drive_thumbnail_url}
           />
-        ) : isReady && video.playback_url ? (
+        ) : isReady && video.playback_url?.trim() && !isDrive ? (
           <video
             ref={previewRef}
             src={video.playback_url}
@@ -1082,7 +1115,7 @@ function VideoCard({
             </svg>
           </div>
         )}
-        {isReady && (
+        {canPlay && (
           <button
             type="button"
             onClick={onPlay}
@@ -1172,18 +1205,21 @@ function VideoCard({
           </Button>
         </div>
         {video.description ? <p className="mt-1 text-sm text-[var(--color-muted)] line-clamp-2">{video.description}</p> : null}
-        <div className="mt-1 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[var(--color-muted)]">
           {isReady && video.duration_seconds != null && <span>{formatDuration(video.duration_seconds)}</span>}
           {isReady && video.file_size_bytes != null && <span>{formatFileSize(video.file_size_bytes)}</span>}
+          {isReady && (
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Ready</span>
+          )}
         </div>
         {isProcessing && (
           <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 animate-pulse">
-            Processing
+            Processing (legacy pipeline)
           </span>
         )}
-        {video.processing_status === 'queued' && (
+        {!isDrive && video.processing_status === 'queued' && (
           <span className="mt-2 inline-block rounded-full bg-[var(--color-muted)]/20 px-2 py-0.5 text-xs font-medium text-[var(--color-muted)]">
-            Queued
+            Queued (legacy)
           </span>
         )}
         {isFailed && (

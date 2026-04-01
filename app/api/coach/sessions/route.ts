@@ -55,6 +55,10 @@ export async function GET(request: Request) {
       rangeTo = twelveWeeks.toISOString()
     }
 
+    const statuses = fromParam && toParam
+      ? ['pending', 'confirmed', 'completed', 'cancelled', 'no_show']
+      : ['pending', 'confirmed']
+
     const { data } = await supabase
       .from('sessions')
       .select('id, scheduled_time, end_time, duration_minutes, status, notes, client_id, clients(first_name, last_name)')
@@ -62,7 +66,7 @@ export async function GET(request: Request) {
       .eq('workspace_id', coach.workspace_id)
       .gte('scheduled_time', rangeFrom)
       .lte('scheduled_time', rangeTo)
-      .in('status', ['pending', 'confirmed'])
+      .in('status', statuses)
       .order('scheduled_time', { ascending: true })
       .limit(400)
     return NextResponse.json({ data: data ?? [] })

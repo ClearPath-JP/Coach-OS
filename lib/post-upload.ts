@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { programUploadFieldsSchema } from '@/lib/validations'
@@ -34,6 +35,11 @@ export async function handleUploadPost(request: Request): Promise<Response> {
       return jsonError('Unauthorized', 401)
     }
 
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    if (profile?.role !== 'coach') {
+      return jsonError('Forbidden', 403)
+    }
+
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`upload:${user.id}`, {
       windowMs: 3_600_000,
       max: 20,
@@ -42,12 +48,8 @@ export async function handleUploadPost(request: Request): Promise<Response> {
       return jsonError('Too many uploads — try again in an hour', 429, retryAfter)
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
+    const coachWorkspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (!coachWorkspaceId) {
       return jsonError('Forbidden', 403)
     }
 
@@ -93,7 +95,7 @@ export async function handleUploadPost(request: Request): Promise<Response> {
         storagePath = generateSafeStoragePath(user.id, 'avatars', safeBase)
       } else {
         bucket = 'avatars'
-        storagePath = generateSafeStoragePath(coach.workspace_id, 'workspaces', safeBase)
+        storagePath = generateSafeStoragePath(coachWorkspaceId, 'workspaces', safeBase)
       }
     } else {
       const moduleId = formData.get('moduleId')
@@ -109,7 +111,7 @@ export async function handleUploadPost(request: Request): Promise<Response> {
         const msg = fieldsParsed.error.issues[0]?.message ?? 'Invalid module or workspace'
         return jsonError(msg, 400)
       }
-      if (fieldsParsed.data.workspaceId !== coach.workspace_id) {
+      if (fieldsParsed.data.workspaceId !== coachWorkspaceId) {
         return jsonError('Forbidden', 403)
       }
       const { moduleId: validModuleId, workspaceId: validWorkspaceId } = fieldsParsed.data
@@ -156,7 +158,7 @@ export async function handleUploadPost(request: Request): Promise<Response> {
     void logAuditEvent(
       'file_uploaded',
       user.id,
-      coach.workspace_id,
+      coachWorkspaceId,
       { uploadType, path: storagePath, bucket },
       request
     )

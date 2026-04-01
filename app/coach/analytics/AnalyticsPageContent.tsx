@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns'
 import { formatDistanceToNow } from 'date-fns'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
+import { CountUpValue } from '@/components/ui/CountUpValue'
 import { PAYMENT_METHOD_LABELS, type PaymentMethodValue } from '@/lib/payment-methods'
 import {
   AnalyticsPaymentMethodsChartCard,
@@ -131,7 +132,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
   const topMax = topFive[0]?.total ?? 1
 
   return (
-    <main className="min-h-screen p-4 md:p-6 space-y-6">
+    <main className="min-h-screen p-4 md:p-6 lg:p-8 space-y-6">
       <PageHeader title="Analytics" />
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Period">
@@ -160,29 +161,37 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
       )}
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-24 animate-pulse rounded-xl bg-[var(--color-border)]/40" />
           ))}
         </div>
       ) : data && summary ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <Card variant="raised" padding="lg">
               <p className="text-[14px] text-[var(--color-muted)]">Total revenue</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">{formatCents(summary.totalRevenue)}</p>
+              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
+                <CountUpValue value={summary.totalRevenue} formatter={(n) => formatCents(Math.round(n))} />
+              </p>
             </Card>
             <Card variant="raised" padding="lg">
               <p className="text-[14px] text-[var(--color-muted)]">Sessions completed</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">{data.sessionsCompleted}</p>
+              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
+                <CountUpValue value={data.sessionsCompleted} formatter={(n) => String(Math.round(n))} />
+              </p>
             </Card>
             <Card variant="raised" padding="lg">
               <p className="text-[14px] text-[var(--color-muted)]">Active clients</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">{data.activeClients}</p>
+              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
+                <CountUpValue value={data.activeClients} formatter={(n) => String(Math.round(n))} />
+              </p>
             </Card>
             <Card variant="raised" padding="lg">
               <p className="text-[14px] text-[var(--color-muted)]">Avg revenue per client</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">{formatCents(data.avgRevenuePerClient)}</p>
+              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
+                <CountUpValue value={data.avgRevenuePerClient} formatter={(n) => formatCents(Math.round(n))} />
+              </p>
             </Card>
           </div>
 
@@ -207,7 +216,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
                         </div>
                         <div className="mt-2 h-2 w-full rounded-full bg-[var(--color-border)] overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-[var(--color-accent)]"
+                            className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-700 ease-out"
                             style={{ width: `${w}%` }}
                           />
                         </div>

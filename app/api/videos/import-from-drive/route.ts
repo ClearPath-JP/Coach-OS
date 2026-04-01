@@ -1,167 +1,135 @@
 import { NextResponse } from 'next/server'
+import { requireCoach } from '@/lib/api-helpers'
+import { checkStorageLimit } from '@/lib/plan-limits'
 import { createServiceClient } from '@/lib/supabase/service'
-import { resolveWorkspaceForDriveFolder } from '@/lib/drive-import/resolve-workspace-folder'
-import { refreshGoogleAccessToken } from '@/lib/drive-import/google-token'
-import { createDriveToMp4Job } from '@/lib/drive-import/cloudconvert'
-import { withVercelProtectionBypassQuery } from '@/lib/vercel-protection-bypass'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
 const bodySchema = z.object({
-  folderId: z.string().min(1),
   driveFileId: z.string().min(1),
-  driveFileName: z.string().optional().nullable(),
+  driveFileName: z.string().min(1),
+  driveMimeType: z.string().min(1),
+  driveThumbnailUrl: z.string().optional().nullable(),
+  driveWebViewLink: z.string().optional().nullable(),
+  fileSizeBytes: z.coerce.number().int().nonnegative(),
+  durationSeconds: z.coerce.number().int().nonnegative().optional().nullable(),
+  title: z.string().optional().nullable(),
 })
 
-function appBaseUrl(): string {
-  const u = process.env.NEXT_PUBLIC_APP_URL?.trim()
-  if (u) return u.replace(/\/$/, '')
-  return 'http://localhost:3000'
-}
-
-function titleFromDriveName(name: string | null | undefined): string {
-  const n = (name ?? 'video').trim() || 'video'
+function titleFromDriveName(name: string): string {
+  const n = name.trim() || 'video'
   return n.replace(/\.(mp4|mov|webm|mkv|avi|m4v)$/i, '')
 }
 
 /**
- * GET — only for sanity checks (browser/curl without -X POST). Real import is POST.
- */
-export async function GET() {
-  return NextResponse.json(
-    {
-      ok: true,
-      endpoint: '/api/videos/import-from-drive',
-      method: 'POST',
-      body: { folderId: 'string', driveFileId: 'string', driveFileName: 'string (optional)' },
-      headers: { 'X-Clearpath-Secret': 'must match N8N_CALLBACK_SECRET' },
-      note: 'Opening this URL in a browser uses GET; n8n must use POST with JSON body.',
-    },
-    { status: 200, headers: { Allow: 'POST, GET' } }
-  )
-}
-
-/**
- * POST /api/videos/import-from-drive — n8n calls this when a new file appears in the import folder.
- * Processing runs on ClearPath + CloudConvert + Supabase Storage (no large binaries in n8n).
- * Auth: X-Clearpath-Secret = N8N_CALLBACK_SECRET.
+ * POST /api/videos/import-from-drive — coach saves Drive file metadata only (no download, no n8n).
  */
 export async function POST(request: Request) {
-  const secret = request.headers.get('x-clearpath-secret') ?? request.headers.get('X-Clearpath-Secret')
-  const expected = process.env.N8N_CALLBACK_SECRET
-  if (!expected || secret !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if (!process.env.CLOUDCONVERT_API_KEY) {
-    return NextResponse.json(
-      { error: 'Server misconfigured: CLOUDCONVERT_API_KEY' },
-      { status: 503 }
-    )
-  }
   try {
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { workspaceId, supabase, user } = auth
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`videos-import-drive:${user.id}`, {
+      windowMs: 60_000,
+      max: 60,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json({ error: 'Too many imports — try again shortly' }, { status: 429 })
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
+    }
+
     const raw = await request.json()
     const parsed = bodySchema.safeParse(raw)
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
     }
 
-    const supabase = createServiceClient()
-    const resolved = await resolveWorkspaceForDriveFolder(supabase, parsed.data.folderId)
-    if (!resolved) {
-      return NextResponse.json({ error: 'Workspace not found for this folder' }, { status: 404 })
-    }
-
-    const { data: conn, error: connErr } = await supabase
-      .from('google_drive_connections')
-      .select('refresh_token')
-      .eq('workspace_id', resolved.workspaceId)
+    const service = createServiceClient()
+    const { data: ws } = await service
+      .from('workspaces')
+      .select('google_drive_import_folder_id')
+      .eq('id', workspaceId)
       .maybeSingle()
 
-    if (connErr || !conn?.refresh_token) {
+    const folderId = ws?.google_drive_import_folder_id?.trim() || null
+    if (!folderId) {
       return NextResponse.json(
-        {
-          error:
-            'Google Drive not connected for this workspace. In ClearPath → Videos, click “Connect Google Drive” (same Google account that owns the import folder).',
-        },
+        { error: 'No Google Drive import folder configured — set it in Settings first' },
         { status: 400 }
       )
     }
 
-    let accessToken: string
-    try {
-      const t = await refreshGoogleAccessToken(conn.refresh_token)
-      accessToken = t.access_token
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Token refresh failed'
+    const { data: existing } = await service
+      .from('videos')
+      .select('id')
+      .eq('workspace_id', workspaceId)
+      .eq('drive_file_id', parsed.data.driveFileId)
+      .is('deleted_at', null)
+      .maybeSingle()
+
+    if (existing?.id) {
+      return NextResponse.json({ data: { videoId: existing.id, alreadyImported: true } })
+    }
+
+    const size = parsed.data.fileSizeBytes
+    const { allowed } = await checkStorageLimit(workspaceId, size, 'video')
+    if (!allowed) {
       return NextResponse.json(
-        { error: `Google Drive access failed: ${msg}. Reconnect Google in Videos settings.` },
-        { status: 401 }
+        { error: 'Video storage limit reached for your plan — remove videos or upgrade' },
+        { status: 413 }
       )
     }
 
-    const driveName = parsed.data.driveFileName?.trim() || 'video.mp4'
-    const title = titleFromDriveName(driveName)
+    const title =
+      (parsed.data.title?.trim() ? parsed.data.title.trim() : null) ?? titleFromDriveName(parsed.data.driveFileName)
+
+    const thumb = parsed.data.driveThumbnailUrl?.trim() || null
+    const webView = parsed.data.driveWebViewLink?.trim() || null
+    const duration =
+      parsed.data.durationSeconds != null && Number.isFinite(parsed.data.durationSeconds)
+        ? parsed.data.durationSeconds
+        : null
 
     const { data: video, error: insErr } = await supabase
       .from('videos')
       .insert({
-        workspace_id: resolved.workspaceId,
-        coach_id: resolved.coachId,
+        workspace_id: workspaceId,
+        coach_id: user.id,
         title,
         description: null,
         drive_file_id: parsed.data.driveFileId,
-        drive_file_name: driveName,
-        processing_status: 'processing',
+        drive_folder_id: folderId,
+        drive_file_name: parsed.data.driveFileName,
+        drive_mime_type: parsed.data.driveMimeType,
+        drive_thumbnail_url: thumb,
+        drive_web_view_link: webView,
+        file_size_bytes: size,
+        duration_seconds: duration,
+        processing_status: 'ready',
         processing_error: null,
         url: null,
         playback_url: null,
-        thumbnail_url: null,
-        storage_provider: 'supabase',
+        thumbnail_url: thumb,
+        storage_provider: null,
+        processed_at: new Date().toISOString(),
       })
-      .select('id')
+      .select(
+        'id, workspace_id, coach_id, title, description, category, drive_file_id, drive_file_name, drive_folder_id, drive_mime_type, drive_thumbnail_url, drive_web_view_link, processing_status, playback_url, thumbnail_url, duration_seconds, file_size_bytes, storage_provider, created_at, processed_at'
+      )
       .single()
 
     if (insErr || !video) {
       return NextResponse.json(
-        { error: insErr?.message ?? 'Could not create video row' },
+        { error: insErr?.message ?? 'Could not save video' },
         { status: 500 }
       )
     }
 
-    const videoId = video.id as string
-    const webhookUrl = withVercelProtectionBypassQuery(`${appBaseUrl()}/api/webhooks/cloudconvert`)
-
-    try {
-      const { jobId } = await createDriveToMp4Job({
-        driveFileId: parsed.data.driveFileId,
-        filename: driveName,
-        googleAccessToken: accessToken,
-        webhookUrl,
-        tag: videoId,
-      })
-
-      await supabase.from('videos').update({ n8n_execution_id: jobId }).eq('id', videoId)
-
-      return NextResponse.json(
-        {
-          data: {
-            videoId,
-            cloudconvertJobId: jobId,
-            message: 'Processing started. Video will appear as ready when conversion finishes.',
-          },
-        },
-        { status: 202 }
-      )
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'CloudConvert error'
-      await supabase
-        .from('videos')
-        .update({ processing_status: 'failed', processing_error: msg })
-        .eq('id', videoId)
-      return NextResponse.json({ error: msg, videoId }, { status: 502 })
-    }
+    return NextResponse.json({ data: { video, alreadyImported: false } })
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }

@@ -11,7 +11,13 @@ function isSafeNext(next: string | null): next is string {
   if (!next || typeof next !== 'string') return false
   try {
     const path = new URL(next, 'http://localhost').pathname
-    return path.startsWith('/coach/') || path.startsWith('/client/')
+    return (
+      path.startsWith('/coach/') ||
+      path.startsWith('/client/') ||
+      path.startsWith('/onboarding') ||
+      path === '/billing' ||
+      path.startsWith('/admin/')
+    )
   } catch {
     return false
   }
@@ -52,7 +58,7 @@ export function LoginForm() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password, intent: 'coach' }),
+      body: JSON.stringify({ email, password, intent: 'auto' }),
     })
     const json = await res.json().catch(() => ({}))
     setLoading(false)
@@ -87,6 +93,7 @@ export function LoginForm() {
         <p
           className="rounded-[var(--radius-md)] bg-[var(--error-bg)] px-4 py-3 text-sm text-[var(--error)]"
           role="alert"
+          aria-live="polite"
         >
           {rateLimitMessage}
         </p>
@@ -95,6 +102,7 @@ export function LoginForm() {
         <p
           className="rounded-[var(--radius-md)] bg-[var(--accent-light)] px-4 py-3 text-sm text-[var(--accent)]"
           role="status"
+          aria-live="polite"
         >
           {passwordResetMessage}
         </p>
@@ -109,12 +117,13 @@ export function LoginForm() {
             name="email"
             type="email"
             autoComplete="email"
+            inputMode="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             inputSize="lg"
-            className="h-10 min-h-10"
+            className="h-11 min-h-11"
           />
         </div>
         <div>
@@ -132,13 +141,14 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               inputSize="lg"
-              className={cn('h-10 min-h-10 pr-12')}
+              className={cn('h-11 min-h-11 pr-12')}
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
+              className="absolute right-2 top-1/2 flex size-11 min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
             >
               <EyeIcon off={showPassword} />
             </button>
@@ -150,11 +160,11 @@ export function LoginForm() {
           </div>
         </div>
         {error && (
-          <p className="text-sm text-[var(--error)]" role="alert">
+          <p className="text-sm text-[var(--error)]" role="alert" aria-live="assertive">
             {error}
           </p>
         )}
-        <Button type="submit" variant="primary" size="xl" fullWidth loading={loading} className="mt-2">
+        <Button type="submit" variant="primary" size="xl" fullWidth loading={loading} className="mt-2 min-h-12">
           {loading ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
@@ -171,12 +181,12 @@ export function LoginForm() {
         </Link>
       </p>
       <p className="text-center text-[12px] text-[var(--text-tertiary)]">
-        Client?{' '}
+        Prefer the client portal page?{' '}
         <Link
           href="/client-login"
           className="link-nav font-medium text-[var(--text-tertiary)] hover:text-[var(--accent)]"
         >
-          Sign in here →
+          Client sign-in →
         </Link>
       </p>
       <p className="text-center text-[12px] text-[var(--text-tertiary)]">

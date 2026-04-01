@@ -102,3 +102,22 @@ export async function invalidateCoachAnalyticsCaches(workspaceId: string): Promi
     /* ignore */
   }
 }
+
+/** Clears application data caches (cache:* keys). Does not touch rate-limit keys. */
+export async function clearApplicationDataCaches(): Promise<void> {
+  const redis = await getUpstashRedis()
+  if (!redis) return
+  try {
+    const patterns = [
+      'cache:packages:*',
+      'cache:programs:*',
+      'cache:paySummary:*',
+      'cache:coachAnalytics:*',
+    ]
+    for (const match of patterns) {
+      await deleteByPattern(redis, match)
+    }
+  } catch {
+    /* ignore */
+  }
+}

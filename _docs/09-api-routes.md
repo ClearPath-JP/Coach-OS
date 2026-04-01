@@ -542,6 +542,32 @@ The following routes are **not** yet implemented. Add them here when created so 
 
 ---
 
+### 2.8 Assignments, rewards, and storage (V2)
+
+| Route | Method | Purpose | Notes |
+|-------|--------|---------|-------|
+| `/api/assignments/templates` | GET | List assignment templates for workspace | Coach only (`requireCoach`). Query: `programId`, `moduleId`. Excludes soft-deleted templates. |
+| `/api/assignments/templates` | POST | Create template | Coach only. Body: title, instructions, assignmentType, checklistItems, dueDaysAfterAssign, points, optional programId/moduleId (Zod). |
+| `/api/assignments/templates/[id]` | PATCH | Update template | Coach only. Partial body. |
+| `/api/assignments/templates/[id]` | DELETE | Soft-delete template (`deleted_at`) | Coach only. |
+| `/api/assignments/assign` | POST | Assign template to client | Coach only. Body: templateId, clientId, optional clientProgramId, dueAt. Upserts `client_rewards`, increments `assignments_total`, inserts thread message `message_type: assignment`. |
+| `/api/assignments/client/[clientId]` | GET | Client’s assignments with submissions | Coach only. Verifies client in workspace. |
+| `/api/assignments/[id]` | GET | Single assignment (coach) | Coach only. |
+| `/api/assignments/[id]/review` | PATCH | Approve or return submission | Coach only. Body: status (`approved` \| `returned`), coachFeedback, pointsAwarded. Updates `client_rewards` (XP, streak, completed count, level), inserts `assignment_feedback` message. |
+| `/api/assignments/overview` | GET | Dashboard aggregates | Coach only: pending review count, overdue count, completion rate, top clients by XP. |
+| `/api/assignments/all` | GET | All client assignments in workspace | Coach only (table/analytics). |
+| `/api/coach/storage` | GET | Storage usage vs plan | Coach only. Returns `usedBytes`, `videoBytes`, `assignmentBytes`, `otherBytes`, `maxGb` (video + assignment caps), `usedGb`, `pct`. |
+| `/api/client/assignments` | GET | Logged-in client’s assignments | Client session; includes template metadata. |
+| `/api/client/assignments/[id]` | GET | One assignment for client | Client only; ownership via RLS. |
+| `/api/client/assignments/[id]/submit` | POST | Submit assignment | Client only. Body: submissionType, textContent, videoId, fileUrl, fileSizeBytes, checklistResponses. Checks storage limits; creates submission row; sets status `submitted`; notifies coach. |
+| `/api/client/rewards` | GET | XP, level, streak, assignment stats | Client only. |
+| `/api/client/videos/upload` | POST | Client assignment video (`multipart/form-data` `file`) | Stores in `assignment-submissions` bucket; `videos` row `storage_provider: supabase`, `uploaded_by_client_id` set. |
+| `/api/client/assignment-upload` | POST | Upload file (non-video) for assignment | Client only; `kind=file`. Video submissions use `/api/client/videos/upload`. |
+
+**Related:** `GET/PATCH /api/clients/[id]` — GET includes merged `client_rewards` as `rewards` for coach detail UI.
+
+---
+
 ## 3. Quick reference — existing routes only
 
 | Path | Method | Auth | Summary |
@@ -576,6 +602,19 @@ The following routes are **not** yet implemented. Add them here when created so 
 | `/api/messages` | GET | Coach or Client | List messages for thread (query: clientId); rate limit 100/min |
 | `/api/messages` | POST | Coach or Client | Send message (body: clientId, content); rate limit 60/min |
 | `/api/messages/read` | PATCH | Coach or Client | Mark thread as read (body: clientId) |
+| `/api/assignments/templates` | GET, POST | Coach | Assignment templates |
+| `/api/assignments/templates/[id]` | PATCH, DELETE | Coach | Edit / soft-delete template |
+| `/api/assignments/assign` | POST | Coach | Create client assignment + message |
+| `/api/assignments/client/[clientId]` | GET | Coach | Assignments for one client |
+| `/api/assignments/[id]/review` | PATCH | Coach | Approve or return |
+| `/api/assignments/overview` | GET | Coach | Assignment dashboard stats |
+| `/api/assignments/all` | GET | Coach | All assignments in workspace |
+| `/api/coach/storage` | GET | Coach | Workspace storage usage |
+| `/api/client/assignments` | GET | Client | Own assignments |
+| `/api/client/assignments/[id]/submit` | POST | Client | Submit assignment |
+| `/api/client/rewards` | GET | Client | XP / rewards |
+| `/api/client/assignment-upload` | POST | Client | Upload file for submission (`kind=file`) |
+| `/api/client/videos/upload` | POST | Client | Upload assignment video |
 
 ---
 

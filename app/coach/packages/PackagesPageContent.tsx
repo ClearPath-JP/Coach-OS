@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -16,6 +16,7 @@ type Package = {
   currency: string
   duration_minutes: number
   session_type: string | null
+  is_virtual: boolean
   is_active: boolean
   created_at: string
 }
@@ -74,6 +75,7 @@ function PackageFormModal({
           currency: initialPackage.currency,
           duration_minutes: initialPackage.duration_minutes,
           session_type: initialPackage.session_type ?? '',
+          is_virtual: initialPackage.is_virtual ?? true,
           is_active: initialPackage.is_active,
         }
       : {
@@ -83,6 +85,7 @@ function PackageFormModal({
           currency: 'usd',
           duration_minutes: 60,
           session_type: '',
+          is_virtual: true,
           is_active: true,
         }
   )
@@ -140,6 +143,38 @@ function PackageFormModal({
             onChange={(e) => setForm((f) => ({ ...f, duration_minutes: parseInt(e.target.value || '60', 10) }))}
             placeholder="60"
           />
+        </div>
+        <div>
+          <span className="mb-2 block text-sm font-medium text-[var(--color-ink)]">Session format</span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={`min-h-[40px] rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                form.is_virtual
+                  ? 'border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+                  : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-secondary)]'
+              }`}
+              onClick={() => setForm((f) => ({ ...f, is_virtual: true }))}
+            >
+              Online
+            </button>
+            <button
+              type="button"
+              className={`min-h-[40px] rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                !form.is_virtual
+                  ? 'border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+                  : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-secondary)]'
+              }`}
+              onClick={() => setForm((f) => ({ ...f, is_virtual: false }))}
+            >
+              In-person
+            </button>
+          </div>
+          {form.is_virtual ? (
+            <p className="mt-2 text-xs text-[var(--color-muted)]">
+              Tip: online sessions are often priced 20–30% lower than in-person.
+            </p>
+          ) : null}
         </div>
         {submitError && <p className="text-sm text-[var(--color-error)]">{submitError}</p>}
         <div className="flex justify-end gap-2 pt-2">
@@ -247,6 +282,7 @@ export function PackagesPageContent() {
             currency: parsed.data.currency,
             duration_minutes: parsed.data.duration_minutes,
             session_type: parsed.data.session_type,
+            is_virtual: parsed.data.is_virtual,
             is_active: parsed.data.is_active,
           }
         : parsed.data
@@ -380,6 +416,17 @@ export function PackagesPageContent() {
                   {pkg.session_type ? ` · ${pkg.session_type}` : ''}
                 </p>
               )}
+              <p className="mt-2">
+                <span
+                  className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                    pkg.is_virtual !== false
+                      ? 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200'
+                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
+                  }`}
+                >
+                  {pkg.is_virtual !== false ? 'Virtual' : 'In-person'}
+                </span>
+              </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button
                   variant="secondary"

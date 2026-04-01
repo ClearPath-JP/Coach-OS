@@ -1,27 +1,32 @@
 import { NextResponse } from 'next/server'
+import { requireCoach } from '@/lib/api-helpers'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { patchVideoSchema } from '@/lib/validations'
+import { createServiceClient } from '@/lib/supabase/service'
+import { userCanStreamVideo } from '@/lib/video-stream-access'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
 /**
- * GET /api/videos/[id] — fetch one video (for client program view or playback).
- * Returns video if in workspace (coach) or client has access via program.
+ * GET /api/videos/[id] — metadata for playback UI (no Drive file id). Coach or client with access only.
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: video, error } = await supabase
+    const service = createServiceClient()
+    const { data: video, error } = await service
       .from('videos')
       .select(
-        'id, title, description, processing_status, playback_url, thumbnail_url, duration_seconds, file_size_bytes'
+        'id, workspace_id, title, description, processing_status, playback_url, thumbnail_url, drive_thumbnail_url, duration_seconds, file_size_bytes, drive_file_id'
       )
       .eq('id', id)
       .is('deleted_at', null)
@@ -39,7 +44,57 @@ export async function GET(request: Request, context: RouteContext) {
         { status: 404 }
       )
     }
-    return NextResponse.json({ data: video })
+
+    const row = video as {
+      workspace_id: string
+      drive_file_id: string | null
+      playback_url: string | null
+      processing_status: string
+    }
+
+    const hasDrive = Boolean(row.drive_file_id)
+    const hasLegacyPlayback = Boolean(row.playback_url?.trim())
+    if (!hasDrive && !hasLegacyPlayback) {
+      return NextResponse.json(
+        { error: "We couldn't find that video — it may have been deleted" },
+        { status: 404 }
+      )
+    }
+
+    const allowed = await userCanStreamVideo(user.id, id, row.workspace_id, {
+      sessionEmail: user.email ?? null,
+    })
+    if (!allowed) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const v = video as {
+      id: string
+      title: string
+      description: string | null
+      processing_status: string
+      playback_url: string | null
+      thumbnail_url: string | null
+      drive_thumbnail_url: string | null
+      duration_seconds: number | null
+      file_size_bytes: number | null
+    }
+
+    return NextResponse.json({
+      data: {
+        id: v.id,
+        title: v.title,
+        description: v.description,
+        processing_status: v.processing_status,
+        playback_url: v.playback_url,
+        thumbnail_url: v.thumbnail_url,
+        drive_thumbnail_url: v.drive_thumbnail_url,
+        duration_seconds: v.duration_seconds,
+        file_size_bytes: v.file_size_bytes,
+        drive_file_id: row.drive_file_id,
+        uses_stream_proxy: hasDrive,
+      },
+    })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },
@@ -54,21 +109,9 @@ export async function GET(request: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const { id } = await context.params
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { workspaceId, supabase, user } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`videos-patch:${user.id}`, {
       windowMs: 60_000,
@@ -102,7 +145,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .from('videos')
       .update(updates)
       .eq('id', id)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
       .is('deleted_at', null)
       .select('id, title, description, category')
       .maybeSingle()
@@ -128,22 +171,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 /**
  * DELETE /api/videos/[id] — soft delete (set deleted_at). Coach only.
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { workspaceId, supabase, user } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`videos-delete:${user.id}`, {
       windowMs: 60_000,
@@ -159,7 +192,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       .from('videos')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
 
     if (error) {
       return NextResponse.json({ error: 'Could not delete video' }, { status: 500 })

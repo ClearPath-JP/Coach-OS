@@ -1,12 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
 import { SignOutButton } from '@/components/layout/SignOutButton'
-import { createClient } from '@/lib/supabase'
+import { Tooltip } from '@/components/ui/Tooltip'
+import { ClearPathLogo } from '@/components/layout/ClearPathLogo'
 import { cn } from '@/lib/utils'
+import { useWorkspace } from '@/lib/workspace-context'
 
 export interface NavProps {
   className?: string
@@ -33,7 +35,37 @@ function initials(name: string): string {
   return name.slice(0, 2).toUpperCase() || '?'
 }
 
-function coachTitleFromPath(pathname: string): string {
+function CoachNavLeadingMark() {
+  const { settings } = useWorkspace()
+  const url = settings.logoUrl?.trim() ?? ''
+  const [failedForUrl, setFailedForUrl] = useState<string | null>(null)
+  const showCustomLogo = Boolean(url && failedForUrl !== url)
+
+  const inner =
+    showCustomLogo ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt=""
+        className="h-7 w-7 object-contain p-0.5"
+        onError={() => setFailedForUrl(url)}
+      />
+    ) : (
+      <ClearPathLogo size={28} />
+    )
+
+  return (
+    <Link
+      href="/coach/dashboard"
+      className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[7px] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-[var(--text-primary)] transition-colors hover:border-[var(--border-default)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      aria-label="Dashboard"
+    >
+      {inner}
+    </Link>
+  )
+}
+
+function coachTitleFromPath(pathname: string, fallbackLabel: string): string {
   if (pathname === '/coach/dashboard' || pathname === '/billing') {
     return pathname === '/billing' ? 'Billing' : 'Dashboard'
   }
@@ -50,7 +82,7 @@ function coachTitleFromPath(pathname: string): string {
   if (pathname.startsWith('/coach/analytics')) return 'Analytics'
   if (pathname.startsWith('/coach/settings')) return 'Settings'
   if (pathname.startsWith('/coach')) return 'Coach'
-  return 'ClearPath'
+  return fallbackLabel
 }
 
 function NavThemeIconButton() {
@@ -86,9 +118,6 @@ function CoachUserMenu({
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
-  const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -98,17 +127,6 @@ function CoachUserMenu({
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
   }, [open])
-
-  const onSignOut = async () => {
-    setSigningOut(true)
-    try {
-      await supabase.auth.signOut()
-      router.push('/login')
-      router.refresh()
-    } finally {
-      setSigningOut(false)
-    }
-  }
 
   return (
     <div className="relative" ref={ref}>
@@ -148,15 +166,6 @@ function CoachUserMenu({
           >
             Billing
           </Link>
-          <button
-            type="button"
-            role="menuitem"
-            disabled={signingOut}
-            className="w-full px-4 py-2.5 text-left text-sm text-[var(--error)] hover:bg-[var(--error-bg)] disabled:opacity-40"
-            onClick={() => void onSignOut()}
-          >
-            {signingOut ? 'Signing out…' : 'Sign out'}
-          </button>
         </div>
       ) : null}
     </div>
@@ -177,9 +186,15 @@ export function Nav({
 }: NavProps) {
   const pathname = usePathname() ?? ''
   const logoLabel = brandName?.trim() || 'ClearPath'
-  const coachTitle = coachApp ? coachTitleFromPath(pathname) : null
   const { theme } = useTheme()
   const [scrolled, setScrolled] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(Math.max(notificationCount, 2))
+  const [notifications, setNotifications] = useState([
+    { id: '1', type: 'message', title: 'New message from Sarah Johnson', body: 'Asked for a schedule change this week.', time: '2m ago', unread: true },
+    { id: '2', type: 'session', title: 'Session starts in 30 minutes', body: 'Alex Carter · Performance review.', time: '25m ago', unread: true },
+    { id: '3', type: 'payment', title: 'Invoice paid', body: 'Jordan Reed paid $220 via Stripe.', time: '1h ago', unread: false },
+  ])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4)
@@ -195,6 +210,16 @@ export function Nav({
         ? 'rgba(25,25,25,0.85)'
         : undefined
 
+  function CoachAppTitle({ pathname }: { pathname: string }) {
+    const { settings } = useWorkspace()
+    const fallback = settings.workspaceDisplayName || settings.brandName || 'ClearPath'
+    return (
+      <h1 className="min-w-0 truncate text-[14px] font-medium text-[var(--text-primary)]">
+        {coachTitleFromPath(pathname, fallback)}
+      </h1>
+    )
+  }
+
   return (
     <header className={cn('z-30', className)} role="banner">
       <nav
@@ -206,7 +231,12 @@ export function Nav({
         }}
       >
         {coachApp ? (
-          <h1 className="truncate text-[14px] font-medium text-[var(--text-primary)]">{coachTitle}</h1>
+          <div className="flex min-w-0 max-w-[50%] items-center gap-3 sm:max-w-none">
+            <span className="shrink-0 lg:hidden">
+              <CoachNavLeadingMark />
+            </span>
+            <CoachAppTitle pathname={pathname} />
+          </div>
         ) : clientPortal ? (
           <Link
             href={logoHref}
@@ -229,6 +259,9 @@ export function Nav({
           {clientPortal && !coachApp ? (
             <>
               {showThemeToggle ? <NavThemeIconButton /> : null}
+              <div className="shrink-0 lg:hidden">
+                <SignOutButton variant="nav" />
+              </div>
               {userDisplayName ? (
                 <div className="flex items-center gap-2">
                   <span className="hidden max-w-[200px] truncate text-sm text-[var(--text-primary)] sm:inline">
@@ -246,11 +279,13 @@ export function Nav({
           ) : null}
           {coachApp ? (
             <>
-              <button
-                type="button"
-                className="relative flex size-7 shrink-0 items-center justify-center rounded-full text-[var(--text-tertiary)] transition-[background-color,color] duration-[var(--duration-fast)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                aria-label="Notifications"
-              >
+              <Tooltip content="Notifications">
+                <button
+                  type="button"
+                  onClick={() => setNotifOpen((v) => !v)}
+                  className="relative flex size-7 shrink-0 items-center justify-center rounded-full text-[var(--text-tertiary)] transition-[background-color,color] duration-[var(--duration-fast)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  aria-label="Notifications"
+                >
                 <svg
                   width="16"
                   height="16"
@@ -265,18 +300,41 @@ export function Nav({
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
-                {notificationCount > 0 ? (
-                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]">
-                    {notificationCount > 9 ? '9+' : notificationCount}
-                  </span>
-                ) : (
-                  <span
-                    className="absolute right-1 top-1 size-1.5 rounded-full bg-[var(--error)]"
-                    aria-hidden
-                  />
-                )}
-              </button>
-              {showThemeToggle ? <NavThemeIconButton /> : null}
+                  {unreadCount > 0 ? <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-[var(--error)] text-[10px] font-semibold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span> : null}
+                </button>
+              </Tooltip>
+              {notifOpen ? (
+                <div className="absolute right-2 top-11 z-[110] w-[320px] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xl)]">
+                  <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-3">
+                    <p className="text-[14px] font-semibold text-[var(--text-primary)]">Notifications</p>
+                    <button type="button" className="text-[12px] text-[var(--accent)]" onClick={() => { setNotifications((prev) => prev.map((n) => ({ ...n, unread: false }))); setUnreadCount(0) }}>Mark all read</button>
+                  </div>
+                  <div className="max-h-[360px] overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="px-6 py-8 text-center">
+                        <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[var(--bg-muted)] text-2xl">🔔</div>
+                        <p className="mt-3 text-[14px] font-medium text-[var(--text-primary)]">You&apos;re all caught up!</p>
+                        <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">No new notifications</p>
+                      </div>
+                    ) : notifications.map((n) => (
+                      <button key={n.id} type="button" className={`group relative flex w-full gap-2 border-b border-[var(--border-subtle)] px-4 py-3 text-left hover:bg-[var(--bg-subtle)] ${n.unread ? 'bg-[var(--accent-light)]' : ''}`}>
+                        {n.unread ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[var(--accent)]" aria-hidden /> : null}
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[14px]">{n.type === 'message' ? '💬' : n.type === 'session' ? '📅' : n.type === 'payment' ? '💰' : '📚'}</span>
+                        <span className="min-w-0">
+                          <span className="block text-[13px] font-medium text-[var(--text-primary)]">{n.title}</span>
+                          <span className="mt-0.5 block text-[12px] leading-[1.4] text-[var(--text-tertiary)]">{n.body}</span>
+                          <span className="mt-1 block text-[11px] text-[var(--text-quaternary)]">{n.time}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" className="w-full border-t border-[var(--border-subtle)] px-3 py-3 text-[13px] text-[var(--accent)]">View all notifications</button>
+                </div>
+              ) : null}
+              {showThemeToggle ? <Tooltip content="Toggle theme"><span><NavThemeIconButton /></span></Tooltip> : null}
+              <div className="shrink-0 lg:hidden">
+                <SignOutButton variant="nav" />
+              </div>
               {userDisplayName ? (
                 <CoachUserMenu displayName={userDisplayName} avatarUrl={coachAvatarUrl ?? null} />
               ) : (

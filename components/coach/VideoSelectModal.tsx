@@ -9,6 +9,8 @@ export type VideoOption = {
   id: string
   title: string
   thumbnail_url: string | null
+  drive_thumbnail_url?: string | null
+  drive_file_id?: string | null
   duration_seconds: number | null
   playback_url: string | null
   processing_status: string
@@ -33,8 +35,19 @@ export function VideoSelectModal({ open, onClose, onSelect }: VideoSelectModalPr
       try {
         const r = await fetch('/api/videos?status=ready')
         const data = await r.json()
-        if (data.data) setVideos(data.data)
-        else setVideos([])
+        if (!r.ok) {
+          setVideos([])
+          setError(typeof data.error === 'string' ? data.error : 'Could not load videos')
+          return
+        }
+        const list = (data.data as VideoOption[]) ?? []
+        setVideos(
+          list.filter(
+            (v) =>
+              v.processing_status === 'ready' &&
+              (Boolean(v.drive_file_id?.trim()) || Boolean(v.playback_url?.trim()))
+          )
+        )
         if (data.error) setError(data.error)
       } catch {
         setError('Could not load videos')
@@ -72,14 +85,15 @@ export function VideoSelectModal({ open, onClose, onSelect }: VideoSelectModalPr
               className="rounded-lg border border-[var(--color-border)] overflow-hidden text-left hover:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
             >
               <div className="relative aspect-video bg-[var(--color-border)]">
-                {video.thumbnail_url ? (
+                {video.thumbnail_url || video.drive_thumbnail_url ? (
                   <Image
-                    src={video.thumbnail_url}
+                    src={(video.drive_thumbnail_url || video.thumbnail_url) as string}
                     alt=""
                     fill
                     loading="lazy"
                     className="object-cover"
                     sizes="(max-width: 640px) 50vw, 33vw"
+                    unoptimized={Boolean(video.drive_thumbnail_url)}
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">

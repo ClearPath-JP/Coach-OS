@@ -8,7 +8,8 @@ import { normalizeEmail } from '@/lib/utils'
 import { loginSchema } from '@/lib/validations'
 
 const bodySchema = loginSchema.extend({
-  intent: z.enum(['coach', 'client']),
+  /** coach | client = strict; auto = any role, client should land on / then /client/portal */
+  intent: z.enum(['coach', 'client', 'auto']),
 })
 
 /**
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error || !data.user) {
-    void logAuditEvent('login_failed', null, null, { intent }, request)
+    void logAuditEvent('login_failed', null, null, { intent, email: normalizeEmail(email) }, request)
     return applyAuthNoStoreHeaders(
       NextResponse.json({ error: 'Invalid email or password. Please try again.' }, { status: 401 })
     )
@@ -63,7 +64,13 @@ export async function POST(request: Request) {
     await supabase.auth.signOut()
     void logAuditEvent('login_failed', data.user.id, null, { intent, reason: 'wrong_role' }, request)
     return applyAuthNoStoreHeaders(
-      NextResponse.json({ error: 'This account is not a coach account.' }, { status: 403 })
+      NextResponse.json(
+        {
+          error:
+            'This account is not a coach account. Client? Use “Client sign-in” below or /client-login.',
+        },
+        { status: 403 }
+      )
     )
   }
 
@@ -71,7 +78,13 @@ export async function POST(request: Request) {
     await supabase.auth.signOut()
     void logAuditEvent('login_failed', data.user.id, null, { intent, reason: 'wrong_role' }, request)
     return applyAuthNoStoreHeaders(
-      NextResponse.json({ error: 'This account is not a client portal account.' }, { status: 403 })
+      NextResponse.json(
+        {
+          error:
+            'This account is not a client portal account. Coach? Use the coach sign-in link on that page.',
+        },
+        { status: 403 }
+      )
     )
   }
 

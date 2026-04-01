@@ -26,15 +26,29 @@ export async function GET() {
       return res
     }
 
+    const selectFull =
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_virtual, is_active, created_at'
+    const selectBase =
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at'
+
     const key = packagesCacheKey(workspaceId)
     const rows = await withCache(key, 60, async () => {
-      const { data, error } = await supabase
+      const first = await supabase
         .from('session_packages')
-        .select('id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at')
+        .select(selectFull)
         .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
-      if (error) throw new Error(error.message)
-      return data ?? []
+      if (!first.error) return first.data ?? []
+      if (/is_virtual|schema cache/i.test(first.error.message)) {
+        const second = await supabase
+          .from('session_packages')
+          .select(selectBase)
+          .eq('workspace_id', workspaceId)
+          .order('created_at', { ascending: false })
+        if (second.error) throw new Error(second.error.message)
+        return second.data ?? []
+      }
+      throw new Error(first.error.message)
     })
 
     const res = NextResponse.json({ data: rows })
@@ -75,21 +89,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    const { data: row, error } = await supabase
+    const baseInsert = {
+      workspace_id: workspaceId,
+      coach_id: user.id,
+      title: parsed.data.title,
+      description: parsed.data.description ?? null,
+      price_cents: parsed.data.price_cents,
+      currency: parsed.data.currency ?? 'usd',
+      duration_minutes: parsed.data.duration_minutes ?? 60,
+      session_type: parsed.data.session_type ?? null,
+      is_active: parsed.data.is_active ?? true,
+    }
+
+    const selectFull =
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_virtual, is_active, created_at'
+    const selectBase =
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at'
+
+    let rowResult = await supabase
       .from('session_packages')
       .insert({
-        workspace_id: workspaceId,
-        coach_id: user.id,
-        title: parsed.data.title,
-        description: parsed.data.description ?? null,
-        price_cents: parsed.data.price_cents,
-        currency: parsed.data.currency ?? 'usd',
-        duration_minutes: parsed.data.duration_minutes ?? 60,
-        session_type: parsed.data.session_type ?? null,
-        is_active: parsed.data.is_active ?? true,
+        ...baseInsert,
+        is_virtual: parsed.data.is_virtual ?? true,
       })
-      .select('id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at')
+      .select(selectFull)
       .single()
+
+    if (rowResult.error && /is_virtual|schema cache/i.test(rowResult.error.message)) {
+      rowResult = await supabase.from('session_packages').insert(baseInsert).select(selectBase).single()
+    }
+
+    const { data: row, error } = rowResult
 
     if (error) {
       return NextResponse.json(

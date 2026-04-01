@@ -26,7 +26,13 @@ function LogOutIcon({ className }: { className?: string }) {
   )
 }
 
-export function SignOutButton({ variant }: { variant: 'sidebar' | 'nav' }) {
+export function SignOutButton({
+  variant,
+  className,
+}: {
+  variant: 'sidebar' | 'nav'
+  className?: string
+}) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
   const [loading, setLoading] = useState(false)
@@ -51,7 +57,8 @@ export function SignOutButton({ variant }: { variant: 'sidebar' | 'nav' }) {
         variant === 'sidebar' &&
           'flex w-full min-h-[44px] items-center gap-3 rounded-lg px-4 py-2.5 text-left text-[15px] font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-border)]/50 hover:text-[var(--color-text-primary)] disabled:opacity-60',
         variant === 'nav' &&
-          'inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-lg px-3 text-[13px] font-medium text-[var(--color-accent)] hover:bg-[var(--color-surface)] focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 focus:outline-none disabled:opacity-60'
+          'inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-lg px-3 text-[13px] font-medium text-[var(--accent)] hover:bg-[var(--bg-muted)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60',
+        className
       )}
     >
       {variant === 'sidebar' ? <LogOutIcon className="shrink-0" /> : null}

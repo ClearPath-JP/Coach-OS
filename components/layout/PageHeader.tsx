@@ -1,28 +1,26 @@
 'use client'
 
 export interface PageHeaderProps {
-  /** Page title */
   title: string
-  /** Optional subtitle below the title */
-  subtitle?: string
-  /** Optional action buttons or controls (e.g. "Add client") */
+  breadcrumb?: string
+  contextInfo?: string
   children?: React.ReactNode
 }
 
-export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
+export function PageHeader({ title, breadcrumb, contextInfo, children }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 className="text-[22px] font-medium leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="mt-1 text-[15px] font-normal leading-[var(--leading-body)] text-[var(--color-text-secondary)]">
-            {subtitle}
-          </p>
-        )}
+    <div className="flex h-14 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-6">
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+          {breadcrumb ?? title}
+        </p>
       </div>
-      {children && <div className="mt-4 flex items-center gap-2 sm:mt-0">{children}</div>}
+      {contextInfo ? (
+        <div className="mx-3 rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[12px] text-[var(--text-tertiary)]">
+          {contextInfo}
+        </div>
+      ) : null}
+      {children ? <div className="flex items-center gap-2">{children}</div> : null}
     </div>
   )
 }

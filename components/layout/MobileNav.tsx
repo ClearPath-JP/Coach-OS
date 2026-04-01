@@ -172,12 +172,34 @@ function PaymentsIcon({ className }: { className?: string }) {
   )
 }
 
+function AssignmentsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+      <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" />
+      <path d="M9 12h6M9 16h6" />
+    </svg>
+  )
+}
+
 export const coachTabs = [
   { href: '/coach/dashboard', label: 'Home', icon: HomeIcon },
   { href: '/coach/analytics', label: 'Analytics', icon: AnalyticsIcon },
   { href: '/coach/clients', label: 'Clients', icon: ClientsIcon },
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarIcon },
   { href: '/coach/programs', label: 'Programs', icon: ProgramsIcon },
+  { href: '/coach/assignments', label: 'Assign', icon: AssignmentsIcon },
   { href: '/coach/videos', label: 'Videos', icon: VideosIcon },
   { href: '/coach/messages', label: 'Messages', icon: MessagesIcon },
   { href: '/coach/packages', label: 'Packages', icon: PackagesIcon },
@@ -189,8 +211,9 @@ export const coachTabs = [
 export const clientPortalTabs = [
   { href: '/client/portal', label: 'Home', icon: HomeIcon },
   { href: '/client/messages', label: 'Messages', icon: MessagesIcon },
-  { href: '/client/sessions', label: 'Sessions', icon: CalendarIcon },
   { href: '/client/programs', label: 'Programs', icon: ProgramsIcon },
+  { href: '/client/assignments', label: 'Tasks', icon: AssignmentsIcon },
+  { href: '/client/sessions', label: 'Sessions', icon: CalendarIcon },
   { href: '/client/invoices', label: 'Invoices', icon: InvoicesIcon },
   { href: '/client/profile', label: 'Profile', icon: ProfileIcon },
 ] as const

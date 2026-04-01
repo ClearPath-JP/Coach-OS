@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
@@ -48,17 +49,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-
-    if (!coach?.workspace_id) {
+    const ws = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (!ws) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
-
-    const ws = coach.workspace_id
 
     const { data: allClients, error: clientsFetchError } = await supabase
       .from('clients')

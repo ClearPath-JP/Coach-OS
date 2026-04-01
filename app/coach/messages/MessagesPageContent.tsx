@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -14,6 +15,11 @@ import {
 } from '@/components/shared/SessionBookingMessageCard'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { mergeByIdSortByCreatedAt } from '@/lib/utils'
+import { BookSessionModal } from '@/app/coach/schedule/BookSessionModal'
+import {
+  CoachAssignmentChatCard,
+  CoachAssignmentFeedbackCard,
+} from '@/components/shared/AssignmentChatCards'
 
 type Conversation = {
   clientId: string
@@ -70,12 +76,16 @@ function MessagesThreadMessagesList({
   selectedClientName,
   selectedClientId,
   fetchMessages,
+  onBookRequestedTime,
+  onSuggestDifferentTime,
 }: {
   messages: Message[]
   userId: string | null
   selectedClientName: string
   selectedClientId: string
   fetchMessages: (clientId: string) => void | Promise<void>
+  onBookRequestedTime: (payload: { clientId: string; date: string | null; time: string | null }) => void
+  onSuggestDifferentTime: () => void
 }) {
   return (
     <div className="space-y-4">
@@ -88,8 +98,18 @@ function MessagesThreadMessagesList({
             {msgs.map((msg) => {
               const isInvoice = msg.message_type === 'invoice'
               const isSession = msg.message_type === 'session'
+              const isSessionRequest = msg.message_type === 'session_request'
+              const isAssignment = msg.message_type === 'assignment'
+              const isAssignmentFeedback = msg.message_type === 'assignment_feedback'
               let invoiceData: Parameters<typeof InvoiceCard>[0]['data'] | null = null
               let sessionData: SessionBookingCardData | null = null
+              let requestData: {
+                preferredDate?: string
+                preferredTime?: string
+                timeSlotLabel?: string | null
+                sessionTypePreference?: string
+                note?: string | null
+              } | null = null
               if (isInvoice) {
                 try {
                   const parsed = JSON.parse(msg.content) as {
@@ -148,6 +168,19 @@ function MessagesThreadMessagesList({
                   sessionData = null
                 }
               }
+              if (isSessionRequest) {
+                try {
+                  requestData = JSON.parse(msg.content) as {
+                    preferredDate?: string
+                    preferredTime?: string
+                    timeSlotLabel?: string | null
+                    sessionTypePreference?: string
+                    note?: string | null
+                  }
+                } catch {
+                  requestData = null
+                }
+              }
               return (
                 <div
                   key={msg.id}
@@ -170,6 +203,54 @@ function MessagesThreadMessagesList({
                       <p className="mt-1 text-[12px] text-[var(--color-muted)]">
                         {format(new Date(msg.created_at), 'h:mm a')}
                       </p>
+                    </div>
+                  ) : isAssignment ? (
+                    <div className="max-w-[320px]">
+                      <CoachAssignmentChatCard
+                        content={msg.content}
+                        createdAt={msg.created_at}
+                        userId={userId}
+                        senderId={msg.sender_id}
+                        selectedClientId={selectedClientId}
+                        selectedClientName={selectedClientName}
+                        fetchMessages={fetchMessages}
+                      />
+                    </div>
+                  ) : isAssignmentFeedback ? (
+                    <div className="max-w-[320px]">
+                      <CoachAssignmentFeedbackCard
+                        content={msg.content}
+                        createdAt={msg.created_at}
+                        sentByCoach={msg.sender_id === userId}
+                      />
+                    </div>
+                  ) : requestData ? (
+                    <div className="max-w-[360px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                      <p className="text-sm font-medium text-[var(--color-ink)]">{selectedClientName} requested a session</p>
+                      <p className="mt-1 text-xs text-[var(--color-muted)]">
+                        {requestData.sessionTypePreference === 'in_person' ? '📍 In person' : '📹 Video (1:1 Zoom)'}
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--color-muted)]">
+                        📅 {requestData.preferredDate ?? '—'}
+                        {requestData.timeSlotLabel
+                          ? ` · ${requestData.timeSlotLabel}`
+                          : requestData.preferredTime
+                            ? ` · ${requestData.preferredTime}`
+                            : ''}
+                      </p>
+                      {requestData.note ? <p className="mt-1 text-xs text-[var(--color-muted)]">💬 &quot;{requestData.note}&quot;</p> : null}
+                      <div className="mt-2 flex gap-2">
+                        <Button
+                          variant="secondary"
+                          className="text-xs"
+                          onClick={() => onBookRequestedTime({ clientId: selectedClientId, date: requestData?.preferredDate ?? null, time: requestData?.preferredTime ?? null })}
+                        >
+                          Book this time
+                        </Button>
+                        <Button variant="ghost" className="text-xs" onClick={onSuggestDifferentTime}>
+                          Suggest different time
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div
@@ -200,6 +281,9 @@ function MessagesThreadMessagesList({
 }
 
 export function CoachMessagesPageContent() {
+  const searchParams = useSearchParams()
+  const clientIdFromUrl = searchParams.get('clientId')?.trim() ?? null
+
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loadingConversations, setLoadingConversations] = useState(true)
   const [conversationsError, setConversationsError] = useState<string | null>(null)
@@ -216,6 +300,9 @@ export function CoachMessagesPageContent() {
   const [hasMoreOlder, setHasMoreOlder] = useState(false)
   const [oldestCursor, setOldestCursor] = useState<string | null>(null)
   const [loadingOlder, setLoadingOlder] = useState(false)
+  const [bookModalOpen, setBookModalOpen] = useState(false)
+  const [bookInitialDate, setBookInitialDate] = useState<string | null>(null)
+  const [bookInitialTime, setBookInitialTime] = useState<string | null>(null)
   const threadScrollRef = useRef<HTMLDivElement>(null)
   const threadEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
@@ -244,6 +331,13 @@ export function CoachMessagesPageContent() {
   useEffect(() => {
     fetchConversations()
   }, [fetchConversations])
+
+  useEffect(() => {
+    if (!clientIdFromUrl || loadingConversations) return
+    setSelectedClientId(clientIdFromUrl)
+    const conv = conversations.find((c) => c.clientId === clientIdFromUrl)
+    if (conv?.fullName) setSelectedClientName(conv.fullName)
+  }, [clientIdFromUrl, loadingConversations, conversations])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)')
@@ -279,7 +373,21 @@ export function CoachMessagesPageContent() {
         setHasMoreOlder(json.hasMore === true)
         setOldestCursor(typeof json.nextCursor === 'string' ? json.nextCursor : null)
         const conv = conversations.find((c) => c.clientId === clientId)
-        if (conv?.fullName) setSelectedClientName(conv.fullName)
+        if (conv?.fullName) {
+          setSelectedClientName(conv.fullName)
+        } else {
+          const cr = await fetch(`/api/clients/${encodeURIComponent(clientId)}`)
+          const cj = await cr.json().catch(() => ({}))
+          if (cr.ok && cj.data) {
+            const d = cj.data as {
+              first_name?: string | null
+              last_name?: string | null
+              email?: string | null
+            }
+            const name = [d.first_name, d.last_name].filter(Boolean).join(' ').trim()
+            setSelectedClientName(name || d.email?.trim() || 'Client')
+          }
+        }
       } catch {
         setMessagesError('Something went wrong — check your connection and try again')
         setMessages([])
@@ -615,6 +723,15 @@ export function CoachMessagesPageContent() {
                     selectedClientName={selectedClientName}
                     selectedClientId={selectedClientId}
                     fetchMessages={fetchMessages}
+                    onBookRequestedTime={({ clientId, date, time }) => {
+                      setSelectedClientId(clientId)
+                      setBookInitialDate(date)
+                      setBookInitialTime(time)
+                      setBookModalOpen(true)
+                    }}
+                    onSuggestDifferentTime={() => {
+                      setInputValue('I can do a different time. How about tomorrow afternoon?')
+                    }}
                   />
                 </ErrorBoundary>
               )}
@@ -666,6 +783,17 @@ export function CoachMessagesPageContent() {
           {toast}
         </div>
       ) : null}
+      <BookSessionModal
+        open={bookModalOpen}
+        onClose={() => setBookModalOpen(false)}
+        onBooked={() => {
+          setBookModalOpen(false)
+          if (selectedClientId) void fetchMessages(selectedClientId)
+        }}
+        initialClientId={selectedClientId}
+        initialDate={bookInitialDate}
+        initialTime={bookInitialTime}
+      />
     </div>
   )
 }

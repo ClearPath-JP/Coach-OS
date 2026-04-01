@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { updateNotificationsSchema } from '@/lib/validations'
 
@@ -8,12 +9,7 @@ export async function PATCH(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
+    if (!(await resolveCoachWorkspaceIdForSession(supabase, user.id))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

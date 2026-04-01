@@ -1,6 +1,7 @@
 /* === CLEARPATH DESIGN SYSTEM === */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600&display=swap');
 
 @import 'tailwindcss';
 @config '../tailwind.config.ts';
@@ -10,6 +11,7 @@
 :root {
   /* FONT */
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sora: 'Sora', ui-sans-serif, system-ui, sans-serif;
 
   /* SPACING SCALE (8px base, never deviate) */
   --space-1: 4px;
@@ -453,6 +455,53 @@ tr:hover td {
 }
 .badge:hover {
   filter: brightness(0.95);
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+.status-dot-pulse {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+.tooltip-in {
+  animation: tooltipIn 150ms var(--ease-out);
+}
+
+.app-logo-pulse {
+  animation: appLogoPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes appLogoPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes tooltipIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .modal-backdrop {

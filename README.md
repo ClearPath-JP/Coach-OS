@@ -93,6 +93,11 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for full instructions.
 | `pnpm run setup` | First-time setup wizard |
 | `pnpm run seed:demo` | Add demo data (demo@clearpath.com workspace) |
 | `pnpm run reset:demo` | Remove demo data |
+| `pnpm run setup:admin` | Create/promote super admin (`CLEARPATH_ADMIN_*` in `.env.local`; then `/login` → `/admin`) |
+| `pnpm run wipe:dev` | **Dev only:** delete all workspaces + all Auth users (`CLEARPATH_DEV_WIPE_CONFIRM` — see `.env.example`) |
+| `pnpm run seed:test-client` | One test client for demo coach (`coach@example.com` workspace); run after `create:demo` |
+
+**Minimal dev accounts (clean Supabase):** use **three different emails** — admin cannot share an account with coach. Set `CLEARPATH_DEV_WIPE_CONFIRM=DELETE_ALL_APP_DATA`, run `pnpm run wipe:dev`, then `setup:admin` → `create:demo` → `seed:test-client`. Logins: admin from `CLEARPATH_ADMIN_*`; coach `coach@example.com` / `Demo123!`; client `client@example.com` / `ClientDemo123!` (override with `CLEARPATH_TEST_*` vars).
 | `pnpm run db:push` | Apply migrations |
 | `pnpm run db:status` | Check migration status |
 

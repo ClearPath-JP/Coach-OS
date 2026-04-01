@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase'
 import { AddAvailabilityModal } from './AddAvailabilityModal'
 import { BookSessionModal } from './BookSessionModal'
 import { SessionDetailDrawer, type SessionForDrawer } from './SessionDetailDrawer'
+import { WeeklyUnavailabilityEditor } from '@/components/unavailability/WeeklyUnavailabilityEditor'
 
 type CalendarView = 'week' | 'month'
 
@@ -82,7 +83,7 @@ export function SchedulePageContent() {
 
     const [slotsRes, sessionsRes] = await Promise.all([
       supabase.from('availability_slots').select('id, start_time, end_time, label').eq('coach_id', user.id).gte('start_time', startIso).lte('end_time', endIso).order('start_time'),
-      supabase.from('sessions').select('id, scheduled_time, end_time, duration_minutes, status, notes, client_id, clients(first_name, last_name)').eq('coach_id', user.id).gte('scheduled_time', startIso).lte('scheduled_time', endIso).in('status', ['pending', 'confirmed', 'completed']).order('scheduled_time'),
+      supabase.from('sessions').select('id, scheduled_time, end_time, duration_minutes, status, notes, client_id, clients(first_name, last_name)').eq('coach_id', user.id).gte('scheduled_time', startIso).lte('scheduled_time', endIso).in('status', ['pending', 'confirmed', 'completed', 'cancelled', 'no_show']).order('scheduled_time'),
     ])
     if (slotsRes.data) setSlots(slotsRes.data)
     if (sessionsRes.data) setSessions(sessionsRes.data as unknown as SessionWithClient[])
@@ -167,6 +168,9 @@ export function SchedulePageContent() {
   return (
     <div className="space-y-6">
       <PageHeader title="Schedule">
+        <Button variant="secondary" onClick={() => setAddModalOpen(true)}>
+          Set availability
+        </Button>
         <Button
           onClick={() => {
             setBookModalRescheduleSessionId(null)
@@ -229,6 +233,8 @@ export function SchedulePageContent() {
         )}
       </section>
 
+      <WeeklyUnavailabilityEditor variant="coach" />
+
       {/* Calendar / Agenda */}
       <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 md:p-6">
         <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -276,7 +282,17 @@ export function SchedulePageContent() {
                                 key={ev.start.toISOString() + ev.title}
                                 type="button"
                                 onClick={() => !ev.isSlot && ev.session && setSelectedSession(ev.session as SessionForDrawer)}
-                                className={`absolute left-0.5 right-0.5 top-0.5 bottom-0.5 rounded text-left px-2 py-1 text-xs truncate ${ev.isSlot ? 'bg-[var(--color-surface)] border-l-4 border-[var(--color-border)]' : 'bg-[var(--color-accent)] text-white border-l-4 border-[var(--color-accent-hover)]'}`}
+                                className={`absolute left-0.5 right-0.5 top-0.5 bottom-0.5 rounded text-left px-2 py-1 text-xs truncate ${
+                                  ev.isSlot
+                                    ? 'bg-[var(--color-surface)] border-l-4 border-[var(--color-border)]'
+                                    : ev.session?.status === 'completed'
+                                      ? 'bg-emerald-500 text-white border-l-4 border-emerald-600'
+                                      : ev.session?.status === 'cancelled'
+                                        ? 'bg-slate-400 text-white border-l-4 border-slate-500'
+                                        : ev.session?.status === 'no_show'
+                                          ? 'bg-amber-500 text-white border-l-4 border-amber-600'
+                                          : 'bg-[var(--color-accent)] text-white border-l-4 border-[var(--color-accent-hover)]'
+                                }`}
                               >
                                 {ev.title}
                               </button>
@@ -348,7 +364,9 @@ export function SchedulePageContent() {
                         </div>
                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           s.status === 'confirmed' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' :
-                          s.status === 'completed' ? 'bg-[var(--color-border)] text-[var(--color-text-secondary)]' :
+                          s.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                          s.status === 'cancelled' ? 'bg-slate-100 text-slate-600' :
+                          s.status === 'no_show' ? 'bg-amber-100 text-amber-700' :
                           'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
                         }`}>{s.status}</span>
                         <Button variant="ghost" onClick={() => setSelectedSession(s as SessionForDrawer)}>Details</Button>

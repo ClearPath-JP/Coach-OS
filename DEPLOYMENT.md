@@ -19,10 +19,12 @@ Complete [README.md](./README.md) setup first.
    npx supabase db push
    ```
 
-5. Go to Storage and create buckets:
-   - `avatars` (private)
-   - `programs` (private)
-   - `workspaces` (private)
+5. Go to Storage and confirm buckets exist (migrations create `videos`, `assignment-submissions`, and related policies; create manually if an older DB skipped them):
+   - `avatars`
+   - `programs`
+   - `workspaces`
+   - `videos` (coach / pipeline video files)
+   - `assignment-submissions` (client assignment video uploads)
 
 6. **Connection pooling (recommended for production):** In Supabase Dashboard → **Settings** → **Database**, enable the **connection pooler** (Supavisor / PgBouncer). Use **Transaction** mode for serverless hosts (e.g. Vercel) so many concurrent coaches do not exhaust direct Postgres connections. The app uses the Supabase REST API by default; pooling still protects the database under load.
 
@@ -45,8 +47,19 @@ Complete [README.md](./README.md) setup first.
 ## Step 3 — Google Cloud production setup
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com).
-2. Add authorized redirect URI: `https://app.clearpath.com/api/integrations/google-drive/callback`
-3. Update `GOOGLE_REDIRECT_URI` / `GOOGLE_DRIVE_REDIRECT_URI` in Vercel env vars to the production URL if you override the default.
+2. Create an **OAuth 2.0 Client ID** (Web application) with the Google Drive API enabled.
+3. Add **Authorized redirect URI**: `https://app.clearpath.com/api/integrations/google-drive/callback` (and your Vercel preview URL + `/api/integrations/google-drive/callback` if you test previews).
+4. Copy **Client ID** and **Client Secret** into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Vercel (and `.env.local`).
+5. Update `GOOGLE_REDIRECT_URI` / `GOOGLE_DRIVE_REDIRECT_URI` in Vercel env vars to match the deployed app URL if you override the default.
+
+### Video streaming env vars
+
+- **`VIDEO_STREAM_TOKEN_SECRET`** — Set a long random string in production (same value in Vercel). Used to sign short-lived tokens for the video stream proxy so Range requests (scrubbing) work efficiently. Optional in local dev; **recommended in production**.
+
+### Google Drive vs n8n
+
+- Coaches connect Google Drive under **Settings → Integrations**. Imported videos use **Drive file metadata + in-app streaming**; **n8n is not required** for playback or for the Drive import flow in the app.
+- **n8n / CloudConvert** remain optional if you use legacy automation or transcoding pipelines.
 
 ## Setting up Upstash Redis (required)
 
@@ -106,7 +119,7 @@ Run through this after every deployment:
 - [ ] Test coach signup → onboarding → dashboard
 - [ ] Test client invite → portal access
 - [ ] Test messaging real-time
-- [ ] Test video import (if n8n configured)
+- [ ] Test video import from Google Drive (n8n not required for playback)
 - [ ] Test calendar booking
 - [ ] Dark mode toggle works
 - [ ] Color themes save correctly

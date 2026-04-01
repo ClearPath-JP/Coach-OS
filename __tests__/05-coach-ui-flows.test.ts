@@ -3,6 +3,7 @@ import {
   BASE_URL,
   COACH_EMAIL,
   COACH_PASSWORD,
+  clearPersistedTestContextFile,
   fetchJson,
   persistTestContext,
   sessionCookiesFromPassword,
@@ -59,6 +60,8 @@ async function createConfirmedCoachUser(email: string, password: string): Promis
 
 describe('05 coach UI flows', () => {
   beforeAll(async () => {
+    // Avoid stale flow IDs / cookies from a previous interrupted run (afterAll still persists).
+    clearPersistedTestContextFile()
     const ping = await fetch(`${BASE_URL}/api/clients`)
     if (ping.status !== 401) {
       throw new Error(`Start dev server: pnpm dev (expected GET /api/clients → 401)`)

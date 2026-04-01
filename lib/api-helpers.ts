@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { User } from '@supabase/supabase-js'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { normalizeEmail } from '@/lib/utils'
 
@@ -48,19 +49,15 @@ export async function requireCoach(): Promise<CoachAuthResult> {
     }
   }
 
-  const { data: coach } = await supabase
-    .from('coaches')
-    .select('workspace_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
 
-  if (!coach?.workspace_id) {
+  if (!workspaceId) {
     return {
       error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }),
     }
   }
 
-  return { user, workspaceId: coach.workspace_id, supabase }
+  return { user, workspaceId, supabase }
 }
 
 /**

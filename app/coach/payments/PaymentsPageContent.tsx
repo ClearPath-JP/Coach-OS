@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { DataTable } from '@/components/ui/DataTable'
+import { StatusDot } from '@/components/ui/StatusDot'
 import { RecordPaymentModal, type EditingPayment } from '@/components/coach/RecordPaymentModal'
 import {
   PAYMENT_METHOD_LABELS,
@@ -331,7 +333,7 @@ export function PaymentsPageContent() {
 
   return (
     <main className="min-h-screen p-4 md:p-6 space-y-6">
-      <PageHeader title="Payments">
+      <PageHeader title="Payments" contextInfo={`${rows.length} records`}>
         <Button type="button" className="min-h-[44px]" onClick={() => { setEditing(null); setModalOpen(true) }}>
           Record payment
         </Button>
@@ -436,50 +438,34 @@ export function PaymentsPageContent() {
           </div>
         ) : (
           <>
-            <div className="mt-6 hidden md:block overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-[15px]">
-                <thead>
-                  <tr className="border-b border-[var(--color-border)] text-[var(--color-muted)]">
-                    <th className="pb-2 font-medium">Client</th>
-                    <th className="pb-2 font-medium">Amount</th>
-                    <th className="pb-2 font-medium">Method</th>
-                    <th className="pb-2 font-medium">Date</th>
-                    <th className="pb-2 font-medium">Reference</th>
-                    <th className="pb-2 font-medium">Notes</th>
-                    <th className="pb-2 font-medium w-[120px]">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((p) => (
-                    <tr key={p.id} className="border-b border-[var(--color-border)]/80">
-                      <td className="py-3">{clientName(p.clients)}</td>
-                      <td className="py-3 font-medium">{formatCents(p.amount_cents)}</td>
-                      <td className="py-3">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[12px] font-medium ${
-                            PAYMENT_METHOD_STYLES[p.payment_method as PaymentMethodValue] ?? 'bg-neutral-200'
-                          }`}
-                        >
-                          {PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}
-                        </span>
-                      </td>
-                      <td className="py-3 text-[var(--color-muted)]">{p.payment_date}</td>
-                      <td className="py-3 max-w-[140px] truncate">{p.payment_reference ?? '—'}</td>
-                      <td className="py-3 max-w-[180px] truncate text-[var(--color-muted)]">{p.notes ?? '—'}</td>
-                      <td className="py-3">
-                        <div className="flex gap-2">
-                          <Button variant="secondary" type="button" className="text-[13px] py-1 min-h-[36px]" onClick={() => openEdit(p)}>
-                            Edit
-                          </Button>
-                          <Button variant="destructive-secondary" type="button" className="text-[13px] py-1 min-h-[36px]" onClick={() => handleDelete(p)}>
-                            Delete
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-6 hidden md:block">
+              <DataTable
+                rows={rows}
+                loading={loading}
+                emptyTitle="No payments recorded yet"
+                emptyDescription="Use the Record payment button to log your first payment."
+                columns={[
+                  { key: 'client', header: 'Client', sortValue: (r) => clientName(r.clients), render: (p) => clientName(p.clients) },
+                  { key: 'amount', header: 'Amount', sortValue: (r) => r.amount_cents, render: (p) => <span className="font-medium">{formatCents(p.amount_cents)}</span> },
+                  {
+                    key: 'method',
+                    header: 'Method',
+                    render: (p) => <span className="inline-flex items-center gap-2"><StatusDot tone="active" />{PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}</span>,
+                  },
+                  { key: 'date', header: 'Date', sortValue: (r) => r.payment_date, render: (p) => p.payment_date },
+                  { key: 'reference', header: 'Reference', render: (p) => p.payment_reference ?? '—' },
+                  {
+                    key: 'actions',
+                    header: 'Actions',
+                    render: (p) => (
+                      <div className="flex gap-2">
+                        <Button variant="secondary" size="xs" onClick={() => openEdit(p)}>Edit</Button>
+                        <Button variant="destructive-secondary" size="xs" onClick={() => handleDelete(p)}>Delete</Button>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
             </div>
 
             <ul className="mt-6 md:hidden space-y-3">

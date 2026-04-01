@@ -14,7 +14,7 @@ function ConversationRowSkeleton() {
 
 export default function CoachMessagesLoading() {
   return (
-    <main className="flex min-h-0 flex-1 flex-col p-4 lg:p-6">
+    <main className="flex min-h-0 flex-1 flex-col p-4 lg:p-8">
       <div className="flex min-h-0 min-h-[calc(100dvh-7rem)] flex-1 flex-col overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] lg:min-h-[calc(100dvh-3.5rem)] lg:flex-row">
         <div className="flex h-full min-h-[320px] w-full flex-col border-[var(--color-border)] bg-[var(--color-surface)] lg:w-1/3 lg:border-r lg:border-b-0">
           <div className="border-b border-[var(--color-border)] px-4 py-4">

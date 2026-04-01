@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Textarea } from '@/components/ui/Input'
-import { differenceInDays } from 'date-fns'
+import { differenceInDays, eachWeekOfInterval, endOfWeek, isWithinInterval, parseISO, startOfWeek, subWeeks } from 'date-fns'
+import { getLevelFromXp } from '@/lib/xp-system'
 import { AssignProgramToClientModal } from '@/components/coach/AssignProgramToClientModal'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import {
@@ -25,6 +26,16 @@ type ClientPaymentRow = {
   payment_date: string
 }
 
+type ClientRewards = {
+  total_xp: number
+  level: number
+  current_streak_days: number
+  longest_streak_days: number
+  assignments_completed: number
+  assignments_total: number
+  last_activity_at: string | null
+} | null
+
 type Client = {
   id: string
   first_name: string | null
@@ -37,6 +48,125 @@ type Client = {
   profile_photo_url: string | null
   created_at: string
   updated_at: string
+  rewards?: ClientRewards
+}
+
+type CoachAssignmentRow = {
+  id: string
+  status: string
+  reviewed_at: string | null
+  points_awarded: number | null
+  coach_feedback: string | null
+  assignment_templates: { title: string; points: number } | null
+}
+
+function assignmentTitle(row: CoachAssignmentRow): string {
+  return row.assignment_templates?.title?.trim() || 'Assignment'
+}
+
+function ClientProgressPanel({
+  rewards,
+  assignRows,
+  loading,
+}: {
+  rewards: ClientRewards
+  assignRows: CoachAssignmentRow[]
+  loading: boolean
+}) {
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-24 animate-pulse rounded-xl bg-[var(--color-border)]/40" />
+        ))}
+      </div>
+    )
+  }
+
+  const xp = rewards?.total_xp ?? 0
+  const levelInfo = getLevelFromXp(xp)
+  const totalA = rewards?.assignments_total ?? 0
+  const doneA = rewards?.assignments_completed ?? 0
+  const completionPct = totalA > 0 ? Math.round((doneA / totalA) * 100) : 0
+  const now = new Date()
+  const rangeStart = startOfWeek(subWeeks(now, 5))
+  const weeks = eachWeekOfInterval({ start: rangeStart, end: now })
+  const counts = weeks.map((wStart) => {
+    const wEnd = endOfWeek(wStart)
+    return assignRows.filter(
+      (r) =>
+        r.status === 'approved' &&
+        r.reviewed_at &&
+        isWithinInterval(parseISO(r.reviewed_at), { start: wStart, end: wEnd })
+    ).length
+  })
+  const maxCount = Math.max(1, ...counts)
+  const recentApproved = assignRows.filter((r) => r.status === 'approved').slice(0, 8)
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card variant="raised" padding="lg">
+          <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-2">XP and level</h2>
+          <p className="text-2xl font-semibold tabular-nums text-[var(--color-ink)]">{xp} XP</p>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            Level {levelInfo.level}: {levelInfo.name}
+          </p>
+        </Card>
+        <Card variant="raised" padding="lg">
+          <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-2">Assignments</h2>
+          <p className="text-2xl font-semibold tabular-nums text-[var(--color-ink)]">{completionPct}%</p>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            {doneA} completed of {totalA} assigned
+          </p>
+          <p className="mt-2 text-sm text-[var(--color-muted)]">
+            Streak: {rewards?.current_streak_days ?? 0}d (best {rewards?.longest_streak_days ?? 0}d)
+          </p>
+        </Card>
+      </div>
+
+      <Card variant="raised" padding="lg">
+        <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-4">Approvals by week</h2>
+        <div className="flex h-36 items-end gap-2">
+          {weeks.map((wStart, i) => {
+            const c = counts[i] ?? 0
+            const barH = 6 + Math.round((c / maxCount) * 110)
+            return (
+              <div key={wStart.toISOString()} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
+                <div
+                  className="w-full max-w-[40px] rounded-t bg-[var(--color-accent)]"
+                  style={{ height: barH }}
+                  title={`${c} approved`}
+                />
+                <span className="text-[10px] text-[var(--color-muted)] tabular-nums">
+                  {wStart.getMonth() + 1}/{wStart.getDate()}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+
+      <Card variant="raised" padding="lg">
+        <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-3">Recently completed</h2>
+        {recentApproved.length === 0 ? (
+          <p className="text-sm text-[var(--color-muted)]">No approved assignments yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {recentApproved.map((r) => (
+              <li
+                key={r.id}
+                className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-border)] py-2 last:border-0"
+              >
+                <span className="font-medium text-[var(--color-ink)]">{assignmentTitle(r)}</span>
+                <span className="text-sm text-[var(--color-muted)] tabular-nums">+{r.points_awarded ?? 0} XP</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </div>
+  )
 }
 
 function statusBadgeVariant(s: string): 'active' | 'inactive' | 'pending' {
@@ -57,7 +187,9 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
   const [inviteSending, setInviteSending] = useState(false)
   const [clientPrograms, setClientPrograms] = useState<{ programId: string; title: string; status: string; totalModules: number; modulesCompleted: number; assignedAt: string }[]>([])
   const [assignProgramOpen, setAssignProgramOpen] = useState(false)
-  const [tab, setTab] = useState<'overview' | 'payments'>('overview')
+  const [tab, setTab] = useState<'overview' | 'payments' | 'progress'>('overview')
+  const [assignRows, setAssignRows] = useState<CoachAssignmentRow[]>([])
+  const [assignLoading, setAssignLoading] = useState(false)
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [paymentsTotal, setPaymentsTotal] = useState<number | null>(null)
   const [paymentRows, setPaymentRows] = useState<ClientPaymentRow[]>([])
@@ -85,6 +217,31 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
   useEffect(() => {
     if (tab === 'payments') loadPaymentsTab()
   }, [tab, loadPaymentsTab])
+
+  useEffect(() => {
+    if (tab !== 'progress') return
+    let cancelled = false
+    setAssignLoading(true)
+    void (async () => {
+      try {
+        const res = await fetch(`/api/assignments/client/${encodeURIComponent(clientId)}`)
+        const json = await res.json()
+        if (cancelled) return
+        if (res.ok && Array.isArray(json.data)) {
+          setAssignRows(json.data as CoachAssignmentRow[])
+        } else {
+          setAssignRows([])
+        }
+      } catch {
+        if (!cancelled) setAssignRows([])
+      } finally {
+        if (!cancelled) setAssignLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [tab, clientId])
 
   const fetchClient = useCallback(async () => {
     setError(null)
@@ -283,6 +440,19 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
         >
           Payments
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'progress'}
+          onClick={() => setTab('progress')}
+          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
+            tab === 'progress'
+              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
+          }`}
+        >
+          Progress
+        </button>
       </div>
 
       {tab === 'payments' && (
@@ -329,6 +499,10 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
             </ul>
           )}
         </div>
+      )}
+
+      {tab === 'progress' && (
+        <ClientProgressPanel rewards={client.rewards ?? null} assignRows={assignRows} loading={assignLoading} />
       )}
 
       {tab === 'overview' && (
