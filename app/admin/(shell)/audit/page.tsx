@@ -232,8 +232,9 @@ export default function AdminAuditPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-medium text-slate-900">Audit log</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Security events and user actions across all workspaces.
+          <p className="mt-1 max-w-2xl text-sm text-slate-600">
+            Security events and important actions across all workspaces. Filter by time and workspace, export CSV for
+            records. High-risk rows are highlighted when the table marks them.
           </p>
         </div>
         <Button

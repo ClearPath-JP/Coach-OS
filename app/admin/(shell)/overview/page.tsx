@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { AdminGuideLink } from '@/components/admin/AdminGuideLink'
 import { AdminOverviewActivityFeed } from '@/components/admin/AdminOverviewActivityFeed'
 import { AdminOverviewCoachAccordion } from '@/components/admin/AdminOverviewCoachAccordion'
 import { AdminPlatformHealthCard } from '@/components/admin/AdminPlatformHealthCard'
@@ -47,6 +48,10 @@ export default async function AdminOverviewPage() {
         <h1 className="text-2xl font-medium text-slate-900">Overview</h1>
         <p className="mt-1 text-sm text-slate-600">
           Business health at a glance — coaches, clients, revenue, and platform status.
+        </p>
+        <p className="mt-2 text-xs text-slate-500">
+          New to this area? Read the <AdminGuideLink className="font-medium text-blue-700 hover:underline" /> for a tour
+          of every screen.
         </p>
       </div>
 

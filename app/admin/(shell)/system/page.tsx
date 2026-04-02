@@ -150,8 +150,9 @@ export default function AdminSystemPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-medium text-slate-900">System health</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Live checks for core services. Last checked: {new Date(data.checkedAt).toLocaleString()}
+        <p className="mt-1 max-w-2xl text-sm text-slate-600">
+          Live checks for database, auth, storage, rate limits, Stripe, and email. Use this when users report widespread
+          issues. Last checked: {new Date(data.checkedAt).toLocaleString()}
         </p>
         {liveSummary ? (
           <p

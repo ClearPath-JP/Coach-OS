@@ -39,7 +39,20 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold text-slate-900">Subscriptions</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-slate-900">Subscriptions</h1>
+        <p className="mt-1 max-w-2xl text-sm text-slate-600">
+          MRR and coach counts by plan, plus every subscription row we store. Use{' '}
+          <Link href="/admin/revenue" className="font-medium text-blue-700 hover:underline">
+            Revenue
+          </Link>{' '}
+          for payment history and charts; use{' '}
+          <Link href="/admin/stripe" className="font-medium text-blue-700 hover:underline">
+            Stripe catalog
+          </Link>{' '}
+          to confirm price IDs match Stripe.
+        </p>
+      </div>
 
       <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm text-sm">
         {(['free', 'starter', 'pro', 'scale'] as const).map((plan) => (

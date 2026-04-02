@@ -140,7 +140,10 @@ export default function AdminCoachesPage() {
           <h1 className="text-2xl font-medium text-slate-900">
             {rows ? `${rows.length} coaches` : 'Coaches'}
           </h1>
-          <p className="mt-1 text-sm text-slate-600">Search by workspace name or coach email.</p>
+          <p className="mt-1 max-w-xl text-sm text-slate-600">
+            Every coaching business on the platform. Search by name or email, filter by billing status, then open a
+            card for details, trial extension, plan changes, or suspend.
+          </p>
         </div>
         <Input
           value={search}

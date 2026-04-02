@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -22,6 +23,12 @@ export function AdminSidebarFooter({ email }: { email: string }) {
 
   return (
     <div className="mt-auto border-t border-white/10 px-2 pt-3">
+      <Link
+        href="/admin/guide"
+        className="mb-2 flex w-full items-center justify-center rounded-[8px] px-2 py-2 text-[13px] font-medium text-sky-300 hover:bg-white/10 hover:text-sky-200"
+      >
+        How to use admin
+      </Link>
       <p className="truncate px-1 text-[12px] text-white/80">{email}</p>
       <button
         type="button"

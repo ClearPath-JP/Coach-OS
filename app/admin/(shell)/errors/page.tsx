@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 
 type Row = {
@@ -44,7 +45,17 @@ export default function AdminErrorLogsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold text-slate-900">Coach &amp; client errors</h1>
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Error logs</h1>
+          <p className="mt-1 max-w-2xl text-sm text-slate-600">
+            JavaScript errors reported from coach and client browsers — useful for UI bugs that never hit the server.
+            Not a substitute for{' '}
+            <Link href="/admin/system" className="font-medium text-blue-700 hover:underline">
+              System health
+            </Link>
+            .
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <select
             className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm"

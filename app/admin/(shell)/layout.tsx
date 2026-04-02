@@ -27,7 +27,13 @@ export default async function AdminShellLayout({ children }: { children: React.R
             Admin
           </span>
         </div>
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-4">
+          <Link
+            href="/admin/guide"
+            className="shrink-0 text-[12px] font-medium text-sky-400 hover:text-sky-300"
+          >
+            Guide
+          </Link>
           <span className="truncate text-[12px] text-slate-400">{email}</span>
         </div>
       </header>

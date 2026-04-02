@@ -10,6 +10,10 @@ type NavSection = { title: string; items: NavItem[] }
 
 const SECTIONS: NavSection[] = [
   {
+    title: 'Start here',
+    items: [{ href: '/admin/guide', label: 'Admin guide', match: 'exact' }],
+  },
+  {
     title: 'Overview',
     items: [{ href: '/admin/overview', label: 'Dashboard', match: 'exact' }],
   },
@@ -21,21 +25,22 @@ const SECTIONS: NavSection[] = [
     ],
   },
   {
-    title: 'Users',
+    title: 'Clients',
     items: [{ href: '/admin/clients', label: 'All clients', match: 'exact' }],
   },
   {
-    title: 'Business',
+    title: 'Money & records',
     items: [
       { href: '/admin/revenue', label: 'Revenue', match: 'exact' },
+      { href: '/admin/stripe', label: 'Stripe catalog', match: 'exact' },
       { href: '/admin/audit', label: 'Audit log', match: 'exact' },
     ],
   },
   {
-    title: 'System',
+    title: 'Operations',
     items: [
-      { href: '/admin/system', label: 'Health', match: 'exact' },
-      { href: '/admin/errors', label: 'Coach/client errors', match: 'exact' },
+      { href: '/admin/system', label: 'System health', match: 'exact' },
+      { href: '/admin/errors', label: 'Error logs', match: 'exact' },
       { href: '/admin/settings', label: 'Settings', match: 'exact' },
     ],
   },
@@ -52,12 +57,10 @@ export function AdminNav() {
   const pathname = usePathname() ?? ''
 
   return (
-    <nav className="min-h-0 flex-1 space-y-6 overflow-y-auto px-0">
+    <nav className="min-h-0 flex-1 space-y-6 overflow-y-auto px-0" aria-label="Admin sections">
       {SECTIONS.map((section) => (
         <div key={section.title}>
-          <p className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-slate-500">
-            {section.title}
-          </p>
+          <p className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-slate-500">{section.title}</p>
           <ul className="space-y-px">
             {section.items.map((item) => {
               const active = isActive(pathname, item)

@@ -37,8 +37,14 @@ export default function AdminClientsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-[24px] font-semibold text-[var(--text-primary)]">Clients</h1>
-        <div className="w-full max-w-md">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">All clients</h1>
+          <p className="mt-1 max-w-xl text-sm text-slate-600">
+            Everyone invited as a client across all coaches — for support and search. Coaches manage their own clients
+            from their dashboard.
+          </p>
+        </div>
+        <div className="w-full max-w-md shrink-0">
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}

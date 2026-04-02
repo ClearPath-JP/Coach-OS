@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { AdminRevenueCharts } from '@/components/admin/AdminRevenueCharts'
 import { DataTable } from '@/components/ui/DataTable'
 
@@ -33,7 +34,17 @@ export default function AdminRevenuePage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-semibold text-slate-900">Revenue</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-slate-900">Revenue</h1>
+        <p className="mt-1 max-w-2xl text-sm text-slate-600">
+          Payments and subscription activity over time. <strong>MRR</strong> here is a rollup from stored subscription
+          data — compare with{' '}
+          <Link href="/admin/subscriptions" className="font-medium text-blue-700 hover:underline">
+            Subscriptions
+          </Link>{' '}
+          for per-plan coach counts.
+        </p>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {(['free', 'starter', 'pro', 'scale'] as const).map((plan) => (
