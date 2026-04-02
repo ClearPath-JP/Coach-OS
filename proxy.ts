@@ -63,6 +63,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // Rate limit auth pages per IP (defense in depth with API route limits).
+  // NOTE: These limits apply to every GET (page load, prefetch, redirect from /). Keep ceilings high
+  // enough for normal use; brute-force protection for credentials lives on POST /api/auth/* (stricter).
   if (AUTH_PUBLIC_PATHS.includes(pathname as (typeof AUTH_PUBLIC_PATHS)[number])) {
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -73,21 +75,21 @@ export async function proxy(request: NextRequest) {
       let windowMs: number
       let max: number
       if (pathname === '/login' || pathname === '/client-login') {
-        key = `auth-page-login:${ip}`
+        key = `auth-page-login:v2:${ip}`
         windowMs = 15 * 60_000
-        max = 5
+        max = 120
       } else if (pathname === '/signup') {
         key = `auth-page-signup:${ip}`
         windowMs = 60 * 60_000
-        max = 3
+        max = 30
       } else if (pathname === '/forgot-password') {
         key = `auth-page-forgot:${ip}`
         windowMs = 60 * 60_000
-        max = 3
+        max = 20
       } else {
         key = `auth-page:${ip}`
         windowMs = 60_000
-        max = 30
+        max = 60
       }
       const { success, retryAfter } = await checkRateLimitAsync(key, { windowMs, max })
       if (!success) {
