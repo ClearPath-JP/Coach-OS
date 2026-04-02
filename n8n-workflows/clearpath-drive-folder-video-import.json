@@ -117,7 +117,7 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ folderId: ($json.parents && $json.parents[0]) ? $json.parents[0] : '', driveFileId: $json.id, driveFileName: $json.name || 'video.mp4' }) }}",
+        "jsonBody": "={{ JSON.stringify({ folderId: ($json.parents && $json.parents[0]) ? $json.parents[0] : '', driveFileId: $json.id, driveFileName: $json.name || 'video.mp4', driveMimeType: $json.mimeType || 'video/mp4', fileSizeBytes: Number($json.size) >= 0 ? Number($json.size) : 0 }) }}",
         "options": {
           "response": {
             "response": {

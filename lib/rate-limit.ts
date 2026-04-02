@@ -7,6 +7,9 @@
 const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
 
+let warnedMissingRedis = false
+let warnedRedisCallFailed = false
+
 /** Fixed-window counters for Jest (no Redis) so rate-limit integration tests behave deterministically. */
 const memoryBuckets = new Map<string, { count: number; resetAt: number }>()
 
@@ -57,8 +60,13 @@ async function checkWithUpstash(
     return { success: false, retryAfter: Math.max(1, retryAfter) }
   } catch (error) {
     if (process.env.NODE_ENV === 'production') {
-      console.error('Rate limit Redis error:', error)
-      return { success: false, retryAfter: 60 }
+      if (!warnedRedisCallFailed) {
+        warnedRedisCallFailed = true
+        console.error(
+          '[ClearPath] Upstash rate limit call failed — failing open until Redis works. Check URL, token, and Upstash dashboard.',
+          error
+        )
+      }
     }
     return { success: true }
   }
@@ -75,12 +83,12 @@ export async function checkRateLimitAsync(
   if (process.env.CLEARPATH_TEST_RATE_LIMIT === '1') {
     return checkInMemory(key, options)
   }
-  if (!REDIS_URL || !REDIS_TOKEN) {
-    if (process.env.NODE_ENV === 'production') {
+  if (!REDIS_URL?.trim() || !REDIS_TOKEN?.trim()) {
+    if (process.env.NODE_ENV === 'production' && !warnedMissingRedis) {
+      warnedMissingRedis = true
       console.error(
-        'Rate limit: UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN not configured in production'
+        '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — rate limiting is disabled. Add Upstash Redis in Vercel (see .env.example) to enforce limits and avoid abuse.'
       )
-      return { success: false, retryAfter: 60 }
     }
     return { success: true }
   }

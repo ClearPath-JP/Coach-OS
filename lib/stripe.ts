@@ -11,9 +11,16 @@ export const stripe = secret ? new Stripe(secret) : null
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? ''
 
-/** Plan price IDs from env (set in Stripe Dashboard and .env.local) */
+/** Recurring subscription price IDs (monthly) — set in Stripe Dashboard */
 export const STRIPE_PRICES: Record<'starter' | 'pro' | 'scale', string | undefined> = {
   starter: process.env.STRIPE_PRICE_STARTER_ID,
   pro: process.env.STRIPE_PRICE_PRO_ID,
   scale: process.env.STRIPE_PRICE_SCALE_ID,
+}
+
+/** One-time setup fee price IDs (optional — omit env to charge subscription only) */
+export const STRIPE_SETUP_FEE_PRICES: Record<'starter' | 'pro' | 'scale', string | undefined> = {
+  starter: process.env.STRIPE_SETUP_FEE_STARTER_ID,
+  pro: process.env.STRIPE_SETUP_FEE_PRO_ID,
+  scale: process.env.STRIPE_SETUP_FEE_SCALE_ID,
 }

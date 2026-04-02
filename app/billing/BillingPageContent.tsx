@@ -36,11 +36,19 @@ const STATUS_LABELS: Record<Status, string> = {
   paused: 'Paused',
 }
 
+/** Display only — keep in sync with Stripe one-time setup Price amounts */
+const SETUP_FEE_LABEL = {
+  starter: '$197',
+  pro: '$297',
+  scale: '$397',
+} as const
+
 const PRICING_TIERS = [
   {
     plan: 'starter' as const,
-    price: '$79',
+    price: '$49',
     period: '/month',
+    setupFee: SETUP_FEE_LABEL.starter,
     popular: false,
     features: [
       'Up to 10 clients',
@@ -51,8 +59,9 @@ const PRICING_TIERS = [
   },
   {
     plan: 'pro' as const,
-    price: '$149',
+    price: '$99',
     period: '/month',
+    setupFee: SETUP_FEE_LABEL.pro,
     popular: true,
     features: [
       'Up to 30 clients',
@@ -64,8 +73,9 @@ const PRICING_TIERS = [
   },
   {
     plan: 'scale' as const,
-    price: '$299',
+    price: '$149',
     period: '/month',
+    setupFee: SETUP_FEE_LABEL.scale,
     popular: false,
     features: [
       'Unlimited clients',
@@ -188,6 +198,13 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
             Next billing date {format(new Date(subscription.current_period_end), 'MMMM d, yyyy')}.
           </p>
         )}
+        {(currentPlan === 'starter' || currentPlan === 'pro' || currentPlan === 'scale') && (
+          <p className="mt-2 text-[13px] text-[var(--color-text-secondary)]">
+            <span className="font-medium text-[var(--color-text-primary)]">One-time setup</span> for{' '}
+            {PLAN_LABELS[currentPlan]} is {SETUP_FEE_LABEL[currentPlan]} — charged once at signup in Stripe with your first
+            invoice. All tiers: Starter {SETUP_FEE_LABEL.starter}, Pro {SETUP_FEE_LABEL.pro}, Scale {SETUP_FEE_LABEL.scale}.
+          </p>
+        )}
         {subscription?.status === 'past_due' && (
           <p className="mt-2 text-[15px] text-[var(--color-error)]">
             Payment failed — update your payment method to keep access.
@@ -200,9 +217,14 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
         )}
       </Card>
 
+      <p className="text-[14px] text-[var(--color-text-secondary)]">
+        <span className="font-medium text-[var(--color-text-primary)]">One-time setup</span> is added at checkout with
+        your first subscription invoice. Monthly price recurs each billing period.
+      </p>
+
       {/* Pricing cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        {PRICING_TIERS.map(({ plan, price, period, popular, features }) => {
+        {PRICING_TIERS.map(({ plan, price, period, setupFee, popular, features }) => {
           const isCurrent = currentPlan === plan
           const planIndex = planOrder.indexOf(plan)
           const isUpgrade = planIndex > currentIndex
@@ -232,6 +254,9 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
               <div className="mt-1 text-2xl font-medium text-[var(--color-text-primary)]">
                 {price}<span className="text-base font-normal text-[var(--color-text-secondary)]">{period}</span>
               </div>
+              <p className="mt-1 text-[14px] text-[var(--color-text-secondary)]">
+                <span className="font-medium text-[var(--color-text-primary)]">{setupFee}</span> one-time setup
+              </p>
               <ul className="mt-3 list-inside list-disc space-y-1 text-[15px] text-[var(--color-text-secondary)]">
                 {features.map((line) => (
                   <li key={line}>{line}</li>

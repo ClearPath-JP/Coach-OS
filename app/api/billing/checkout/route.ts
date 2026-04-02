@@ -3,7 +3,7 @@ import type Stripe from 'stripe'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { billingCheckoutSchema } from '@/lib/validations'
-import { stripe, STRIPE_PRICES } from '@/lib/stripe'
+import { stripe, STRIPE_PRICES, STRIPE_SETUP_FEE_PRICES } from '@/lib/stripe'
 
 /**
  * POST /api/billing/checkout — create Stripe Checkout session for subscription (coach only).
@@ -95,10 +95,17 @@ export async function POST(request: Request) {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin') ?? 'https://app.clearpath.com'
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{ price: priceId, quantity: 1 }]
+    const setupPriceId = STRIPE_SETUP_FEE_PRICES[key]?.trim()
+    if (setupPriceId) {
+      lineItems.push({ price: setupPriceId, quantity: 1 })
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer: stripeCustomerId,
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: lineItems,
       success_url: `${baseUrl}/billing?success=true`,
       cancel_url: `${baseUrl}/billing?cancelled=true`,
       metadata: { workspace_id: coach.workspace_id },
