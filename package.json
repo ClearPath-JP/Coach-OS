@@ -16,6 +16,7 @@
     "test": "jest --config jest.config.cjs --runInBand --detectOpenHandles --forceExit --testTimeout=120000",
     "setup": "npx tsx scripts/setup.ts",
     "create:demo": "npx tsx scripts/create-demo-coach.ts",
+    "verify:stripe-env": "npx tsx scripts/verify-stripe-env.ts",
     "setup:admin": "npx tsx scripts/setup-admin.ts",
     "create:admin": "npx tsx scripts/setup-admin.ts",
     "wipe:dev": "npx tsx scripts/wipe-dev-data.ts",

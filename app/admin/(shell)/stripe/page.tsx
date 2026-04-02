@@ -29,10 +29,23 @@ type PlanRow = {
   setupFee: PriceRow
 }
 
+type StripeEnvDiagnostics = {
+  secretKeyCharLength: number
+  secretStartsWithSk: boolean
+  usedStripeApiKeyAlias: boolean
+  webhookSecretCharLength: number
+  webhookStartsWithWhsec: boolean
+}
+
 type CatalogData = {
   stripeSecretConfigured: boolean
   webhookSecretConfigured: boolean
+  stripeEnvDiagnostics?: StripeEnvDiagnostics
   connectDefaultCountry: string
+  envContext?: {
+    vercelEnv: string | null
+    deploymentHint: string
+  }
   billingUiCopy: {
     monthlyDisplay: Record<string, string>
     setupFeeDisplay: Record<string, string>
@@ -155,6 +168,21 @@ export default function AdminStripePage() {
         <>
           <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-slate-900">Environment</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              These flags reflect <strong>this server&apos;s</strong> process env (the deployment that handled the request
+              above) — not your laptop unless you are on localhost.
+            </p>
+            {data.envContext ? (
+              <p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                <span className="font-medium text-slate-800">Context: </span>
+                {data.envContext.vercelEnv ? (
+                  <code className="rounded bg-slate-200 px-1">VERCEL_ENV={data.envContext.vercelEnv}</code>
+                ) : (
+                  <span>not on Vercel (e.g. local)</span>
+                )}
+                <span className="mt-1 block text-slate-600">{data.envContext.deploymentHint}</span>
+              </p>
+            ) : null}
             <ul className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
               <li>
                 <span className="text-slate-500">STRIPE_SECRET_KEY:</span>{' '}
@@ -177,6 +205,69 @@ export default function AdminStripePage() {
                 <code className="rounded bg-slate-100 px-1 text-xs">{data.connectDefaultCountry}</code>
               </li>
             </ul>
+            {data.stripeEnvDiagnostics ? (
+              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
+                <p className="font-semibold text-slate-900">What the server sees (safe — not your keys)</p>
+                <ul className="mt-2 list-disc space-y-1 pl-4 text-slate-700">
+                  <li>
+                    Secret key length: <strong>{data.stripeEnvDiagnostics.secretKeyCharLength}</strong> characters
+                    {data.stripeEnvDiagnostics.secretKeyCharLength === 0
+                      ? ' — Node does not see STRIPE_SECRET_KEY (or STRIPE_API_KEY). File must be .env.local in the same folder as package.json; restart dev after edits.'
+                      : null}
+                    {data.stripeEnvDiagnostics.secretKeyCharLength > 0 && !data.stripeEnvDiagnostics.secretStartsWithSk ? (
+                      <span className="block text-amber-800">
+                        Value should start with <code className="rounded bg-slate-200 px-1">sk_test_</code> or{' '}
+                        <code className="rounded bg-slate-200 px-1">sk_live_</code> — you may have pasted the publishable
+                        key.
+                      </span>
+                    ) : null}
+                    {data.stripeEnvDiagnostics.usedStripeApiKeyAlias ? (
+                      <span className="block text-slate-600">
+                        Using <code className="rounded bg-slate-200 px-1">STRIPE_API_KEY</code> because{' '}
+                        <code className="rounded bg-slate-200 px-1">STRIPE_SECRET_KEY</code> was empty.
+                      </span>
+                    ) : null}
+                  </li>
+                  <li>
+                    Webhook secret length: <strong>{data.stripeEnvDiagnostics.webhookSecretCharLength}</strong> characters
+                    {data.stripeEnvDiagnostics.webhookSecretCharLength === 0
+                      ? ' — add STRIPE_WEBHOOK_SECRET from Stripe → Webhooks → your endpoint → Signing secret (starts with whsec_).'
+                      : null}
+                    {data.stripeEnvDiagnostics.webhookSecretCharLength > 0 &&
+                    !data.stripeEnvDiagnostics.webhookStartsWithWhsec ? (
+                      <span className="block text-amber-800">
+                        Webhook signing secrets usually start with <code className="rounded bg-slate-200 px-1">whsec_</code>{' '}
+                        — confirm you did not paste the API key or client secret.
+                      </span>
+                    ) : null}
+                  </li>
+                </ul>
+              </div>
+            ) : null}
+
+            {!data.stripeSecretConfigured || !data.webhookSecretConfigured ? (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
+                <p className="font-semibold text-amber-950">If you already added these in Vercel</p>
+                <ul className="mt-2 list-disc space-y-1.5 pl-4">
+                  <li>
+                    Open <strong>Project → Settings → Environment Variables</strong> and confirm both names match exactly:{' '}
+                    <code className="rounded bg-amber-100/80 px-1">STRIPE_SECRET_KEY</code>,{' '}
+                    <code className="rounded bg-amber-100/80 px-1">STRIPE_WEBHOOK_SECRET</code>.
+                  </li>
+                  <li>
+                    Each variable has checkboxes for <strong>Production</strong>, <strong>Preview</strong>, and{' '}
+                    <strong>Development</strong>. A <strong>preview</strong> URL only sees variables enabled for Preview.
+                  </li>
+                  <li>
+                    After changing env vars, run a <strong>new deployment</strong> (Redeploy) so the runtime picks them up.
+                  </li>
+                  <li>
+                    Locally, put them in <code className="rounded bg-amber-100/80 px-1">.env.local</code> and restart{' '}
+                    <code className="rounded bg-amber-100/80 px-1">npm run dev</code>.
+                  </li>
+                </ul>
+              </div>
+            ) : null}
           </section>
 
           <section className="rounded-xl border border-slate-200 bg-slate-50 p-5">

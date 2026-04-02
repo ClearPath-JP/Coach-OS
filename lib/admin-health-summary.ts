@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { readStripeSecretKey } from '@/lib/stripe-env-read'
 
 async function timed(fn: () => Promise<unknown>): Promise<{ ok: boolean; ms: number }> {
   const t0 = Date.now()
@@ -27,13 +28,23 @@ async function checkRedis(): Promise<{ ok: boolean; ms: number }> {
 
 async function checkStripe(): Promise<{ ok: boolean; ms: number }> {
   const t0 = Date.now()
-  const key = process.env.STRIPE_SECRET_KEY
+  const key = readStripeSecretKey()
   if (!key) return { ok: false, ms: Date.now() - t0 }
+  // Publishable and webhook secrets are not valid for Dashboard API calls
+  if (!key.startsWith('sk_')) return { ok: false, ms: Date.now() - t0 }
   try {
     const res = await fetch('https://api.stripe.com/v1/balance', {
       headers: { Authorization: `Bearer ${key}` },
     })
-    return { ok: res.ok, ms: Date.now() - t0 }
+    if (res.ok) return { ok: true, ms: Date.now() - t0 }
+    // Restricted keys often omit Balance read; Products list is a lighter second check
+    if (res.status === 403) {
+      const res2 = await fetch('https://api.stripe.com/v1/products?limit=1', {
+        headers: { Authorization: `Bearer ${key}` },
+      })
+      return { ok: res2.ok, ms: Date.now() - t0 }
+    }
+    return { ok: false, ms: Date.now() - t0 }
   } catch {
     return { ok: false, ms: Date.now() - t0 }
   }

@@ -4,12 +4,13 @@
  */
 
 import Stripe from 'stripe'
+import { readStripeSecretKey, readStripeWebhookSecret } from '@/lib/stripe-env-read'
 
-const secret = process.env.STRIPE_SECRET_KEY
+const secret = readStripeSecretKey()
 
 export const stripe = secret ? new Stripe(secret) : null
 
-export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET ?? ''
+export const STRIPE_WEBHOOK_SECRET = readStripeWebhookSecret()
 
 /** Recurring subscription price IDs (monthly) — set in Stripe Dashboard */
 export const STRIPE_PRICES: Record<'starter' | 'pro' | 'scale', string | undefined> = {

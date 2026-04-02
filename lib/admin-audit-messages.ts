@@ -198,7 +198,7 @@ export function healthErrorMessage(serviceKey: string, ok: boolean, ms: number):
       case 'redis':
         return 'Rate limiting is unavailable. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN, or expect in-memory limits only.'
       case 'stripe':
-        return 'Stripe API check failed. Confirm STRIPE_SECRET_KEY and network access.'
+        return 'Stripe API check failed. In Vercel / .env use a Secret key (starts with sk_test_ or sk_live_) from Stripe Dashboard → Developers → API keys — not the publishable (pk_) or webhook signing secret (whsec_). Remove quotes and spaces around the value. If you use a restricted key, allow read access for Balance or Products.'
       case 'resend':
         return 'Email provider check failed. Set RESEND_API_KEY to enable outbound mail.'
       default:

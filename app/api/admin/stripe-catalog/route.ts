@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { assertAdminApi, logAdminAudit } from '@/lib/admin'
+import {
+  isStripeSecretKeyConfigured,
+  isStripeWebhookSecretConfigured,
+  stripeEnvDiagnosticsForAdmin,
+} from '@/lib/stripe-env-read'
 import { stripe, STRIPE_PRICES, STRIPE_SETUP_FEE_PRICES } from '@/lib/stripe'
 
 type Tier = 'starter' | 'pro' | 'scale'
@@ -115,11 +120,32 @@ export async function GET(request: Request) {
     request,
   })
 
+  const vercelEnv = process.env.VERCEL_ENV
+  let deploymentHint: string
+  if (vercelEnv === 'preview') {
+    deploymentHint =
+      'This is a Vercel Preview deployment. Environment variables must have the Preview checkbox enabled, or they will appear missing even if Production has them.'
+  } else if (vercelEnv === 'production') {
+    deploymentHint =
+      'Vercel Production. If you just added variables, redeploy — new env values are not picked up until a new deployment runs.'
+  } else if (process.env.VERCEL === '1' && vercelEnv === 'development') {
+    deploymentHint = 'Vercel CLI / development run.'
+  } else if (!process.env.VERCEL) {
+    deploymentHint = 'Local dev server — use .env.local and restart npm run dev after changes.'
+  } else {
+    deploymentHint = 'Server-side env check for this request only.'
+  }
+
   return NextResponse.json({
     data: {
-      stripeSecretConfigured: Boolean(process.env.STRIPE_SECRET_KEY?.trim()),
-      webhookSecretConfigured: Boolean(process.env.STRIPE_WEBHOOK_SECRET?.trim()),
+      stripeSecretConfigured: isStripeSecretKeyConfigured(),
+      webhookSecretConfigured: isStripeWebhookSecretConfigured(),
+      stripeEnvDiagnostics: stripeEnvDiagnosticsForAdmin(),
       connectDefaultCountry: process.env.STRIPE_CONNECT_DEFAULT_COUNTRY?.trim() || 'US',
+      envContext: {
+        vercelEnv: vercelEnv ?? null,
+        deploymentHint,
+      },
       billingUiCopy: {
         monthlyDisplay: { starter: '$49', pro: '$99', scale: '$149' },
         setupFeeDisplay: { starter: '$197', pro: '$297', scale: '$397' },
