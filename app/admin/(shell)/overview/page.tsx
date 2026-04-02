@@ -6,7 +6,7 @@ import { AdminPlatformHealthCard } from '@/components/admin/AdminPlatformHealthC
 import { mailtoInactiveCoachCheckIn, mailtoPastDueBilling } from '@/lib/admin-attention-mailto'
 import { fetchAdminOverviewPayload } from '@/lib/admin-overview-data'
 import { logAdminAudit } from '@/lib/admin'
-import { isAdminEmail } from '@/lib/admin-email'
+import { isPlatformAdmin } from '@/lib/platform-admin'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createClient } from '@/lib/supabase-server'
 
@@ -27,7 +27,7 @@ export default async function AdminOverviewPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user || !isAdminEmail(user.email)) redirect('/admin/not-authorized')
+  if (!user || !(await isPlatformAdmin(supabase, user))) redirect('/admin/not-authorized')
 
   const service = createServiceClient()
   const data = await fetchAdminOverviewPayload(service)

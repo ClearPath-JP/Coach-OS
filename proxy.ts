@@ -3,7 +3,7 @@
  * bundler rejects both). Default export + `config.matcher` are required.
  */
 import { NextResponse, type NextRequest } from 'next/server'
-import { isAdminEmail } from '@/lib/admin-email'
+import { isPlatformAdmin } from '@/lib/platform-admin'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { enforceCoachSessionFingerprint } from '@/lib/session-fingerprint'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
@@ -56,7 +56,7 @@ export async function proxy(request: NextRequest) {
     if (!user || authError) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    if (isAdminEmail(user.email)) {
+    if (await isPlatformAdmin(supabase, user)) {
       return NextResponse.redirect(new URL('/admin/overview', request.url))
     }
     return response
@@ -116,7 +116,7 @@ export async function proxy(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
     if (user) {
-      if (isAdminEmail(user.email)) {
+      if (await isPlatformAdmin(supabase, user)) {
         return NextResponse.redirect(new URL('/admin/overview', request.url))
       }
 
@@ -182,7 +182,7 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    if (isAdminEmail(user.email)) {
+    if (await isPlatformAdmin(supabase, user)) {
       return NextResponse.redirect(new URL('/admin/overview', request.url))
     }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
@@ -225,7 +225,7 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    if (!isAdminEmail(user.email)) {
+    if (!(await isPlatformAdmin(supabase, user))) {
       return NextResponse.redirect(new URL('/admin/not-authorized', request.url))
     }
     return response
@@ -250,7 +250,7 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    if (isAdminEmail(user.email)) {
+    if (await isPlatformAdmin(supabase, user)) {
       return NextResponse.redirect(new URL('/admin/overview', request.url))
     }
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()

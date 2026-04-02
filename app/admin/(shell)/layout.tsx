@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { AdminNav } from '@/components/layout/AdminNav'
 import { AdminSidebarFooter } from '@/components/layout/AdminSidebarFooter'
 import { AdminWarningBanner } from '@/components/layout/AdminWarningBanner'
-import { isAdminEmail } from '@/lib/admin-email'
+import { isPlatformAdmin } from '@/lib/platform-admin'
 import { createClient } from '@/lib/supabase-server'
 
 export default async function AdminShellLayout({ children }: { children: React.ReactNode }) {
@@ -12,7 +12,7 @@ export default async function AdminShellLayout({ children }: { children: React.R
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login?next=/admin/overview')
-  if (!isAdminEmail(user.email)) redirect('/admin/not-authorized')
+  if (!(await isPlatformAdmin(supabase, user))) redirect('/admin/not-authorized')
 
   const email = user.email ?? ''
 

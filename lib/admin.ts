@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { User } from '@supabase/supabase-js'
-import { isAdminEmail } from '@/lib/admin-email'
+import { isPlatformAdmin } from '@/lib/platform-admin'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase/service'
 
-/** Admin API: session must match ADMIN_EMAIL only (never DB/UI-granted flags). */
+/** Admin API: `ADMIN_EMAIL` or `profiles.is_super_admin` (no in-app self-grant). */
 export async function requireSuperAdmin() {
   const supabase = await createClient()
   const {
@@ -15,7 +15,7 @@ export async function requireSuperAdmin() {
   } = await supabase.auth.getUser()
   if (!user || error) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
 
-  if (!isAdminEmail(user.email)) {
+  if (!(await isPlatformAdmin(supabase, user))) {
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   }
 

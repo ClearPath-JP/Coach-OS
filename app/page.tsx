@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { isAdminEmail } from '@/lib/admin-email'
+import { isPlatformAdmin } from '@/lib/platform-admin'
 import { createClient } from '@/lib/supabase-server'
 
 /**
@@ -40,7 +40,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key`}
   if (!user) {
     redirect('/login')
   }
-  if (isAdminEmail(user.email)) {
+  if (await isPlatformAdmin(supabase, user)) {
     redirect('/admin/overview')
   }
   const { data: profile } = await supabase
