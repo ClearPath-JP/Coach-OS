@@ -3,7 +3,7 @@ import { requireClient } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkStorageLimit } from '@/lib/plan-limits'
 import { createServiceClient } from '@/lib/supabase/service'
-import { sanitizeFileName } from '@/lib/file-validation'
+import { sanitizeFileName, validateVideoMagicBytes } from '@/lib/file-validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,6 +43,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Video must be 100MB or smaller' }, { status: 400 })
     }
 
+    const buf = await file.arrayBuffer()
+    const magicOk = await validateVideoMagicBytes(buf)
+    if (!magicOk) {
+      return NextResponse.json(
+        { error: 'File content does not match a supported video format (e.g. MP4 or WebM)' },
+        { status: 400 }
+      )
+    }
+
     const service = createServiceClient()
 
     const { data: clientRow, error: clErr } = await service
@@ -61,7 +70,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Video storage limit reached for your plan' }, { status: 400 })
     }
 
-    const buf = await file.arrayBuffer()
     const safe = sanitizeFileName(file.name || 'video.mp4')
     const path = `${workspaceId}/${clientId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`
 

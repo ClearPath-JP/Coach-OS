@@ -18,6 +18,7 @@ import {
 } from '@/lib/coach-themes'
 import { cn } from '@/lib/utils'
 import { WorkspaceStorageSection } from '@/components/coach/WorkspaceStorageSection'
+import { DEFAULT_AUTO_CHECKIN_MESSAGE } from '@/lib/re-engagement-default-message'
 
 type TabKey = 'profile' | 'workspace' | 'payments' | 'appearance' | 'notifications'
 type NotificationKey = 'newMessage' | 'sessionReminder' | 'clientActivity' | 'paymentReceived'
@@ -34,6 +35,8 @@ type SettingsResponse = {
       accentColorLight: string | null
       preferredPaymentMethods: string[]
       publicBookingEnabled: boolean
+      autoCheckinEnabled: boolean
+      autoCheckinMessage: string | null
       brandName: string | null
       brandTagline: string | null
       clientPortalHeading: string | null
@@ -159,6 +162,10 @@ export function SettingsPageContent() {
   const saveDebounceRef = useRef<Partial<Record<NotificationKey, number>>>({})
   const saveFadeRef = useRef<Partial<Record<NotificationKey, number>>>({})
 
+  const [autoCheckinEnabled, setAutoCheckinEnabled] = useState(false)
+  const [autoCheckinMessage, setAutoCheckinMessage] = useState('')
+  const [savingAutoCheckin, setSavingAutoCheckin] = useState(false)
+
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -209,6 +216,8 @@ export function SettingsPageContent() {
           clientActivity: json.data.profile.notifications.clientActivity,
           paymentReceived: json.data.profile.notifications.paymentReceived,
         })
+        setAutoCheckinEnabled(json.data.workspace.autoCheckinEnabled ?? false)
+        setAutoCheckinMessage(json.data.workspace.autoCheckinMessage ?? '')
       } catch {
         setError('Something went wrong — check your connection and try again')
       } finally {
@@ -226,6 +235,66 @@ export function SettingsPageContent() {
     const t = window.setTimeout(() => setToast(null), 3500)
     return () => window.clearTimeout(t)
   }, [toast])
+
+  const stripeReturnHandled = useRef(false)
+  useEffect(() => {
+    if (stripeReturnHandled.current) return
+    if (typeof window === 'undefined') return
+    const sp = new URLSearchParams(window.location.search)
+    const err = sp.get('stripe_error')
+    const ret = sp.get('stripe_return')
+    const tab = sp.get('tab')
+    if (tab === 'profile' || tab === 'workspace' || tab === 'payments' || tab === 'appearance' || tab === 'notifications') {
+      setActiveTab(tab)
+    }
+    if (!err && !ret) return
+    stripeReturnHandled.current = true
+
+    if (ret === 'ready') {
+      setToast('Stripe is connected. Clients can pay invoices by card.')
+      setActiveTab('payments')
+    } else if (ret === 'pending') {
+      setToast('Stripe still needs more information — finish in the Stripe dashboard or click Connect Stripe again.')
+      setActiveTab('payments')
+    }
+
+    if (err === 'owner_only') {
+      setToast('Only the workspace owner can connect Stripe for card payments.')
+    } else if (err === 'stripe_not_configured') {
+      setToast('Stripe is not configured on this server.')
+    } else if (err === 'rate_limited') {
+      setToast('Too many attempts — wait a minute and try Connect Stripe again.')
+    } else if (err) {
+      setToast('Could not connect Stripe — try again or contact support.')
+    }
+
+    router.replace('/coach/settings', { scroll: false })
+  }, [router])
+
+  const disconnectStripe = async () => {
+    setSavingPayments(true)
+    try {
+      const res = await fetch('/api/settings/workspace', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ stripeConnected: false }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(typeof json.error === 'string' ? json.error : 'Could not disconnect Stripe')
+        return
+      }
+      setStripeConnected(false)
+      setToast('Stripe disconnected for this workspace')
+      void refetchSettings()
+      router.refresh()
+    } catch {
+      setToast('Something went wrong — check your connection and try again')
+    } finally {
+      setSavingPayments(false)
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -700,12 +769,12 @@ export function SettingsPageContent() {
                     Accept card payments directly through ClearPath. Clients pay instantly - no back and forth.
                   </p>
                   <ul className="space-y-1 text-sm text-[var(--color-text-secondary)]">
-                    <li>✓ Automatic payment confirmation</li>
-                    <li>✓ Instant receipts to clients</li>
-                    <li>✓ Revenue tracked automatically</li>
+                    <li>✓ Clients pay on Stripe Checkout</li>
+                    <li>✓ Invoices marked paid when checkout completes</li>
+                    <li>✓ Revenue tracked in ClearPath</li>
                   </ul>
                   <a href="/api/billing/stripe-connect">
-                    <Button>Connect Stripe</Button>
+                    <Button type="button">Connect Stripe</Button>
                   </a>
                 </div>
               ) : (
@@ -718,12 +787,19 @@ export function SettingsPageContent() {
                   >
                     Manage in Stripe →
                   </a>
+                  <a
+                    href="/api/billing/stripe-connect"
+                    className="text-sm font-medium text-[var(--color-accent)] hover:underline"
+                  >
+                    Update payout account
+                  </a>
                   <Button
                     variant="ghost"
                     className="text-sm"
-                    onClick={() => setStripeConnected(false)}
+                    disabled={savingPayments}
+                    onClick={() => void disconnectStripe()}
                   >
-                    Disconnect
+                    {savingPayments ? 'Disconnecting…' : 'Disconnect'}
                   </Button>
                 </div>
               )}
@@ -1045,6 +1121,69 @@ export function SettingsPageContent() {
                   <Toggle checked={notifications[row.key]} onChange={(next) => saveNotification(row.key, next)} />
                 </div>
               ))}
+            </Card>
+
+            <Card className="space-y-4">
+              <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Automated client check-ins</h2>
+              <p className="text-sm text-[var(--color-text-secondary)]">
+                Automatically send a check-in message when a client hasn&apos;t been active for 14 days. The message
+                appears to come from you.
+              </p>
+              <div className="flex items-start justify-between gap-4">
+                <span className="font-medium">Auto check-in inactive clients</span>
+                <Toggle
+                  checked={autoCheckinEnabled}
+                  onChange={(next) => setAutoCheckinEnabled(next)}
+                />
+              </div>
+              {autoCheckinEnabled ? (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
+                    Check-in message
+                  </label>
+                  <Textarea
+                    rows={6}
+                    value={autoCheckinMessage}
+                    onChange={(e) => setAutoCheckinMessage(e.target.value)}
+                    placeholder={DEFAULT_AUTO_CHECKIN_MESSAGE}
+                    className="font-normal"
+                  />
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                    Use {'{firstName}'} for the client&apos;s first name. If empty, the default template is used.
+                  </p>
+                </div>
+              ) : null}
+              <Button
+                type="button"
+                disabled={savingAutoCheckin}
+                onClick={async () => {
+                  setSavingAutoCheckin(true)
+                  try {
+                    const res = await fetch('/api/settings/notifications', {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      credentials: 'include',
+                      body: JSON.stringify({
+                        autoCheckinEnabled,
+                        autoCheckinMessage: autoCheckinMessage.trim() || null,
+                      }),
+                    })
+                    const json = await res.json().catch(() => ({}))
+                    if (!res.ok) {
+                      setToast(json.error ?? 'Could not save check-in settings')
+                      return
+                    }
+                    setToast('Check-in settings saved')
+                    void refetchSettings()
+                  } catch {
+                    setToast('Something went wrong — try again')
+                  } finally {
+                    setSavingAutoCheckin(false)
+                  }
+                }}
+              >
+                {savingAutoCheckin ? 'Saving…' : 'Save check-in settings'}
+              </Button>
             </Card>
           </div>
         )}

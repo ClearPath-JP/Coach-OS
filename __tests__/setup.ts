@@ -79,6 +79,17 @@ export function clearPersistedTestContextFile(): void {
   }
 }
 
+/** Clear IDs produced by 02-coach-flows so globalThis state from a prior Jest run cannot poison the next run. */
+export function resetCoachApiFlowContext(): void {
+  testContext.clientId = ''
+  testContext.packageId = ''
+  testContext.invoiceId = ''
+  testContext.programId = ''
+  testContext.moduleId = ''
+  testContext.sessionId = ''
+  testContext.clientCookie = ''
+}
+
 export function mergeCookieJar(jar: string, response: Response): string {
   const h = response.headers as unknown as { getSetCookie?: () => string[] }
   let lines: string[] = []

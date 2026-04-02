@@ -205,3 +205,105 @@ export async function deleteTestClientRowForEmail(): Promise<void> {
   })
   await admin.from('clients').delete().eq('email', CLIENT_EMAIL.toLowerCase())
 }
+
+const IDOR_COACH_B_EMAIL = 'idor-coach-b@clearpath.test'
+const IDOR_COACH_B_PASSWORD = 'IdorCoachB123!'
+const IDOR_VICTIM_CLIENT_EMAIL = 'idor-victim@clearpath.test'
+
+/**
+ * Second workspace + client row for IDOR tests (service role). Returns victim client UUID or null if misconfigured.
+ */
+export async function ensureOtherWorkspaceClientForIdorTest(): Promise<string | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url?.trim() || !key?.trim()) return null
+
+  const admin = createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+
+  const { data: page } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  let coachBUid = page?.users?.find((u) => u.email?.toLowerCase() === IDOR_COACH_B_EMAIL)?.id ?? null
+
+  if (!coachBUid) {
+    const { data: created, error } = await admin.auth.admin.createUser({
+      email: IDOR_COACH_B_EMAIL,
+      password: IDOR_COACH_B_PASSWORD,
+      email_confirm: true,
+      user_metadata: { full_name: 'IDOR Coach B' },
+    })
+    if (error) throw new Error(`IDOR seed createUser: ${error.message}`)
+    coachBUid = created.user?.id ?? null
+  } else {
+    await admin.auth.admin.updateUserById(coachBUid, {
+      password: IDOR_COACH_B_PASSWORD,
+      email_confirm: true,
+    })
+  }
+  if (!coachBUid) return null
+
+  const { data: coachRow } = await admin
+    .from('coaches')
+    .select('workspace_id')
+    .eq('user_id', coachBUid)
+    .maybeSingle()
+
+  let workspaceId = coachRow?.workspace_id ?? null
+
+  if (!workspaceId) {
+    const { data: ws, error: wsErr } = await admin
+      .from('workspaces')
+      .insert({
+        name: 'IDOR test workspace',
+        owner_id: coachBUid,
+      })
+      .select('id')
+      .single()
+    if (wsErr || !ws?.id) throw new Error(wsErr?.message ?? 'IDOR workspace insert failed')
+    workspaceId = ws.id
+
+    const { error: profErr } = await admin.from('profiles').upsert(
+      {
+        id: coachBUid,
+        email: IDOR_COACH_B_EMAIL.toLowerCase(),
+        full_name: 'IDOR Coach B',
+        role: 'coach',
+        workspace_id: workspaceId,
+        is_super_admin: false,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' }
+    )
+    if (profErr) throw new Error(profErr.message)
+
+    const { error: coachInsErr } = await admin.from('coaches').insert({
+      user_id: coachBUid,
+      workspace_id: workspaceId,
+      role: 'owner',
+    })
+    if (coachInsErr) throw new Error(coachInsErr.message)
+  }
+
+  const { data: existingVictim } = await admin
+    .from('clients')
+    .select('id')
+    .eq('workspace_id', workspaceId)
+    .eq('email', IDOR_VICTIM_CLIENT_EMAIL.toLowerCase())
+    .maybeSingle()
+  if (existingVictim?.id) return existingVictim.id
+
+  const { data: inserted, error: insErr } = await admin
+    .from('clients')
+    .insert({
+      coach_id: coachBUid,
+      workspace_id: workspaceId,
+      first_name: 'Victim',
+      last_name: 'Client',
+      email: IDOR_VICTIM_CLIENT_EMAIL.toLowerCase(),
+      status: 'active',
+    })
+    .select('id')
+    .single()
+  if (insErr || !inserted?.id) throw new Error(insErr?.message ?? 'IDOR victim client insert failed')
+  return inserted.id
+}

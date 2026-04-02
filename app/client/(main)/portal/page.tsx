@@ -4,10 +4,13 @@ import { createClient } from '@/lib/supabase-server'
 import { getClientWorkspaceBranding } from '@/lib/client-workspace-branding'
 import { normalizeEmail } from '@/lib/utils'
 import { Card } from '@/components/ui/Card'
+import { ClientPortalDailyCheckIn } from '@/components/client/ClientPortalDailyCheckIn'
+import { ClientPortalXpBar } from '@/components/client/ClientPortalXpBar'
 import { ClientWeekCalendar } from '@/components/client/ClientWeekCalendar'
 import { RequestSessionButton } from '@/components/client/RequestSessionButton'
 import { cn } from '@/lib/utils'
 import { format, formatDistanceToNow, parseISO } from 'date-fns'
+import { goalProgressPercent } from '@/lib/goal-progress'
 import { getLevelFromXp, getProgressPercent, getXpToNextLevel, LEVELS } from '@/lib/xp-system'
 
 export const dynamic = 'force-dynamic'
@@ -16,6 +19,7 @@ function messagePreview(content: string | null, messageType: string | null): str
   if (messageType === 'invoice') return 'Invoice from your coach'
   if (messageType === 'session') return 'Session update from your coach'
   if (messageType === 'session_request') return 'Session request sent'
+  if (messageType === 'testimonial_request') return 'Your coach invited you to leave a review'
   const raw = (content ?? '').trim()
   if (!raw) return 'Message'
   const singleLine = raw.replace(/\s+/g, ' ')
@@ -30,12 +34,6 @@ function sessionTypeBadge(t: string | null | undefined): string {
     in_person: 'In person',
   }
   return m[t] ?? 'Session'
-}
-
-function portalGreeting(hour: number): string {
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
 }
 
 export default async function ClientPortalPage() {
@@ -77,8 +75,8 @@ export default async function ClientPortalPage() {
 
   const firstName = client.first_name?.trim() || 'there'
   const branding = await getClientWorkspaceBranding(user.email)
-  const coachLabel = branding?.brandName?.trim() || 'Your coach'
-  const hour = new Date().getHours()
+  const coachBrandName = branding?.brandName?.trim() ?? ''
+  const coachLabel = coachBrandName || 'Your coach'
   const now = new Date().toISOString()
 
   const { data: nextSession } = await supabase
@@ -186,9 +184,23 @@ export default async function ClientPortalPage() {
   const streak = rewardsRow?.current_streak_days ?? 0
   const doneHw = rewardsRow?.assignments_completed ?? 0
 
+  const { data: goalRows } = await supabase
+    .from('client_goals')
+    .select('id, title, status, target_value, start_value, current_value')
+    .eq('client_id', client.id)
+    .eq('workspace_id', client.workspace_id)
+    .order('created_at', { ascending: false })
+
+  const allGoals = goalRows ?? []
+  const activeGoalList = allGoals.filter((g) => g.status === 'active')
+  const achievedGoalList = allGoals.filter((g) => g.status === 'achieved')
+  const portalGoals = [...activeGoalList, ...achievedGoalList].slice(0, 3)
+
   return (
-    <main className="mx-auto flex w-full max-w-[900px] flex-col gap-4 px-4 py-4 lg:h-[calc(100dvh-var(--nav-height))] lg:max-h-[calc(100dvh-var(--nav-height))] lg:min-h-0 lg:overflow-hidden lg:px-6 lg:py-5">
-      <section className="shrink-0 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[linear-gradient(135deg,var(--accent-light),transparent)] px-5 py-5">
+    <main className="mx-auto flex w-full max-w-[900px] flex-col gap-6 px-4 py-5 lg:h-[calc(100dvh-var(--nav-height))] lg:max-h-[calc(100dvh-var(--nav-height))] lg:min-h-0 lg:overflow-hidden lg:px-8 lg:py-8">
+      <ClientPortalDailyCheckIn />
+
+      <section className="shrink-0 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[linear-gradient(135deg,var(--accent-light),transparent)] px-5 py-6">
         <div className="flex flex-wrap items-start gap-4">
           {branding?.logoUrl?.trim() ? (
             <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)]">
@@ -197,26 +209,36 @@ export default async function ClientPortalPage() {
             </div>
           ) : null}
           <div className="min-w-0 flex-1">
-            <h1 className="text-[24px] font-semibold leading-tight tracking-[-0.03em] text-[var(--text-primary)]">
-              {portalGreeting(hour)}, {firstName}{' '}
-              <span aria-hidden>👋</span>
-            </h1>
+            {coachBrandName ? (
+              <>
+                <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
+                  Welcome to {coachBrandName}
+                </h1>
+                <p className="mt-2 text-[15px] font-normal leading-snug text-[var(--text-tertiary)]">
+                  Hi {firstName} <span aria-hidden>👋</span>
+                </p>
+              </>
+            ) : (
+              <h1 className="text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
+                Hi {firstName} <span aria-hidden>👋</span>
+              </h1>
+            )}
             {branding?.clientPortalHeading?.trim() ? (
-              <p className="mt-2 text-[17px] font-medium leading-snug text-[var(--text-primary)]">
+              <p className="mt-3 text-[var(--text-15)] font-semibold leading-snug text-[var(--text-primary)]">
                 {branding.clientPortalHeading.trim()}
               </p>
             ) : null}
             {branding?.brandTagline?.trim() ? (
-              <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-secondary)]">
+              <p className="mt-2 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">
                 {branding.brandTagline.trim()}
               </p>
             ) : (
-              <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-tertiary)]">
+              <p className="mt-2 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-tertiary)]">
                 You&apos;re doing great this week.
               </p>
             )}
             {branding?.clientWelcomeMessage?.trim() ? (
-              <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-secondary)]">
+              <p className="mt-3 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">
                 {branding.clientWelcomeMessage.trim()}
               </p>
             ) : null}
@@ -228,12 +250,12 @@ export default async function ClientPortalPage() {
         <Card
           variant="flat"
           padding="lg"
-          className="shrink-0 border border-amber-200/80 bg-amber-50/90 dark:border-amber-900/50 dark:bg-amber-950/25"
+          className="shrink-0 border border-[var(--warning-border)] bg-[var(--warning-bg)]"
         >
-          <p className="text-[14px] font-medium text-[var(--text-primary)]">
+          <p className="text-[var(--text-14)] font-medium text-[var(--text-primary)]">
             You have {pendingInvoicesCount} pending invoice{pendingInvoicesCount !== 1 ? 's' : ''}
           </p>
-          <p className="mt-1 text-[15px] text-[var(--text-secondary)]">
+          <p className="mt-1 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">
             Total due:{' '}
             {new Intl.NumberFormat('en-US', {
               style: 'currency',
@@ -242,78 +264,112 @@ export default async function ClientPortalPage() {
           </p>
           <Link
             href="/client/invoices"
-            className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-[14px] font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-[var(--text-14)] font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
           >
             View and pay
           </Link>
         </Card>
       )}
 
-      <div className="grid min-h-0 shrink-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:gap-4">
-        <Card variant="flat" padding="lg" className="flex min-h-[160px] flex-col">
-          <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+      {/* Next session — most prominent; sessions are how coaches deliver value */}
+      <Card
+        variant="flat"
+        padding="lg"
+        className="shrink-0 border-2 border-[var(--accent)] bg-[var(--accent-light)] shadow-[var(--shadow-md)]"
+      >
+        <h2 className="text-[var(--text-13)] font-semibold uppercase tracking-[0.06em] text-[var(--accent)]">
+          Your next session
+        </h2>
+        {nextSession ? (
+          <div className="mt-3">
+            <p className="text-[var(--text-24)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
+              {format(parseISO(nextSession.scheduled_time), 'EEEE, MMM d')}
+            </p>
+            <p className="mt-1 text-[var(--text-20)] font-semibold text-[var(--text-primary)]">
+              {format(parseISO(nextSession.scheduled_time), 'h:mm a')}
+            </p>
+            <span className="badge-interactive mt-3 inline-flex min-h-8 items-center rounded-full bg-[var(--accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--text-on-accent)]">
+              {sessionTypeBadge(nextSession.session_type)}
+            </span>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link
+                href="/client/sessions"
+                className={cn(
+                  'inline-flex min-h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-[var(--text-14)] font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]'
+                )}
+              >
+                Session details
+              </Link>
+              <RequestSessionButton />
+            </div>
+          </div>
+        ) : (
+          <div className="mt-3">
+            <p className="text-[var(--text-15)] font-medium text-[var(--text-primary)]">Nothing booked yet</p>
+            <p className="mt-1 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">
+              Message {coachLabel} to find a time that works.
+            </p>
+            <Link
+              href="/client/messages"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] px-4 text-[var(--text-14)] font-medium text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)]"
+            >
+              Message your coach
+            </Link>
+          </div>
+        )}
+      </Card>
+
+      <div className="grid min-h-0 shrink-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card variant="flat" padding="lg" className="flex min-h-[168px] flex-col">
+          <h2 className="text-[var(--text-13)] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
             My program
           </h2>
           {activeAssignment && progressTitle ? (
             <>
-              <p className="mt-2 text-[16px] font-semibold text-[var(--text-primary)]">{progressTitle}</p>
+              <p className="mt-2 text-[var(--text-15)] font-semibold text-[var(--text-primary)]">{progressTitle}</p>
               <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
                 <div
                   className="h-full rounded-full bg-[var(--accent)] transition-all duration-300"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
-              <p className="mt-2 text-[13px] text-[var(--text-tertiary)]">
+              <p className="mt-2 text-[var(--text-13)] text-[var(--text-tertiary)]">
                 {progressCompleted} of {progressTotal} modules complete
               </p>
               <div className="min-h-2 flex-1" aria-hidden />
               <Link
                 href={`/client/programs/${activeAssignment.program_id}`}
                 className={cn(
-                  'inline-flex h-12 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] text-[15px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-all duration-[var(--duration-normal)]',
+                  'inline-flex min-h-12 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] text-[var(--text-15)] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-all duration-[var(--duration-normal)]',
                   'hover:-translate-y-px hover:bg-[var(--accent-hover)] hover:shadow-[var(--shadow-md)] active:translate-y-0'
                 )}
               >
-                Continue
+                Continue program
               </Link>
             </>
           ) : (
-            <p className="mt-2 flex-1 text-[14px] text-[var(--text-tertiary)]">No program assigned yet.</p>
+            <div className="mt-3 flex flex-1 flex-col gap-3">
+              <p className="text-[2.5rem] leading-none" aria-hidden>
+                🌱
+              </p>
+              <p className="text-[var(--text-15)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+                Your coach will assign your program here soon
+              </p>
+              <p className="text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-tertiary)]">
+                In the meantime, send them a message to get started.
+              </p>
+              <Link
+                href="/client/messages"
+                className="mt-auto inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] text-[var(--text-14)] font-medium text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)]"
+              >
+                Message your coach
+              </Link>
+            </div>
           )}
         </Card>
 
-        <Card variant="flat" padding="lg" className="flex min-h-[160px] flex-col">
-          <h2 className="text-[13px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--text-tertiary)]">
-            Next session
-          </h2>
-          {nextSession ? (
-            <>
-              <p className="mt-3 text-[20px] font-bold leading-tight tracking-tight text-[var(--text-primary)]">
-                {format(parseISO(nextSession.scheduled_time), 'EEE, MMM d')}
-              </p>
-              <p className="text-[17px] font-semibold text-[var(--text-primary)]">
-                {format(parseISO(nextSession.scheduled_time), 'h:mm a')}
-              </p>
-              <span className="badge-interactive mt-2 inline-flex w-fit rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--accent)]">
-                {sessionTypeBadge(nextSession.session_type)}
-              </span>
-              <Link href="/client/sessions" className="link-nav mt-auto pt-4 text-[13px] font-medium">
-                Add to calendar
-              </Link>
-            </>
-          ) : (
-            <>
-              <p className="mt-3 text-[14px] text-[var(--text-tertiary)]">No upcoming sessions.</p>
-              <p className="mt-1 text-[13px] text-[var(--text-quaternary)]">Message your coach to book time.</p>
-              <Link href="/client/messages" className="link-nav mt-auto pt-4 text-[13px] font-medium">
-                Contact coach
-              </Link>
-            </>
-          )}
-        </Card>
-
-        <Card variant="flat" padding="lg" className="flex min-h-[160px] flex-col">
-          <h2 className="text-[13px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--text-tertiary)]">
+        <Card variant="flat" padding="lg" className="flex min-h-[168px] flex-col">
+          <h2 className="text-[var(--text-13)] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
             Messages
           </h2>
           <div className="mt-3 flex items-start gap-3">
@@ -355,28 +411,23 @@ export default async function ClientPortalPage() {
           </Link>
         </Card>
 
-        <Card variant="flat" padding="lg" className="flex min-h-[160px] flex-col">
-          <h2 className="text-[13px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--text-tertiary)]">
-            Rewards
+        <Card variant="flat" padding="lg" className="flex min-h-[168px] flex-col">
+          <h2 className="text-[var(--text-13)] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+            Your progress
           </h2>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <span className="inline-flex size-11 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold text-[var(--text-on-accent)]">
+            <span className="inline-flex size-11 min-h-11 min-w-11 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-semibold text-[var(--text-on-accent)]">
               {levelInfo.level}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-medium text-[var(--text-primary)]">
+              <p className="text-[var(--text-14)] font-medium text-[var(--text-primary)]">
                 Level {levelInfo.level}: {levelInfo.name}
               </p>
-              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                <div
-                  className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-700 ease-out"
-                  style={{ width: `${xpBarPct}%` }}
-                />
-              </div>
-              <p className="mt-1 text-[11px] text-[var(--text-tertiary)]">
+              <ClientPortalXpBar percent={xpBarPct} className="mt-2" />
+              <p className="mt-1 text-[var(--text-13)] text-[var(--text-tertiary)]">
                 {totalXp} XP
                 {nextLevelDef && xpToNext > 0
-                  ? ` · ${xpToNext} XP to Level ${nextLevelDef.level}`
+                  ? ` · ${xpToNext} XP to level ${nextLevelDef.level}`
                   : !nextLevelDef
                     ? ' · Max level'
                     : ''}
@@ -384,16 +435,16 @@ export default async function ClientPortalPage() {
               </p>
             </div>
           </div>
-          <p className="mt-2 text-[12px] text-[var(--text-secondary)]">
-            Streak {streak}d · {doneHw} assignments done
+          <p className="mt-3 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">
+            Streak {streak}d · {doneHw} assignments done — small wins add up.
           </p>
           {(pendingHwCount ?? 0) > 0 ? (
-            <p className="mt-1 text-[11px] font-medium text-amber-800 dark:text-amber-200">
+            <p className="mt-1 text-[var(--text-13)] font-medium text-[var(--warning)]">
               {pendingHwCount} assignment{pendingHwCount !== 1 ? 's' : ''} due
             </p>
           ) : null}
-          <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
-            {lastActivityLabel ? `Last activity ${lastActivityLabel}` : 'Complete a module to see activity here.'}
+          <p className="mt-2 text-[var(--text-13)] text-[var(--text-quaternary)]">
+            {lastActivityLabel ? `Last activity ${lastActivityLabel}` : 'Complete a module to see momentum here.'}
           </p>
           <div className="mt-auto flex flex-col gap-2 pt-3">
             <Link href="/client/assignments" className="link-nav text-[13px] font-medium">
@@ -406,9 +457,66 @@ export default async function ClientPortalPage() {
         </Card>
       </div>
 
+      <Card variant="flat" padding="lg" className="shrink-0 border border-[var(--border-default)]">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-[var(--text-13)] font-semibold uppercase tracking-[0.06em] text-[var(--text-secondary)]">
+            My goals
+          </h2>
+          {allGoals.length > 3 ? (
+            <Link href="/client/goals" className="link-nav text-[13px] font-medium">
+              View all
+            </Link>
+          ) : allGoals.length > 0 ? (
+            <Link href="/client/goals" className="link-nav text-[13px] font-medium">
+              Details
+            </Link>
+          ) : null}
+        </div>
+        {portalGoals.length === 0 ? (
+          <p className="mt-3 text-[var(--text-14)] text-[var(--text-tertiary)]">
+            Your coach will set goals here so you can track progress together.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-4">
+            {portalGoals.map((g) => {
+              const pct =
+                g.status === 'achieved'
+                  ? 100
+                  : goalProgressPercent({
+                      targetValue: g.target_value,
+                      startValue: g.start_value,
+                      currentValue: g.current_value,
+                    }) ?? 0
+              const achieved = g.status === 'achieved'
+              return (
+                <li
+                  key={g.id}
+                  className={
+                    achieved
+                      ? 'rounded-[var(--radius-md)] border border-emerald-200 bg-emerald-50/80 px-3 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/30'
+                      : 'rounded-[var(--radius-md)] border border-[var(--border-default)] px-3 py-3'
+                  }
+                >
+                  <p className="text-[var(--text-15)] font-semibold text-[var(--text-primary)]">{g.title}</p>
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
+                    <div
+                      className="h-full rounded-full bg-[var(--accent)] transition-all duration-700 ease-out"
+                      style={{ width: `${achieved ? 100 : pct}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-[var(--text-13)] text-[var(--text-tertiary)]">
+                    {achieved ? 'Achieved! 🏆' : `${pct}% complete`}
+                  </p>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </Card>
+
       <section className="flex min-h-0 flex-1 flex-col lg:min-h-[200px]">
         <div className="mb-2 flex shrink-0 items-center justify-between gap-3">
-          <h2 className="text-[16px] font-semibold tracking-[var(--tracking-heading)] text-[var(--text-primary)]">
+          <h2 className="text-[var(--text-15)] font-semibold tracking-[0] text-[var(--text-primary)]">
             This week
           </h2>
           <div className="flex items-center gap-2">

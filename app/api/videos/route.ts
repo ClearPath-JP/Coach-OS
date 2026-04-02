@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load videos' },
+        { error: 'Could not load videos' },
         { status: 500 }
       )
     }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { requireCoach } from '@/lib/api-helpers'
 import { createContentSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
@@ -11,11 +11,9 @@ type RouteContext = { params: Promise<{ id: string; moduleId: string }> }
 export async function POST(request: Request, context: RouteContext) {
   try {
     const { id: programId, moduleId } = await context.params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`api-programs:${user.id}`, {
       windowMs: 60_000,
@@ -30,21 +28,12 @@ export async function POST(request: Request, context: RouteContext) {
       return res
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const { data: mod } = await supabase
       .from('program_modules')
       .select('id')
       .eq('id', moduleId)
       .eq('program_id', programId)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
       .single()
     if (!mod) {
       return NextResponse.json(
@@ -73,7 +62,7 @@ export async function POST(request: Request, context: RouteContext) {
       .from('program_content')
       .insert({
         module_id: moduleId,
-        workspace_id: coach.workspace_id,
+        workspace_id: workspaceId,
         content_type: parsed.data.contentType,
         title: parsed.data.title ?? null,
         body: parsed.data.body ?? null,
@@ -87,7 +76,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not add content' },
+        { error: 'Could not add content' },
         { status: 500 }
       )
     }

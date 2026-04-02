@@ -10,7 +10,7 @@ This document catalogs every environment variable used in the project, where it 
 
 | Variable | Purpose | Referenced in | Public or server-only | Where to get it |
 |----------|---------|----------------|------------------------|------------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL for client and server Supabase clients | `lib/supabase/client.ts`, `lib/supabase/server.ts`, `lib/supabase/service.ts`, `app/auth/callback/route.ts`, `app/api/create-client-account/route.ts`, `app/api/invite-client/route.ts`, `app/api/stripe/connect/account-link/route.ts`, `app/api/stripe/create-checkout-session/route.ts`, `app/api/stripe/request-payment/route.ts`, `middleware.ts`, `lib/env.ts`, `app/api/health/route.ts` | **NEXT_PUBLIC_** (exposed to browser; used by client Supabase SDK and by server code that shares the same URL) | Supabase Dashboard → Project Settings → API → Project URL |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL for client and server Supabase clients | `lib/supabase/client.ts`, `lib/supabase/server.ts`, `lib/supabase/service.ts`, `app/auth/callback/route.ts`, `app/api/create-client-account/route.ts`, `app/api/invite-client/route.ts`, `app/api/stripe/connect/account-link/route.ts`, `app/api/stripe/create-checkout-session/route.ts`, `app/api/stripe/request-payment/route.ts`, `proxy.ts` (middleware), `lib/env.ts`, `app/api/health/route.ts` | **NEXT_PUBLIC_** (exposed to browser; used by client Supabase SDK and by server code that shares the same URL) | Supabase Dashboard → Project Settings → API → Project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous (public) key; RLS applies. Used for client-side auth and server cookie-based auth | Same files as above | **NEXT_PUBLIC_** (required in browser for Supabase client) | Supabase Dashboard → Project Settings → API → anon public |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key; bypasses RLS. Used for server-only operations (webhooks, admin inserts, health check) | `lib/supabase/service.ts`, `app/api/health/route.ts`, `lib/env.ts` (via `validateServiceRoleEnv`) | **Server-only** (never expose to browser) | Supabase Dashboard → Project Settings → API → service_role |
 | `SUPABASE_SESSION_WEBHOOK_SECRET` | Shared secret for Supabase Database Webhook calling `/api/webhooks/session-created` (INSERT on `sessions`) | `app/api/webhooks/session-created/route.ts` | **Server-only** | Generate a long random string (e.g. `openssl rand -hex 32`). Configure the same value in Supabase Integrations → Webhooks and in your app env. |
@@ -30,7 +30,7 @@ This document catalogs every environment variable used in the project, where it 
 
 | Variable | Purpose | Referenced in | Public or server-only | Where to get it |
 |----------|---------|----------------|------------------------|------------------|
-| `NEXT_PUBLIC_APP_URL` | Base URL for redirects, CORS allowed origins, and Stripe Connect return URL. Can be comma-separated for multiple origins | `middleware.ts`, `app/api/stripe/connect/account-link/route.ts` | **NEXT_PUBLIC_** (middleware runs on edge; origin check uses it) | Set to your app’s public URL (e.g. `https://your-app.vercel.app`). For multiple origins use comma-separated list. |
+| `NEXT_PUBLIC_APP_URL` | Base URL for redirects, CORS allowed origins, and Stripe Connect return URL. Can be comma-separated for multiple origins | `proxy.ts` (middleware), `app/api/stripe/connect/account-link/route.ts` | **NEXT_PUBLIC_** (middleware runs on edge; origin check uses it) | Set to your app’s public URL (e.g. `https://your-app.vercel.app`). For multiple origins use comma-separated list. |
 
 ---
 
@@ -73,7 +73,7 @@ Rate limiting is optional: if either variable is missing, the rate limiter degra
 
 | Variable | Purpose | Referenced in | Public or server-only | Where to get it |
 |----------|---------|----------------|------------------------|------------------|
-| `NODE_ENV` | `production` vs development; used for CORS and next.config behavior | `next.config.ts`, `middleware.ts` | Set by Next.js / Node (do not set in .env for deployment; Vercel sets it) | Automatically set (e.g. `production` in prod). |
+| `NODE_ENV` | `production` vs development; used for CORS and next.config behavior | `next.config.ts`, `proxy.ts` (middleware) | Set by Next.js / Node (do not set in .env for deployment; Vercel sets it) | Automatically set (e.g. `production` in prod). |
 
 ---
 

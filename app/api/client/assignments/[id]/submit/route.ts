@@ -148,7 +148,7 @@ export async function POST(request: Request, context: Ctx) {
       .single()
 
     if (subErr) {
-      return NextResponse.json({ error: subErr.message || 'Could not save submission' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not save submission' }, { status: 500 })
     }
 
     const nowIso = new Date().toISOString()

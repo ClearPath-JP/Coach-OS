@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     if (auth instanceof NextResponse) return auth
     const service = createServiceClient()
     const { data, error } = await service.from('workspaces').select('id,name').order('name')
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
     await logAdminAudit({
       action: 'admin.workspaces_list.read',
       userId: auth.id,

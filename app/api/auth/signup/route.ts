@@ -15,13 +15,13 @@ export async function POST(request: Request) {
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       request.headers.get('x-real-ip') ??
       'unknown'
-    const { success, retryAfter } = await checkRateLimitAsync(`signup:${ip}`, {
-      windowMs: 15 * 60 * 1000,
-      max: 5,
+    const { success, retryAfter } = await checkRateLimitAsync(`signup-api:${ip}`, {
+      windowMs: 60 * 60 * 1000,
+      max: 3,
     })
     if (!success) {
       const res = NextResponse.json(
-        { error: 'Too many signup attempts. Please try again in 15 minutes.' },
+        { error: 'Too many signup attempts. Please try again in an hour.' },
         { status: 429 }
       )
       if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     })
 
     if (signUpError) {
-      const msg = signUpError.message ?? 'Could not create account.'
+      const msg = 'Could not create account. Please try again.'
       const lower = msg.toLowerCase()
       if (
         lower.includes('already') ||

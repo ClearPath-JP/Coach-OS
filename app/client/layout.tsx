@@ -1,3 +1,4 @@
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { getClientWorkspaceBranding } from '@/lib/client-workspace-branding'
@@ -26,6 +27,15 @@ export default async function ClientLayout({
     .maybeSingle()
   if (profile?.role === 'coach') {
     redirect('/coach/dashboard')
+  }
+
+  if (profile?.role === 'client') {
+    const pathname = (await headers()).get('x-pathname') ?? ''
+    const mustChange = user.user_metadata?.must_change_password === true
+    const isChangingPassword = pathname === '/client/change-password'
+    if (mustChange && !isChangingPassword) {
+      redirect('/client/change-password')
+    }
   }
 
   let clientDisplayName: string | null = null

@@ -44,7 +44,7 @@ No other backend framework: Next.js API routes and Server Actions are the only s
 - **Sessions are stored in HTTP-only cookies**.
 - The Supabase SSR helpers (`createServerClient` / `createBrowserClient`) read and write cookies:
   - **Server**: `lib/supabase-server.ts` uses `cookies()` from `next/headers` and passes a `getAll` / `setAll` cookie adapter to `createServerClient`.
-  - **Middleware**: `middleware.ts` uses `createServerClientForMiddleware(request, response)` from `lib/supabase-server.ts` so session refresh can happen at the edge.
+  - **Middleware**: `proxy.ts` (Next.js 16 entry) uses `createServerClientForMiddleware` from `lib/supabase-server.ts` so session refresh can happen at the edge.
   - **Browser**: `lib/supabase.ts` uses `createBrowserClient` (from `@supabase/ssr`), which uses the same cookie-based session storage in the browser.
 - No separate session store (e.g. Redis) for auth; Supabase issues JWT-based sessions and the SSR package persists them in cookies.
 
@@ -55,7 +55,7 @@ No other backend framework: Next.js API routes and Server Actions are the only s
 
 ### 2.4 Route protection
 
-- **Middleware** (`middleware.ts`): Protects `/coach/*` and `/client/*`; if there is no session, redirects to `/login?next=...`. Does not redirect `/` when authenticated (role-based redirect is done in `app/page.tsx` and in coach/client layouts).
+- **Middleware** (`proxy.ts`): Protects `/coach/*`, `/client/*`, `/admin/*`; if there is no session, redirects to `/login?next=...`. Does not redirect `/` when authenticated (role-based redirect is done in `app/page.tsx` and in coach/client layouts).
 - **Layouts**: Coach layout and client layout verify `user` and `profile.role`; coach layout redirects non-coaches to `/client/dashboard`, client layout redirects non-clients to `/coach/dashboard`.
 - **Rate limits**: Login and forgot-password page loads: 30/min per IP. Auth callback: 15/min per IP. Applied in middleware and in the callback route.
 

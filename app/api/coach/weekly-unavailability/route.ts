@@ -21,7 +21,7 @@ export async function GET() {
     .order('day_of_week', { ascending: true })
 
   if (error) {
-    return NextResponse.json({ error: error.message || 'Could not load' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not load' }, { status: 500 })
   }
 
   const rows = (data ?? []) as WeeklyUnavailabilityRowDb[]
@@ -52,7 +52,7 @@ export async function PUT(request: Request) {
     .is('client_id', null)
 
   if (delErr) {
-    return NextResponse.json({ error: delErr.message || 'Could not update' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not update' }, { status: 500 })
   }
 
   if (blocks.length === 0) {
@@ -75,7 +75,7 @@ export async function PUT(request: Request) {
     .select('*')
 
   if (insErr) {
-    return NextResponse.json({ error: insErr.message || 'Could not save' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not save' }, { status: 500 })
   }
 
   const rows = (inserted ?? []) as WeeklyUnavailabilityRowDb[]

@@ -59,7 +59,7 @@ export async function PATCH(request: Request, context: Ctx) {
       .maybeSingle()
 
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not update template' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not update template' }, { status: 500 })
     }
     if (!row) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })
@@ -97,7 +97,7 @@ export async function DELETE(_request: Request, context: Ctx) {
       .maybeSingle()
 
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not delete template' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not delete template' }, { status: 500 })
     }
     if (!row) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 })

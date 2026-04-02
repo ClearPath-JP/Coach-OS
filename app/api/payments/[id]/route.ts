@@ -140,7 +140,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not update payment' },
+        { error: 'Could not update payment' },
         { status: 500 }
       )
     }
@@ -192,7 +192,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not delete payment' },
+        { error: 'Could not delete payment' },
         { status: 500 }
       )
     }

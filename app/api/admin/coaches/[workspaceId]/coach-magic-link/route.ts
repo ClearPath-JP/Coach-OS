@@ -49,7 +49,7 @@ export async function POST(request: Request, context: Ctx) {
 
     if (error || !data?.properties?.action_link) {
       return NextResponse.json(
-        { error: error?.message ?? 'Could not generate sign-in link' },
+        { error: 'Could not generate sign-in link' },
         { status: 500 }
       )
     }

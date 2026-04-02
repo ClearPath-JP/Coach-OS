@@ -92,7 +92,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not update package' },
+        { error: 'Could not update package' },
         { status: 500 }
       )
     }
@@ -115,7 +115,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 /**
  * DELETE /api/packages/[id] — soft delete (set is_active = false). Coach only.
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params
     const supabase = await createClient()
@@ -143,7 +143,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not delete package' },
+        { error: 'Could not delete package' },
         { status: 500 }
       )
     }

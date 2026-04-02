@@ -48,7 +48,7 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not load assignments' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not load assignments' }, { status: 500 })
     }
 
     const ids = (rows ?? []).map((r) => r.id)

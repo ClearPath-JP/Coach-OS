@@ -26,9 +26,29 @@ export function OnboardingProgress() {
             : 1
 
   const activeMeta = STEPS.find((s) => s.num === step)
+  const pct = Math.round((step / STEPS.length) * 100)
 
   return (
     <nav className="w-full" aria-label="Onboarding progress">
+      <div className="mb-5">
+        <div className="mb-2 flex items-center justify-between text-[var(--text-13)] text-[var(--text-tertiary)]">
+          <span className="font-medium text-[var(--text-primary)]">Step {step} of {STEPS.length}</span>
+          <span aria-live="polite">{pct}%</span>
+        </div>
+        <div
+          className="h-2 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]"
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Onboarding ${pct} percent complete`}
+        >
+          <div
+            className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-500 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
       <div className="relative mx-auto max-w-[640px]">
         <div
           className="pointer-events-none absolute left-[12%] right-[12%] top-[13px] hidden h-0.5 sm:block"
@@ -83,10 +103,6 @@ export function OnboardingProgress() {
 
       {activeMeta ? (
         <p className="mt-4 text-center text-[13px] text-[var(--text-secondary)] sm:mt-5">
-          <span className="font-medium text-[var(--text-primary)]">Step {step} of {STEPS.length}</span>
-          <span className="mx-2 text-[var(--border-strong)]" aria-hidden>
-            ·
-          </span>
           <span className="text-[var(--text-tertiary)]">{activeMeta.hint}</span>
         </p>
       ) : null}

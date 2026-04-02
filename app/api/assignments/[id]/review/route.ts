@@ -170,7 +170,7 @@ export async function PATCH(request: Request, context: Ctx) {
       .single()
 
     if (upErr) {
-      return NextResponse.json({ error: upErr.message || 'Could not save review' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not save review' }, { status: 500 })
     }
 
     const newLevelNum = status === 'approved' ? levelNumberFromXp(newTotalXp) : previousLevel

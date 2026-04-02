@@ -91,9 +91,9 @@ export async function GET() {
     const past = pastRaw.map(enrichSession)
 
     return NextResponse.json({ data: { upcoming, past } })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Something went wrong' },
+      { error: 'Something went wrong' },
       { status: 500 }
     )
   }

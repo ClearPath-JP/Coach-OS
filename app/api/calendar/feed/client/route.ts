@@ -20,7 +20,10 @@ export async function GET() {
       .eq('id', user.id)
       .maybeSingle()
     if (profile?.role === 'coach') {
-      return NextResponse.json({ error: 'Forbidden — use coach calendar feed' }, { status: 403 })
+      return NextResponse.json(
+        { error: 'Forbidden — coaches should subscribe using GET /api/calendar/feed/coach (same host, while signed in).' },
+        { status: 403 }
+      )
     }
     if (profile?.role !== 'client') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -81,9 +84,9 @@ export async function GET() {
         'Content-Disposition': 'attachment; filename="my-sessions.ics"',
       },
     })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Something went wrong' },
+      { error: 'Something went wrong' },
       { status: 500 }
     )
   }

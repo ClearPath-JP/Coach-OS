@@ -5,7 +5,7 @@
 ### Code
 
 - [ ] `pnpm run build` passes
-- [ ] `pnpm run test` passes (46+ tests)
+- [ ] `pnpm run test` passes (59 tests, 8 suites)
 - [ ] No `console.log` in production code
 - [ ] No hardcoded secrets in any file
 - [ ] `.env.local` is in `.gitignore`
@@ -47,6 +47,16 @@
 - [ ] Analytics shows correct data
 - [ ] Dark mode works
 - [ ] Color themes save and persist
+- [ ] Daily check-in works for clients
+- [ ] Session notes / summary send to client when intended
+- [ ] Action items can be checked off by the client
+- [ ] Goal tracking saves correctly (coach + client views)
+- [ ] Testimonial request / submit on program completion (or manual flow) works
+- [ ] Re-engagement / auto check-in behaves as configured
+- [ ] Broadcast message reaches intended clients
+- [ ] Google Drive streaming plays without full-file download
+- [ ] Coach iCal feed works (session or secret token URL)
+- [ ] Admin panel accessible only to super admin (`ADMIN_EMAIL` / `is_super_admin`)
 
 ### Performance
 

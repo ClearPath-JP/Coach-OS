@@ -6,7 +6,7 @@ type RouteContext = { params: Promise<{ id: string }> }
 /**
  * GET /api/programs/[id]/progress — progress for all clients assigned to this program. Coach only.
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id: programId } = await context.params
     const supabase = await createClient()

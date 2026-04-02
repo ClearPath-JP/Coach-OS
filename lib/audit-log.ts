@@ -33,13 +33,8 @@ export async function logAuditEvent(
       metadata,
       created_at: new Date().toISOString(),
     }
-    const { error } = await supabase.from('audit_logs').insert(event)
-    if (error && process.env.NODE_ENV === 'development') {
-      console.warn('audit_logs insert:', error.message)
-    }
-  } catch (e) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('logAuditEvent:', e)
-    }
+    await supabase.from('audit_logs').insert(event)
+  } catch {
+    // best-effort audit logging
   }
 }

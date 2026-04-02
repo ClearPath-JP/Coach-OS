@@ -147,14 +147,14 @@ export async function POST(request: Request) {
     const { error } = await supabase.from('availability_slots').insert(slotsToInsert)
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not create slots' },
+        { error: 'Could not create slots' },
         { status: 500 }
       )
     }
     return NextResponse.json({ data: { created: slotsToInsert.length } })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Something went wrong — try again' },
+      { error: 'Something went wrong — try again' },
       { status: 500 }
     )
   }

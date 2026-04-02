@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load invoices' },
+        { error: 'Could not load invoices' },
         { status: 500 }
       )
     }
@@ -207,7 +207,7 @@ export async function POST(request: Request) {
 
     if (invError) {
       return NextResponse.json(
-        { error: invError.message || 'Could not create invoice' },
+        { error: 'Could not create invoice' },
         { status: 500 }
       )
     }

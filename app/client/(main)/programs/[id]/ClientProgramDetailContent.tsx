@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { XP_ACTIONS } from '@/lib/xp-system'
 import { cn } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { VideoPlayer } from '@/components/ui/VideoPlayer'
@@ -63,6 +64,8 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null)
   const [completingModuleId, setCompletingModuleId] = useState<string | null>(null)
   const [showCompletionBanner, setShowCompletionBanner] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [programCompleteBonusXp, setProgramCompleteBonusXp] = useState(0)
   const expandedModuleIdRef = useRef(expandedModuleId)
   expandedModuleIdRef.current = expandedModuleId
 
@@ -97,15 +100,20 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
     setCompletingModuleId(moduleId)
     try {
       const res = await fetch(`/api/progress/${moduleId}/complete`, { method: 'POST' })
+      const payload = await res.json().catch(() => ({})) as {
+        data?: { completed?: boolean; bonusXp?: number; alreadyCompleted?: boolean }
+      }
+      if (res.ok && payload?.data?.completed) {
+        setProgramCompleteBonusXp(payload.data.bonusXp ?? XP_ACTIONS.PROGRAM_COMPLETE)
+        setShowConfetti(true)
+        window.setTimeout(() => setShowConfetti(false), 3200)
+      }
       if (res.ok) {
         const updated = await fetch(`/api/client/programs/${programId}`).then((r) => r.json())
         if (updated?.data) {
           setData(updated.data)
           const prog = updated.data.progress
-          if (
-            prog?.totalModules > 0 &&
-            prog.modulesCompleted >= prog.totalModules
-          ) {
+          if (prog?.totalModules > 0 && prog.modulesCompleted >= prog.totalModules) {
             setShowCompletionBanner(true)
           }
         }
@@ -145,9 +153,28 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
       ? Math.round((data.progress.modulesCompleted / data.progress.totalModules) * 100)
       : 0
   const allComplete = data.progress.modulesCompleted >= data.progress.totalModules && data.progress.totalModules > 0
+  const xpFromModules = data.progress.modulesCompleted * XP_ACTIONS.PROGRAM_MODULE_COMPLETE
+  const xpEarnedDisplay = allComplete ? xpFromModules + programCompleteBonusXp : xpFromModules
+
+  const confettiColors = ['#3b9ee8', '#16a34a', '#eab308', '#a855f7', '#f97316', '#ec4899', '#14b8a6', '#ef4444', '#6366f1', '#84cc16']
 
   return (
     <div className="space-y-6">
+      {showConfetti
+        ? confettiColors.map((bg, i) => (
+            <div
+              key={i}
+              className="confetti-piece"
+              style={{
+                left: `${10 + i * 10}%`,
+                backgroundColor: bg,
+                animationDelay: `${i * 0.1}s`,
+              }}
+              aria-hidden
+            />
+          ))
+        : null}
+
       <div>
         <h1 className="text-xl font-medium text-[var(--color-ink)]">{data.title}</h1>
         {data.description && (
@@ -171,14 +198,31 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
       </div>
 
       {showCompletionBanner && allComplete && (
-        <Card variant="raised" padding="lg" className="border-[var(--color-success)]/30 bg-[var(--color-success)]/10">
-          <p className="font-medium text-[var(--color-ink)] text-center">
-            Program complete! Great work.
-          </p>
-          <p className="mt-1 text-sm text-[var(--color-muted)] text-center" aria-hidden>
-            🎉
-          </p>
-        </Card>
+        <div
+          className="w-full overflow-hidden rounded-xl border border-[var(--color-border)]"
+          style={{
+            background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 100%)',
+          }}
+        >
+          <div className="px-6 py-8 text-center">
+            <p className="text-[48px] leading-none" aria-hidden>
+              🎉
+            </p>
+            <p className="mt-4 text-[24px] font-bold leading-tight text-[var(--color-ink)]">
+              You completed {data.title}!
+            </p>
+            <p className="mt-2 text-[15px] text-[var(--color-muted)]">
+              {data.progress.modulesCompleted} modules completed · {xpEarnedDisplay} XP earned
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Link href="/client/messages">
+                <Button variant="primary" className="min-h-11">
+                  Message your coach
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="space-y-2">

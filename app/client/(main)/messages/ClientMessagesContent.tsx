@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { format, isToday, isYesterday } from 'date-fns'
@@ -15,6 +16,11 @@ import {
   ClientAssignmentChatCard,
   ClientAssignmentFeedbackCard,
 } from '@/components/shared/AssignmentChatCards'
+import { TestimonialRequestCard } from '@/components/client/TestimonialRequestCard'
+import {
+  ClientSessionNotesMessageCard,
+  parseSessionNotesPayload,
+} from '@/components/shared/SessionNotesMessageCard'
 
 type Message = {
   id: string
@@ -29,6 +35,7 @@ type Message = {
 
 type WorkspaceBrandingPayments = {
   stripeConnected: boolean
+  stripeCardPaymentsEnabled: boolean
   cashappUsername: string | null
   venmoUsername: string | null
   paypalEmail: string | null
@@ -54,6 +61,8 @@ export function ClientMessagesContent({
   const [oldestCursor, setOldestCursor] = useState<string | null>(null)
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [paymentDetails, setPaymentDetails] = useState<WorkspaceBrandingPayments | null>(null)
+  const searchParams = useSearchParams()
+  const focusMessageId = searchParams.get('messageId')?.trim() || null
   const threadScrollRef = useRef<HTMLDivElement>(null)
   const threadEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
@@ -123,6 +132,7 @@ export function ClientMessagesContent({
         if (!res.ok || !json?.data) return
         setPaymentDetails({
           stripeConnected: json.data.stripeConnected ?? false,
+          stripeCardPaymentsEnabled: json.data.stripeCardPaymentsEnabled ?? false,
           cashappUsername: json.data.cashappUsername ?? null,
           venmoUsername: json.data.venmoUsername ?? null,
           paypalEmail: json.data.paypalEmail ?? null,
@@ -183,8 +193,13 @@ export function ClientMessagesContent({
   }, [supabase])
 
   useEffect(() => {
+    if (focusMessageId && messages.some((m) => m.id === focusMessageId)) {
+      const el = document.querySelector(`[data-message-id="${focusMessageId}"]`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
     threadEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, focusMessageId])
 
   useEffect(() => {
     if (!clientId) return
@@ -315,6 +330,9 @@ export function ClientMessagesContent({
                     const isSession = msg.message_type === 'session'
                     const isAssignment = msg.message_type === 'assignment'
                     const isAssignmentFeedback = msg.message_type === 'assignment_feedback'
+                    const isTestimonialRequest = msg.message_type === 'testimonial_request'
+                    const isSessionNotes = msg.message_type === 'session_notes'
+                    const sessionNotesPayload = isSessionNotes ? parseSessionNotesPayload(msg.content) : null
                     let invoiceData: Parameters<typeof InvoiceCardClient>[0]['data'] | null = null
                     let sessionData: SessionBookingCardData | null = null
                     if (isInvoice) {
@@ -367,6 +385,7 @@ export function ClientMessagesContent({
                     return (
                       <div
                         key={msg.id}
+                        data-message-id={msg.id}
                         className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
                       >
                         {invoiceData ? (
@@ -396,6 +415,26 @@ export function ClientMessagesContent({
                         ) : isAssignmentFeedback ? (
                           <div className="max-w-[320px]">
                             <ClientAssignmentFeedbackCard content={msg.content} createdAt={msg.created_at} />
+                          </div>
+                        ) : isTestimonialRequest ? (
+                          <div className="max-w-[320px]">
+                            <TestimonialRequestCard
+                              content={msg.content}
+                              createdAt={msg.created_at}
+                              coachName={coachName}
+                              onSubmitted={() => void fetchMessages()}
+                            />
+                          </div>
+                        ) : sessionNotesPayload ? (
+                          <div className="max-w-[360px]">
+                            <ClientSessionNotesMessageCard
+                              payload={sessionNotesPayload}
+                              coachName={coachName}
+                              onActionUpdated={() => void fetchMessages()}
+                            />
+                            <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                              {format(new Date(msg.created_at), 'h:mm a')}
+                            </p>
                           </div>
                         ) : (
                           <div

@@ -350,8 +350,10 @@ export function PackagesPageContent() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-medium text-[var(--color-ink)]">Session packages</h1>
-          <p className="mt-1 text-[15px] text-[var(--color-muted)]">
+          <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--color-ink)] sm:text-[var(--text-24)]">
+            Session packages
+          </h1>
+          <p className="mt-2 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--color-muted)]">
             Create packages and send invoices to clients from here or in messages.
           </p>
         </div>

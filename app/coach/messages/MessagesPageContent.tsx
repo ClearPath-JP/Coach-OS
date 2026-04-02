@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { format, isToday, isYesterday } from 'date-fns'
@@ -14,12 +15,42 @@ import {
   type SessionBookingCardData,
 } from '@/components/shared/SessionBookingMessageCard'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { mergeByIdSortByCreatedAt } from '@/lib/utils'
+import { formatAutoCheckinMessage } from '@/lib/re-engagement-default-message'
+import { cn, mergeByIdSortByCreatedAt } from '@/lib/utils'
 import { BookSessionModal } from '@/app/coach/schedule/BookSessionModal'
 import {
   CoachAssignmentChatCard,
   CoachAssignmentFeedbackCard,
 } from '@/components/shared/AssignmentChatCards'
+import {
+  CoachSessionNotesMessageCard,
+  parseSessionNotesPayload,
+} from '@/components/shared/SessionNotesMessageCard'
+
+/** Extra inset from bottom of layout viewport when the OS keyboard shrinks visualViewport (mobile browsers). */
+function useVisualViewportKeyboardOverlap(enabled: boolean) {
+  const [overlapPx, setOverlapPx] = useState(0)
+  useEffect(() => {
+    if (!enabled || typeof window === 'undefined') {
+      return
+    }
+    const vv = window.visualViewport
+    if (!vv) return
+    const sync = () => {
+      const ih = window.innerHeight
+      const visibleBottom = vv.height + vv.offsetTop
+      setOverlapPx(Math.max(0, ih - visibleBottom))
+    }
+    sync()
+    vv.addEventListener('resize', sync)
+    vv.addEventListener('scroll', sync)
+    return () => {
+      vv.removeEventListener('resize', sync)
+      vv.removeEventListener('scroll', sync)
+    }
+  }, [enabled])
+  return enabled ? overlapPx : 0
+}
 
 type Conversation = {
   clientId: string
@@ -101,6 +132,18 @@ function MessagesThreadMessagesList({
               const isSessionRequest = msg.message_type === 'session_request'
               const isAssignment = msg.message_type === 'assignment'
               const isAssignmentFeedback = msg.message_type === 'assignment_feedback'
+              const isTestimonialRequest = msg.message_type === 'testimonial_request'
+              const isSessionNotes = msg.message_type === 'session_notes'
+              let testimonialProgram: string | null = null
+              if (isTestimonialRequest) {
+                try {
+                  const p = JSON.parse(msg.content) as { programName?: string | null }
+                  testimonialProgram = p?.programName ?? null
+                } catch {
+                  testimonialProgram = null
+                }
+              }
+              const sessionNotesPayload = isSessionNotes ? parseSessionNotesPayload(msg.content) : null
               let invoiceData: Parameters<typeof InvoiceCard>[0]['data'] | null = null
               let sessionData: SessionBookingCardData | null = null
               let requestData: {
@@ -184,6 +227,7 @@ function MessagesThreadMessagesList({
               return (
                 <div
                   key={msg.id}
+                  data-message-id={msg.id}
                   className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
                 >
                   {invoiceData ? (
@@ -223,6 +267,29 @@ function MessagesThreadMessagesList({
                         createdAt={msg.created_at}
                         sentByCoach={msg.sender_id === userId}
                       />
+                    </div>
+                  ) : isTestimonialRequest ? (
+                    <div className="max-w-[320px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                      <p className="text-sm font-medium text-[var(--color-ink)]">🌟 Testimonial request</p>
+                      <p className="mt-1 text-xs text-[var(--color-muted)]">
+                        {testimonialProgram
+                          ? `Asking how ${testimonialProgram} went.`
+                          : 'Asking for a client review.'}
+                      </p>
+                      <p className="mt-2 text-[12px] text-[var(--color-muted)]">
+                        {format(new Date(msg.created_at), 'h:mm a')}
+                      </p>
+                    </div>
+                  ) : sessionNotesPayload ? (
+                    <div className="max-w-[320px]">
+                      <CoachSessionNotesMessageCard
+                        payload={sessionNotesPayload}
+                        clientName={selectedClientName || 'Client'}
+                        messageCreatedAt={msg.created_at}
+                      />
+                      <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                        {format(new Date(msg.created_at), 'h:mm a')}
+                      </p>
                     </div>
                   ) : requestData ? (
                     <div className="max-w-[360px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
@@ -281,8 +348,10 @@ function MessagesThreadMessagesList({
 }
 
 export function CoachMessagesPageContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const clientIdFromUrl = searchParams.get('clientId')?.trim() ?? null
+  const clientIdFromUrl =
+    searchParams.get('clientId')?.trim() || searchParams.get('client')?.trim() || null
 
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loadingConversations, setLoadingConversations] = useState(true)
@@ -300,6 +369,10 @@ export function CoachMessagesPageContent() {
   const [hasMoreOlder, setHasMoreOlder] = useState(false)
   const [oldestCursor, setOldestCursor] = useState<string | null>(null)
   const [loadingOlder, setLoadingOlder] = useState(false)
+  const [broadcastOpen, setBroadcastOpen] = useState(false)
+  const [broadcastText, setBroadcastText] = useState('')
+  const [broadcastSending, setBroadcastSending] = useState(false)
+  const checkinPrefillDone = useRef(false)
   const [bookModalOpen, setBookModalOpen] = useState(false)
   const [bookInitialDate, setBookInitialDate] = useState<string | null>(null)
   const [bookInitialTime, setBookInitialTime] = useState<string | null>(null)
@@ -331,6 +404,20 @@ export function CoachMessagesPageContent() {
   useEffect(() => {
     fetchConversations()
   }, [fetchConversations])
+
+  useEffect(() => {
+    checkinPrefillDone.current = false
+  }, [selectedClientId])
+
+  useEffect(() => {
+    if (searchParams.get('checkin') !== '1') return
+    if (!selectedClientId || !selectedClientName.trim()) return
+    if (checkinPrefillDone.current) return
+    const first = selectedClientName.trim().split(/\s+/)[0] || 'there'
+    setInputValue(formatAutoCheckinMessage('', first))
+    checkinPrefillDone.current = true
+    router.replace(`/coach/messages?clientId=${encodeURIComponent(selectedClientId)}`, { scroll: false })
+  }, [searchParams, selectedClientId, selectedClientName, router])
 
   useEffect(() => {
     if (!clientIdFromUrl || loadingConversations) return
@@ -550,8 +637,17 @@ export function CoachMessagesPageContent() {
   const showListOnly = !selectedClientId
   const showThreadOnly = selectedClientId
 
+  const activeClientsCount = useMemo(
+    () => conversations.filter((c) => c.status === 'active').length,
+    [conversations]
+  )
+
+  const keyboardOverlapPx = useVisualViewportKeyboardOverlap(
+    Boolean(isNarrowViewport && selectedClientId)
+  )
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col min-h-[calc(100dvh-7rem)] lg:min-h-[calc(100dvh-3.5rem)] lg:flex-row">
+    <div className="flex min-h-0 flex-1 flex-col lg:min-h-[calc(100dvh-3.5rem)] lg:flex-row">
       {/* Left: conversation list — 1/3 on desktop, full on mobile when no thread */}
       <div
         className={`flex h-full flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] ${
@@ -559,9 +655,23 @@ export function CoachMessagesPageContent() {
         }`}
       >
         <div className="border-b border-[var(--color-border)] px-4 py-4">
-          <h1 className="text-[22px] font-medium leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
-            Messages
-          </h1>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
+              Messages
+            </h1>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="min-h-9 shrink-0"
+              onClick={() => {
+                setBroadcastText('')
+                setBroadcastOpen(true)
+              }}
+            >
+              Send to all clients
+            </Button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           {loadingConversations && <ConversationListSkeleton />}
@@ -578,12 +688,16 @@ export function CoachMessagesPageContent() {
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
                 💬
               </div>
-              <p className="font-medium text-[var(--color-ink)]">No active clients yet</p>
-              <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-                Add a client to start messaging.
+              <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+                Your client conversations live here
               </p>
-              <Link href="/coach/clients" className="mt-4 inline-block">
-                <Button variant="secondary">Go to clients</Button>
+              <p className="mx-auto mt-2 max-w-[320px] text-[14px] font-normal leading-[1.6] text-[var(--color-muted)]">
+                Add a client first — then every thread stays in one place.
+              </p>
+              <Link href="/coach/clients" className="mt-6 inline-block">
+                <Button variant="primary" className="min-h-11">
+                  View clients
+                </Button>
               </Link>
             </div>
           )}
@@ -602,7 +716,7 @@ export function CoachMessagesPageContent() {
                     }`}
                   >
                     <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-bg)] text-sm font-medium text-[var(--color-accent)]"
+                      className="flex size-11 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-bg)] text-sm font-medium text-[var(--color-accent)]"
                       aria-hidden
                     >
                       {getInitials(c.fullName)}
@@ -638,13 +752,26 @@ export function CoachMessagesPageContent() {
 
       {/* Right: thread — 2/3 on desktop, full on mobile when selected */}
       <div
-        className={`flex min-h-0 flex-1 flex-col bg-[var(--color-bg)] ${
+        className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg-app)] ${
           showThreadOnly ? 'flex w-full lg:w-2/3' : 'hidden lg:flex lg:w-2/3'
         }`}
       >
         {!selectedClientId && (
-          <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-            <p className="text-[var(--color-muted)]">Select a conversation</p>
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+            <span className="text-4xl" aria-hidden>
+              💬
+            </span>
+            <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+              Your client conversations live here
+            </p>
+            <p className="max-w-sm text-[14px] font-normal leading-[1.6] text-[var(--color-muted)]">
+              Select a client from the list or add a new client to get started.
+            </p>
+            <Link href="/coach/clients">
+              <Button variant="primary" type="button" className="min-h-11">
+                View clients
+              </Button>
+            </Link>
           </div>
         )}
         {selectedClientId && (
@@ -654,10 +781,10 @@ export function CoachMessagesPageContent() {
                 <button
                   type="button"
                   onClick={() => setSelectedClientId(null)}
-                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-[var(--color-muted)] hover:bg-[var(--color-surface)] focus:ring-2 focus:ring-[var(--color-accent)]"
-                  aria-label="Back to conversations"
+                  className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] hover:bg-[var(--bg-subtle)] focus-visible:shadow-[var(--focus-ring)]"
+                  aria-label="Back to all conversations"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                     <path d="M19 12H5M12 19l-7-7 7-7" />
                   </svg>
                 </button>
@@ -665,7 +792,7 @@ export function CoachMessagesPageContent() {
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/coach/clients/${selectedClientId}`}
-                  className="font-medium text-[var(--color-ink)] hover:text-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 rounded"
+                  className="text-[var(--text-15)] font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] focus-visible:rounded focus-visible:shadow-[var(--focus-ring)]"
                 >
                   {selectedClientName || 'Client'}
                 </Link>
@@ -684,7 +811,10 @@ export function CoachMessagesPageContent() {
 
             <div
               ref={threadScrollRef}
-              className="flex-1 overflow-y-auto p-4"
+              className={cn(
+                'min-h-0 flex-1 overflow-y-auto p-4',
+                isNarrowViewport && 'pb-40'
+              )}
               onScroll={(e) => {
                 const t = e.currentTarget
                 if (t.scrollTop < 72 && hasMoreOlder && !loadingOlder && !loadingMessages) {
@@ -739,8 +869,19 @@ export function CoachMessagesPageContent() {
             </div>
 
             <div
-              className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-bg)] p-4"
-              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+              className={cn(
+                'shrink-0 border-t border-[var(--border-default)] bg-[var(--bg-app)]',
+                isNarrowViewport
+                  ? 'fixed left-0 right-0 z-[38] p-3 shadow-[0_-4px_24px_rgba(15,23,42,0.06)]'
+                  : 'p-4 safe-bottom'
+              )}
+              style={
+                isNarrowViewport
+                  ? {
+                      bottom: `calc(4.75rem + env(safe-area-inset-bottom, 0px) + ${keyboardOverlapPx}px)`,
+                    }
+                  : undefined
+              }
             >
               <div className="flex gap-2">
                 <textarea
@@ -755,19 +896,19 @@ export function CoachMessagesPageContent() {
                   placeholder="Type a message..."
                   rows={1}
                   maxLength={2000}
-                  className="min-h-[44px] flex-1 resize-y rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] leading-[var(--leading-body)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-0"
+                  className="min-h-11 flex-1 resize-y rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2.5 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   aria-label="Message"
                 />
                 <Button
                   onClick={handleSend}
                   disabled={!inputValue.trim() || sending}
-                  className="min-h-[44px] shrink-0"
+                  className="min-h-11 min-w-11 shrink-0 px-4"
                 >
                   {sending ? 'Sending…' : 'Send'}
                 </Button>
               </div>
               {inputValue.length > 1900 && (
-                <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                <p className="mt-1 text-[var(--text-12)] text-[var(--text-tertiary)]">
                   {inputValue.length} / 2000
                 </p>
               )}
@@ -783,6 +924,62 @@ export function CoachMessagesPageContent() {
           {toast}
         </div>
       ) : null}
+      <Modal
+        isOpen={broadcastOpen}
+        onClose={() => !broadcastSending && setBroadcastOpen(false)}
+        title="Message all clients"
+        className="max-w-md"
+      >
+        <p className="text-[14px] text-[var(--color-muted)]">
+          All {activeClientsCount} active client{activeClientsCount !== 1 ? 's' : ''} with a portal account will receive
+          this message.
+        </p>
+        <textarea
+          className="mt-4 min-h-[120px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)]"
+          placeholder="Write your message…"
+          maxLength={2000}
+          value={broadcastText}
+          onChange={(e) => setBroadcastText(e.target.value.slice(0, 2000))}
+          aria-label="Broadcast message"
+        />
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <Button type="button" variant="secondary" disabled={broadcastSending} onClick={() => setBroadcastOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            disabled={broadcastSending || !broadcastText.trim()}
+            onClick={async () => {
+              setBroadcastSending(true)
+              try {
+                const res = await fetch('/api/messages/broadcast', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ content: broadcastText.trim() }),
+                })
+                const json = await res.json()
+                if (!res.ok) {
+                  setToast(json.error ?? 'Could not send broadcast')
+                  return
+                }
+                const n = typeof json.data?.sent === 'number' ? json.data.sent : 0
+                setToast(`Message sent to ${n} client${n !== 1 ? 's' : ''}`)
+                setBroadcastOpen(false)
+                setBroadcastText('')
+                void fetchConversations()
+              } catch {
+                setToast('Could not send broadcast — try again')
+              } finally {
+                setBroadcastSending(false)
+              }
+            }}
+          >
+            {broadcastSending ? 'Sending…' : 'Send to all'}
+          </Button>
+        </div>
+      </Modal>
+
       <BookSessionModal
         open={bookModalOpen}
         onClose={() => setBookModalOpen(false)}

@@ -40,7 +40,7 @@ export async function GET() {
       .limit(500)
 
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not load' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not load' }, { status: 500 })
     }
     return NextResponse.json({ data: data ?? [] })
   } catch {

@@ -63,6 +63,14 @@ export function coachAnalyticsCacheKey(workspaceId: string, queryKey: string): s
   return `cache:coachAnalytics:${workspaceId}:${queryKey}`
 }
 
+export function settingsCacheKey(workspaceId: string, userId: string): string {
+  return `cache:settings:${workspaceId}:${userId}`
+}
+
+export function brandingCacheKey(workspaceId: string): string {
+  return `cache:branding:${workspaceId}`
+}
+
 export async function invalidatePackagesCache(workspaceId: string): Promise<void> {
   const redis = await getUpstashRedis()
   if (!redis) return
@@ -103,6 +111,36 @@ export async function invalidateCoachAnalyticsCaches(workspaceId: string): Promi
   }
 }
 
+export async function invalidateSettingsCachesForWorkspace(workspaceId: string): Promise<void> {
+  const redis = await getUpstashRedis()
+  if (!redis) return
+  try {
+    await deleteByPattern(redis, `cache:settings:${workspaceId}:*`)
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function invalidateCoachSettingsCache(workspaceId: string, userId: string): Promise<void> {
+  const redis = await getUpstashRedis()
+  if (!redis) return
+  try {
+    await redis.del(settingsCacheKey(workspaceId, userId))
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function invalidateBrandingCache(workspaceId: string): Promise<void> {
+  const redis = await getUpstashRedis()
+  if (!redis) return
+  try {
+    await redis.del(brandingCacheKey(workspaceId))
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Clears application data caches (cache:* keys). Does not touch rate-limit keys. */
 export async function clearApplicationDataCaches(): Promise<void> {
   const redis = await getUpstashRedis()
@@ -113,6 +151,8 @@ export async function clearApplicationDataCaches(): Promise<void> {
       'cache:programs:*',
       'cache:paySummary:*',
       'cache:coachAnalytics:*',
+      'cache:settings:*',
+      'cache:branding:*',
     ]
     for (const match of patterns) {
       await deleteByPattern(redis, match)

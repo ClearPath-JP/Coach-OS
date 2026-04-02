@@ -13,7 +13,7 @@
     "db:push": "supabase db push",
     "db:pull": "supabase db pull",
     "db:status": "supabase migration list",
-    "test": "jest --config jest.config.cjs --runInBand --detectOpenHandles",
+    "test": "jest --config jest.config.cjs --runInBand --detectOpenHandles --forceExit --testTimeout=120000",
     "setup": "npx tsx scripts/setup.ts",
     "create:demo": "npx tsx scripts/create-demo-coach.ts",
     "setup:admin": "npx tsx scripts/setup-admin.ts",
@@ -35,6 +35,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "lucide-react": "^1.7.0",
     "next": "16.1.7",
     "react": "19.2.3",
     "react-big-calendar": "^1.15.0",
@@ -46,7 +47,9 @@
   },
   "pnpm": {
     "overrides": {
-      "tar": "^7.5.11"
+      "tar": "^7.5.11",
+      "handlebars": "^4.7.9",
+      "picomatch": "^4.0.4"
     }
   },
   "devDependencies": {

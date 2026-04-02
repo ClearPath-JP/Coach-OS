@@ -21,7 +21,7 @@ export async function GET() {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load unread count' },
+        { error: 'Could not load unread count' },
         { status: 500 }
       )
     }

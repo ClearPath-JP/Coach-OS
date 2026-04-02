@@ -169,16 +169,19 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && !error && programs.length === 0 && (
-        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-10 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
             📚
           </div>
-          <p className="font-medium text-[var(--color-ink)]">No programs yet</p>
-          <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-            Create your first program to start delivering structured content to your clients.
+          <p className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+            Build your signature program
           </p>
-          <Button className="mt-4" onClick={() => setCreateOpen(true)}>
-            Create program
+          <p className="mx-auto mt-3 max-w-[420px] text-[var(--text-14)] font-normal leading-[1.6] text-[var(--color-muted)]">
+            Create a structured program for your clients with videos, notes, and assignments. Assign it once, use it
+            forever.
+          </p>
+          <Button className="mt-8 min-h-11" onClick={() => setCreateOpen(true)}>
+            Create a program
           </Button>
         </div>
       )}

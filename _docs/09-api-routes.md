@@ -1,6 +1,10 @@
 # 09 — API Routes Reference
 
-This document lists every API route in the project (under `app/api/`). There are no routes under `pages/api/`. For each route we document: path, HTTP method(s), request data, success/failure responses, authentication, and Supabase operations. A final section lists API routes to be created for V2 features to avoid duplicate work across sessions.
+**Last updated:** 2026-04-02
+
+This document lists API routes in the project (under `app/api/`). There are no routes under `pages/api/`. For each route we document: path, HTTP method(s), request data, success/failure responses, authentication, and Supabase operations.
+
+**Inventory:** **139** `route.ts` files (~**130+** HTTP endpoints). Section 4 summarizes routes added or changed since older reviews. Older sections (1–3) may still describe legacy paths (e.g. `/api/calendar/feed`); prefer Section 4 and the **build output** as source of truth.
 
 ---
 
@@ -51,18 +55,20 @@ This document lists every API route in the project (under `app/api/`). There are
 
 ---
 
-### 1.4 Calendar feed (iCal)
+### 1.4 Calendar feed — coach (iCal)
 
 | Property | Value |
 |----------|--------|
-| **Path** | `/api/calendar/feed` |
-| **File** | `app/api/calendar/feed/route.ts` |
+| **Path** | **`/api/calendar/feed/coach`** |
+| **File** | `app/api/calendar/feed/coach/route.ts` |
 | **Method(s)** | GET |
-| **Request** | None. Cookies for session. |
-| **Success** | `200` — Body: iCal (`text/calendar`), `Content-Disposition: attachment; filename="schedule.ics"`. Contains VEVENTs for sessions (next year) and availability_slots. |
-| **Failure** | `401` — Unauthorized. `403` — Not coach. |
-| **Auth** | Required. Coach only. |
-| **Supabase** | Server client: `auth.getUser()`, `profiles` select role. Then: `sessions` select (id, scheduled_time, status, clients, availability_slots) for coach, next year; `availability_slots` select for coach, next year. |
+| **Request** | Session cookies **or** `?token=<workspace_coach_calendar_feed_token>` (see `workspaces.coach_calendar_feed_token`). |
+| **Success** | `200` — `text/calendar` body; VEVENTs for coach sessions (and related calendar data per implementation). |
+| **Failure** | `401` / `403` — Invalid session or token. |
+| **Auth** | Coach session **or** valid feed token (public URL for calendar apps). |
+| **Rate limit** | Token endpoint `GET /api/coach/calendar-feed-token` (coach session) mints/refreshes token. |
+
+**Client iCal:** `GET /api/calendar/feed/client` — session + client role (see §1.11 naming in this doc).
 
 ---
 
@@ -579,7 +585,7 @@ The following routes are **not** yet implemented. Add them here when created so 
 | `/api/clients` | POST | Coach | Create client |
 | `/api/clients/[id]` | GET | Coach | Get one client |
 | `/api/clients/[id]` | PATCH | Coach | Update client |
-| `/api/calendar/feed` | GET | Coach | iCal sessions + availability |
+| `/api/calendar/feed/coach` | GET | Coach or feed token | iCal for coach schedule |
 | `/api/sessions/upcoming` | GET | Bearer secret | Next 24h sessions for n8n |
 | `/api/sessions/[id]/send-reminder` | POST | Coach | Manual reminder → n8n |
 | `/api/coach/sessions` | POST | Coach | Create session + n8n booked |
@@ -618,4 +624,109 @@ The following routes are **not** yet implemented. Add them here when created so 
 
 ---
 
-*When you add a new API route for V2, add it to Section 2 under the right subsection and optionally to Section 3 if it becomes a long-term route.*
+## 4. V2 route additions (consolidated reference)
+
+Below: method(s), path, auth, purpose. **Rate limiting:** auth, writes, and sensitive reads use `lib/rate-limit.ts` + Upstash when configured (otherwise limits may be no-op in dev). Treat **write** routes as rate-limited unless noted.
+
+### 4.1 Goals
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| GET, POST | `/api/goals` | Coach | List/create goals for workspace clients |
+| PATCH, DELETE | `/api/goals/[id]` | Coach | Update/archive goal |
+| GET | `/api/client/goals` | Client | Own goals |
+
+### 4.2 Daily check-ins
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| POST | `/api/client/checkin` | Client | Submit or update today’s check-in |
+| GET | `/api/client/checkin/today` | Client | Today’s check-in if any |
+| GET | `/api/coach/checkins` | Coach | Workspace check-ins feed / filters |
+
+### 4.3 Testimonials
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| POST | `/api/client/testimonials` | Client | Submit testimonial |
+| GET | `/api/testimonials` | Coach | List testimonials |
+| PATCH, DELETE | `/api/testimonials/[id]` | Coach | Approve/public flags (PATCH) or delete |
+
+### 4.4 Engagement & messaging
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| POST | `/api/coach/re-engagement` | Coach | Trigger re-engagement / inactive client workflow |
+| POST | `/api/messages/broadcast` | Coach | Broadcast message to clients |
+
+### 4.5 Session notes & action items
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| PATCH | `/api/sessions/[id]/notes` | Coach | Update private notes, summary, action items, send to client |
+| POST | `/api/sessions/[id]/action-items/complete` | Client | Mark own client-assigned action item done |
+| GET | `/api/clients/[id]/session-notes-history` | Coach | History for client |
+| GET | `/api/client/sessions/[sessionId]/session-notes` | Client | Shared notes for session |
+
+### 4.6 Google Drive & video streaming
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| GET | `/api/integrations/google-drive/files` | Coach | List files in configured folder |
+| POST | `/api/videos/import-from-drive` | Coach | Import metadata from Drive |
+| GET | `/api/videos/[id]/stream` | Session or `?token=` | Stream proxy (Range); signed token from POST `/token` |
+| POST | `/api/videos/[id]/token` | Coach/Client | Mint short-lived stream token |
+| GET | `/api/videos/[id]/access` | Client | Access check / metadata for playback |
+
+### 4.7 Calendar feed token
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| GET | `/api/coach/calendar-feed-token` | Coach | Get or rotate workspace iCal feed token |
+
+### 4.8 Invoices & Connect
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| POST | `/api/invoices/[id]/checkout` | Coach | Create Stripe Checkout for client payment (Connect) |
+| POST | `/api/client/invoices/[id]/checkout` | Client | Client-facing checkout for own invoice |
+| GET, POST | `/api/billing/stripe-connect` | Coach | Connect onboarding / status |
+| GET | `/api/billing/stripe-connect/return` | Coach | OAuth return handler |
+
+### 4.9 Coach dashboard
+
+| Method(s) | Path | Auth | Summary |
+|-----------|------|------|---------|
+| GET | `/api/coach/dashboard-attention` | Coach | “Attention needed” cards (RPC-backed) |
+| GET | `/api/coach/dashboard-summary` | Coach | Aggregated dashboard metrics |
+
+### 4.10 Admin (super admin only)
+
+All under `/api/admin/*`: require **`is_super_admin`** profile + `ADMIN_EMAIL` bootstrap. Typical JSON `{ data }` / `{ error }`.
+
+| Method | Path | Summary |
+|--------|------|---------|
+| GET | `/api/admin/overview` | Platform overview |
+| GET | `/api/admin/workspaces-list` | Workspaces list |
+| GET | `/api/admin/coaches` | Coaches index |
+| GET, PATCH, DELETE | `/api/admin/coaches/[workspaceId]` | Workspace/coach detail |
+| POST | `/api/admin/coaches/[workspaceId]/coach-magic-link` | Magic link for coach |
+| POST | `/api/admin/coaches/[workspaceId]/extend-trial` | Extend trial |
+| GET | `/api/admin/coaches/[workspaceId]/export` | Export workspace data |
+| GET | `/api/admin/clients` | Cross-workspace clients view |
+| GET | `/api/admin/subscriptions` | Subscriptions |
+| GET | `/api/admin/revenue` | Revenue aggregates |
+| GET | `/api/admin/audit` | Audit log |
+| GET | `/api/admin/error-logs` | Frontend error logs |
+| GET | `/api/admin/system` | System health |
+| POST | `/api/admin/test-email` | Send test email |
+| POST | `/api/admin/clear-cache` | Clear caches |
+| POST | `/api/admin/refresh-settings` | Refresh settings |
+
+### 4.11 Other routes in build output
+
+Run `pnpm run build` and inspect the **Route (app)** table for the full tree (includes `assignments`, `programs`, `packages`, `payments`, `webhooks`, `error-report`, `auth/*`, `settings/*`, `videos/from-n8n`, etc.).
+
+---
+
+*When you add a new API route, update Section 4 (and the relevant subsection in 1–2 if you maintain long-form docs).*

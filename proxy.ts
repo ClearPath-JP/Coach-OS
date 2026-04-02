@@ -1,3 +1,7 @@
+/**
+ * Next.js 16+ middleware entry — this file is the edge middleware (do not add root `middleware.ts`; the
+ * bundler rejects both). Default export + `config.matcher` are required.
+ */
 import { NextResponse, type NextRequest } from 'next/server'
 import { isAdminEmail } from '@/lib/admin-email'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -10,6 +14,13 @@ function isSupabaseNotConfigured(err: unknown): boolean {
   return msg.includes('Supabase is not configured') || msg.includes('URL and Key are required')
 }
 
+/** Forward pathname so server layouts can run backup guards (e.g. must_change_password). */
+function nextWithPathname(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
+  return NextResponse.next({ request: { headers: requestHeaders } })
+}
+
 const AUTH_PUBLIC_PATHS = [
   '/login',
   '/forgot-password',
@@ -19,17 +30,23 @@ const AUTH_PUBLIC_PATHS = [
   '/terms',
 ] as const
 
+const LEGAL_STATIC_PATHS = ['/privacy', '/terms'] as const
+
+function isLegalStaticPath(p: string): boolean {
+  return (LEGAL_STATIC_PATHS as readonly string[]).includes(p)
+}
+
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Root: send guests to login immediately (same as app/page.tsx; avoids extra RSC work).
   if (pathname === '/' && request.method === 'GET') {
-    const response = NextResponse.next({ request })
+    const response = nextWithPathname(request)
     let supabase
     try {
       supabase = createServerClientForMiddleware(request, response)
     } catch (err) {
-      if (isSupabaseNotConfigured(err)) return NextResponse.next({ request })
+      if (isSupabaseNotConfigured(err)) return nextWithPathname(request)
       throw err
     }
     const {
@@ -42,25 +59,54 @@ export async function proxy(request: NextRequest) {
     return response
   }
 
-  // Rate limit auth pages: 30 requests/min per IP (11-auth-permissions §4.1)
+  // Rate limit auth pages per IP (defense in depth with API route limits).
   if (AUTH_PUBLIC_PATHS.includes(pathname as (typeof AUTH_PUBLIC_PATHS)[number])) {
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
       request.headers.get('x-real-ip') ??
       'unknown'
-    const { success, retryAfter } = await checkRateLimitAsync(`login:${ip}`, { windowMs: 60_000, max: 30 })
-    if (!success) {
-      const res = new NextResponse('Too Many Requests', { status: 429 })
-      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
-      return res
+    if (!isLegalStaticPath(pathname)) {
+      let key: string
+      let windowMs: number
+      let max: number
+      if (pathname === '/login' || pathname === '/client-login') {
+        key = `auth-page-login:${ip}`
+        windowMs = 15 * 60_000
+        max = 5
+      } else if (pathname === '/signup') {
+        key = `auth-page-signup:${ip}`
+        windowMs = 60 * 60_000
+        max = 3
+      } else if (pathname === '/forgot-password') {
+        key = `auth-page-forgot:${ip}`
+        windowMs = 60 * 60_000
+        max = 3
+      } else {
+        key = `auth-page:${ip}`
+        windowMs = 60_000
+        max = 30
+      }
+      const { success, retryAfter } = await checkRateLimitAsync(key, { windowMs, max })
+      if (!success) {
+        const res = new NextResponse('Too Many Requests', { status: 429 })
+        if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+        return res
+      }
+    } else {
+      const { success, retryAfter } = await checkRateLimitAsync(`legal-page:${ip}`, { windowMs: 60_000, max: 120 })
+      if (!success) {
+        const res = new NextResponse('Too Many Requests', { status: 429 })
+        if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+        return res
+      }
     }
 
-    const response = NextResponse.next({ request })
+    const response = nextWithPathname(request)
     let supabase
     try {
       supabase = createServerClientForMiddleware(request, response)
     } catch (err) {
-      if (isSupabaseNotConfigured(err)) return NextResponse.next({ request })
+      if (isSupabaseNotConfigured(err)) return nextWithPathname(request)
       throw err
     }
     const {
@@ -116,12 +162,12 @@ export async function proxy(request: NextRequest) {
 
   // /onboarding — authenticated coaches only; if completed_onboarding → /coach/dashboard
   if (pathname.startsWith('/onboarding')) {
-    const response = NextResponse.next({ request })
+    const response = nextWithPathname(request)
     let supabase
     try {
       supabase = createServerClientForMiddleware(request, response)
     } catch (err) {
-      if (isSupabaseNotConfigured(err)) return NextResponse.next({ request })
+      if (isSupabaseNotConfigured(err)) return nextWithPathname(request)
       throw err
     }
     const {
@@ -157,14 +203,14 @@ export async function proxy(request: NextRequest) {
   // /admin — only ADMIN_EMAIL; non-matching signed-in users get opaque 403 (no redirect to login).
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin/not-authorized' || pathname.startsWith('/admin/not-authorized/')) {
-      return NextResponse.next({ request })
+      return nextWithPathname(request)
     }
-    const response = NextResponse.next({ request })
+    const response = nextWithPathname(request)
     let supabase
     try {
       supabase = createServerClientForMiddleware(request, response)
     } catch (err) {
-      if (isSupabaseNotConfigured(err)) return NextResponse.next({ request })
+      if (isSupabaseNotConfigured(err)) return nextWithPathname(request)
       throw err
     }
     const {
@@ -184,12 +230,12 @@ export async function proxy(request: NextRequest) {
 
   // Session check for /coach/*, /client/*, /billing — redirect to /login?next=pathname if no session
   if (pathname.startsWith('/coach') || pathname.startsWith('/client') || pathname === '/billing') {
-    const response = NextResponse.next({ request })
+    const response = nextWithPathname(request)
     let supabase
     try {
       supabase = createServerClientForMiddleware(request, response)
     } catch (err) {
-      if (isSupabaseNotConfigured(err)) return NextResponse.next({ request })
+      if (isSupabaseNotConfigured(err)) return nextWithPathname(request)
       throw err
     }
     const {

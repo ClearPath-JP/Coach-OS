@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { resolveCoachUserIdForClientRow } from '@/lib/resolve-coach-user-for-client'
@@ -64,7 +65,15 @@ export default async function ClientMessagesPage() {
 
   return (
     <main className="flex min-h-0 flex-1 flex-col p-4 lg:p-6">
-      <ClientMessagesContent clientId={client.id} coachName={coachName} />
+      <Suspense
+        fallback={
+          <div className="flex flex-1 items-center justify-center text-[15px] text-[var(--color-muted)]">
+            Loading messages…
+          </div>
+        }
+      >
+        <ClientMessagesContent clientId={client.id} coachName={coachName} />
+      </Suspense>
     </main>
   )
 }

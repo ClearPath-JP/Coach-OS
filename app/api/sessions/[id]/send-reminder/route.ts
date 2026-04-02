@@ -30,8 +30,14 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
 
     if (error || !session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
 
-    const webhookUrl = process.env.N8N_SESSION_REMINDER_ON_DEMAND_URL
-    if (!webhookUrl) return NextResponse.json({ data: { queued: false } })
+    const webhookUrl = process.env.N8N_SESSION_REMINDER_ON_DEMAND_URL?.trim()
+    if (!webhookUrl) {
+      return NextResponse.json({
+        queued: false,
+        error:
+          'Reminder not sent — email reminders are not configured yet. Your administrator must set N8N_SESSION_REMINDER_ON_DEMAND_URL on the server.',
+      })
+    }
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -44,9 +50,14 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       }),
     })
 
-    if (!response.ok) return NextResponse.json({ error: 'Could not send reminder' }, { status: 500 })
+    if (!response.ok) {
+      return NextResponse.json({
+        queued: false,
+        error: 'Reminder not sent — the reminder service returned an error. Try again or check your automation (n8n) setup.',
+      })
+    }
 
-    return NextResponse.json({ data: { queued: true } })
+    return NextResponse.json({ queued: true, data: { queued: true } })
   } catch {
     return NextResponse.json({ error: 'Something went wrong — check your connection and try again' }, { status: 500 })
   }

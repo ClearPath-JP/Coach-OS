@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not update videos' },
+        { error: 'Could not update videos' },
         { status: 500 }
       )
     }

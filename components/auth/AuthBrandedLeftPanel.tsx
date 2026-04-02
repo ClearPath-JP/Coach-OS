@@ -19,18 +19,23 @@ const DEFAULT_SUBTEXT = (
 
 const COACH_LOGIN_HEADLINE = (
   <>
-    Your coaching
+    Run your coaching business
     <br />
-    command center.
+    like a pro.
   </>
 )
 
 const COACH_LOGIN_SUBTEXT = (
   <>
-    <span className="font-medium text-white">ClearPath Coach OS</span> — manage clients, sessions, programs, and payments
-    in one workspace built for coaches.
+    Your clients. Your sessions. Your revenue. All in one place — so you can focus on what you do best.
   </>
 )
+
+const COACH_LOGIN_FEATURES = [
+  'Know which clients need attention today',
+  'Get paid faster with smart invoicing',
+  'Keep clients engaged between sessions',
+]
 
 /** Deeper blue than signup — coach login left column + mobile bar. */
 const COACH_LOGIN_BLUE_BG =
@@ -53,12 +58,13 @@ export function AuthBrandedLeftPanel({
   const h = headline ?? (isLight ? COACH_LOGIN_HEADLINE : DEFAULT_HEADLINE)
   const s = subtext ?? (isLight ? COACH_LOGIN_SUBTEXT : DEFAULT_SUBTEXT)
 
-  const features = [
+  const defaultFeatures = [
     'Manage all your clients in one place',
     'Schedule sessions with drag & drop',
     'Track payments and revenue',
     'Build and assign coaching programs',
   ]
+  const features = isLight ? COACH_LOGIN_FEATURES : defaultFeatures
 
   if (isLight) {
     return (

@@ -107,7 +107,7 @@ export async function GET(request: Request) {
     let countBuilder = service.from('audit_logs').select('id', { count: 'exact', head: true })
     countBuilder = applyAuditFilters(countBuilder, filterOpts)
     const { count: totalCount, error: countError } = await countBuilder
-    if (countError) return NextResponse.json({ error: countError.message }, { status: 500 })
+    if (countError) return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
 
     const fromIdx = (page - 1) * PAGE_SIZE
     const toIdx = fromIdx + PAGE_SIZE - 1
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
     const { data: logs, error } = await dataBuilder
       .order('created_at', { ascending: false })
       .range(fromIdx, toIdx)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
 
     const rows = (logs ?? []) as AuditRow[]
     const userIds = [...new Set(rows.map((l) => l.user_id).filter(Boolean))] as string[]

@@ -69,7 +69,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not update content' },
+        { error: 'Could not update content' },
         { status: 500 }
       )
     }
@@ -91,7 +91,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 /**
  * DELETE /api/content/[contentId] — hard delete content block. Coach only.
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { contentId } = await context.params
     const supabase = await createClient()
@@ -122,7 +122,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not delete content' },
+        { error: 'Could not delete content' },
         { status: 500 }
       )
     }

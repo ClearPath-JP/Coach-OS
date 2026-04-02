@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     jobId: job.id,
   })
   if (result.state === 'failed') {
-    return NextResponse.json({ error: result.message ?? 'Finalize failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not finalize video processing. Please try again.' }, { status: 500 })
   }
   return NextResponse.json({ ok: true, state: result.state })
 }

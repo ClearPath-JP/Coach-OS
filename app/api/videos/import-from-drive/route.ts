@@ -124,7 +124,7 @@ export async function POST(request: Request) {
 
     if (insErr || !video) {
       return NextResponse.json(
-        { error: insErr?.message ?? 'Could not save video' },
+        { error: 'Could not save video' },
         { status: 500 }
       )
     }

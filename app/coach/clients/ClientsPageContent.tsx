@@ -9,8 +9,13 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { DataTable, type DataColumn } from '@/components/ui/DataTable'
 import { StatusDot } from '@/components/ui/StatusDot'
+import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
+import { Tooltip } from '@/components/ui/Tooltip'
+import { calculateEngagementScore, engagementLabelText } from '@/lib/client-engagement'
 import { AddClientModal } from './AddClientModal'
 import { formatDistanceToNow } from 'date-fns'
+
+type Engagement = ReturnType<typeof calculateEngagementScore>
 
 type Client = {
   id: string
@@ -24,7 +29,17 @@ type Client = {
   profile_photo_url: string | null
   created_at: string
   updated_at: string
-  rewards?: { total_xp: number; level: number } | null
+  rewards?: {
+    total_xp: number
+    level: number
+    last_activity_at?: string | null
+    assignments_completed?: number
+    assignments_total?: number
+    current_streak_days?: number
+  } | null
+  sessionsCompletedCount?: number
+  activeProgramTitle?: string | null
+  engagement?: Engagement
 }
 
 type StatusFilter = '' | 'active' | 'paused' | 'completed'
@@ -54,6 +69,8 @@ export function CoachClientsPageContent() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('')
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [quickInvoiceOpen, setQuickInvoiceOpen] = useState(false)
+  const [quickInvoiceClientId, setQuickInvoiceClientId] = useState<string | null>(null)
 
   const fetchClients = useCallback(async () => {
     setError(null)
@@ -81,6 +98,23 @@ export function CoachClientsPageContent() {
   useEffect(() => {
     fetchClients()
   }, [fetchClients])
+
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    try {
+      const msg = sessionStorage.getItem('clearpath_clients_toast')
+      if (msg) {
+        sessionStorage.removeItem('clearpath_clients_toast')
+        setToast(msg)
+        timeout = setTimeout(() => setToast(null), 4000)
+      }
+    } catch {
+      /* ignore */
+    }
+    return () => {
+      if (timeout) clearTimeout(timeout)
+    }
+  }, [])
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -162,9 +196,16 @@ export function CoachClientsPageContent() {
         {!loading && !error && clients.length === 0 && (
           <Card className="p-12 text-center">
             <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">👥</div>
-            <h2 className="mt-4 text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Add your first client</h2>
-            <p className="mx-auto mt-2 max-w-[320px] text-[14px] leading-[1.6] text-[var(--text-tertiary)]">Invite clients to access their programs, schedule sessions, and stay connected through ClearPath.</p>
-            <Button className="mt-6" onClick={() => setAddModalOpen(true)}>Add client</Button>
+            <h2 className="mt-4 text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+              Your first client is waiting
+            </h2>
+            <p className="mx-auto mt-3 max-w-[400px] text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-tertiary)]">
+              Add a client and send them their login details. They&apos;ll be able to see their programs, book sessions,
+              and message you directly.
+            </p>
+            <Button className="mt-8 min-h-11" onClick={() => setAddModalOpen(true)}>
+              Add your first client
+            </Button>
           </Card>
         )}
         {!loading && !error && clients.length > 0 && (
@@ -172,8 +213,8 @@ export function CoachClientsPageContent() {
             rows={clients}
             loading={loading}
             rowHref={(row) => `/coach/clients/${row.id}`}
-            emptyTitle="Add your first client"
-            emptyDescription="Invite clients to access their programs, schedule sessions, and stay connected through ClearPath."
+            emptyTitle="Your first client is waiting"
+            emptyDescription="Add a client and send them their login details. They will see programs, book sessions, and message you directly."
             columns={[
               {
                 key: 'name',
@@ -196,6 +237,37 @@ export function CoachClientsPageContent() {
                 render: (client) => <span className="inline-flex items-center gap-2 text-[13px] text-[var(--text-secondary)]"><StatusDot tone={statusTone(client.status)} />{client.status}</span>,
               },
               {
+                key: 'engagement',
+                header: 'Engagement',
+                sortValue: (r) => r.engagement?.score ?? 0,
+                render: (client) => {
+                  const e = client.engagement
+                  if (!e) return <span className="text-[13px] text-[var(--text-tertiary)]">—</span>
+                  const dot =
+                    e.label === 'engaged' ? '🟢' : e.label === 'moderate' ? '🟡' : '🔴'
+                  const last = client.rewards?.last_activity_at
+                  const done = client.rewards?.assignments_completed ?? 0
+                  const total = client.rewards?.assignments_total ?? 0
+                  const streak = client.rewards?.current_streak_days ?? 0
+                  const activeLine = last
+                    ? `Active ${formatDistanceToNow(new Date(last), { addSuffix: true })}`
+                    : 'No recent activity logged'
+                  const tip = `${activeLine} · ${done}/${total} assignments complete · ${streak}-day streak`
+                  const label = engagementLabelText(e.label)
+                  return (
+                    <Tooltip content={tip}>
+                      <span
+                        className="inline-flex cursor-default items-center gap-1.5 text-[13px] font-medium"
+                        style={{ color: e.color }}
+                      >
+                        <span aria-hidden>{dot}</span>
+                        {label}
+                      </span>
+                    </Tooltip>
+                  )
+                },
+              },
+              {
                 key: 'xp',
                 header: 'XP',
                 sortValue: (r) => r.rewards?.total_xp ?? 0,
@@ -206,8 +278,30 @@ export function CoachClientsPageContent() {
                   </div>
                 ),
               },
-              { key: 'sessions', header: 'Sessions', render: () => <span className="text-[var(--text-tertiary)]">—</span> },
-              { key: 'program', header: 'Program', render: () => <span className="text-[var(--text-tertiary)]">General</span> },
+              {
+                key: 'sessions',
+                header: 'Sessions',
+                sortValue: (r) => r.sessionsCompletedCount ?? 0,
+                render: (client) => {
+                  const n = client.sessionsCompletedCount ?? 0
+                  return (
+                    <span className="text-[13px] text-[var(--text-primary)]">
+                      <span className="tabular-nums font-medium">{n}</span>
+                      <span className="text-[var(--text-tertiary)]"> {n === 1 ? 'session' : 'sessions'}</span>
+                    </span>
+                  )
+                },
+              },
+              {
+                key: 'program',
+                header: 'Program',
+                sortValue: (r) => r.activeProgramTitle ?? '',
+                render: (client) => (
+                  <span className="line-clamp-2 text-[13px] text-[var(--text-primary)]">
+                    {client.activeProgramTitle?.trim() ? client.activeProgramTitle : 'None'}
+                  </span>
+                ),
+              },
               {
                 key: 'lastActive',
                 header: 'Last active',
@@ -218,13 +312,31 @@ export function CoachClientsPageContent() {
                 key: 'actions',
                 header: 'Actions',
                 render: (client) => (
-                  <Link
-                    href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`}
-                    className="text-[13px] font-medium text-[var(--color-accent)] hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Message
-                  </Link>
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Link
+                      href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`}
+                      className="text-[13px] font-medium text-[var(--color-accent)] hover:underline"
+                    >
+                      Message
+                    </Link>
+                    <details className="relative">
+                      <summary className="cursor-pointer list-none text-[18px] leading-none text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+                        ···
+                      </summary>
+                      <div className="absolute right-0 z-20 mt-1 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-md">
+                        <button
+                          type="button"
+                          className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                          onClick={() => {
+                            setQuickInvoiceClientId(client.id)
+                            setQuickInvoiceOpen(true)
+                          }}
+                        >
+                          Quick invoice
+                        </button>
+                      </div>
+                    </details>
+                  </div>
                 ),
               },
             ] as DataColumn<Client>[]}
@@ -236,6 +348,19 @@ export function CoachClientsPageContent() {
         isOpen={addModalOpen}
         onClose={() => setAddModalOpen(false)}
         onSuccess={handleAddSuccess}
+      />
+
+      <QuickInvoiceModal
+        open={quickInvoiceOpen}
+        onClose={() => {
+          setQuickInvoiceOpen(false)
+          setQuickInvoiceClientId(null)
+        }}
+        defaultClientId={quickInvoiceClientId}
+        onSent={(name) => {
+          setToast(`Invoice sent to ${name}`)
+          setTimeout(() => setToast(null), 4000)
+        }}
       />
 
       {toast && (

@@ -151,6 +151,7 @@ export default function OnboardingStep2Page() {
         <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[var(--text-secondary)]">
           Pick all that apply — this helps us tailor your experience and surface the right defaults as you grow.
         </p>
+        <p className="mt-3 text-[13px] font-medium text-[var(--text-tertiary)]">Takes about 1 minute.</p>
       </div>
 
       <div>

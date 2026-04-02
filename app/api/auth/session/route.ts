@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     if (error) {
       return applyAuthNoStoreHeaders(
         NextResponse.json(
-          { error: error.message ?? 'Invalid session' },
+          { error: 'Invalid session' },
           { status: 401 }
         )
       )

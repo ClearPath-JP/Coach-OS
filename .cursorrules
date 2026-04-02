@@ -23,6 +23,7 @@ Before doing anything in a new session, always:
 1. Read `_docs/01-architecture.md`
 2. Read `_docs/02-database-schema.md`
 3. Read `_docs/13-v2-roadmap.md`
+4. Optional: `_docs/00-index.md` for the full doc map
 4. Summarize what you understand about the current state of the project
 5. Confirm which phase of the roadmap we are in
 6. Then wait for the user to tell you what to build today
@@ -51,9 +52,20 @@ components/
   shared/           → components used by both coach and client
 
 lib/
-  supabase.ts       → THE ONLY place Supabase clients are created
-  supabase-server.ts → server-side Supabase client
+  supabase.ts       → browser Supabase client (client components)
+  supabase-server.ts → server/middleware Supabase helpers
   stripe.ts         → Stripe client
+  api-helpers.ts    → requireCoach(), requireClient() for API routes
+  workspace-context.tsx → client workspace/branding live context
+  xp-system.ts      → assignment XP / level helpers
+  client-engagement.ts → engagement scoring
+  goal-progress.ts  → goal progress helpers
+  notifications/messages.ts → email copy + Resend (`EMAIL_FROM_DEFAULT`)
+  file-validation.ts → upload validation
+  api-cache.ts      → short-lived API response caching
+  google-drive.ts   → Drive OAuth + file access
+  stream-token.ts   → signed video stream tokens (`VIDEO_STREAM_TOKEN_SECRET`)
+  video-stream-access.ts → who may stream which video
   utils.ts          → shared utility functions
   validations.ts    → Zod schemas
 
@@ -61,8 +73,8 @@ types/
   database.ts       → Supabase generated types
   index.ts          → shared TypeScript types
 
-middleware.ts       → route protection and role-based redirects
-_docs/              → all 49 project documents
+proxy.ts            → Next.js 16 middleware entry (route protection, rate limits). Do NOT add root middleware.ts — bundler rejects both.
+_docs/              → project documentation (see `_docs/00-index.md`)
 _design/            → 6 design documents
 _docs/skills/       → 10 skill documents
 ```
@@ -99,16 +111,11 @@ CREATE POLICY "workspace_insert" ON table_name
   );
 ```
 
-### Tables that exist (check 02-database-schema.md for full schema)
+### Tables that exist (check `02-database-schema.md` for full schema — **~50** public tables, **55** migration files)
 
-- `workspaces` — tenant root, every coach belongs to one  
-- `coaches` — linked to auth.users and workspaces  
-- `clients` — scoped to workspace_id  
-- `sessions` — scoped to workspace_id  
-- `messages` — scoped to workspace_id  
-- `programs` — scoped to workspace_id  
-- `videos` — scoped to workspace_id  
-- `notifications` — scoped to user_id  
+Core tenant data (all workspace-scoped where applicable): `workspaces`, `coaches`, `profiles`, `clients`, `sessions`, `messages`, `programs` / `program_modules` / `program_content` / `client_programs` / `program_progress`, `videos`, `session_packages`, `session_invoices`, `payments`, `subscriptions`, `recurring_availability`, `weekly_unavailability`, `google_drive_connections`, assignment tables (`assignment_templates`, `client_assignments`, `assignment_submissions`, `client_rewards`), `client_goals`, `client_goal_updates`, `testimonials`, `daily_checkins`, `audit_logs`, `frontend_error_logs`, `stripe_webhook_events`, etc.
+
+There is **no** standalone `notifications` table; notification-style UX uses messages, APIs, and preferences.
 
 ### Before creating any new table
 
@@ -170,7 +177,7 @@ Read `_docs/skills/SKILL-auth-patterns.md` for full patterns.
 - ALL /admin/* routes require: authenticated + role === 'super_admin'  
 - /login, /signup, /auth/* are public — no auth check needed  
 
-### Middleware redirect logic
+### Middleware (`proxy.ts`) redirect logic
 
 - Not authenticated → redirect to /login  
 - Coach, first login → redirect to /onboarding  
@@ -179,7 +186,7 @@ Read `_docs/skills/SKILL-auth-patterns.md` for full patterns.
 - Client → redirect to /portal  
 - Super admin → redirect to /admin/dashboard  
 
-**Never check auth only on the client side — always protect in middleware too.**
+**Never check auth only on the client side — always protect in `proxy.ts` too.**
 
 ---
 
@@ -440,8 +447,9 @@ Before considering any new feature complete, verify:
 
 ## DEPLOYMENT — BEFORE ANY PUSH TO MAIN
 
-- [ ] npm run build passes with zero errors  
-- [ ] npm run lint passes with zero errors  
+- [ ] `corepack pnpm run build` passes with zero errors  
+- [ ] `corepack pnpm run lint` passes with zero errors  
+- [ ] `corepack pnpm run test` — **59** automated tests in **8** suites (`__tests__/`)  
 - [ ] All console.log statements removed  
 - [ ] All TODO comments either resolved or tracked  
 - [ ] No hardcoded secrets anywhere in the diff  
@@ -486,7 +494,8 @@ When working on these areas, read the skill doc first:
 | Auth & permissions | _docs/11-auth-permissions.md |
 | User flows | _docs/12-user-flows.md |
 | V2 roadmap | _docs/13-v2-roadmap.md |
-| Multi-tenant schema | _docs/T1-multi-tenant-schema.md |
+| Pricing / business model | _docs/15-pricing-and-business-model.md |
+| Doc index | _docs/00-index.md |
 | Billing/Stripe | _docs/T2-billing-subscriptions.md |
 | Email system | _docs/M1-email-system.md |
 | Onboarding wizard | _docs/M2-onboarding-flow.md |

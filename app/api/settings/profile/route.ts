@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { invalidateCoachSettingsCache } from '@/lib/api-cache'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { updateProfileSettingsSchema } from '@/lib/validations'
@@ -38,7 +39,8 @@ export async function PATCH(request: Request) {
       .update(updates)
       .eq('id', user.id)
 
-    if (error) return NextResponse.json({ error: error.message || 'Could not update profile settings' }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Could not update profile settings' }, { status: 500 })
+    void invalidateCoachSettingsCache(workspaceId, user.id)
 
     const syncCoachProfile =
       parsed.data.avatarUrl !== undefined || parsed.data.bio !== undefined
@@ -59,7 +61,7 @@ export async function PATCH(request: Request) {
         .upsert(cpRow, { onConflict: 'coach_id' })
       if (cpError) {
         return NextResponse.json(
-          { error: cpError.message || 'Could not sync coach profile for clients' },
+          { error: 'Could not sync coach profile for clients' },
           { status: 500 }
         )
       }

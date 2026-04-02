@@ -180,7 +180,9 @@ export function VideosPageContent() {
     <>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl font-medium text-[var(--color-ink)]">Video library</h1>
+          <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--color-ink)] sm:text-[var(--text-24)]">
+            Video library
+          </h1>
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" className="min-h-[44px]" onClick={() => setDriveImportOpen(true)}>
               Import from Google Drive

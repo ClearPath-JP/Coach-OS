@@ -103,7 +103,7 @@ All routes under **/client/** are client-only:
 
 ## 4. Middleware and Route Guards
 
-### 4.1 Middleware (`middleware.ts`)
+### 4.1 Middleware (`proxy.ts`)
 
 - **Matcher:** Only these paths run through middleware:
   - `/api/:path*`

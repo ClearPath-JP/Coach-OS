@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     })
     if (error) {
       return applyAuthNoStoreHeaders(
-        NextResponse.json({ error: error.message || 'Could not update password' }, { status: 400 })
+        NextResponse.json({ error: 'Could not update password' }, { status: 400 })
       )
     }
 

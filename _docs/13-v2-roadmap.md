@@ -1,6 +1,8 @@
 # 13 — V2 Roadmap
 
-This document organizes the V2 build into three phases with specific tasks in build order, dependencies, and explicit out-of-scope items. It is derived from the feature specs (04–12), the current state audit (00), the database schema (02), and the architecture (01). Use it to plan sprints and avoid scope creep.
+**2026-04-02:** Most **Phase 2–3** items and a large **Phase 4** (assignments, goals, testimonials, check-ins, admin, Drive streaming, Connect, dashboard attention, etc.) are **shipped**. Treat this file as a **backlog / hygiene** list (RLS gaps, naming cleanup, V3 ideas), not as “not started.” For a shipped-feature summary see **`A6-v2-complete-review.md`**.
+
+This document organizes the V2 build into phases with specific tasks in build order, dependencies, and explicit out-of-scope items. It is derived from the feature specs (04–12), historical current-state audit (00), the database schema (02), and the architecture (01). Use it to plan remaining work and avoid scope creep.
 
 ---
 

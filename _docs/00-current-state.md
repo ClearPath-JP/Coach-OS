@@ -1,6 +1,8 @@
 # ClearPath Demo — Current State Audit
 
-This document is the foundation for building V2. It catalogs every page and route, Supabase tables, major components, feature status, and known issues. All file and table names are specific for reference.
+> **2026-04-02:** This file is a **historical V2 planning audit** and is **no longer maintained** as the live inventory. For current truth use: **`_docs/A6-v2-complete-review.md`**, **`_docs/02-database-schema.md`**, **`_docs/09-api-routes.md`**, **`pnpm run build`** (route list), and **`_docs/00-index.md`**.
+
+This document was the foundation for early V2 work. It catalogs pages, routes, tables, and issues as they existed at the time of writing. Many routes and features listed below are incomplete or renamed vs the current app.
 
 ---
 
@@ -65,7 +67,7 @@ This document is the foundation for building V2. It catalogs every page and rout
 
 ### 1.4 Route Protection
 
-- **middleware.ts**: Protects `/coach/*` and `/client/*` (redirect to `/login` if no session). Applies rate limits to `/login`, `/forgot-password`. Sets CSP in production. Does not redirect `/` when authenticated (role-based redirect is done in `app/page.tsx` and layouts).
+- **proxy.ts** (middleware): Protects `/coach/*`, `/client/*`, `/admin/*` (redirect to `/login` if no session). Applies rate limits to `/login`, `/forgot-password`. Sets CSP in production. Does not redirect `/` when authenticated (role-based redirect is done in `app/page.tsx` and layouts).
 
 ---
 

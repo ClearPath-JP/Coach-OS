@@ -208,8 +208,30 @@ export const coachTabs = [
   { href: '/billing', label: 'Billing', icon: BillingIcon },
 ] as const
 
+function GoalsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
 export const clientPortalTabs = [
   { href: '/client/portal', label: 'Home', icon: HomeIcon },
+  { href: '/client/goals', label: 'Goals', icon: GoalsIcon },
   { href: '/client/messages', label: 'Messages', icon: MessagesIcon },
   { href: '/client/programs', label: 'Programs', icon: ProgramsIcon },
   { href: '/client/assignments', label: 'Tasks', icon: AssignmentsIcon },
@@ -311,10 +333,17 @@ export interface MobileNavProps {
   className?: string
   tabs?: readonly MobileNavTab[]
   messageUnreadCount?: number
+  /** Client portal: gentle reminder when today's daily check-in is still open */
+  checkInReminderDot?: boolean
 }
 
 /** Bottom tab bar — visible only below lg. Matches ClearPath design system (blur, accent active state). */
-export function MobileNav({ className, tabs = coachTabs, messageUnreadCount = 0 }: MobileNavProps) {
+export function MobileNav({
+  className,
+  tabs = coachTabs,
+  messageUnreadCount = 0,
+  checkInReminderDot = false,
+}: MobileNavProps) {
   const pathname = usePathname()
 
   return (
@@ -333,6 +362,8 @@ export function MobileNav({ className, tabs = coachTabs, messageUnreadCount = 0 
             pathname === href || (href !== '/' && pathname.startsWith(href))
           const isMessagesTab = href.includes('messages')
           const showBadge = isMessagesTab && messageUnreadCount > 0
+          const isClientHome = href === '/client/portal'
+          const showCheckInDot = isClientHome && checkInReminderDot
           return (
             <Link
               key={href}
@@ -356,6 +387,12 @@ export function MobileNav({ className, tabs = coachTabs, messageUnreadCount = 0 
                 >
                   {messageUnreadCount > 99 ? '99+' : messageUnreadCount}
                 </span>
+              ) : null}
+              {showCheckInDot ? (
+                <span
+                  className="pointer-events-none absolute right-0.5 top-0.5 size-2 rounded-full bg-amber-500 shadow-sm ring-2 ring-[var(--bg-app)]"
+                  aria-label="Daily check-in available on Home"
+                />
               ) : null}
             </Link>
           )

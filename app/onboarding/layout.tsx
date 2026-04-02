@@ -40,9 +40,9 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
           <OnboardingHeaderActions />
         </div>
       </header>
-      <main className="relative mx-auto max-w-[760px] px-4 pb-20 pt-8 md:px-6 md:pt-10">
+      <main className="relative mx-auto max-w-[760px] px-4 pb-24 pt-8 md:px-8 md:pt-10">
         <OnboardingProgress />
-        <div className="mt-8 md:mt-10">{children}</div>
+        <div className="mt-6 md:mt-8">{children}</div>
       </main>
     </div>
   )

@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { requireCoach } from '@/lib/api-helpers'
 import { addClientSchema } from '@/lib/validations'
 import { checkClientLimit } from '@/lib/plan-limits'
+import { calculateEngagementScore } from '@/lib/client-engagement'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { normalizeEmail, sanitizeIlikeSearch } from '@/lib/utils'
 
@@ -14,9 +15,12 @@ function generateTempPassword(): string {
   )
 }
 
+const CLIENTS_DEFAULT_LIMIT = 500
+const CLIENTS_MAX_LIMIT = 500
+
 /**
- * GET /api/clients — fetch all clients for the coach's workspace.
- * Query: ?search= (name or email), ?status= (active|paused|completed).
+ * GET /api/clients — clients for the coach's workspace (paginated).
+ * Query: ?search= ?status= ?limit= (default 500, max 500) ?offset=
  */
 export async function GET(request: Request) {
   try {
@@ -40,12 +44,21 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const safeSearch = sanitizeIlikeSearch(searchParams.get('search') ?? '')
     const status = searchParams.get('status')?.trim() || ''
+    const limit = Math.min(
+      CLIENTS_MAX_LIMIT,
+      Math.max(1, parseInt(searchParams.get('limit') ?? String(CLIENTS_DEFAULT_LIMIT), 10) || CLIENTS_DEFAULT_LIMIT)
+    )
+    const offset = Math.max(0, parseInt(searchParams.get('offset') ?? '0', 10) || 0)
+    const rangeEnd = offset + limit - 1
 
     let query = supabase
       .from('clients')
-      .select('id, workspace_id, first_name, last_name, email, phone, goals, status, notes, profile_photo_url, created_at, updated_at')
+      .select('id, workspace_id, first_name, last_name, email, phone, goals, status, notes, profile_photo_url, created_at, updated_at', {
+        count: 'exact',
+      })
       .eq('workspace_id', workspaceId)
       .order('updated_at', { ascending: false })
+      .range(offset, rangeEnd)
 
     if (status && ['active', 'paused', 'completed'].includes(status)) {
       query = query.eq('status', status)
@@ -56,11 +69,12 @@ export async function GET(request: Request) {
       )
     }
 
-    const { data, error } = await query
+    const { data, error, count } = await query
 
     if (error) {
+      console.error('GET /api/clients', error)
       return NextResponse.json(
-        { error: error.message || 'Could not load clients' },
+        { error: 'Something went wrong. Please try again.' },
         { status: 500 }
       )
     }
@@ -70,16 +84,75 @@ export async function GET(request: Request) {
     if (ids.length > 0) {
       const { data: rewardRows } = await supabase
         .from('client_rewards')
-        .select('client_id, total_xp, level')
+        .select(
+          'client_id, total_xp, level, current_streak_days, last_activity_at, assignments_completed, assignments_total'
+        )
         .eq('workspace_id', workspaceId)
         .in('client_id', ids)
       const rmap = new Map((rewardRows ?? []).map((r) => [r.client_id, r]))
-      merged = list.map((c) => ({
-        ...c,
-        rewards: rmap.get(c.id) ?? null,
-      }))
+
+      const { data: sessionRows } = await supabase
+        .from('sessions')
+        .select('client_id, status')
+        .eq('workspace_id', workspaceId)
+        .in('client_id', ids)
+
+      const completedCountByClient = new Map<string, number>()
+      for (const id of ids) {
+        completedCountByClient.set(id, 0)
+      }
+      for (const row of sessionRows ?? []) {
+        if (row.status !== 'completed') continue
+        const cid = row.client_id as string
+        completedCountByClient.set(cid, (completedCountByClient.get(cid) ?? 0) + 1)
+      }
+
+      const { data: programRows } = await supabase
+        .from('client_programs')
+        .select('client_id, created_at, programs ( title )')
+        .eq('workspace_id', workspaceId)
+        .in('client_id', ids)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+
+      const activeProgramTitleByClient = new Map<string, string>()
+      for (const row of programRows ?? []) {
+        const cid = row.client_id as string
+        if (activeProgramTitleByClient.has(cid)) continue
+        const raw = row.programs as { title?: string | null } | { title?: string | null }[] | null
+        const title = Array.isArray(raw) ? raw[0]?.title : raw?.title
+        const t = title?.trim()
+        if (t) activeProgramTitleByClient.set(cid, t)
+      }
+
+      merged = list.map((c) => {
+        const n = completedCountByClient.get(c.id) ?? 0
+        const rw = rmap.get(c.id)
+        const engagement = calculateEngagementScore({
+          last_activity_at: rw?.last_activity_at ?? null,
+          assignments_completed: rw?.assignments_completed ?? 0,
+          assignments_total: rw?.assignments_total ?? 0,
+          streak_days: rw?.current_streak_days ?? 0,
+        })
+        return {
+          ...c,
+          rewards: rw ?? null,
+          sessionsCompletedCount: n,
+          activeProgramTitle: activeProgramTitleByClient.get(c.id) ?? null,
+          engagement,
+        }
+      })
     }
-    const res = NextResponse.json({ data: merged })
+    const total = count ?? merged.length
+    const res = NextResponse.json({
+      data: merged,
+      pagination: {
+        limit,
+        offset,
+        total,
+        hasMore: offset + merged.length < total,
+      },
+    })
     res.headers.set('Cache-Control', 'private, max-age=30')
     return res
   } catch {
@@ -151,7 +224,7 @@ export async function POST(request: Request) {
       .maybeSingle()
     if (existingInWorkspace) {
       return NextResponse.json(
-        { error: 'A client with this email already exists' },
+        { error: 'A client with this email already exists in your workspace.' },
         { status: 400 }
       )
     }
@@ -175,8 +248,9 @@ export async function POST(request: Request) {
       const looksDuplicate =
         msg.includes('already') || msg.includes('registered') || msg.includes('exists')
       if (!looksDuplicate) {
+        console.error('POST /api/clients createUser', authErr)
         return NextResponse.json(
-          { error: authErr?.message || 'Could not create client account' },
+          { error: 'Could not create client account. Please try again.' },
           { status: 500 }
         )
       }
@@ -209,8 +283,9 @@ export async function POST(request: Request) {
         },
       })
       if (updErr) {
+        console.error('POST /api/clients updateUserById', updErr)
         return NextResponse.json(
-          { error: updErr.message || 'Could not reset client account' },
+          { error: 'Could not create client account. Please try again.' },
           { status: 500 }
         )
       }
@@ -237,8 +312,9 @@ export async function POST(request: Request) {
       if (createdNewAuthUser) {
         await service.auth.admin.deleteUser(newUserId)
       }
+      console.error('POST /api/clients profile upsert', profileErr)
       return NextResponse.json(
-        { error: profileErr.message || 'Could not create client profile' },
+        { error: 'Something went wrong. Please try again.' },
         { status: 500 }
       )
     }
@@ -263,10 +339,14 @@ export async function POST(request: Request) {
         await service.auth.admin.deleteUser(newUserId)
       }
       if (error.code === '23505') {
-        return NextResponse.json({ error: 'A client with this email already exists' }, { status: 400 })
+        return NextResponse.json(
+          { error: 'A client with this email already exists in your workspace.' },
+          { status: 400 }
+        )
       }
+      console.error('POST /api/clients insert', error)
       return NextResponse.json(
-        { error: error.message || 'Could not create client' },
+        { error: 'Something went wrong. Please try again.' },
         { status: 500 }
       )
     }

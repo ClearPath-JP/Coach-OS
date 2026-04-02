@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     const { data: rows, error } = await q
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
     }
 
     const workspaceIds = [...new Set((rows ?? []).map((r) => r.workspace_id).filter(Boolean))] as string[]

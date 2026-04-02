@@ -1,6 +1,8 @@
 # ClearPath Coach Operating System — V2  
 # .cursorrules — Read this before every single session
 
+**Canonical copy:** the repo root **`.cursorrules`** file is authoritative. This file is a companion copy; if they diverge, follow **`.cursorrules`**.
+
 This document is the single source of rules for Cursor in this project. It is also used as `.cursorrules` at the project root so Cursor reads it automatically in every session. Follow these rules for all new and modified code.
 
 ---
@@ -10,7 +12,7 @@ This document is the single source of rules for Cursor in this project. It is al
 - **Project:** ClearPath Coach Operating System  
 - **Version:** 2.0  
 - **Type:** Multi-tenant SaaS — coaching platform  
-- **Stack:** Next.js 14 (App Router), Supabase, Vercel, TypeScript, Tailwind CSS  
+- **Stack:** Next.js 16 (App Router), Supabase, Vercel, TypeScript, Tailwind CSS  
 - **App URL:** app.clearpath.com  
 - **Marketing URL:** clearpath.com (separate repo — do not touch from this project)
 
@@ -61,8 +63,8 @@ types/
   database.ts       → Supabase generated types
   index.ts          → shared TypeScript types
 
-middleware.ts       → route protection and role-based redirects
-_docs/              → all 49 project documents
+proxy.ts            → Next.js 16 middleware (route protection); do not add root middleware.ts
+_docs/              → project documentation (`00-index.md` for map)
 _design/            → 6 design documents
 _docs/skills/       → 10 skill documents
 ```
@@ -486,7 +488,7 @@ When working on these areas, read the skill doc first:
 | Auth & permissions | _docs/11-auth-permissions.md |
 | User flows | _docs/12-user-flows.md |
 | V2 roadmap | _docs/13-v2-roadmap.md |
-| Multi-tenant schema | _docs/T1-multi-tenant-schema.md |
+| Doc index | _docs/00-index.md |
 | Billing/Stripe | _docs/T2-billing-subscriptions.md |
 | Email system | _docs/M1-email-system.md |
 | Onboarding wizard | _docs/M2-onboarding-flow.md |

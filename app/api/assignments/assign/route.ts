@@ -122,7 +122,7 @@ export async function POST(request: Request) {
       .single()
 
     if (insErr) {
-      return NextResponse.json({ error: insErr.message || 'Could not create assignment' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not create assignment' }, { status: 500 })
     }
 
     const { data: rewards } = await supabase

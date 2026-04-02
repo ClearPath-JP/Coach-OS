@@ -70,9 +70,9 @@ export async function GET(request: Request) {
       .order('scheduled_time', { ascending: true })
       .limit(400)
     return NextResponse.json({ data: data ?? [] })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Something went wrong' },
+      { error: 'Something went wrong' },
       { status: 500 }
     )
   }
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not create session' },
+        { error: 'Could not create session' },
         { status: 500 }
       )
     }
@@ -230,9 +230,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ data: { id: inserted.id } })
-  } catch (err) {
+  } catch {
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Something went wrong — try again' },
+      { error: 'Something went wrong — try again' },
       { status: 500 }
     )
   }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { SESSION_DURATIONS, TIME_SLOTS } from './sessionFormOptions'
@@ -40,6 +41,7 @@ export function BookSessionModal({
   rescheduleFromSessionId = null,
   initialDurationMinutes = null,
 }: BookSessionModalProps) {
+  const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [clientId, setClientId] = useState('')
   const [date, setDate] = useState('')
@@ -282,20 +284,39 @@ export function BookSessionModal({
             <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
               Client <span className="text-[var(--color-error)]">*</span>
             </label>
-            <select
-              value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
-              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
-              required
-              disabled={clientsLoading}
-            >
-              <option value="">Select client</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {[c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unnamed'}
-                </option>
-              ))}
-            </select>
+            {!clientsLoading && clients.length === 0 ? (
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4 text-center">
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  Add clients before booking a session
+                </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mt-3 w-full"
+                  onClick={() => {
+                    onClose()
+                    router.push('/coach/clients')
+                  }}
+                >
+                  Go to Clients
+                </Button>
+              </div>
+            ) : (
+              <select
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] min-h-[44px]"
+                required
+                disabled={clientsLoading}
+              >
+                <option value="">Select client</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {[c.first_name, c.last_name].filter(Boolean).join(' ') || 'Unnamed'}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
@@ -472,7 +493,11 @@ export function BookSessionModal({
                 <Button type="button" variant="secondary" onClick={onClose}>
                   Cancel
                 </Button>
-                <Button type="button" disabled={clientsLoading} onClick={() => setStep(2)}>
+                <Button
+                  type="button"
+                  disabled={clientsLoading || clients.length === 0}
+                  onClick={() => setStep(2)}
+                >
                   Next: Payment →
                 </Button>
               </>

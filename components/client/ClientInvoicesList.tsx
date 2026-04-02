@@ -25,12 +25,14 @@ type BrandingData = {
   zelleEmailOrPhone?: string | null
   paymentInstructions?: string | null
   stripeConnected?: boolean | null
+  stripeCardPaymentsEnabled?: boolean | null
   cashapp_username?: string | null
   venmo_username?: string | null
   paypal_email?: string | null
   zelle_email_or_phone?: string | null
   payment_instructions?: string | null
   stripe_connected?: boolean | null
+  stripe_card_payments_enabled?: boolean | null
 }
 
 function formatAmount(cents: number, currency: string): string {
@@ -49,6 +51,7 @@ function pickBranding(b: BrandingData | null) {
     zelle: (b.zelle_email_or_phone ?? b.zelleEmailOrPhone)?.trim() || '',
     instructions: (b.payment_instructions ?? b.paymentInstructions)?.trim() || '',
     stripe: Boolean(b.stripe_connected ?? b.stripeConnected),
+    stripeCard: Boolean(b.stripe_card_payments_enabled ?? b.stripeCardPaymentsEnabled),
   }
 }
 
@@ -94,6 +97,50 @@ function PaymentMethodRow({
   )
 }
 
+function StripeInvoicePayButton({ invoiceId, amountLabel }: { invoiceId: string; amountLabel: string }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const pay = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/invoices/${encodeURIComponent(invoiceId)}/checkout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string
+        data?: { url?: string; checkoutUrl?: string }
+      }
+      if (!res.ok) {
+        setError(typeof json.error === 'string' ? json.error : 'Could not start checkout')
+        return
+      }
+      const url = json.data?.checkoutUrl ?? json.data?.url
+      if (typeof url === 'string' && url.length > 0) {
+        window.location.href = url
+        return
+      }
+      setError('Checkout did not return a link')
+    } catch {
+      setError('Something went wrong — try again')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+      <Button type="button" className="w-full bg-indigo-600 text-white hover:bg-indigo-700" disabled={loading} onClick={() => void pay()}>
+        {loading ? 'Opening secure checkout…' : `Pay ${amountLabel} by card`}
+      </Button>
+      <p className="mt-2 text-[12px] text-indigo-800">Secure checkout with Stripe.</p>
+      {error ? <p className="mt-2 text-[12px] text-red-700">{error}</p> : null}
+    </div>
+  )
+}
+
 function HowToPayBlock({
   clientId,
   invoiceId,
@@ -127,6 +174,7 @@ function HowToPayBlock({
     branding.venmo ||
     branding.paypal ||
     branding.zelle ||
+    branding.stripeCard ||
     branding.stripe
 
   const handleSentPayment = async () => {
@@ -204,18 +252,11 @@ function HowToPayBlock({
               iconBgClass="bg-violet-600"
             />
           ) : null}
-          {branding.stripe ? (
-            <div className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5">
-              <span
-                className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-ink)] text-xs font-bold text-white"
-                aria-hidden
-              >
-                S
-              </span>
-              <p className="text-[13px] text-[var(--color-ink)]">
-                Card (Stripe): message your coach for a secure payment link if you haven&apos;t received one.
-              </p>
-            </div>
+          {branding.stripeCard ? <StripeInvoicePayButton invoiceId={invoiceId} amountLabel={amountLabel} /> : null}
+          {!branding.stripeCard && branding.stripe ? (
+            <p className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[13px] text-[var(--color-muted)]">
+              Your coach is still finishing Stripe card payments. Use another method above or check Messages.
+            </p>
           ) : null}
         </div>
       )}
@@ -254,6 +295,7 @@ const EMPTY_BRANDING = {
   zelle: '',
   instructions: '',
   stripe: false,
+  stripeCard: false,
 }
 
 export function ClientInvoicesList({ clientId, invoices }: { clientId: string; invoices: ClientInvoiceRow[] }) {

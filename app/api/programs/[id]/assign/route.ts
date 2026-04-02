@@ -108,7 +108,7 @@ export async function POST(request: Request, context: RouteContext) {
         )
       }
       return NextResponse.json(
-        { error: error.message || 'Could not assign program' },
+        { error: 'Could not assign program' },
         { status: 500 }
       )
     }

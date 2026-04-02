@@ -2,6 +2,8 @@
 
 This document describes the Supabase/PostgreSQL schema as defined in `supabase/migrations/`. It covers every table, columns (type and nullability), foreign keys, indexes, and Row Level Security (RLS) policies. Gaps and inconsistencies are flagged at the end.
 
+**Last updated:** 2026-04-02 — added goals, testimonials, daily check-ins, structured session notes, Drive streaming columns, admin/super-admin fields, and corrected storage/calendar notes.
+
 **Naming note:** The codebase uses `client_id` in two senses: (1) **tenant identifier** (TEXT), i.e. which “tenant” or “brand” (e.g. `demo`) a row belongs to; (2) **client record ID** (UUID), i.e. FK to `public.clients` (the person being coached). Where ambiguous, this doc uses “tenant_id” for (1) and “client_id (UUID)” for (2).
 
 ---
@@ -17,10 +19,12 @@ Extends `auth.users`; one row per app user (coach or client).
 | `id` | UUID | NOT NULL | PK, FK → `auth.users(id)` |
 | `email` | TEXT | nullable | |
 | `full_name` | TEXT | nullable | |
-| `role` | TEXT | NOT NULL | CHECK: `'coach' \| 'client'` |
+| `role` | TEXT | NOT NULL | `'coach' \| 'client'` (and app may set related metadata for admins) |
+| `workspace_id` | UUID | nullable | FK → `workspaces`; coach’s current workspace |
+| `is_super_admin` | BOOLEAN | NOT NULL (default false) | Platform admin; gated by `ADMIN_EMAIL` + policies; cannot self-grant |
 | `created_at` | TIMESTAMPTZ | NOT NULL (default NOW()) | |
 | `updated_at` | TIMESTAMPTZ | NOT NULL (default NOW()) | |
-| `tenant_id` | TEXT | nullable | Tenant/brand (e.g. `demo`) |
+| `tenant_id` | TEXT | nullable | **Legacy** — removed in newer migrations; use `workspace_id` |
 | `stripe_connect_account_id` | TEXT | nullable | Stripe Connect account |
 | `stripe_connect_onboarded_at` | TIMESTAMPTZ | nullable | |
 | `display_name` | TEXT | nullable | Coach display name |
@@ -182,14 +186,29 @@ Ordered lessons (video/link/note/image) within a program.
 | Column | Type | Nullable | Notes |
 |--------|------|----------|--------|
 | `id` | UUID | NOT NULL | PK |
+| `workspace_id` | UUID | NOT NULL | FK → `workspaces` (multi-tenant) |
 | `coach_id` | UUID | NOT NULL | FK → `profiles(id)` ON DELETE CASCADE |
 | `title` | TEXT | NOT NULL | |
 | `description` | TEXT | nullable | |
-| `url` | TEXT | NOT NULL | |
+| `url` | TEXT | nullable | Playback URL or null while Drive-only |
 | `category` | TEXT | nullable | |
 | `created_at` | TIMESTAMPTZ | NOT NULL (default NOW()) | |
 | `thumbnail_url` | TEXT | nullable | |
-| `client_id` | TEXT | nullable | Tenant |
+| `client_id` | TEXT | nullable | Legacy tenant label where present |
+| **Drive / streaming** | | | |
+| `drive_file_id` | TEXT | nullable | Google Drive file id |
+| `drive_folder_id` | TEXT | nullable | Folder id used when importing |
+| `drive_file_name` | TEXT | nullable | |
+| `drive_mime_type` | TEXT | nullable | |
+| `drive_thumbnail_url` | TEXT | nullable | |
+| `drive_web_view_link` | TEXT | nullable | |
+| `processing_status` | TEXT | nullable | `'queued' \| 'processing' \| 'ready' \| 'failed' \| 'deleted'` (pipeline) |
+| `playback_url` | TEXT | nullable | Resolved playback |
+| `duration_seconds` | INTEGER | nullable | |
+| `file_size_bytes` | BIGINT | nullable | |
+| `storage_provider` | TEXT | nullable | e.g. `supabase`, `google_drive` |
+| `uploaded_by_client_id` | UUID | nullable | FK → `clients` when client uploaded for assignment |
+| `deleted_at` | TIMESTAMPTZ | nullable | Soft delete |
 
 **Foreign keys**
 
@@ -197,12 +216,13 @@ Ordered lessons (video/link/note/image) within a program.
 
 **Indexes**
 
-- `idx_videos_client_id` ON `client_id`
+- `idx_videos_client_id` ON `client_id` (where used)  
+- `idx_videos_workspace_drive_file` on `(workspace_id, drive_file_id)` partial
 
 **RLS**
 
-- **Coaches can manage videos in their tenant:** ALL where tenant and coach match  
-- **Clients can view assigned videos:** via `video_assignments` (SELECT on that table)
+- **Coaches can manage videos in their workspace:** ALL via `current_workspace_id()` / coach membership  
+- **Clients can view assigned videos:** via `video_assignments` and portal APIs
 
 ---
 
@@ -319,6 +339,12 @@ Booked sessions (can link to session_request and availability_slot).
 | `session_request_id` | UUID | nullable | FK → `session_requests(id)` ON DELETE SET NULL |
 | `session_product_id` | UUID | nullable | FK → `session_products(id)` ON DELETE SET NULL |
 | `amount_cents` | INTEGER | nullable | |
+| `workspace_id` | UUID | nullable | FK → `workspaces` (V2 multi-tenant) |
+| **Structured notes (20260405000000)** | | | |
+| `coach_private_notes` | TEXT | nullable | Coach-only |
+| `session_summary` | TEXT | nullable | Shareable summary for client |
+| `action_items` | JSONB | NOT NULL (default `[]`) | Array of `{ id, text, assigned_to, completed, completed_at }` |
+| `notes_sent_at` | TIMESTAMPTZ | nullable | When summary was sent to client |
 
 **Foreign keys**
 
@@ -338,9 +364,9 @@ Booked sessions (can link to session_request and availability_slot).
 
 **RLS**
 
-- **Coaches can manage sessions in their tenant:** ALL where `tenant_id` and coach tenant match  
-- **Clients can view sessions in their tenant:** SELECT where tenant and client record match auth  
-- **Clients can create session requests in their tenant:** INSERT with same checks
+- **Coaches can manage sessions in their workspace:** ALL where workspace/coach rules match (`current_workspace_id()` pattern in migrations)  
+- **Clients can view sessions in their workspace:** SELECT where client row matches auth email  
+- **Clients can create session requests:** INSERT where policies allow
 
 ---
 
@@ -959,14 +985,130 @@ One row per `(client_id, workspace_id)` (unique): `total_xp`, streak fields, ass
 
 Session products for invoicing (`title`, `price_cents`, `duration_minutes`, etc.). **`is_virtual`** BOOLEAN DEFAULT true — online vs in-person pricing/UX.
 
+### 10.7 `public.client_goals`
+
+**Purpose:** Coach-defined measurable goals per client with status and targets.
+
+**Key columns:** `workspace_id`, `client_id`, `coach_id`, `title`, `description`, `category`, `target_value`, `current_value`, `unit`, `target_date`, `status` (`active` \| `achieved` \| `paused` \| `abandoned`), `achieved_at`, timestamps.
+
+**RLS:** Workspace coaches via `current_workspace_id()` on ALL; clients SELECT own rows (email match + workspace).
+
+**Relationships:** `clients`, `workspaces`, `auth.users` (coach).
+
+### 10.8 `public.client_goal_updates`
+
+**Purpose:** Append-only progress checkpoints on a goal.
+
+**Key columns:** `goal_id`, `workspace_id`, `recorded_by`, `previous_value`, `new_value`, `note`, `created_at`.
+
+**RLS:** Workspace ALL; client SELECT where goal belongs to them.
+
+**Relationships:** `client_goals`.
+
+### 10.9 `public.testimonials`
+
+**Purpose:** Client-submitted testimonials; coach approves and may mark public.
+
+**Key columns:** `workspace_id`, `client_id`, `client_name`, `content`, `rating` (1–5), `is_approved`, `is_public`, `source` (`in_app` \| `manual`), `created_at`.
+
+**RLS:** Workspace ALL; client INSERT/SELECT own.
+
+**Relationships:** `clients`, `workspaces`.
+
+### 10.10 `public.daily_checkins`
+
+**Purpose:** One check-in per client per calendar day (mood, energy, short note).
+
+**Key columns:** `workspace_id`, `client_id`, `mood_score` (1–5), `energy_score` (1–5), `note` (max 300 chars), `checkin_date`, `UNIQUE(client_id, checkin_date)`.
+
+**RLS:** Workspace coach ALL; client INSERT/SELECT own.
+
+**Relationships:** `clients`, `workspaces`.
+
+### 10.11 `public.audit_logs`
+
+**Purpose:** Immutable admin/security audit trail (who changed what).
+
+**Key columns:** Typical pattern includes `workspace_id`, actor, action, entity, metadata JSON, `created_at` (see migration `20240326000015_audit_logs.sql`).
+
+**RLS:** Super-admin read; writes via service role / controlled functions.
+
+### 10.12 `public.frontend_error_logs`
+
+**Purpose:** Client-reported or captured frontend errors for admin triage (`/api/error-report`, admin UI).
+
+**Key columns:** Payload, URL, user hint, timestamps (see migration `20240328000020_frontend_error_logs.sql`).
+
+**RLS:** Admin/service patterns; not exposed to coaches in raw form.
+
+### 10.13 `public.weekly_unavailability`
+
+**Purpose:** Coach-specific recurring “blocked” windows (inverse of availability).
+
+**Key columns:** `workspace_id`, `coach_id`, day/time range fields, `created_at` / `updated_at` (see `20240328000023_weekly_unavailability.sql`).
+
+**RLS:** Workspace-scoped coach manage; used when materializing or displaying calendar.
+
+### 10.14 `public.google_drive_connections`
+
+**Purpose:** Store OAuth tokens for Google Drive per workspace (one row per workspace).
+
+**Key columns:** `workspace_id`, `coach_id` (auth user), `access_token`, `refresh_token`, `token_expires_at`, `google_email`, timestamps.
+
+**RLS:** SELECT/INSERT/UPDATE/DELETE where `workspace_id = current_workspace_id()`.
+
+**Relationships:** `workspaces`, `auth.users`.
+
+**Note:** Default Drive **import folder** for the workspace lives on **`workspaces.google_drive_import_folder_id`**, not on this table. Video rows may store `drive_file_id` / `drive_folder_id` for streaming.
+
+### 10.15 `public.workspaces` — Stripe Connect & calendar feed (excerpt)
+
+Additional columns beyond base onboarding/branding:
+
+- **`stripe_connect_account_id`** — Connected account for client invoice checkout.  
+- **`coach_calendar_feed_token`** — Opaque token for unauthenticated iCal subscription URL (see `20260401210000_workspace_coach_calendar_feed_token.sql`).  
+- **`auto_checkin_enabled`**, **`auto_checkin_message`** — Re-engagement automation defaults (`20260403000011_testimonials.sql`).  
+- **`admin_notes`**, **`storage_used_bytes`**, branding accent fields — see earlier sections and migrations.
+
+### 10.16 `public.clients` — engagement columns (excerpt)
+
+- **`last_auto_checkin_at`** — Throttle for automated re-engagement check-in messages (`20260403000011_testimonials.sql`).
+
+### 10.17 `public.subscriptions`
+
+**Purpose:** One row per **workspace** for Stripe SaaS billing (coach’s plan).
+
+**Key columns:** `workspace_id` (UNIQUE), `stripe_customer_id`, `stripe_subscription_id`, `plan` (`free` \| `starter` \| `pro` \| `scale`), `status` (`trialing` \| `active` \| `past_due` \| `cancelled` \| `paused`), `current_period_end`, `trial_ends_at`, `cancel_at_period_end`, timestamps.
+
+**RLS:** Coaches SELECT their workspace’s row only; INSERT/UPDATE/DELETE via **service role** (webhooks / server).
+
+**Relationships:** `workspaces`.
+
+### 10.18 `public.stripe_webhook_events`
+
+**Purpose:** Idempotency store for Stripe webhook `event_id` (prevents double processing).
+
+**RLS:** No user policies; service role only (`20240316000006`, tightened in `20260403000001_stripe_webhook_events_rls.sql`).
+
+### 10.19 In-app notifications
+
+There is **no** standalone `notifications` table in migrations. Client “notifications” in the API/UI are derived from messages, assignments, invoices, etc., or stored in profile/workspace preferences—not a dedicated notifications ledger.
+
 ---
 
 ## 11. Storage
 
-- **Bucket `avatars`:** Public; 2MB limit; MIME types: jpeg, png, gif, webp.  
-- **RLS on `storage.objects`:** Users can INSERT/UPDATE/DELETE only objects under path `{auth.uid()}/...` in bucket `avatars`. Public read via bucket setting.
+Supabase Storage buckets used by the app (see migrations under `supabase/migrations/`):
 
-Video files are not stored in Supabase Storage in the current schema; `videos.url` points to external URLs (e.g. YouTube, Drive, or other hosts). A dedicated **video storage** table or bucket is not present.
+| Bucket | Use |
+|--------|-----|
+| **`avatars`** | Coach/client avatars; public read; path scoped by auth user. |
+| **`programs`** | Program file uploads from coach. |
+| **`videos`** | Coach-pipeline and library video files stored in Supabase (when `storage_provider` / pipeline uses it). |
+| **`assignment-submissions`** | Client-uploaded assignment files and videos (see `20260401140000_…`). |
+| **`workspaces`** | Workspace assets where configured. |
+
+**Video playback:** Many library items stream from **Google Drive** via app proxy (`/api/videos/[id]/stream`) using file metadata and signed tokens; files are not always duplicated into Supabase.
 
 ---
 
@@ -993,18 +1135,15 @@ Video files are not stored in Supabase Storage in the current schema; `videos.ur
 
 ### 13.3 Calendar / scheduling
 
-- **Present:** `availability_slots`, `sessions`, `session_products`, `session_requests`, `client_time_requests`; FKs and tenant RLS are in place.  
-- **Gaps:**  
-  - No dedicated **recurring availability** table (e.g. “every Tuesday 5–7pm”); slots are one-off.  
-  - No **calendar event** or **sync** table (e.g. for iCal/Google); calendar feed is built from `sessions` and `availability_slots` in app/API.  
-  - **Index naming:** `idx_sessions_client_id` indexes `sessions.client_id` (UUID FK to `clients`), not tenant; name can be misleading.
+- **Present:** `recurring_availability`, `availability_slots`, `sessions`, `session_products`, `session_requests`, `client_time_requests`, `weekly_unavailability`; materialization API creates slots from recurring rules.  
+- **iCal:** Coach feed at **`/api/calendar/feed/coach`** (session cookie or `GET /api/calendar/feed/coach?token=…` using workspace feed token). Client feed at **`/api/calendar/feed/client`**.  
+- **Gaps:** No separate Google Calendar sync table; external sync is export/subscribe only unless extended.  
+- **Index naming:** `idx_sessions_client` indexes UUID `sessions.client_id` (person), not tenant text — name can confuse readers.
 
 ### 13.4 Video storage
 
-- **Present:** `videos` (metadata + `url`, `thumbnail_url`), `video_assignments`, `video_completions`.  
-- **Missing:**  
-  - No Supabase Storage bucket or table for **uploaded video files**; all video is external URL–based.  
-  - No **transcoding/encoding status** or **storage path** column if you later add uploads.
+- **Present:** `videos` with Drive ids, streaming metadata, `processing_status`, Supabase path fields when applicable; `video_assignments`, `video_completions`; Storage bucket **`videos`** for uploaded/processed files when used.  
+- **Gaps:** Optional n8n/CloudConvert flows add operational complexity; very large files may need quota and timeout tuning on serverless.
 
 ### 13.5 Program creation
 
@@ -1028,7 +1167,7 @@ Video files are not stored in Supabase Storage in the current schema; `videos.ur
 | **sessions** | `idx_sessions_client_id` is on UUID `client_id` (fighter), not tenant; name misleading. |
 | **stripe_webhook_events** | No RLS (intentional for service-role webhook handler). |
 | **program_lessons** | `video_id` nullable + `UNIQUE(program_id, video_id)`; semantics for non-video lessons may need tightening. |
-| **Video storage** | No table or bucket for uploaded videos; all video is external URL. |
+| **Video storage** | Hybrid: Drive streaming + optional Supabase `videos` bucket; doc Section 11. |
 
 ---
 

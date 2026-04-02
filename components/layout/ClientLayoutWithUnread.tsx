@@ -3,10 +3,12 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { Nav } from '@/components/layout/Nav'
+import { ClientNotificationsBell } from '@/components/layout/ClientNotificationsBell'
 import { ClientPortalDesktopSidebar } from '@/components/layout/ClientPortalSidebar'
 import { MobileNav, clientPortalTabs } from '@/components/layout/MobileNav'
 
 const UNREAD_POLL_MS = 30_000
+const CHECKIN_POLL_MS = 60_000
 
 export function ClientLayoutWithUnread({
   children,
@@ -19,6 +21,7 @@ export function ClientLayoutWithUnread({
   brandName?: string | null
 }) {
   const [unreadCount, setUnreadCount] = useState(0)
+  const [checkInReminderDot, setCheckInReminderDot] = useState(false)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const supabase = useMemo(() => createClient(), [])
 
@@ -34,11 +37,29 @@ export function ClientLayoutWithUnread({
     }
   }, [])
 
+  const fetchCheckinToday = useCallback(async () => {
+    try {
+      const res = await fetch('/api/client/checkin/today', { credentials: 'include' })
+      const json = (await res.json()) as { data?: { checkin: unknown | null } }
+      if (res.ok && json.data) {
+        setCheckInReminderDot(!json.data.checkin)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
   useEffect(() => {
     const interval = setInterval(() => void fetchUnread(), UNREAD_POLL_MS)
     queueMicrotask(() => void fetchUnread())
     return () => clearInterval(interval)
   }, [fetchUnread])
+
+  useEffect(() => {
+    const interval = setInterval(() => void fetchCheckinToday(), CHECKIN_POLL_MS)
+    queueMicrotask(() => void fetchCheckinToday())
+    return () => clearInterval(interval)
+  }, [fetchCheckinToday])
 
   useEffect(() => {
     let cancelled = false
@@ -78,6 +99,12 @@ export function ClientLayoutWithUnread({
     return () => window.removeEventListener('clearpath:unread-messages-updated', handler)
   }, [fetchUnread])
 
+  useEffect(() => {
+    const handler = () => void fetchCheckinToday()
+    window.addEventListener('clearpath:checkin-updated', handler)
+    return () => window.removeEventListener('clearpath:checkin-updated', handler)
+  }, [fetchCheckinToday])
+
   return (
     <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
       <Nav
@@ -86,6 +113,7 @@ export function ClientLayoutWithUnread({
         brandName={brandName}
         showThemeToggle
         clientPortal
+        clientPortalTrailing={<ClientNotificationsBell />}
         className="w-full shrink-0"
       />
       <div className="flex min-h-0 flex-1 flex-row lg:min-h-0 lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]">
@@ -99,7 +127,11 @@ export function ClientLayoutWithUnread({
           </div>
         </div>
       </div>
-      <MobileNav tabs={clientPortalTabs} messageUnreadCount={unreadCount} />
+      <MobileNav
+        tabs={clientPortalTabs}
+        messageUnreadCount={unreadCount}
+        checkInReminderDot={checkInReminderDot}
+      />
     </div>
   )
 }

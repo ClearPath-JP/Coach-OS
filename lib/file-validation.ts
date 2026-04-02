@@ -81,6 +81,23 @@ export function isOleMagic(bytes: Uint8Array): boolean {
   )
 }
 
+/** MP4 / MOV / similar: "ftyp" box typically at byte offset 4. */
+export function isIsoBmffFtypMagic(bytes: Uint8Array): boolean {
+  if (bytes.length < 12) return false
+  return bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70
+}
+
+/** WebM / Matroska EBML header */
+export function isWebmEbmlMagic(bytes: Uint8Array): boolean {
+  return bytes.length >= 4 && bytes[0] === 0x1a && bytes[1] === 0x45 && bytes[2] === 0xdf && bytes[3] === 0xa3
+}
+
+/** Quick server-side check for common web video containers (not a full parse). */
+export async function validateVideoMagicBytes(buffer: ArrayBuffer): Promise<boolean> {
+  const bytes = new Uint8Array(buffer)
+  return isIsoBmffFtypMagic(bytes) || isWebmEbmlMagic(bytes)
+}
+
 export async function validateDocumentMagicBytes(
   buffer: ArrayBuffer,
   mime: string

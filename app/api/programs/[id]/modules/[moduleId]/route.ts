@@ -75,7 +75,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not update module' },
+        { error: 'Could not update module' },
         { status: 500 }
       )
     }
@@ -97,7 +97,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 /**
  * DELETE /api/programs/[id]/modules/[moduleId] — delete module and all its content. Coach only.
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { id: programId, moduleId } = await context.params
     const supabase = await createClient()
@@ -138,7 +138,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (delError) {
       return NextResponse.json(
-        { error: delError.message || 'Could not delete module' },
+        { error: 'Could not delete module' },
         { status: 500 }
       )
     }

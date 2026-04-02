@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       .select('id, scheduled_time, end_time, duration_minutes, status, notes, client_id, clients(first_name, last_name)')
       .single()
 
-    if (error) return NextResponse.json({ error: error.message || 'Could not create session' }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Could not create session' }, { status: 500 })
 
     return NextResponse.json({ data })
   } catch {

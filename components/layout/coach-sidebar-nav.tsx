@@ -4,13 +4,14 @@ import {
   AssignmentsIcon,
   BillingNavIcon,
   ClientsIcon,
-  InvoicesIcon,
   DashboardIcon,
+  InvoicesIcon,
   MessagesIcon,
   PackagesIcon,
   PaymentsIcon,
   ProgramsIcon,
   ScheduleIcon,
+  SettingsNavIcon,
   VideosIcon,
 } from '@/components/layout/coach-nav-icons'
 
@@ -34,7 +35,7 @@ export function getCoachSidebarNav(): {
         items: [
           { href: '/coach/clients', label: 'Clients', icon: <ClientsIcon /> },
           { href: '/coach/messages', label: 'Messages', icon: <MessagesIcon /> },
-          { href: '/coach/schedule', label: 'Calendar', icon: <ScheduleIcon /> },
+          { href: '/coach/schedule', label: 'Schedule', icon: <ScheduleIcon /> },
         ],
       },
       {
@@ -51,6 +52,7 @@ export function getCoachSidebarNav(): {
           { href: '/coach/packages', label: 'Packages', icon: <PackagesIcon /> },
           { href: '/coach/invoices', label: 'Invoices', icon: <InvoicesIcon /> },
           { href: '/coach/payments', label: 'Payments', icon: <PaymentsIcon /> },
+          { href: '/coach/settings', label: 'Settings', icon: <SettingsNavIcon /> },
           { href: '/billing', label: 'Billing', icon: <BillingNavIcon /> },
         ],
       },

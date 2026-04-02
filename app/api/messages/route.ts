@@ -3,6 +3,7 @@ import { coachHasWorkspaceAccess } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { resolveCoachUserIdForClientRow } from '@/lib/resolve-coach-user-for-client'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { notifyCoachOfMessage } from '@/lib/notifications/messages'
 import { normalizeEmail } from '@/lib/utils'
 import { sendMessageSchema } from '@/lib/validations'
 
@@ -84,7 +85,7 @@ export async function GET(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load messages' },
+        { error: 'Could not load messages' },
         { status: 500 }
       )
     }
@@ -148,7 +149,7 @@ export async function POST(request: Request) {
 
     const { data: client, error: clientError } = await supabase
       .from('clients')
-      .select('id, workspace_id, email, coach_id')
+      .select('id, workspace_id, email, coach_id, first_name, last_name')
       .eq('id', clientId)
       .maybeSingle()
 
@@ -221,8 +222,24 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not send message' },
+        { error: 'Could not send message' },
         { status: 500 }
+      )
+    }
+
+    if (isClient) {
+      const clientDisplay =
+        [client.first_name, client.last_name].filter(Boolean).join(' ').trim() ||
+        client.email?.split('@')[0]?.trim() ||
+        'Client'
+      void notifyCoachOfMessage(
+        coachUserId,
+        '',
+        clientDisplay,
+        clientId,
+        contentStored,
+        client.workspace_id,
+        request
       )
     }
 

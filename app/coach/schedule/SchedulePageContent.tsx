@@ -185,7 +185,9 @@ export function SchedulePageContent() {
 
       {/* Availability settings card */}
       <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 md:p-6">
-        <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Your availability</h2>
+        <h2 className="text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--color-text-primary)]">
+          Your availability
+        </h2>
         {loading ? (
           <div className="mt-3 h-20 animate-pulse rounded-lg bg-[var(--color-surface)]" />
         ) : (

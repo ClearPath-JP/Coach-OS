@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { stripe, STRIPE_WEBHOOK_SECRET, STRIPE_PRICES } from '@/lib/stripe'
+import { markSessionInvoicePaidFromStripeCheckout } from '@/lib/stripe-client-invoice-checkout'
 import type Stripe from 'stripe'
 
 /**
@@ -49,6 +50,10 @@ export async function POST(request: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
+        if (session.mode === 'payment' && session.metadata?.type === 'client_invoice') {
+          await markSessionInvoicePaidFromStripeCheckout(supabase, session)
+          return NextResponse.json({ received: true })
+        }
         if (session.mode !== 'subscription' || !session.subscription) {
           return NextResponse.json({ received: true })
         }

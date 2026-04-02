@@ -54,7 +54,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (countError) {
       return NextResponse.json(
-        { error: countError.message || 'Could not load modules' },
+        { error: 'Could not load modules' },
         { status: 500 }
       )
     }
@@ -68,7 +68,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (modulesError) {
       return NextResponse.json(
-        { error: modulesError.message || 'Could not load modules' },
+        { error: 'Could not load modules' },
         { status: 500 }
       )
     }
@@ -168,7 +168,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not update program' },
+        { error: 'Could not update program' },
         { status: 500 }
       )
     }
@@ -191,7 +191,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 /**
  * DELETE /api/programs/[id] — soft delete: set status = archived. Coach only.
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params
     const supabase = await createClient()
@@ -219,7 +219,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not delete program' },
+        { error: 'Could not delete program' },
         { status: 500 }
       )
     }

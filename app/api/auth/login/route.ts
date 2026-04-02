@@ -20,13 +20,16 @@ export async function POST(request: Request) {
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     request.headers.get('x-real-ip') ??
     'unknown'
-  const { success, retryAfter } = await checkRateLimitAsync(`auth-login-ip:${ip}`, {
-    windowMs: 60_000,
-    max: 30,
+  const { success, retryAfter } = await checkRateLimitAsync(`auth-login-api:${ip}`, {
+    windowMs: 15 * 60_000,
+    max: 5,
   })
   if (!success) {
     const res = applyAuthNoStoreHeaders(
-      NextResponse.json({ error: 'Too many attempts — please wait a minute and try again' }, { status: 429 })
+      NextResponse.json(
+        { error: 'Too many attempts — please wait fifteen minutes and try again' },
+        { status: 429 }
+      )
     )
     if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
     return res

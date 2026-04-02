@@ -11,6 +11,7 @@ module.exports = {
     '**/__tests__/05-*.test.ts',
     '**/__tests__/06-*.test.ts',
     '**/__tests__/07-*.test.ts',
+    '**/__tests__/08-*.test.ts',
   ],
   // Jest can discover tests in a non-deterministic order; later suites depend on earlier suites' persisted context.
   testSequencer: '<rootDir>/__tests__/testSequencer.cjs',

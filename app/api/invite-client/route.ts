@@ -76,17 +76,17 @@ export async function POST(request: Request) {
     )
 
     if (inviteError) {
-      const msg = inviteError.message || 'Failed to send invite'
-      if (msg.includes('already been registered') || msg.includes('already exists')) {
+      const msg = inviteError.message ?? 'Could not send invite email'
+      if (msg.toLowerCase().includes('already')) {
         return NextResponse.json(
-          { error: 'This email already has an account' },
-          { status: 400 }
+          {
+            error:
+              'This email already has a ClearPath account. The client can log in at /client-login.',
+          },
+          { status: 409 }
         )
       }
-      return NextResponse.json(
-        { error: msg },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: msg }, { status: 500 })
     }
 
     if (!inviteData?.user) {

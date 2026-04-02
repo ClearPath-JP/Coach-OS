@@ -542,3 +542,46 @@ tr:hover td {
   min-height: 0;
   overflow: hidden;
 }
+
+/* Client portal — XP bar micro-celebration when progress increases */
+@keyframes xpBarCelebrate {
+  0% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+  35% {
+    filter: brightness(1.12);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent),
+      0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: none;
+  }
+}
+
+.animate-xp-bar-celebrate {
+  animation: xpBarCelebrate 0.85s var(--ease-out) 1;
+}
+
+/* Program completion — lightweight confetti (no library) */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  z-index: 200;
+  pointer-events: none;
+  animation: confetti-fall 3s ease-in forwards;
+}

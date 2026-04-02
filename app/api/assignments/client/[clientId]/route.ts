@@ -63,7 +63,7 @@ export async function GET(_request: Request, context: Ctx) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not load assignments' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not load assignments' }, { status: 500 })
     }
 
     const assignmentIds = (rows ?? []).map((r) => r.id)

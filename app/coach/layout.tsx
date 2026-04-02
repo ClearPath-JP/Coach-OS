@@ -1,3 +1,4 @@
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getAccentLight, resolveAccentFamily } from '@/lib/accent-colors'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
@@ -47,6 +48,20 @@ export default async function CoachLayout({
     logoUrl: null,
   }
   const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+  const pathname = (await headers()).get('x-pathname') ?? ''
+  if (workspaceId && !pathname.startsWith('/coach/suspended')) {
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('status, current_period_end')
+      .eq('workspace_id', workspaceId)
+      .maybeSingle()
+    if (sub?.status === 'past_due' || sub?.status === 'cancelled') {
+      const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : new Date(0)
+      if (periodEnd < new Date()) {
+        redirect('/billing?warning=subscription')
+      }
+    }
+  }
   if (workspaceId) {
     const { data: workspace } = await supabase
       .from('workspaces')

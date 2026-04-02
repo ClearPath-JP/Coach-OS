@@ -4,15 +4,20 @@ The complete operating system for professional coaches.
 
 ## What's included
 
-- Client management with invite flow
-- Real-time messaging
-- Drag and drop calendar scheduling
-- Program builder with video support
-- Session packages and payment tracking
-- Analytics dashboard
-- White label branding
-- Dark mode and color themes
-- Multi-tenant (unlimited coaches in one deployment)
+- Client management with invite flow and client portal
+- Real-time messaging and coach **broadcast** messages
+- Drag-and-drop calendar, recurring availability, **weekly unavailability**, session booking
+- **Coach iCal feed** (tokenized) and client session feed
+- Program builder (modules, content, progress) and **assignments** with **XP / rewards**
+- **Goals** and **goal updates**; **daily client check-ins**
+- **Testimonials** (submit, approve, public flag) and **re-engagement** automation hooks
+- Session **notes**, **shared summary**, **action items** (client can check off assigned items)
+- Video library: **Google Drive import** and **in-app streaming** (signed tokens; no n8n required for playback)
+- Session packages, invoicing, **Stripe Connect** checkout for client payments, SaaS billing for coaches
+- Analytics dashboard, **revenue vs last month**, **attention-needed** insights, program completion celebration
+- **Super-admin panel** (workspaces, coaches, subscriptions, revenue, audit, errors, system)
+- White-label branding, **dark mode**, **8 color themes**
+- Multi-tenant: many coaches/workspaces on one Supabase project (RLS-isolated)
 
 ## Tech stack
 
@@ -87,12 +92,14 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for full instructions.
 
 | Command | Description |
 |--------|-------------|
-| `pnpm run dev` | Start dev server |
+| `pnpm run dev` | Start dev server (Next.js 16) |
 | `pnpm run build` | Production build |
-| `pnpm run test` | Run all tests |
+| `pnpm run test` | Run all tests (**59** cases, **8** suites under `__tests__/`) |
+| `pnpm run lint` | ESLint |
 | `pnpm run setup` | First-time setup wizard |
 | `pnpm run seed:demo` | Add demo data (demo@clearpath.com workspace) |
 | `pnpm run reset:demo` | Remove demo data |
+| `pnpm run create:demo` | Create demo coach workspace (`scripts/create-demo-coach.ts`) |
 | `pnpm run setup:admin` | Create/promote super admin (`CLEARPATH_ADMIN_*` in `.env.local`; then `/login` → `/admin`) |
 | `pnpm run wipe:dev` | **Dev only:** delete all workspaces + all Auth users (`CLEARPATH_DEV_WIPE_CONFIRM` — see `.env.example`) |
 | `pnpm run seed:test-client` | One test client for demo coach (`coach@example.com` workspace); run after `create:demo` |

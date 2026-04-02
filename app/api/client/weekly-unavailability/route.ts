@@ -29,10 +29,10 @@ export async function GET() {
   ])
 
   if (coachRes.error) {
-    return NextResponse.json({ error: coachRes.error.message || 'Could not load' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not load' }, { status: 500 })
   }
   if (mineRes.error) {
-    return NextResponse.json({ error: mineRes.error.message || 'Could not load' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not load' }, { status: 500 })
   }
 
   const coachRows = (coachRes.data ?? []) as WeeklyUnavailabilityRowDb[]
@@ -66,7 +66,7 @@ export async function PUT(request: Request) {
   const { error: delErr } = await supabase.from('weekly_unavailability').delete().eq('client_id', clientId)
 
   if (delErr) {
-    return NextResponse.json({ error: delErr.message || 'Could not update' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not update' }, { status: 500 })
   }
 
   if (blocks.length === 0) {
@@ -89,7 +89,7 @@ export async function PUT(request: Request) {
     .select('*')
 
   if (insErr) {
-    return NextResponse.json({ error: insErr.message || 'Could not save' }, { status: 500 })
+    return NextResponse.json({ error: 'Could not save' }, { status: 500 })
   }
 
   const rows = (inserted ?? []) as WeeklyUnavailabilityRowDb[]

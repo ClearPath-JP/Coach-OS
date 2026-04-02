@@ -30,7 +30,7 @@ export async function GET() {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load availability' },
+        { error: 'Could not load availability' },
         { status: 500 }
       )
     }
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not create availability' },
+        { error: 'Could not create availability' },
         { status: 500 }
       )
     }

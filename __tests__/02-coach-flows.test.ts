@@ -5,6 +5,7 @@ import {
   CLIENT_EMAIL,
   fetchJson,
   persistTestContext,
+  resetCoachApiFlowContext,
   sessionCookiesFromPassword,
   testContext,
 } from './setup'
@@ -26,6 +27,7 @@ function uniqueSessionDateTime(): { date: string; startTime: string } {
 describe('coach flows', () => {
   beforeAll(async () => {
     clearPersistedTestContextFile()
+    resetCoachApiFlowContext()
     await ensureCoachAuthAndWorkspace()
     await deleteTestClientRowForEmail()
   })
@@ -64,7 +66,7 @@ describe('coach flows', () => {
       body: JSON.stringify({ email: CLIENT_EMAIL }),
       cookieJar: testContext.coachCookie,
     })
-    if ([200, 400].includes(res.status)) return
+    if ([200, 400, 409].includes(res.status)) return
     console.warn('[coach-flows] invite-client:', res.status, json)
   })
 

@@ -2,21 +2,28 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Textarea } from '@/components/ui/Input'
-import { differenceInDays, eachWeekOfInterval, endOfWeek, isWithinInterval, parseISO, startOfWeek, subWeeks } from 'date-fns'
+import { Input, Textarea } from '@/components/ui/Input'
+import { Modal } from '@/components/ui/Modal'
+import { differenceInDays, eachWeekOfInterval, endOfWeek, format, isWithinInterval, parseISO, startOfWeek, subWeeks } from 'date-fns'
 import { getLevelFromXp } from '@/lib/xp-system'
+import { ClientDailyCheckinsCoachSection } from '@/components/coach/ClientDailyCheckinsCoachSection'
 import { AssignProgramToClientModal } from '@/components/coach/AssignProgramToClientModal'
+import { ClientGoalsTab } from '@/components/coach/ClientGoalsTab'
+import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_METHOD_STYLES,
   type PaymentMethodValue,
 } from '@/lib/payment-methods'
+import { calculateEngagementScore, engagementLabelText } from '@/lib/client-engagement'
 import { formatCents } from '@/lib/format-currency'
+import type { SessionActionItemRow } from '@/lib/sessions/action-items'
 
 type ClientPaymentRow = {
   id: string
@@ -36,6 +43,8 @@ type ClientRewards = {
   last_activity_at: string | null
 } | null
 
+type EngagementInfo = ReturnType<typeof calculateEngagementScore>
+
 type Client = {
   id: string
   first_name: string | null
@@ -49,6 +58,7 @@ type Client = {
   created_at: string
   updated_at: string
   rewards?: ClientRewards
+  engagement?: EngagementInfo
 }
 
 type CoachAssignmentRow = {
@@ -107,14 +117,14 @@ function ClientProgressPanel({
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Card variant="raised" padding="lg">
-          <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-2">XP and level</h2>
+          <h2 className="mb-2 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">XP and level</h2>
           <p className="text-2xl font-semibold tabular-nums text-[var(--color-ink)]">{xp} XP</p>
           <p className="mt-1 text-sm text-[var(--color-muted)]">
             Level {levelInfo.level}: {levelInfo.name}
           </p>
         </Card>
         <Card variant="raised" padding="lg">
-          <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-2">Assignments</h2>
+          <h2 className="mb-2 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">Assignments</h2>
           <p className="text-2xl font-semibold tabular-nums text-[var(--color-ink)]">{completionPct}%</p>
           <p className="mt-1 text-sm text-[var(--color-muted)]">
             {doneA} completed of {totalA} assigned
@@ -126,7 +136,9 @@ function ClientProgressPanel({
       </div>
 
       <Card variant="raised" padding="lg">
-        <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-4">Approvals by week</h2>
+        <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
+          Approvals by week
+        </h2>
         <div className="flex h-36 items-end gap-2">
           {weeks.map((wStart, i) => {
             const c = counts[i] ?? 0
@@ -148,7 +160,9 @@ function ClientProgressPanel({
       </Card>
 
       <Card variant="raised" padding="lg">
-        <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-3">Recently completed</h2>
+        <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
+          Recently completed
+        </h2>
         {recentApproved.length === 0 ? (
           <p className="text-sm text-[var(--color-muted)]">No approved assignments yet.</p>
         ) : (
@@ -175,7 +189,118 @@ function statusBadgeVariant(s: string): 'active' | 'inactive' | 'pending' {
   return 'inactive'
 }
 
+type SessionNotesHistoryRow = {
+  sessionId: string
+  scheduledTime: string
+  sessionSummary: string | null
+  notesSentAt: string | null
+  actionItemsTotal: number
+  actionItemsCompleted: number
+  actionItems: SessionActionItemRow[]
+}
+
+function RecentSessionNotesSection({ clientId }: { clientId: string }) {
+  const [sessions, setSessions] = useState<SessionNotesHistoryRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/clients/${encodeURIComponent(clientId)}/session-notes-history`)
+        const json = (await res.json()) as { data?: { sessions?: SessionNotesHistoryRow[] } }
+        if (!cancelled && res.ok && json.data?.sessions) {
+          setSessions(json.data.sessions)
+        } else if (!cancelled) {
+          setSessions([])
+        }
+      } catch {
+        if (!cancelled) setSessions([])
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [clientId])
+
+  if (loading) {
+    return (
+      <Card variant="raised" padding="lg">
+        <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
+          Recent session notes
+        </h2>
+        <div className="h-20 animate-pulse rounded-lg bg-[var(--color-border)]/40" />
+      </Card>
+    )
+  }
+
+  if (sessions.length === 0) {
+    return null
+  }
+
+  return (
+    <Card variant="raised" padding="lg">
+      <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
+        Recent session notes
+      </h2>
+      <ul className="space-y-2">
+        {sessions.map((s) => {
+          const preview = (s.sessionSummary ?? '').trim().slice(0, 80)
+          const more = (s.sessionSummary ?? '').trim().length > 80 ? '…' : ''
+          const open = expanded === s.sessionId
+          const clientItems = s.actionItems.filter((i) => i.assigned_to === 'client')
+          return (
+            <li key={s.sessionId} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)]">
+              <button
+                type="button"
+                onClick={() => setExpanded((id) => (id === s.sessionId ? null : s.sessionId))}
+                className="flex w-full min-h-[44px] flex-col items-start gap-1 px-4 py-3 text-left"
+              >
+                <span className="text-[13px] font-medium text-[var(--color-ink)]">
+                  {format(parseISO(s.scheduledTime), 'MMMM d, yyyy')}
+                </span>
+                <span className="text-[14px] text-[var(--color-muted)]">
+                  {preview}
+                  {more}
+                </span>
+                <span className="text-[12px] text-[var(--color-muted)]">
+                  Action items: {s.actionItemsCompleted} of {s.actionItemsTotal} complete
+                </span>
+              </button>
+              {open ? (
+                <div className="border-t border-[var(--color-border)] px-4 py-3">
+                  <p className="whitespace-pre-wrap text-[15px] text-[var(--color-text-primary)]">
+                    {s.sessionSummary?.trim() || '—'}
+                  </p>
+                  {clientItems.length > 0 ? (
+                    <ul className="mt-3 space-y-1">
+                      {clientItems.map((item) => (
+                        <li
+                          key={item.id}
+                          className="text-[14px] text-[var(--color-muted)]"
+                        >
+                          {item.completed ? '☑' : '☐'} {item.text}
+                          {item.completed ? <span className="ml-2 text-emerald-600">Done</span> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
+    </Card>
+  )
+}
+
 export function ClientDetailContent({ clientId }: { clientId: string }) {
+  const router = useRouter()
   const [client, setClient] = useState<Client | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -187,13 +312,18 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
   const [inviteSending, setInviteSending] = useState(false)
   const [clientPrograms, setClientPrograms] = useState<{ programId: string; title: string; status: string; totalModules: number; modulesCompleted: number; assignedAt: string }[]>([])
   const [assignProgramOpen, setAssignProgramOpen] = useState(false)
-  const [tab, setTab] = useState<'overview' | 'payments' | 'progress'>('overview')
+  const [tab, setTab] = useState<'overview' | 'goals' | 'payments' | 'progress'>('overview')
   const [assignRows, setAssignRows] = useState<CoachAssignmentRow[]>([])
   const [assignLoading, setAssignLoading] = useState(false)
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [paymentsTotal, setPaymentsTotal] = useState<number | null>(null)
   const [paymentRows, setPaymentRows] = useState<ClientPaymentRow[]>([])
   const [paymentsLoading, setPaymentsLoading] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteAckIrreversible, setDeleteAckIrreversible] = useState(false)
+  const [deleteNameConfirm, setDeleteNameConfirm] = useState('')
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [quickInvoiceOpen, setQuickInvoiceOpen] = useState(false)
 
   const loadPaymentsTab = useCallback(async () => {
     setPaymentsLoading(true)
@@ -405,6 +535,18 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
       <PageHeader title={fullName}>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={statusBadgeVariant(client.status)}>{client.status}</Badge>
+          {client.engagement ? (
+            <span
+              className="inline-flex items-center rounded-full border border-[var(--border-default)] px-2.5 py-1 text-[12px] font-medium"
+              style={{ color: client.engagement.color }}
+            >
+              {client.engagement.label === 'engaged' ? '🟢' : client.engagement.label === 'moderate' ? '🟡' : '🔴'}{' '}
+              {engagementLabelText(client.engagement.label)}
+            </span>
+          ) : null}
+          <Button type="button" variant="secondary" className="min-h-[44px]" onClick={() => setQuickInvoiceOpen(true)}>
+            Quick invoice
+          </Button>
           {tab === 'payments' && (
             <Button type="button" className="min-h-[44px]" onClick={() => setPaymentModalOpen(true)}>
               Record payment
@@ -426,6 +568,19 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           }`}
         >
           Overview
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'goals'}
+          onClick={() => setTab('goals')}
+          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
+            tab === 'goals'
+              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
+          }`}
+        >
+          Goals
         </button>
         <button
           type="button"
@@ -454,6 +609,14 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           Progress
         </button>
       </div>
+
+      {tab === 'goals' && client && (
+        <ClientGoalsTab
+          clientId={clientId}
+          clientFirstName={client.first_name ?? ''}
+          fullName={fullName}
+        />
+      )}
 
       {tab === 'payments' && (
         <div className="space-y-4">
@@ -506,11 +669,16 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
       )}
 
       {tab === 'overview' && (
+      <>
+      <ClientDailyCheckinsCoachSection clientId={clientId} />
+
+      <RecentSessionNotesSection clientId={clientId} />
+
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left column — 2/3 */}
         <div className="lg:col-span-2 space-y-4">
           <Card variant="raised" padding="lg">
-            <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-4">
+            <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
               Contact & details
             </h2>
             <dl className="grid gap-3 text-[15px]">
@@ -532,7 +700,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           </Card>
 
           <Card variant="raised" padding="lg">
-            <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-4">
+            <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
               Notes
             </h2>
             <Textarea
@@ -556,7 +724,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
         {/* Right column — 1/3 */}
         <div className="space-y-4">
           <Card variant="raised" padding="lg">
-            <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-3">
+            <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
               Status
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -579,7 +747,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           </Card>
 
           <Card variant="raised" padding="lg">
-            <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-3">
+            <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
               Portal access
             </h2>
             {client.email ? (
@@ -607,7 +775,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           </Card>
 
           <Card variant="raised" padding="lg">
-            <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-3">
+            <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
               Quick stats
             </h2>
             <dl className="space-y-2 text-[15px]">
@@ -623,7 +791,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           </Card>
 
           <Card variant="raised" padding="lg">
-            <h2 className="text-[15px] font-medium text-[var(--color-text-primary)] mb-3">
+            <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-text-primary)]">
               Programs
             </h2>
             {clientPrograms.length === 0 ? (
@@ -667,7 +835,122 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
           </Card>
         </div>
       </div>
+
+      <Card
+        variant="raised"
+        padding="lg"
+        className="border border-red-200 bg-red-50/40 dark:border-red-900/50 dark:bg-red-950/20"
+      >
+        <h2 className="mb-2 text-[var(--text-15)] font-semibold tracking-[0] text-red-800 dark:text-red-200">
+          Danger zone
+        </h2>
+        <p className="mb-4 text-[14px] text-[var(--color-muted)]">
+          Permanently remove this client and all associated data. This cannot be undone.
+        </p>
+        <Button
+          type="button"
+          variant="danger"
+          className="min-h-[44px]"
+          onClick={() => {
+            setDeleteAckIrreversible(false)
+            setDeleteNameConfirm('')
+            setDeleteModalOpen(true)
+          }}
+        >
+          Delete client
+        </Button>
+      </Card>
+      </>
       )}
+
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (deleteBusy) return
+          setDeleteModalOpen(false)
+          setDeleteAckIrreversible(false)
+          setDeleteNameConfirm('')
+        }}
+        title={`Delete ${fullName}?`}
+      >
+        <p className="text-[15px] leading-relaxed text-[var(--color-text-primary)]">
+          This will permanently delete this client and all their data including messages, sessions, programs, and
+          assignments. This cannot be undone.
+        </p>
+        <label className="mt-4 flex cursor-pointer items-start gap-3 text-[14px] text-[var(--color-ink)]">
+          <input
+            type="checkbox"
+            className="mt-1 size-4 shrink-0 rounded border-[var(--color-border)]"
+            checked={deleteAckIrreversible}
+            onChange={(e) => setDeleteAckIrreversible(e.target.checked)}
+            disabled={deleteBusy}
+          />
+          <span>I understand this cannot be undone</span>
+        </label>
+        <p className="mt-4 text-[14px] text-[var(--color-muted)]">
+          Type <span className="font-medium text-[var(--color-ink)]">{(client.first_name ?? '').trim() || 'first name'}</span> to
+          confirm.
+        </p>
+        <Input
+          className="mt-2"
+          value={deleteNameConfirm}
+          onChange={(e) => setDeleteNameConfirm(e.target.value)}
+          placeholder="First name"
+          disabled={deleteBusy}
+          autoComplete="off"
+        />
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            className="min-h-[44px]"
+            disabled={deleteBusy}
+            onClick={() => {
+              setDeleteModalOpen(false)
+              setDeleteAckIrreversible(false)
+              setDeleteNameConfirm('')
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            className="min-h-[44px]"
+            disabled={
+              deleteBusy ||
+              !deleteAckIrreversible ||
+              deleteNameConfirm.trim().toLowerCase() !== (client.first_name ?? '').trim().toLowerCase()
+            }
+            onClick={async () => {
+              setDeleteBusy(true)
+              try {
+                const res = await fetch(`/api/clients/${encodeURIComponent(clientId)}`, { method: 'DELETE' })
+                const json = (await res.json().catch(() => ({}))) as { error?: string }
+                if (!res.ok) {
+                  setToast(json.error ?? 'Could not delete client')
+                  setDeleteBusy(false)
+                  return
+                }
+                setDeleteModalOpen(false)
+                setDeleteAckIrreversible(false)
+                setDeleteNameConfirm('')
+                try {
+                  sessionStorage.setItem('clearpath_clients_toast', 'Client deleted')
+                } catch {
+                  /* ignore */
+                }
+                router.push('/coach/clients')
+              } catch {
+                setToast('Something went wrong — try again')
+                setDeleteBusy(false)
+              }
+            }}
+          >
+            {deleteBusy ? 'Deleting…' : 'Delete permanently'}
+          </Button>
+        </div>
+      </Modal>
 
       <AssignProgramToClientModal
         clientId={clientId}
@@ -686,6 +969,15 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
         onClose={() => setPaymentModalOpen(false)}
         defaultClientId={clientId}
         onRecorded={() => loadPaymentsTab()}
+      />
+
+      <QuickInvoiceModal
+        open={quickInvoiceOpen}
+        onClose={() => setQuickInvoiceOpen(false)}
+        defaultClientId={clientId}
+        onSent={(name) => {
+          setToast(`Invoice sent to ${name}`)
+        }}
       />
     </div>
   )

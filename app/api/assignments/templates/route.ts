@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
     const { data, error } = await q
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not load templates' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not load templates' }, { status: 500 })
     }
 
     const rows = (data ?? []).filter((r) => r.deleted_at == null)
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not create template' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not create template' }, { status: 500 })
     }
     return NextResponse.json({ data: row })
   } catch {

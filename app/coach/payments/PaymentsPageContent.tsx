@@ -362,7 +362,9 @@ export function PaymentsPageContent() {
 
       {filterSummary && methodSegments.length > 0 && (
         <Card variant="raised" padding="lg">
-          <h2 className="text-[15px] font-medium text-[var(--color-ink)] mb-3">Payment methods (filtered)</h2>
+          <h2 className="mb-3 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-ink)]">
+            Payment methods (filtered)
+          </h2>
           <div className="flex h-10 w-full overflow-hidden rounded-lg border border-[var(--color-border)]">
             {methodSegments.map(([m, cents]) => {
               const pct = methodTotal > 0 ? Math.round((cents / methodTotal) * 100) : 0

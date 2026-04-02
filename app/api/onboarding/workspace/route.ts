@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         .eq('id', user.id)
       if (profileAvatarErr) {
         return NextResponse.json(
-          { error: profileAvatarErr.message || 'Could not save profile photo' },
+          { error: 'Could not save profile photo' },
           { status: 500 }
         )
       }

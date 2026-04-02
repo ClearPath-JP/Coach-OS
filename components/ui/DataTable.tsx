@@ -124,7 +124,7 @@ export function DataTable<T>({
       </div>
       {!loading && resolved.length === 0 ? (
         <div className="px-6 py-12 text-center">
-          <p className="text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">{emptyTitle}</p>
+          <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">{emptyTitle}</p>
           <p className="mx-auto mt-2 max-w-[340px] text-[14px] leading-[1.6] text-[var(--text-tertiary)]">{emptyDescription}</p>
           {emptyAction ? <div className="mt-6">{emptyAction}</div> : null}
         </div>

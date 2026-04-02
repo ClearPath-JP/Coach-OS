@@ -142,7 +142,7 @@ export async function GET() {
     res.headers.set('Cache-Control', 'private, max-age=20')
     return res
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Something went wrong'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    console.error('GET /api/coach/program-activity', e)
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }

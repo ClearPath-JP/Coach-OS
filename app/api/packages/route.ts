@@ -55,8 +55,11 @@ export async function GET() {
     res.headers.set('Cache-Control', 'private, max-age=30')
     return res
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Something went wrong — check your connection and try again'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    console.error('GET /api/packages', e)
+    return NextResponse.json(
+      { error: 'Something went wrong — check your connection and try again' },
+      { status: 500 }
+    )
   }
 }
 
@@ -123,7 +126,7 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not create package' },
+        { error: 'Could not create package' },
         { status: 500 }
       )
     }

@@ -98,7 +98,7 @@ export async function computePaymentSummary(
   }
 }
 
-export function emptyPaymentSummary(bucket: PeriodBucket, keys: string[]): PaymentSummaryResult {
+export function emptyPaymentSummary(_bucket: PeriodBucket, keys: string[]): PaymentSummaryResult {
   const byPeriod = keys.map((date) => ({ date, total: 0 }))
   return {
     totalRevenue: 0,

@@ -14,7 +14,7 @@ const CoachScheduleWorkspace = dynamic(
 
 export function CoachSchedulePageClient() {
   return (
-    <main className="min-h-screen p-4 md:p-6">
+    <main className="min-h-screen p-4 md:p-6 lg:p-8">
       <CoachScheduleWorkspace />
     </main>
   )

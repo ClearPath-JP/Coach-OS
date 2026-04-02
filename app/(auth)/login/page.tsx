@@ -17,7 +17,7 @@ export default function LoginPage() {
       <main
         id="login-main"
         aria-labelledby="login-heading"
-        className="relative flex flex-col justify-center bg-[var(--bg-app)] px-6 py-12 sm:px-12 md:min-h-screen md:overflow-y-auto lg:py-10"
+        className="relative flex flex-col justify-center bg-[var(--bg-app)] px-6 py-14 sm:px-12 md:min-h-screen md:overflow-y-auto lg:py-12"
       >
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-[132px] border-b border-white/10 md:hidden"
@@ -37,18 +37,21 @@ export default function LoginPage() {
           </div>
 
           <div className="rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-8 md:border-0 md:bg-transparent md:p-0">
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Sign in</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-quaternary)]">
+              Coach sign in
+            </p>
             <h1
               id="login-heading"
-              className="mt-1 text-[26px] font-medium leading-tight tracking-[-0.03em] text-[var(--text-primary)]"
+              className="mt-2 text-[var(--text-24)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]"
             >
-              Welcome back
+              Your coaching business, all in one place
             </h1>
-            <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-secondary)]">
-              Coaches and clients use this page — we&apos;ll send you to the right place after you sign in.
+            <p className="mt-3 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">
+              Sign in to run sessions, programs, and client relationships from one calm command center. (Clients can use
+              the client sign-in link below.)
             </p>
 
-            <div className="mt-8">
+            <div className="mt-10">
               <DevAuthToolbar />
               <Suspense
                 fallback={

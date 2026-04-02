@@ -1,8 +1,8 @@
 import { format } from 'date-fns'
 import { NextResponse } from 'next/server'
 import { invalidateCoachAnalyticsCaches, invalidatePaymentSummaryCaches } from '@/lib/api-cache'
+import { requireCoach } from '@/lib/api-helpers'
 import { logAuditEvent } from '@/lib/audit-log'
-import { createClient } from '@/lib/supabase-server'
 import { markInvoicePaidSchema } from '@/lib/validations'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
@@ -14,12 +14,10 @@ type RouteContext = { params: Promise<{ id: string }> }
  */
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
     const { id: invoiceId } = await context.params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`api-invoices:${user.id}`, {
       windowMs: 60_000,
@@ -34,15 +32,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       return res
     }
 
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!coach?.workspace_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const body = await request.json()
     const parsed = markInvoicePaidSchema.safeParse(body)
     if (!parsed.success) {
@@ -54,7 +43,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .from('session_invoices')
       .select('id, workspace_id, client_id, coach_id, amount_cents, due_date, session_id, message_id')
       .eq('id', invoiceId)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
       .single()
 
     if (fetchErr || !invoice) {
@@ -77,11 +66,11 @@ export async function PATCH(request: Request, context: RouteContext) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', invoiceId)
-        .eq('workspace_id', coach.workspace_id)
+        .eq('workspace_id', workspaceId)
 
       if (upErr) {
         return NextResponse.json(
-          { error: upErr.message || 'Could not record payment' },
+          { error: 'Could not record payment' },
           { status: 500 }
         )
       }
@@ -93,7 +82,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       const { data: newSession, error: sessionErr } = await supabase
         .from('sessions')
         .insert({
-          workspace_id: coach.workspace_id,
+          workspace_id: workspaceId,
           coach_id: invoice.coach_id,
           client_id: invoice.client_id,
           scheduled_time: scheduledTime,
@@ -123,11 +112,11 @@ export async function PATCH(request: Request, context: RouteContext) {
           updated_at: new Date().toISOString(),
         })
         .eq('id', invoiceId)
-        .eq('workspace_id', coach.workspace_id)
+        .eq('workspace_id', workspaceId)
 
       if (upErr) {
         return NextResponse.json(
-          { error: upErr.message || 'Could not record payment' },
+          { error: 'Could not record payment' },
           { status: 500 }
         )
       }
@@ -137,7 +126,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .from('session_invoices')
       .select('id, client_id, session_id, amount_cents')
       .eq('id', invoiceId)
-      .eq('workspace_id', coach.workspace_id)
+      .eq('workspace_id', workspaceId)
       .single()
 
     if (invForPayment) {
@@ -150,7 +139,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       if (!existingPayment) {
         const amountFinal = parsed.data.amountCents ?? invForPayment.amount_cents
         const { error: payErr } = await supabase.from('payments').insert({
-          workspace_id: coach.workspace_id,
+          workspace_id: workspaceId,
           coach_id: user.id,
           client_id: invForPayment.client_id,
           invoice_id: invoiceId,
@@ -205,15 +194,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       .eq('id', invoiceId)
       .single()
 
-    void logAuditEvent(
-      'invoice_paid',
-      user.id,
-      coach.workspace_id,
-      { invoiceId },
-      request
-    )
-    void invalidatePaymentSummaryCaches(coach.workspace_id)
-    void invalidateCoachAnalyticsCaches(coach.workspace_id)
+    void logAuditEvent('invoice_paid', user.id, workspaceId, { invoiceId }, request)
+    void invalidatePaymentSummaryCaches(workspaceId)
+    void invalidateCoachAnalyticsCaches(workspaceId)
 
     return NextResponse.json({ data: updated })
   } catch {

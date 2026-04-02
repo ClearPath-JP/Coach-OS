@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
 import { SignOutButton } from '@/components/layout/SignOutButton'
@@ -21,6 +21,8 @@ export interface NavProps {
   coachAvatarUrl?: string | null
   notificationCount?: number
   clientPortal?: boolean
+  /** Extra controls in the client portal header (e.g. notifications bell) */
+  clientPortalTrailing?: ReactNode
 }
 
 function initials(name: string): string {
@@ -183,6 +185,7 @@ export function Nav({
   coachAvatarUrl,
   notificationCount = 0,
   clientPortal,
+  clientPortalTrailing,
 }: NavProps) {
   const pathname = usePathname() ?? ''
   const logoLabel = brandName?.trim() || 'ClearPath'
@@ -258,6 +261,7 @@ export function Nav({
         <div className={cn('flex items-center', coachApp ? 'gap-1' : 'gap-2')}>
           {clientPortal && !coachApp ? (
             <>
+              {clientPortalTrailing}
               {showThemeToggle ? <NavThemeIconButton /> : null}
               <div className="shrink-0 lg:hidden">
                 <SignOutButton variant="nav" />

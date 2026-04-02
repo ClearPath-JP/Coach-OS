@@ -1,41 +1,35 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { logAuditEvent } from '@/lib/audit-log'
+import { requireCoach } from '@/lib/api-helpers'
+import { calculateEngagementScore } from '@/lib/client-engagement'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { createServiceClient } from '@/lib/supabase/service'
+import { normalizeEmail } from '@/lib/utils'
 import { updateClientSchema } from '@/lib/validations'
 
 type Params = { params: Promise<{ id: string }> }
 
 /**
- * GET /api/clients/[id] — fetch one client by id.
+ * GET /api/clients/[id] — fetch one client by id (workspace-scoped).
  */
 export async function GET(_request: Request, { params }: Params) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
-    if (profile?.role !== 'coach') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { workspaceId, supabase } = auth
 
     const { data, error } = await supabase
       .from('clients')
-      .select('id, workspace_id, first_name, last_name, email, phone, goals, status, notes, profile_photo_url, created_at, updated_at')
+      .select(
+        'id, workspace_id, first_name, last_name, email, phone, goals, status, notes, profile_photo_url, created_at, updated_at'
+      )
       .eq('id', id)
+      .eq('workspace_id', workspaceId)
       .maybeSingle()
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Could not load client' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Could not load client' }, { status: 500 })
     }
     if (!data) {
       return NextResponse.json(
@@ -50,10 +44,18 @@ export async function GET(_request: Request, { params }: Params) {
         'total_xp, level, current_streak_days, longest_streak_days, assignments_completed, assignments_total, last_activity_at'
       )
       .eq('client_id', id)
-      .eq('workspace_id', data.workspace_id)
+      .eq('workspace_id', workspaceId)
       .maybeSingle()
 
-    return NextResponse.json({ data: { ...data, rewards: rewards ?? null } })
+    const rw = rewards ?? null
+    const engagement = calculateEngagementScore({
+      last_activity_at: rw?.last_activity_at ?? null,
+      assignments_completed: rw?.assignments_completed ?? 0,
+      assignments_total: rw?.assignments_total ?? 0,
+      streak_days: rw?.current_streak_days ?? 0,
+    })
+
+    return NextResponse.json({ data: { ...data, rewards: rw, engagement } })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },
@@ -63,24 +65,14 @@ export async function GET(_request: Request, { params }: Params) {
 }
 
 /**
- * PATCH /api/clients/[id] — update client fields.
+ * PATCH /api/clients/[id] — update client fields (workspace-scoped).
  */
 export async function PATCH(request: Request, { params }: Params) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
-    if (profile?.role !== 'coach') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`clients-patch:${user.id}`, {
       windowMs: 60_000,
@@ -109,21 +101,22 @@ export async function PATCH(request: Request, { params }: Params) {
     if (parsed.data.status !== undefined) updates.status = parsed.data.status
     if (parsed.data.notes !== undefined) updates.notes = parsed.data.notes
     if (parsed.data.profile_photo_url !== undefined) {
-      updates.profile_photo_url = parsed.data.profile_photo_url === '' || parsed.data.profile_photo_url === null ? null : parsed.data.profile_photo_url
+      updates.profile_photo_url =
+        parsed.data.profile_photo_url === '' || parsed.data.profile_photo_url === null
+          ? null
+          : parsed.data.profile_photo_url
     }
 
     const { data, error } = await supabase
       .from('clients')
       .update(updates)
       .eq('id', id)
+      .eq('workspace_id', workspaceId)
       .select('id, first_name, last_name, email, phone, goals, status, notes, profile_photo_url, updated_at')
       .single()
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Could not update client' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Could not update client' }, { status: 500 })
     }
     if (!data) {
       return NextResponse.json(
@@ -132,6 +125,106 @@ export async function PATCH(request: Request, { params }: Params) {
       )
     }
     return NextResponse.json({ data })
+  } catch {
+    return NextResponse.json(
+      { error: 'Something went wrong — check your connection and try again' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE /api/clients/[id] — remove client row (DB cascades related rows); delete portal auth user when present.
+ */
+export async function DELETE(request: Request, { params }: Params) {
+  try {
+    const { id: clientId } = await params
+    const auth = await requireCoach()
+    if ('error' in auth) return auth.error
+    const { user, workspaceId, supabase } = auth
+
+    const { success: rateOk, retryAfter } = await checkRateLimitAsync(`clients-delete:${user.id}`, {
+      windowMs: 3_600_000,
+      max: 20,
+    })
+    if (!rateOk) {
+      const res = NextResponse.json({ error: 'Too many delete attempts — try again later' }, { status: 429 })
+      if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
+      return res
+    }
+
+    const { data: row, error: fetchErr } = await supabase
+      .from('clients')
+      .select('id, email')
+      .eq('id', clientId)
+      .eq('workspace_id', workspaceId)
+      .maybeSingle()
+
+    if (fetchErr) {
+      return NextResponse.json({ error: 'Could not load client' }, { status: 500 })
+    }
+    if (!row?.id) {
+      return NextResponse.json(
+        { error: "We couldn't find that client — it may have been deleted" },
+        { status: 404 }
+      )
+    }
+
+    const clientEmail = (row.email ?? '').trim()
+    const emailNorm = clientEmail ? normalizeEmail(clientEmail) : ''
+
+    let portalAuthUserId: string | null = null
+    if (emailNorm) {
+      try {
+        const service = createServiceClient()
+        const { data: prof } = await service
+          .from('profiles')
+          .select('id')
+          .eq('email', emailNorm)
+          .eq('role', 'client')
+          .eq('workspace_id', workspaceId)
+          .maybeSingle()
+        if (prof?.id) portalAuthUserId = prof.id
+      } catch {
+        portalAuthUserId = null
+      }
+    }
+
+    const { error: delErr, data: deletedRows } = await supabase
+      .from('clients')
+      .delete()
+      .eq('id', clientId)
+      .eq('workspace_id', workspaceId)
+      .select('id')
+
+    if (delErr) {
+      return NextResponse.json({ error: 'Could not delete client' }, { status: 500 })
+    }
+    if (!deletedRows?.length) {
+      return NextResponse.json(
+        { error: "We couldn't find that client — it may have been deleted" },
+        { status: 404 }
+      )
+    }
+
+    if (portalAuthUserId) {
+      try {
+        const service = createServiceClient()
+        await service.auth.admin.deleteUser(portalAuthUserId)
+      } catch {
+        // best-effort: client row is already removed
+      }
+    }
+
+    void logAuditEvent(
+      'client_deleted',
+      user.id,
+      workspaceId,
+      { clientId: row.id, clientEmail: emailNorm || clientEmail },
+      request
+    )
+
+    return NextResponse.json({ data: { deleted: true } })
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },

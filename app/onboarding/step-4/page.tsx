@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CardTitle } from '@/components/ui/Card'
@@ -49,6 +49,25 @@ export default function OnboardingStep4Page() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [coachFirstName, setCoachFirstName] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch('/api/settings', { credentials: 'include' })
+        if (!res.ok || cancelled) return
+        const json = (await res.json()) as { data?: { profile?: { firstName?: string } } }
+        const fn = json.data?.profile?.firstName?.trim()
+        if (!cancelled) setCoachFirstName(fn && fn.length > 0 ? fn : null)
+      } catch {
+        /* ignore */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleGoToDashboard = async () => {
     setActionError(null)
@@ -85,14 +104,15 @@ export default function OnboardingStep4Page() {
           className="pointer-events-none absolute left-10 top-0 h-24 w-24 rounded-full bg-[#1056A0]/10 blur-2xl"
           aria-hidden
         />
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">You&apos;re in</p>
-        <h1 className="mt-1 max-w-xl text-[24px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] md:text-[28px]">
-          You&apos;re ready to go
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">Finish line</p>
+        <h1 className="mt-1 max-w-2xl text-[var(--text-24)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] md:text-[28px]">
+          <span aria-hidden>🎉 </span>
+          You&apos;re all set{coachFirstName ? `, ${coachFirstName}` : ''}! Your coaching business is ready.
         </h1>
-        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[var(--text-secondary)]">
-          ClearPath is set up for your workspace. Choose a quick win below, or jump straight to the dashboard — you can
-          explore everything at your own pace.
+        <p className="mt-3 max-w-2xl text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">
+          Pick a quick win below, or head to your dashboard — you can explore everything at your own pace.
         </p>
+        <p className="mt-2 text-[13px] font-medium text-[var(--text-tertiary)]">Takes about 1 minute from here.</p>
       </div>
 
       <div className="grid gap-4 px-6 pb-2 md:grid-cols-3 md:px-8">
@@ -146,7 +166,7 @@ export default function OnboardingStep4Page() {
           </p>
         ) : null}
         <Button onClick={handleGoToDashboard} disabled={loading} fullWidth size="lg">
-          {loading ? 'Loading…' : 'Go to dashboard'}
+          {loading ? 'Loading…' : "Let's go →"}
         </Button>
       </div>
     </div>

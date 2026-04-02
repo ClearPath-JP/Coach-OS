@@ -55,7 +55,7 @@ export async function DELETE(request: Request) {
       .update({ status: 'deleted' })
       .eq('id', workspaceId)
     if (error) {
-      return NextResponse.json({ error: error.message || 'Could not delete account' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not delete account' }, { status: 500 })
     }
 
     return NextResponse.json({ data: 'Account deleted' })

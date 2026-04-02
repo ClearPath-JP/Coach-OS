@@ -47,7 +47,7 @@ export async function GET(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load payments' },
+        { error: 'Could not load payments' },
         { status: 500 }
       )
     }
@@ -181,7 +181,7 @@ export async function POST(request: Request) {
 
     if (insErr) {
       return NextResponse.json(
-        { error: insErr.message || 'Could not record payment' },
+        { error: 'Could not record payment' },
         { status: 500 }
       )
     }

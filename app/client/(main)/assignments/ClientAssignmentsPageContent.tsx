@@ -87,7 +87,9 @@ export function ClientAssignmentsPageContent() {
   return (
     <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-4 py-6">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold text-[var(--text-primary)]">Assignments</h1>
+        <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)] sm:text-[var(--text-24)]">
+          Assignments
+        </h1>
         {pendingCount > 0 ? (
           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-100">
             {pendingCount} due
@@ -150,6 +152,19 @@ export function ClientAssignmentsPageContent() {
       </div>
 
       <div className="space-y-3">
+        {!loading && rows.length === 0 ? (
+          <div className="rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] px-6 py-12 text-center">
+            <p className="text-3xl" aria-hidden>
+              ✨
+            </p>
+            <h2 className="mt-3 text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+              You&apos;re all caught up!
+            </h2>
+            <p className="mx-auto mt-2 max-w-[400px] text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-tertiary)]">
+              Your coach will send assignments here. Check back soon.
+            </p>
+          </div>
+        ) : null}
         {filtered.map((r) => {
           const t = r.assignment_templates
           const overdue = r.due_at && new Date(r.due_at) < new Date() && (r.status === 'pending' || r.status === 'returned')

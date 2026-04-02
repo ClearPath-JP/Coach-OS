@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { addDays, addMonths, addWeeks, endOfDay, format, isSameDay, parseISO, startOfDay, startOfWeek } from 'date-fns'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -402,6 +403,8 @@ export function CoachScheduleWorkspace() {
   const [modalInitialDurationMinutes, setModalInitialDurationMinutes] = useState<number | null>(null)
 
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [calendarSubscribeUrl, setCalendarSubscribeUrl] = useState<string | null>(null)
+  const [calendarUrlLoading, setCalendarUrlLoading] = useState(true)
 
   const sessionFetchRange = useMemo(() => {
     if (view === 'week') {
@@ -453,6 +456,26 @@ export function CoachScheduleWorkspace() {
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    let cancelled = false
+    void fetch('/api/coach/calendar-feed-token', { credentials: 'include', cache: 'no-store' })
+      .then(async (r) => {
+        const j = (await r.json().catch(() => ({}))) as { data?: { url?: string } }
+        if (!cancelled && r.ok && typeof j.data?.url === 'string') {
+          setCalendarSubscribeUrl(j.data.url)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setCalendarSubscribeUrl(null)
+      })
+      .finally(() => {
+        if (!cancelled) setCalendarUrlLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     const sessionId = searchParams.get('session')
@@ -533,12 +556,86 @@ export function CoachScheduleWorkspace() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-medium text-[var(--color-text-primary)]">Schedule workspace</h1>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--color-text-primary)] sm:text-[var(--text-24)]">
+          Schedule
+        </h1>
+      </div>
+      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 text-sm">
+        <p className="font-medium text-[var(--color-text-primary)]">Calendar sync</p>
+        {calendarUrlLoading ? (
+          <p className="mt-2 text-[var(--color-text-secondary)]">Loading your subscribe link…</p>
+        ) : calendarSubscribeUrl ? (
+          <>
+            <p className="mt-2 text-[var(--color-text-secondary)]">
+              Paste this URL in Google Calendar (&quot;From URL&quot;) or Apple Calendar. It includes a private token — treat it like a password.
+            </p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                readOnly
+                value={calendarSubscribeUrl}
+                className="min-w-0 flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 font-mono text-[12px] text-[var(--color-text-primary)]"
+                aria-label="Calendar subscribe URL"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                className="shrink-0"
+                onClick={() => {
+                  void navigator.clipboard.writeText(calendarSubscribeUrl).then(() => {
+                    addToast('Calendar link copied', 'success')
+                  })
+                }}
+              >
+                Copy link
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
+              Upcoming sessions (next 90 days). Or{' '}
+              <a href="/api/calendar/feed/coach" className="font-medium text-[var(--color-accent)] hover:underline">
+                download .ics once
+              </a>{' '}
+              while signed in.
+            </p>
+          </>
+        ) : (
+          <p className="mt-2 text-[var(--color-text-secondary)]">
+            Could not load a calendar link. Try refreshing, or{' '}
+            <a href="/api/calendar/feed/coach" className="font-medium text-[var(--color-accent)] hover:underline">
+              download .ics
+            </a>{' '}
+            while signed in.
+          </p>
+        )}
       </div>
 
-      <div className="hidden lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-4">
+      {!calendarLoading && sessions.length === 0 && (
+        <div className="rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-6 py-8 text-center">
+          <p className="text-3xl" aria-hidden>
+            📅
+          </p>
+          <p className="mt-3 text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+            Your calendar is clear
+          </p>
+          <p className="mx-auto mt-2 max-w-[440px] text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-tertiary)]">
+            Book your first session or set up your availability so clients can see your schedule.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            <Button type="button" className="min-h-11" onClick={openBookModalFreeform}>
+              Book a session
+            </Button>
+            <Link
+              href="#coach-schedule-grid"
+              className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-md)] border-[1.5px] border-[var(--border-default)] bg-[var(--bg-app)] px-4 text-[14px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-all hover:bg-[var(--bg-subtle)] hover:border-[var(--border-strong)]"
+            >
+              Set availability
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <div className="hidden lg:grid lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-6">
         <aside className="h-[78vh] overflow-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
           <h2 className="mb-1 text-sm font-medium text-[var(--color-text-primary)]">Clients</h2>
           <p className="mb-3 text-xs text-[var(--color-text-secondary)]">
@@ -563,7 +660,7 @@ export function CoachScheduleWorkspace() {
           )}
         </aside>
 
-        <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
+        <section id="coach-schedule-grid" className="scroll-mt-24 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <Button

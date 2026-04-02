@@ -34,7 +34,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load video' },
+        { error: 'Could not load video' },
         { status: 500 }
       )
     }

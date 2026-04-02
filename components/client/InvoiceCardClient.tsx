@@ -20,6 +20,8 @@ export type InvoiceCardDataClient = {
 
 export type InvoicePaymentDetails = {
   stripeConnected?: boolean
+  /** Coach finished Connect + charges enabled — safe to show Pay by card */
+  stripeCardPaymentsEnabled?: boolean
   cashappUsername?: string | null
   venmoUsername?: string | null
   paypalEmail?: string | null
@@ -44,6 +46,9 @@ export function InvoiceCardClient({
   const isPaid = data.status === 'paid'
   const isCancelled = data.status === 'cancelled'
   const [selectedMethod, setSelectedMethod] = useState<string>('card')
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const canPayByCard = paymentDetails?.stripeCardPaymentsEnabled === true
 
   const methods = useMemo(
     () =>
@@ -62,6 +67,36 @@ export function InvoiceCardClient({
       setSelectedMethod(methodKey)
     } catch {
       /* no-op */
+    }
+  }
+
+  const startCardCheckout = async () => {
+    if (!data.invoiceId || !data.clientId) return
+    setCheckoutLoading(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch(`/api/invoices/${encodeURIComponent(data.invoiceId)}/checkout`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string
+        data?: { url?: string; checkoutUrl?: string }
+      }
+      if (!res.ok) {
+        setCheckoutError(typeof json.error === 'string' ? json.error : 'Could not start checkout')
+        return
+      }
+      const url = json.data?.checkoutUrl ?? json.data?.url
+      if (typeof url === 'string' && url.length > 0) {
+        window.location.href = url
+        return
+      }
+      setCheckoutError('Checkout did not return a link — try again')
+    } catch {
+      setCheckoutError('Something went wrong — try again')
+    } finally {
+      setCheckoutLoading(false)
     }
   }
 
@@ -125,17 +160,23 @@ export function InvoiceCardClient({
             </p>
           </div>
 
-          {paymentDetails?.stripeConnected ? (
+          {canPayByCard ? (
             <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-2">
               <button
                 type="button"
-                className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white"
-                onClick={() => setSelectedMethod('card')}
+                className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+                disabled={checkoutLoading}
+                onClick={() => void startCardCheckout()}
               >
-                Pay by card {formatAmount(data.amountCents, data.currency)}
+                {checkoutLoading ? 'Opening secure checkout…' : `Pay by card ${formatAmount(data.amountCents, data.currency)}`}
               </button>
-              <p className="mt-1 text-xs text-indigo-700">Instant - pay with any card</p>
+              <p className="mt-1 text-xs text-indigo-700">You’ll complete payment on Stripe’s secure page.</p>
+              {checkoutError ? <p className="mt-2 text-xs text-red-700">{checkoutError}</p> : null}
             </div>
+          ) : paymentDetails?.stripeConnected ? (
+            <p className="text-xs text-[var(--color-muted)]">
+              Your coach is still finishing card payment setup. Use another method below or check back soon.
+            </p>
           ) : null}
 
           {methods.map((method) => (

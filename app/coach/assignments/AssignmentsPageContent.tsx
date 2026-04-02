@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 import { Button } from '@/components/ui/Button'
@@ -29,6 +30,9 @@ type TemplateRow = {
 }
 
 export function AssignmentsPageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const overdueFromUrl = searchParams.get('tab') === 'overdue'
   const [tab, setTab] = useState<Tab>('review')
   const [rows, setRows] = useState<Row[]>([])
   const [templates, setTemplates] = useState<TemplateRow[]>([])
@@ -89,6 +93,18 @@ export function AssignmentsPageContent() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (overdueFromUrl) setTab('all')
+  }, [overdueFromUrl])
+
+  const overdueOnlyRows = useMemo(() => {
+    const now = Date.now()
+    return rows.filter((r) => {
+      if (!r.due_at || new Date(r.due_at).getTime() >= now) return false
+      return r.status === 'pending' || r.status === 'overdue' || r.status === 'returned'
+    })
+  }, [rows])
 
   const queueRows = useMemo(() => {
     const now = Date.now()
@@ -368,12 +384,33 @@ export function AssignmentsPageContent() {
       ) : null}
 
       {!loading && tab === 'all' ? (
-        <DataTable
-          columns={columns}
-          rows={rows}
-          emptyTitle="No assignments yet"
-          emptyDescription="Create a template and assign it to a client from the Templates tab."
-        />
+        <>
+          {overdueFromUrl ? (
+            <p className="mb-3 text-[13px] text-[var(--text-secondary)]">
+              Showing overdue assignments only.{' '}
+              <button
+                type="button"
+                className="font-medium text-[var(--accent)] underline"
+                onClick={() => {
+                  router.replace('/coach/assignments')
+                  setTab('all')
+                }}
+              >
+                Show all
+              </button>
+            </p>
+          ) : null}
+          <DataTable
+            columns={columns}
+            rows={overdueFromUrl ? overdueOnlyRows : rows}
+            emptyTitle={overdueFromUrl ? 'No overdue assignments' : 'No assignments yet'}
+            emptyDescription={
+              overdueFromUrl
+                ? 'Assignments past due appear here.'
+                : 'Create a template and assign it to a client from the Templates tab.'
+            }
+          />
+        </>
       ) : null}
 
       {!loading && tab === 'templates' && templatesError ? (

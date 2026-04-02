@@ -45,6 +45,7 @@ export default function OnboardingStep1Page() {
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [fileUploadHint, setFileUploadHint] = useState<string | null>(null)
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -54,10 +55,13 @@ export default function OnboardingStep1Page() {
       return
     }
     if (file.size > MAX_BYTES) {
+      setFileUploadHint('File must be under 5MB. Please choose a smaller image.')
       setAvatarFile(null)
       setAvatarPreview(null)
+      e.target.value = ''
       return
     }
+    setFileUploadHint(null)
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
   }
@@ -70,10 +74,13 @@ export default function OnboardingStep1Page() {
       return
     }
     if (file.size > MAX_BYTES) {
+      setFileUploadHint('File must be under 5MB. Please choose a smaller image.')
       setLogoFile(null)
       setLogoPreview(null)
+      e.target.value = ''
       return
     }
+    setFileUploadHint(null)
     setLogoFile(file)
     setLogoPreview(URL.createObjectURL(file))
   }
@@ -194,6 +201,7 @@ export default function OnboardingStep1Page() {
           <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-[var(--text-secondary)]">
             Name your coaching business and add a photo or logo — you can change these anytime in settings.
           </p>
+          <p className="mt-3 text-[13px] font-medium text-[var(--text-tertiary)]">Takes about 2 minutes.</p>
         </div>
 
         <div>
@@ -269,6 +277,12 @@ export default function OnboardingStep1Page() {
             )}
           </div>
         </div>
+
+        {fileUploadHint ? (
+          <p className="text-[14px] text-[var(--color-error)]" role="alert">
+            {fileUploadHint}
+          </p>
+        ) : null}
 
         <Button type="submit" disabled={submitting} fullWidth size="lg">
           {submitting ? 'Saving…' : 'Continue'}

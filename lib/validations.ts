@@ -1,5 +1,21 @@
 import { z } from 'zod'
 
+/** Coach/client passwords: min length + uppercase + digit (aligned with signup & password change). */
+export const passwordStrengthSchema = z
+  .string()
+  .min(8, 'At least 8 characters')
+  .regex(/[A-Z]/, 'Needs uppercase letter')
+  .regex(/[0-9]/, 'Needs a number')
+
+function isValidHttpUrl(url: string): boolean {
+  try {
+    const p = new URL(url.trim())
+    return p.protocol === 'http:' || p.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 /** Public image URLs (e.g. Supabase Storage) — tolerant of encodings z.string().url() can reject. */
 export const storedImageUrlSchema = z
   .string()
@@ -55,7 +71,7 @@ export const signupSchema = z
     firstName: z.string().min(1, 'First name is required'),
     lastName: z.string().min(1, 'Last name is required'),
     email: z.string().email('Email must be valid'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: passwordStrengthSchema,
     confirmPassword: z.string().min(1, 'Please confirm your password'),
     acceptTerms: z.boolean().refine((v) => v === true, {
       message: 'You must accept the Terms of Service and Privacy Policy',
@@ -73,9 +89,9 @@ export const inviteClientSchema = z.object({
 })
 export type InviteClientInput = z.infer<typeof inviteClientSchema>
 
-/** Set password (after invite) — min 8 chars */
+/** Set password (after invite) */
 export const setPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: passwordStrengthSchema,
 })
 export type SetPasswordInput = z.infer<typeof setPasswordSchema>
 
@@ -108,7 +124,9 @@ export const sendMessageSchema = z.object({
     .string()
     .min(1, 'Message cannot be empty')
     .max(2000, 'Message must be 2000 characters or less'),
-  messageType: z.enum(['text', 'invoice', 'session', 'session_request']).optional(),
+  messageType: z
+    .enum(['text', 'invoice', 'session', 'session_request', 'testimonial_request'])
+    .optional(),
 })
 export type SendMessageInput = z.infer<typeof sendMessageSchema>
 
@@ -239,24 +257,62 @@ export const updateModuleSchema = z.object({
 })
 export type UpdateModuleInput = z.infer<typeof updateModuleSchema>
 
-export const createContentSchema = z.object({
-  contentType: z.enum(['text', 'url', 'video', 'file']),
-  title: z.string().max(500).optional().nullable(),
-  body: z.string().max(50000).optional().nullable(),
-  url: z.string().max(2000).optional().nullable(),
-  videoId: z.string().uuid().optional().nullable(),
-  fileUrl: z.string().max(2000).optional().nullable(),
-})
+export const createContentSchema = z
+  .object({
+    contentType: z.enum(['text', 'url', 'video', 'file']),
+    title: z.string().max(500).optional().nullable(),
+    body: z.string().max(50000).optional().nullable(),
+    url: z.string().max(2000).optional().nullable(),
+    videoId: z.string().uuid().optional().nullable(),
+    fileUrl: z.string().max(2000).optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    const u = data.url?.trim()
+    if (data.contentType === 'url' && u && !isValidHttpUrl(u)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'URL must start with http:// or https://',
+        path: ['url'],
+      })
+    }
+    const f = data.fileUrl?.trim()
+    if (f && !isValidHttpUrl(f)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'File URL must start with http:// or https://',
+        path: ['fileUrl'],
+      })
+    }
+  })
 export type CreateContentInput = z.infer<typeof createContentSchema>
 
-export const updateContentSchema = z.object({
-  title: z.string().max(500).nullable().optional(),
-  body: z.string().max(50000).nullable().optional(),
-  url: z.string().max(2000).nullable().optional(),
-  videoId: z.string().uuid().nullable().optional(),
-  fileUrl: z.string().max(2000).nullable().optional(),
-  position: z.number().int().min(0).optional(),
-})
+export const updateContentSchema = z
+  .object({
+    title: z.string().max(500).nullable().optional(),
+    body: z.string().max(50000).nullable().optional(),
+    url: z.string().max(2000).nullable().optional(),
+    videoId: z.string().uuid().nullable().optional(),
+    fileUrl: z.string().max(2000).nullable().optional(),
+    position: z.number().int().min(0).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const u = data.url != null ? String(data.url).trim() : ''
+    if (u !== '' && !isValidHttpUrl(u)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'URL must start with http:// or https://',
+        path: ['url'],
+      })
+    }
+    const f = data.fileUrl != null ? String(data.fileUrl).trim() : ''
+    if (f !== '' && !isValidHttpUrl(f)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'File URL must start with http:// or https://',
+        path: ['fileUrl'],
+      })
+    }
+  })
 export type UpdateContentInput = z.infer<typeof updateContentSchema>
 
 export const assignProgramSchema = z.object({
@@ -323,14 +379,92 @@ export const updateNotificationsSchema = z.object({
   sessionReminder: z.boolean().optional(),
   clientActivity: z.boolean().optional(),
   paymentReceived: z.boolean().optional(),
+  autoCheckinEnabled: z.boolean().optional(),
+  autoCheckinMessage: z.string().max(4000).nullable().optional(),
 })
 export type UpdateNotificationsInput = z.infer<typeof updateNotificationsSchema>
+
+const goalCategorySchema = z.enum([
+  'fitness',
+  'nutrition',
+  'mindset',
+  'business',
+  'relationship',
+  'health',
+  'performance',
+  'general',
+])
+
+export const createClientGoalSchema = z.object({
+  clientId: z.string().uuid('Invalid client'),
+  title: z.string().min(1, 'Title is required').max(500),
+  description: z.string().max(5000).nullable().optional(),
+  category: goalCategorySchema.optional(),
+  targetValue: z.number().finite().nullable().optional(),
+  startValue: z.number().finite().nullable().optional(),
+  currentValue: z.number().finite().optional(),
+  unit: z.string().max(40).nullable().optional(),
+  targetDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD')
+    .nullable()
+    .optional(),
+})
+export type CreateClientGoalInput = z.infer<typeof createClientGoalSchema>
+
+export const patchClientGoalSchema = z
+  .object({
+    currentValue: z.number().finite().optional(),
+    status: z.enum(['active', 'achieved', 'paused', 'abandoned']).optional(),
+    note: z.string().max(2000).nullable().optional(),
+    title: z.string().min(1).max(500).optional(),
+    targetDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .nullable()
+      .optional(),
+  })
+  .refine(
+    (d) =>
+      d.currentValue !== undefined ||
+      d.status !== undefined ||
+      d.note !== undefined ||
+      d.title !== undefined ||
+      d.targetDate !== undefined,
+    { message: 'Provide at least one field to update' }
+  )
+export type PatchClientGoalInput = z.infer<typeof patchClientGoalSchema>
+
+export const messagesBroadcastSchema = z.object({
+  content: z.string().min(1, 'Message cannot be empty').max(2000),
+  clientIds: z.array(z.string().uuid()).max(500).optional(),
+})
+export type MessagesBroadcastInput = z.infer<typeof messagesBroadcastSchema>
+
+export const clientTestimonialSubmitSchema = z.object({
+  content: z.string().max(500).optional().nullable(),
+  rating: z.number().int().min(1).max(5),
+})
+export type ClientTestimonialSubmitInput = z.infer<typeof clientTestimonialSubmitSchema>
+
+export const clientDailyCheckinSchema = z.object({
+  moodScore: z.number().int().min(1, 'Mood must be between 1 and 5').max(5, 'Mood must be between 1 and 5'),
+  energyScore: z.number().int().min(1).max(5).optional().nullable(),
+  note: z.string().max(300, 'Note must be 300 characters or less').optional().nullable(),
+})
+export type ClientDailyCheckinInput = z.infer<typeof clientDailyCheckinSchema>
+
+export const patchTestimonialSchema = z.object({
+  isApproved: z.boolean().optional(),
+  isPublic: z.boolean().optional(),
+})
+export type PatchTestimonialInput = z.infer<typeof patchTestimonialSchema>
 
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
-    confirmPassword: z.string().min(8, 'Confirm password must be at least 8 characters'),
+    newPassword: passwordStrengthSchema,
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
     message: 'New password and confirm password must match',
@@ -388,6 +522,36 @@ export const updateSessionSchema = z
     path: ['startTime'],
   })
 export type UpdateSessionInput = z.infer<typeof updateSessionSchema>
+
+const sessionNotesActionItemInputSchema = z.object({
+  id: z.string().min(1, 'Action item id is required').max(80),
+  text: z.string().min(1, 'Action item text is required').max(200, 'Each action item must be 200 characters or less'),
+  assignedTo: z.enum(['client', 'coach']),
+})
+
+/** PATCH /api/sessions/[id]/notes — structured session notes */
+export const sessionNotesPatchSchema = z
+  .object({
+    coachPrivateNotes: z.string().max(8000).nullable().optional(),
+    sessionSummary: z.string().max(1000, 'Session summary must be 1000 characters or less').optional(),
+    actionItems: z.array(sessionNotesActionItemInputSchema).max(10, 'At most 10 action items').optional(),
+    sendToClient: z.boolean().optional(),
+  })
+  .refine(
+    (d) =>
+      d.coachPrivateNotes !== undefined ||
+      d.sessionSummary !== undefined ||
+      d.actionItems !== undefined ||
+      d.sendToClient === true,
+    { message: 'Provide at least one field to update' }
+  )
+export type SessionNotesPatchInput = z.infer<typeof sessionNotesPatchSchema>
+
+/** POST /api/sessions/[id]/action-items/complete */
+export const sessionActionItemCompleteSchema = z.object({
+  actionItemId: z.string().min(1, 'actionItemId is required').max(80),
+})
+export type SessionActionItemCompleteInput = z.infer<typeof sessionActionItemCompleteSchema>
 
 /** Onboarding step 1 */
 export const onboardingWorkspaceSchema = z.object({

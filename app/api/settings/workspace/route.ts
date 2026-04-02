@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { invalidateBrandingCache, invalidateSettingsCachesForWorkspace } from '@/lib/api-cache'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -65,7 +66,12 @@ export async function PATCH(request: Request) {
     if (parsed.data.venmoUsername !== undefined) updates.venmo_username = parsed.data.venmoUsername
     if (parsed.data.paypalEmail !== undefined) updates.paypal_email = parsed.data.paypalEmail
     if (parsed.data.zelleEmailOrPhone !== undefined) updates.zelle_email_or_phone = parsed.data.zelleEmailOrPhone
-    if (parsed.data.stripeConnected !== undefined) updates.stripe_connected = parsed.data.stripeConnected
+    if (parsed.data.stripeConnected !== undefined) {
+      updates.stripe_connected = parsed.data.stripeConnected
+      if (parsed.data.stripeConnected === false) {
+        updates.stripe_connect_account_id = null
+      }
+    }
     if (parsed.data.paymentInstructions !== undefined) updates.payment_instructions = parsed.data.paymentInstructions
 
     if (Object.keys(updates).length === 0) {
@@ -77,7 +83,9 @@ export async function PATCH(request: Request) {
       .update(updates)
       .eq('id', workspaceId)
 
-    if (error) return NextResponse.json({ error: error.message || 'Could not update workspace settings' }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Could not update workspace settings' }, { status: 500 })
+    void invalidateSettingsCachesForWorkspace(workspaceId)
+    void invalidateBrandingCache(workspaceId)
     return NextResponse.json({ data: 'Workspace settings updated' })
   } catch {
     return NextResponse.json(

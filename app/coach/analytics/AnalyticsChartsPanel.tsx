@@ -41,7 +41,7 @@ type RevenueProps = {
 export function AnalyticsRevenueChartCard({ chartData }: RevenueProps) {
   return (
     <Card variant="raised" padding="lg">
-      <h2 className="mb-4 text-[15px] font-medium text-[var(--color-ink)]">Revenue</h2>
+      <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-ink)]">Revenue</h2>
       <div className="h-[280px] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -95,7 +95,7 @@ type PaymentProps = {
 export function AnalyticsPaymentMethodsChartCard({ donutData, methodEntries, methodTotal }: PaymentProps) {
   return (
     <Card variant="raised" padding="lg">
-      <h2 className="mb-4 text-[15px] font-medium text-[var(--color-ink)]">Payment methods</h2>
+      <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-ink)]">Payment methods</h2>
       <div className="flex h-[260px] w-full min-w-0 flex-col items-center">
         <ResponsiveContainer width="100%" height={220}>
           <PieChart>

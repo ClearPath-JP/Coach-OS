@@ -38,7 +38,7 @@ export async function GET() {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message || 'Could not load invoices' },
+        { error: 'Could not load invoices' },
         { status: 500 }
       )
     }

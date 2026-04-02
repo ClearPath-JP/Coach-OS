@@ -8,7 +8,7 @@ type RouteContext = { params: Promise<{ id: string }> }
  * GET /api/client/programs/[id] — full program with modules, content blocks, and client's progress. Client only.
  * [id] = program_id (client must have an active/completed assignment for this program).
  */
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(_request: Request, context: RouteContext) {
   try {
     const { id: programId } = await context.params
     const supabase = await createClient()

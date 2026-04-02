@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { format } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
+import { parseActionItemsJson } from '@/lib/sessions/action-items'
+import { cn } from '@/lib/utils'
 
 export type SessionForDrawer = {
   id: string
@@ -16,6 +18,10 @@ export type SessionForDrawer = {
   status: string
   notes: string | null
   client_id: string
+  coach_private_notes?: string | null
+  session_summary?: string | null
+  action_items?: unknown
+  notes_sent_at?: string | null
   clients: { first_name: string | null; last_name: string | null } | null
 }
 
@@ -28,9 +34,17 @@ export interface SessionDetailDrawerProps {
   onReschedule?: () => void
 }
 
+type DraftAction = { id: string; text: string; assignedTo: 'client' | 'coach' }
+
 export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onReschedule }: SessionDetailDrawerProps) {
-  const [notes, setNotes] = useState(session?.notes ?? '')
-  const [savingNotes, setSavingNotes] = useState(false)
+  const [notesTab, setNotesTab] = useState<'client' | 'private'>('client')
+  const [sessionSummary, setSessionSummary] = useState('')
+  const [coachPrivateNotes, setCoachPrivateNotes] = useState('')
+  const [actionDraft, setActionDraft] = useState<DraftAction[]>([])
+  const [newActionText, setNewActionText] = useState('')
+  const [notesSaving, setNotesSaving] = useState(false)
+  const [notesSending, setNotesSending] = useState(false)
+  const [notesSentAt, setNotesSentAt] = useState<string | null>(null)
   const [confirmCancel, setConfirmCancel] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -44,10 +58,59 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
 
   useEffect(() => {
     if (!session) return
-    setNotes(session.notes ?? '')
+    setSessionSummary(session.session_summary ?? '')
+    setCoachPrivateNotes(session.coach_private_notes ?? '')
+    const parsed = parseActionItemsJson(session.action_items)
+    setActionDraft(
+      parsed.map((r) => ({
+        id: r.id,
+        text: r.text,
+        assignedTo: r.assigned_to,
+      }))
+    )
+    setNotesSentAt(session.notes_sent_at ?? null)
+    setNewActionText('')
+    setNotesTab('client')
     setConfirmCancel(false)
     setConfirmRemove(false)
   }, [session])
+
+  useEffect(() => {
+    if (!session?.id) return
+    let cancelled = false
+    void fetch(`/api/sessions/${session.id}/notes`, { credentials: 'include' })
+      .then(async (r) => {
+        if (!r.ok) return null
+        return (await r.json()) as {
+          data?: {
+            session?: {
+              session_summary?: string | null
+              coach_private_notes?: string | null
+              action_items?: unknown
+              notes_sent_at?: string | null
+            }
+          }
+        }
+      })
+      .then((json) => {
+        if (cancelled || !json?.data?.session) return
+        const s = json.data.session
+        setSessionSummary(s.session_summary ?? '')
+        setCoachPrivateNotes(s.coach_private_notes ?? '')
+        setNotesSentAt(s.notes_sent_at ?? null)
+        const parsed = parseActionItemsJson(s.action_items)
+        setActionDraft(
+          parsed.map((r) => ({
+            id: r.id,
+            text: r.text,
+            assignedTo: r.assigned_to,
+          }))
+        )
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [session?.id])
 
   useEffect(() => {
     if (!session) return
@@ -88,22 +151,75 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
   const end = session.end_time ? new Date(session.end_time) : session.duration_minutes ? new Date(start.getTime() + session.duration_minutes * 60 * 1000) : new Date(start.getTime() + 60 * 60 * 1000)
   const durationMins = session.duration_minutes ?? Math.round((end.getTime() - start.getTime()) / 60000)
 
-  const saveNotes = async () => {
-    setSavingNotes(true)
+  const saveStructuredNotes = async (opts: { sendToClient: boolean }) => {
+    if (opts.sendToClient) setNotesSending(true)
+    else setNotesSaving(true)
     try {
-      const res = await fetch(`/api/sessions/${session.id}`, {
+      const res = await fetch(`/api/sessions/${session.id}/notes`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: notes.trim() || null }),
+        body: JSON.stringify({
+          sessionSummary: sessionSummary.trim() || undefined,
+          actionItems: actionDraft,
+          sendToClient: opts.sendToClient,
+        }),
       })
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string
+        data?: { session?: { notes_sent_at?: string | null } }
+      }
       if (res.ok) {
+        const sent = json.data?.session?.notes_sent_at
+        if (typeof sent === 'string') setNotesSentAt(sent)
         onUpdated()
+        if (opts.sendToClient) {
+          onToast?.('Notes sent ✓', 'success')
+        } else {
+          onToast?.('Notes saved', 'success')
+        }
       } else {
-        onToast?.("Couldn't save notes", 'error')
+        onToast?.(typeof json.error === 'string' ? json.error : "Couldn't save notes", 'error')
       }
     } finally {
-      setSavingNotes(false)
+      setNotesSaving(false)
+      setNotesSending(false)
     }
+  }
+
+  const savePrivateNotesOnly = async () => {
+    setNotesSaving(true)
+    try {
+      const res = await fetch(`/api/sessions/${session.id}/notes`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          coachPrivateNotes: coachPrivateNotes.trim() || null,
+        }),
+      })
+      const json = (await res.json().catch(() => ({}))) as { error?: string }
+      if (res.ok) {
+        onUpdated()
+        onToast?.('Private notes saved', 'success')
+      } else {
+        onToast?.(typeof json.error === 'string' ? json.error : "Couldn't save notes", 'error')
+      }
+    } finally {
+      setNotesSaving(false)
+    }
+  }
+
+  const addActionItem = () => {
+    const text = newActionText.trim()
+    if (!text || actionDraft.length >= 10) return
+    setActionDraft((prev) => [
+      ...prev,
+      { id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `ai-${Date.now()}`, text, assignedTo: 'client' },
+    ])
+    setNewActionText('')
+  }
+
+  const removeAction = (id: string) => {
+    setActionDraft((prev) => prev.filter((a) => a.id !== id))
   }
 
   const markComplete = async () => {
@@ -180,10 +296,23 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
     setActionLoading(true)
     try {
       const res = await fetch(`/api/sessions/${session.id}/send-reminder`, { method: 'POST' })
-      if (res.ok) {
-        onToast?.('Reminder sent', 'success')
+      const json = (await res.json().catch(() => ({}))) as { queued?: boolean; error?: string }
+      if (json.queued === true) {
+        onToast?.('Reminder sent successfully — your client should receive it shortly.', 'success')
+      } else if (json.queued === false) {
+        onToast?.(
+          typeof json.error === 'string'
+            ? json.error
+            : 'Reminder not sent — email reminders are not configured yet.',
+          'warning'
+        )
+      } else if (!res.ok) {
+        onToast?.(
+          typeof json.error === 'string' ? json.error : "Couldn't send reminder — try again or check your setup.",
+          'error'
+        )
       } else {
-        onToast?.("Couldn't send reminder", 'error')
+        onToast?.('Reminder sent successfully — your client should receive it shortly.', 'success')
       }
     } finally {
       setActionLoading(false)
@@ -261,17 +390,153 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
             </div>
           ) : null}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">Notes</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            onBlur={saveNotes}
-            disabled={savingNotes}
-            rows={3}
-            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]"
-            placeholder="Session notes…"
-          />
+        <div className="space-y-3 border-t border-[var(--color-border)] pt-4">
+          <h3 className="text-sm font-medium text-[var(--color-text-primary)]">Session notes</h3>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setNotesTab('client')}
+              className={cn(
+                'min-h-[40px] flex-1 rounded-lg border px-3 text-[13px] font-medium transition-colors',
+                notesTab === 'client'
+                  ? 'border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+                  : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-secondary)]'
+              )}
+            >
+              Client summary
+            </button>
+            <button
+              type="button"
+              onClick={() => setNotesTab('private')}
+              className={cn(
+                'min-h-[40px] flex-1 rounded-lg border px-3 text-[13px] font-medium transition-colors',
+                notesTab === 'private'
+                  ? 'border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+                  : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-secondary)]'
+              )}
+            >
+              Private notes
+            </button>
+          </div>
+
+          {notesTab === 'client' ? (
+            <div className="space-y-3">
+              {notesSentAt ? (
+                <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
+                  Sent {formatDistanceToNow(new Date(notesSentAt), { addSuffix: true })}
+                </span>
+              ) : null}
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)]">Session summary</label>
+                <p className="mt-0.5 text-[12px] text-[var(--color-text-secondary)]">Shared with {clientName}</p>
+                <textarea
+                  value={sessionSummary}
+                  onChange={(e) => setSessionSummary(e.target.value.slice(0, 1000))}
+                  rows={5}
+                  disabled={notesSaving || notesSending}
+                  className="mt-2 min-h-[120px] w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[15px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]"
+                  placeholder={
+                    'How did the session go?\nWhat did you work on?\nWhat progress did you notice?'
+                  }
+                />
+                <p className="mt-1 text-[11px] text-[var(--color-text-secondary)] tabular-nums">
+                  {sessionSummary.length} / 1000
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-[var(--color-text-primary)]">Action items for client</p>
+                {actionDraft.length === 0 ? (
+                  <p className="mt-2 text-[13px] text-[var(--color-text-secondary)]">
+                    No action items yet. Add specific tasks for {clientName} to complete before next session.
+                  </p>
+                ) : (
+                  <ul className="mt-2 space-y-2">
+                    {actionDraft.map((a) => {
+                      const live = parseActionItemsJson(session.action_items).find((x) => x.id === a.id)
+                      const done = a.assignedTo === 'client' && live?.completed
+                      return (
+                        <li
+                          key={a.id}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2"
+                        >
+                          <span className="min-w-0 flex-1 text-[14px] text-[var(--color-text-primary)]">{a.text}</span>
+                          <span className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">
+                            {a.assignedTo === 'coach' ? 'Coach' : 'Client'}
+                            {done ? ' · Done' : ''}
+                          </span>
+                          <button
+                            type="button"
+                            className="text-[12px] text-red-600 hover:underline"
+                            onClick={() => removeAction(a.id)}
+                          >
+                            Delete
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+                {actionDraft.length < 10 ? (
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      value={newActionText}
+                      onChange={(e) => setNewActionText(e.target.value.slice(0, 200))}
+                      placeholder="New action item"
+                      className="min-h-[44px] flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 text-[14px]"
+                    />
+                    <Button type="button" variant="secondary" className="shrink-0" onClick={addActionItem}>
+                      Add
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="min-h-[44px] flex-1"
+                  disabled={notesSaving || notesSending}
+                  onClick={() => void saveStructuredNotes({ sendToClient: false })}
+                >
+                  {notesSaving ? 'Saving…' : 'Save privately'}
+                </Button>
+                <Button
+                  type="button"
+                  className="min-h-[44px] flex-1"
+                  disabled={notesSaving || notesSending || !sessionSummary.trim()}
+                  onClick={() => void saveStructuredNotes({ sendToClient: true })}
+                >
+                  {notesSending ? 'Sending…' : 'Send to client'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-primary)]">Your private notes</label>
+                <p className="mt-0.5 text-[12px] text-[var(--color-text-secondary)]">Only you can see this</p>
+                <textarea
+                  value={coachPrivateNotes}
+                  onChange={(e) => setCoachPrivateNotes(e.target.value)}
+                  rows={6}
+                  disabled={notesSaving}
+                  className="mt-2 min-h-[150px] w-full rounded-lg border border-[var(--color-border)] bg-[var(--bg-muted)] px-4 py-3 text-[15px] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]"
+                  placeholder="Observations, concerns, things to remember for next time…"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                className="min-h-[44px] w-full sm:w-auto"
+                disabled={notesSaving}
+                onClick={() => void savePrivateNotesOnly()}
+              >
+                {notesSaving ? 'Saving…' : 'Save privately'}
+              </Button>
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-2 pt-4 border-t border-[var(--color-border)]">
           {onReschedule && session.status !== 'completed' ? (

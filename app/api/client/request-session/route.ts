@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       message_type: 'session_request',
       content,
     })
-    if (error) return NextResponse.json({ error: error.message || 'Could not send request' }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Could not send request' }, { status: 500 })
 
     return NextResponse.json({ data: { ok: true } })
   } catch {

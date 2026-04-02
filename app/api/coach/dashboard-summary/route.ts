@@ -49,6 +49,8 @@ export async function GET() {
     const prevMonthAnchor = subMonths(now, 1)
     const prevMonthRange = { start: startOfMonth(prevMonthAnchor), end: endOfMonth(prevMonthAnchor) }
 
+    const monthStart = startOfMonth(now)
+
     const [
       activeClientsRes,
       sessionsWeekRes,
@@ -58,6 +60,8 @@ export async function GET() {
       clientsNewPrev7Res,
       messagesLast7Res,
       messagesPrev7Res,
+      clientsAddedThisMonthRes,
+      coachMessagesSentRes,
     ] = await Promise.all([
       supabase
         .from('clients')
@@ -107,6 +111,16 @@ export async function GET() {
         .eq('recipient_id', user.id)
         .gte('created_at', prev7Start.toISOString())
         .lt('created_at', last7Start.toISOString()),
+      supabase
+        .from('clients')
+        .select('id', { count: 'exact', head: true })
+        .eq('workspace_id', workspaceId)
+        .gte('created_at', monthStart.toISOString()),
+      supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('workspace_id', workspaceId)
+        .eq('sender_id', user.id),
     ])
 
     let revenueMonth = 0
@@ -145,14 +159,20 @@ export async function GET() {
         activeClientsCount: activeClientsRes.count ?? 0,
         sessionsThisWeek,
         revenueMonthCents: revenueMonth,
+        /** Same calendar-month window as `revenueMonthCents`, previous month (for MoM subtitle on dashboard). */
+        revenuePrevMonthCents: revenuePrevMonth,
         pendingInvoicesCount: pendingInvoicesRes.count ?? 0,
+        /** Clients created in the current calendar month (any status). */
+        clientsAddedThisMonth: clientsAddedThisMonthRes.count ?? 0,
+        /** Outbound messages sent by this coach in the workspace (onboarding checklist). */
+        coachMessagesSentCount: coachMessagesSentRes.count ?? 0,
         trends,
       },
     })
     res.headers.set('Cache-Control', 'private, max-age=30')
     return res
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Something went wrong'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    console.error('GET /api/coach/dashboard-summary', e)
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }

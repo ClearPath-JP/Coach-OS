@@ -56,15 +56,30 @@ export default function PrivacyPage() {
             <h2 className="text-base font-medium text-[var(--color-text-primary)]">4. Your rights</h2>
             <ul className="list-disc space-y-1 pl-5 text-[var(--color-text-secondary)]">
               <li>Access and review much of your data directly in the app.</li>
-              <li>Delete your account via Settings (subject to retention needed for legal or billing obligations).</li>
+              <li>
+                <span className="text-[var(--color-text-primary)]">Deletion</span> — coaches can remove a client and
+                associated coaching data from their workspace where the product supports it. End users may request
+                account or data deletion by emailing us; we respond within a reasonable time and may retain minimal
+                records where the law requires (for example tax or fraud prevention).
+              </li>
+              <li>Delete your coach account via Settings where available (subject to retention needed for legal or billing obligations).</li>
               <li>Request an export of your data — contact us at the email below.</li>
             </ul>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-medium text-[var(--color-text-primary)]">5. Contact</h2>
+            <h2 className="text-base font-medium text-[var(--color-text-primary)]">5. Data retention</h2>
             <p className="text-[var(--color-text-secondary)]">
-              Questions about this policy:{' '}
+              We keep your information only as long as needed to run the service, meet legal obligations, resolve
+              disputes, and enforce our agreements. Backup copies may persist for a short period after deletion.
+              Subscription and payment-related records may be retained longer as required for accounting and tax rules.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-medium text-[var(--color-text-primary)]">6. Contact</h2>
+            <p className="text-[var(--color-text-secondary)]">
+              Questions about this policy, data export, or deletion requests:{' '}
               <a href="mailto:privacy@clearpath.com" className="text-[var(--color-accent)] underline">
                 privacy@clearpath.com
               </a>

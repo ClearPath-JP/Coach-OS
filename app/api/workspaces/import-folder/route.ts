@@ -51,7 +51,7 @@ export async function GET() {
       .maybeSingle()
 
     if (error) {
-      return NextResponse.json({ error: error.message ?? 'Could not load workspace' }, { status: 500 })
+      return NextResponse.json({ error: 'Could not load workspace' }, { status: 500 })
     }
     return NextResponse.json({
       folderId: workspace?.google_drive_import_folder_id ?? null,
@@ -119,7 +119,7 @@ export async function PATCH(request: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message ?? 'Could not update import folder' },
+        { error: 'Could not update import folder' },
         { status: 500 }
       )
     }

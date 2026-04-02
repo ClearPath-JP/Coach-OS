@@ -113,6 +113,7 @@ export default function OnboardingStep3Page() {
             Optional for now — you can add clients anytime from your dashboard. When you&apos;re ready, we&apos;ll send them a
             secure link to their portal.
           </p>
+          <p className="mt-3 text-[13px] font-medium text-[var(--text-tertiary)]">Takes about 2 minutes — or skip for now.</p>
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">

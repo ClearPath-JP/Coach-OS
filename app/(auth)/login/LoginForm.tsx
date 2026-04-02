@@ -164,8 +164,8 @@ export function LoginForm() {
             {error}
           </p>
         )}
-        <Button type="submit" variant="primary" size="xl" fullWidth loading={loading} className="mt-2 min-h-12">
-          {loading ? 'Signing in…' : 'Sign in'}
+        <Button type="submit" variant="primary" size="xl" fullWidth loading={loading} className="mt-3 min-h-12">
+          {loading ? 'Signing in…' : 'Sign in to dashboard'}
         </Button>
       </form>
 
