@@ -49,10 +49,13 @@ export function AuthBrandedLeftPanel({
   headline,
   subtext,
   variant = 'marketing-blue',
+  featureList,
 }: {
   headline?: ReactNode
   subtext?: ReactNode
   variant?: 'marketing-blue' | 'coach-login-light'
+  /** When set, replaces the default bullet list for this variant. */
+  featureList?: string[]
 }) {
   const isLight = variant === 'coach-login-light'
   const h = headline ?? (isLight ? COACH_LOGIN_HEADLINE : DEFAULT_HEADLINE)
@@ -64,7 +67,7 @@ export function AuthBrandedLeftPanel({
     'Track payments and revenue',
     'Build and assign coaching programs',
   ]
-  const features = isLight ? COACH_LOGIN_FEATURES : defaultFeatures
+  const features = featureList ?? (isLight ? COACH_LOGIN_FEATURES : defaultFeatures)
 
   if (isLight) {
     return (

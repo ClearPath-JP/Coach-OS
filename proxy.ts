@@ -56,6 +56,9 @@ export async function proxy(request: NextRequest) {
     if (!user || authError) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
+    if (isAdminEmail(user.email)) {
+      return NextResponse.redirect(new URL('/admin/overview', request.url))
+    }
     return response
   }
 

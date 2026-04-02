@@ -143,18 +143,25 @@ export default function OnboardingStep1Page() {
 
   if (ensuringSignup) {
     return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 w-64 rounded-lg bg-[var(--color-surface)]" />
-        <div className="h-12 w-full rounded-lg bg-[var(--color-surface)]" />
-        <div className="h-12 w-32 rounded-lg bg-[var(--color-surface)]" />
+      <div
+        className="animate-pulse space-y-5 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8"
+        aria-busy
+        aria-label="Preparing your workspace"
+      >
+        <div className="h-24 rounded-2xl bg-[var(--bg-muted)]" />
+        <div className="h-11 w-full rounded-[var(--radius-md)] bg-[var(--bg-muted)]" />
+        <div className="h-28 rounded-xl bg-[var(--bg-muted)]" />
+        <div className="h-12 w-full rounded-[var(--radius-md)] bg-[var(--bg-muted)]" />
       </div>
     )
   }
 
   if (bootstrapError) {
     return (
-      <div className="space-y-4 rounded-xl border border-[var(--color-border)] bg-[var(--bg-app)] p-6">
-        <h1 className="text-[var(--text-h3)] font-medium text-[var(--color-text-primary)]">Could not start onboarding</h1>
+      <div className="space-y-4 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8">
+        <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+          Could not start onboarding
+        </h1>
         <p className="text-[15px] text-[var(--color-text-secondary)]">{bootstrapError}</p>
         <Button
           type="button"

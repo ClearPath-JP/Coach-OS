@@ -31,8 +31,8 @@ export function OnboardingProgress() {
   return (
     <nav className="w-full" aria-label="Onboarding progress">
       <div className="mb-5">
-        <div className="mb-2 flex items-center justify-between text-[var(--text-13)] text-[var(--text-tertiary)]">
-          <span className="font-medium text-[var(--text-primary)]">Step {step} of {STEPS.length}</span>
+        <div className="mb-2 flex items-center justify-between text-[13px] text-[var(--text-tertiary)]">
+          <span className="font-semibold text-[var(--text-primary)]">Step {step} of {STEPS.length}</span>
           <span aria-live="polite">{pct}%</span>
         </div>
         <div

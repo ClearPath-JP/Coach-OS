@@ -106,7 +106,6 @@ export default function OnboardingStep4Page() {
         />
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">Finish line</p>
         <h1 className="mt-1 max-w-2xl text-[var(--text-24)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] md:text-[28px]">
-          <span aria-hidden>🎉 </span>
           You&apos;re all set{coachFirstName ? `, ${coachFirstName}` : ''}! Your coaching business is ready.
         </h1>
         <p className="mt-3 max-w-2xl text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-secondary)]">

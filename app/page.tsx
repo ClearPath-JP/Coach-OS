@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { isAdminEmail } from '@/lib/admin-email'
 import { createClient } from '@/lib/supabase-server'
 
 /**
@@ -38,6 +39,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key`}
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login')
+  }
+  if (isAdminEmail(user.email)) {
+    redirect('/admin/overview')
   }
   const { data: profile } = await supabase
     .from('profiles')
