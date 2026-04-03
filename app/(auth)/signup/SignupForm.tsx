@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signupSchema, type SignupInput } from '@/lib/validations'
+import { cn } from '@/lib/utils'
 
 type FieldErrors = Partial<Record<keyof SignupInput | 'submit', string>>
 
@@ -20,6 +20,19 @@ function EyeIcon({ off }: { off?: boolean }) {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function Spinner() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="animate-spin" aria-hidden>
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
     </svg>
   )
 }
@@ -124,198 +137,181 @@ export function SignupForm() {
     }
   }
 
-  const inputClass =
-    'w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] min-h-[44px]'
+  const linkStyle = { color: '#3B9EE8' } as const
 
   return (
-    <div className="flex flex-col gap-6">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="firstName" className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
-              First name <span className="text-[var(--color-error)]">*</span>
-            </label>
-            <input
-              id="firstName"
-              name="firstName"
-              type="text"
-              autoComplete="given-name"
-              required
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className={inputClass}
-              placeholder="Jane"
-              aria-invalid={!!fieldErrors.firstName}
-            />
-            {fieldErrors.firstName && (
-              <p className="mt-1 text-sm text-[var(--color-error)]" role="alert">
-                {fieldErrors.firstName}
-              </p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="lastName" className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
-              Last name <span className="text-[var(--color-error)]">*</span>
-            </label>
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              autoComplete="family-name"
-              required
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className={inputClass}
-              placeholder="Doe"
-              aria-invalid={!!fieldErrors.lastName}
-            />
-            {fieldErrors.lastName && (
-              <p className="mt-1 text-sm text-[var(--color-error)]" role="alert">
-                {fieldErrors.lastName}
-              </p>
-            )}
-          </div>
-        </div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
-            Email <span className="text-[var(--color-error)]">*</span>
+          <label htmlFor="firstName" className="login-premium-label">
+            First name <span className="text-[#D92B3A]">*</span>
           </label>
           <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
+            id="firstName"
+            name="firstName"
+            type="text"
+            autoComplete="given-name"
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClass}
-            placeholder="you@example.com"
-            aria-invalid={!!fieldErrors.email}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="login-premium-input"
+            placeholder="Jane"
+            aria-invalid={!!fieldErrors.firstName}
           />
-          {fieldErrors.email && (
-            <p className="mt-1 text-sm text-[var(--color-error)]" role="alert">
-              {fieldErrors.email}
+          {fieldErrors.firstName && (
+            <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+              {fieldErrors.firstName}
             </p>
           )}
         </div>
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
-            Password <span className="text-[var(--color-error)]">*</span>
+          <label htmlFor="lastName" className="login-premium-label">
+            Last name <span className="text-[#D92B3A]">*</span>
           </label>
-          <div className="relative">
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="new-password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`${inputClass} pr-12`}
-              placeholder="At least 8 characters"
-              aria-invalid={!!fieldErrors.password}
-            />
-            <button
-              type="button"
-              className="absolute right-2 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-[var(--color-muted)]"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              <EyeIcon off={showPassword} />
-            </button>
-          </div>
-          {fieldErrors.password && (
-            <p className="mt-1 text-sm text-[var(--color-error)]" role="alert">
-              {fieldErrors.password}
-            </p>
-          )}
-        </div>
-        <div>
-          <label htmlFor="confirmPassword" className="mb-1 block text-sm font-medium text-[var(--color-text-primary)]">
-            Confirm password <span className="text-[var(--color-error)]">*</span>
-          </label>
-          <div className="relative">
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirm ? 'text' : 'password'}
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={`${inputClass} pr-12`}
-              placeholder="Same as above"
-              aria-invalid={!!fieldErrors.confirmPassword}
-            />
-            <button
-              type="button"
-              className="absolute right-2 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-[var(--color-muted)]"
-              onClick={() => setShowConfirm((v) => !v)}
-              aria-label={showConfirm ? 'Hide password' : 'Show password'}
-            >
-              <EyeIcon off={showConfirm} />
-            </button>
-          </div>
-          {fieldErrors.confirmPassword && (
-            <p className="mt-1 text-sm text-[var(--color-error)]" role="alert">
-              {fieldErrors.confirmPassword}
-            </p>
-          )}
-        </div>
-        <div className="flex items-start gap-3">
           <input
-            id="acceptTerms"
-            type="checkbox"
-            checked={acceptTerms}
-            onChange={(e) => setAcceptTerms(e.target.checked)}
-            className="mt-1 h-4 w-4 shrink-0 rounded border-[var(--color-border)]"
+            id="lastName"
+            name="lastName"
+            type="text"
+            autoComplete="family-name"
+            required
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="login-premium-input"
+            placeholder="Doe"
+            aria-invalid={!!fieldErrors.lastName}
           />
-          <label htmlFor="acceptTerms" className="text-[14px] leading-snug text-[var(--color-text-primary)]">
-            I agree to the{' '}
-            <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--color-accent)] underline hover:opacity-90"
-            >
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a
-              href="/privacy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--color-accent)] underline hover:opacity-90"
-            >
-              Privacy Policy
-            </a>
-          </label>
+          {fieldErrors.lastName && (
+            <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+              {fieldErrors.lastName}
+            </p>
+          )}
         </div>
-        {fieldErrors.acceptTerms && (
-          <p className="text-sm text-[var(--color-error)]" role="alert">
-            {fieldErrors.acceptTerms}
+      </div>
+      <div>
+        <label htmlFor="email" className="login-premium-label">
+          Email <span className="text-[#D92B3A]">*</span>
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="login-premium-input"
+          placeholder="you@example.com"
+          aria-invalid={!!fieldErrors.email}
+        />
+        {fieldErrors.email && (
+          <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+            {fieldErrors.email}
           </p>
         )}
-        {submitError && (
-          <p className="rounded-lg bg-[var(--color-error-light)] px-4 py-3 text-sm text-[var(--color-error)]" role="alert">
-            {submitError}
+      </div>
+      <div>
+        <label htmlFor="password" className="login-premium-label">
+          Password <span className="text-[#D92B3A]">*</span>
+        </label>
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={cn('login-premium-input', 'pr-12')}
+            placeholder="At least 8 characters"
+            aria-invalid={!!fieldErrors.password}
+          />
+          <button
+            type="button"
+            className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#5B7FA6] transition-colors hover:text-[#0A1929]"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            <EyeIcon off={showPassword} />
+          </button>
+        </div>
+        {fieldErrors.password && (
+          <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+            {fieldErrors.password}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={loading}
-          className="min-h-[44px] w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 font-medium text-white hover:bg-[var(--color-accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2 disabled:opacity-70"
-        >
+      </div>
+      <div>
+        <label htmlFor="confirmPassword" className="login-premium-label">
+          Confirm password <span className="text-[#D92B3A]">*</span>
+        </label>
+        <div className="relative">
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type={showConfirm ? 'text' : 'password'}
+            autoComplete="new-password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className={cn('login-premium-input', 'pr-12')}
+            placeholder="Same as above"
+            aria-invalid={!!fieldErrors.confirmPassword}
+          />
+          <button
+            type="button"
+            className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#5B7FA6] transition-colors hover:text-[#0A1929]"
+            onClick={() => setShowConfirm((v) => !v)}
+            aria-label={showConfirm ? 'Hide password' : 'Show password'}
+          >
+            <EyeIcon off={showConfirm} />
+          </button>
+        </div>
+        {fieldErrors.confirmPassword && (
+          <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+            {fieldErrors.confirmPassword}
+          </p>
+        )}
+      </div>
+      <div className="flex items-start gap-3">
+        <input
+          id="acceptTerms"
+          type="checkbox"
+          checked={acceptTerms}
+          onChange={(e) => setAcceptTerms(e.target.checked)}
+          className="mt-1 h-4 w-4 shrink-0 rounded border-[1.5px] border-[#D0E3F0] text-[#3B9EE8] focus:ring-2 focus:ring-[#3B9EE8] focus:ring-offset-0"
+        />
+        <label htmlFor="acceptTerms" className="text-[14px] leading-snug" style={{ color: '#0A1929' }}>
+          I agree to the{' '}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={linkStyle}>
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={linkStyle}>
+            Privacy Policy
+          </a>
+        </label>
+      </div>
+      {fieldErrors.acceptTerms && (
+        <p className="text-[13px] text-[#D92B3A]" role="alert">
+          {fieldErrors.acceptTerms}
+        </p>
+      )}
+      {submitError && (
+        <div className="login-premium-error-card !mt-0" role="alert">
+          <span className="login-premium-error-card__icon" aria-hidden>
+            ⚠
+          </span>
+          <p className="login-premium-error-card__text">{submitError}</p>
+        </div>
+      )}
+      <button type="submit" className="login-premium-btn" disabled={loading}>
+        <span className="login-premium-btn-inner text-white">
+          {loading && <Spinner />}
           {loading ? 'Creating account…' : 'Create account'}
-        </button>
-      </form>
-      <p className="text-center text-sm text-[var(--color-text-secondary)]">
-        Already have an account?{' '}
-        <Link href="/login" className="font-medium text-[var(--color-accent)] hover:underline">
-          Sign in
-        </Link>
-      </p>
-    </div>
+        </span>
+      </button>
+    </form>
   )
 }

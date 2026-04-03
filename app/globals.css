@@ -806,3 +806,338 @@ tr:hover td {
 .animate-streak-pulse {
   animation: streakPulse 0.6s ease-out 1;
 }
+
+/* ================================
+ * LOGIN PAGE AURORA ANIMATION
+ * ClearPath Sky Blue Color Family
+ * ================================ */
+
+.login-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #0a2a4a;
+  pointer-events: none;
+}
+
+.login-aurora::before,
+.login-aurora::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.7;
+  will-change: transform;
+}
+
+.login-aurora .blob-1,
+.login-aurora .blob-2,
+.login-aurora .blob-3 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  will-change: transform;
+}
+
+/*
+ * JS-driven motion (`useLoginAuroraMotion`): per-frame CSS variables on `.login-aurora--driven`
+ * for continuous mesh drift (pseudo-elements inherit custom properties).
+ */
+.login-aurora--driven::before {
+  transform: translate3d(var(--aurora-b1-tx, 0px), var(--aurora-b1-ty, 0px), 0) scale(var(--aurora-b1-s, 1));
+}
+
+.login-aurora--driven::after {
+  transform: translate3d(var(--aurora-b2-tx, 0px), var(--aurora-b2-ty, 0px), 0) scale(var(--aurora-b2-s, 1));
+}
+
+.login-aurora--driven .blob-1 {
+  transform: translate3d(var(--aurora-b3-tx, 0px), var(--aurora-b3-ty, 0px), 0) scale(var(--aurora-b3-s, 1));
+}
+
+.login-aurora--driven .blob-2 {
+  transform: translate3d(var(--aurora-b4-tx, 0px), var(--aurora-b4-ty, 0px), 0) scale(var(--aurora-b4-s, 1));
+  opacity: var(--aurora-b4-o, 0.5);
+}
+
+.login-aurora--driven .blob-3 {
+  transform: translate3d(var(--aurora-b5-tx, 0px), var(--aurora-b5-ty, 0px), 0) scale(var(--aurora-b5-s, 1));
+}
+
+/* BLOB 1 — Primary sky blue, large */
+.login-aurora::before {
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, #3b9ee8 0%, #1565c0 50%, transparent 70%);
+  top: -200px;
+  right: -100px;
+}
+
+/* BLOB 2 — Lighter blue, medium */
+.login-aurora::after {
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, #7ec8f0 0%, #3b9ee8 40%, transparent 70%);
+  bottom: -150px;
+  left: -50px;
+}
+
+/* BLOB 3 — Deep blue accent */
+.login-aurora .blob-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #1e3a5f 0%, #0d1b2a 50%, transparent 70%);
+  top: 30%;
+  left: 20%;
+  opacity: 0.7;
+}
+
+/* BLOB 4 — Cyan highlight */
+.login-aurora .blob-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle,
+    rgba(126, 200, 240, 0.6) 0%,
+    rgba(59, 158, 232, 0.3) 50%,
+    transparent 70%
+  );
+  top: 10%;
+  left: 40%;
+}
+
+/* BLOB 5 — Violet hint for depth */
+.login-aurora .blob-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(
+    circle,
+    rgba(79, 70, 229, 0.4) 0%,
+    rgba(59, 158, 232, 0.2) 50%,
+    transparent 70%
+  );
+  bottom: 20%;
+  right: 20%;
+  opacity: 0.4;
+}
+
+/* Grain texture overlay for depth */
+.login-aurora-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  pointer-events: none;
+}
+
+/* Subtle radial vignette to focus attention on the center card */
+.login-aurora-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(10, 26, 42, 0.4) 100%);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .login-value-prop {
+    display: block !important;
+  }
+}
+
+/* Premium auth card + form controls (hardcoded light; not theme variables) */
+@keyframes login-card-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes login-btn-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.login-premium-card {
+  position: relative;
+  z-index: 10;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  background: rgba(255, 255, 255, 0.97);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 32px 64px rgba(10, 26, 42, 0.35),
+    0 8px 16px rgba(10, 26, 42, 0.2);
+  padding: 40px;
+  animation: login-card-appear 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  color: #0a1929;
+}
+
+.login-premium-input {
+  height: 44px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f7fafd;
+  border: 1.5px solid #d0e3f0;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 15px;
+  color: #0a1929;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.login-premium-input::placeholder {
+  color: #9bb5cc;
+}
+
+.login-premium-input:focus {
+  outline: none;
+  border-color: #3b9ee8;
+  box-shadow: 0 0 0 3px rgba(59, 158, 232, 0.15);
+  background: #fff;
+}
+
+.login-premium-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e3a5f;
+}
+
+.login-premium-btn {
+  width: 100%;
+  height: 46px;
+  background: #3b9ee8;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 20px;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    opacity 150ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-premium-btn:hover:not(:disabled) {
+  background: #2d8fd4;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(59, 158, 232, 0.35);
+}
+
+.login-premium-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.login-premium-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.login-premium-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+
+.login-premium-btn:hover:not(:disabled)::after {
+  animation: login-btn-shimmer 600ms ease;
+}
+
+.login-premium-btn-inner {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.login-premium-ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 44px;
+  margin-top: 16px;
+  border-radius: 10px;
+  border: 1.5px solid #d0e3f0;
+  background: transparent;
+  color: #1e3a5f;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.login-premium-ghost-btn:hover {
+  border-color: #3b9ee8;
+  background: rgba(59, 158, 232, 0.06);
+}
+
+.login-premium-error-card {
+  background: #fff1f2;
+  border: 1px solid #fca5b0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.login-premium-error-card__icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #d92b3a;
+}
+
+.login-premium-error-card__text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #d92b3a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-premium-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .login-premium-btn::after {
+    animation: none !important;
+  }
+}

@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/utils'
 
 function isSafeNext(next: string | null): next is string {
@@ -36,6 +34,33 @@ function EyeIcon({ off }: { off?: boolean }) {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function Spinner() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      className="animate-spin"
+      aria-hidden
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
     </svg>
   )
 }
@@ -85,34 +110,42 @@ export function LoginForm() {
       ? 'Your password has been updated. Sign in with your new password.'
       : null
 
-  const labelCls = 'mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]'
+  const linkForgot = {
+    fontSize: '13px',
+    color: '#3B9EE8',
+    textDecoration: 'none',
+  } as const
 
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       {rateLimitMessage && (
-        <p
-          className="rounded-[var(--radius-md)] bg-[var(--error-bg)] px-4 py-3 text-sm text-[var(--error)]"
+        <div
+          className="login-premium-error-card mb-4"
           role="alert"
           aria-live="polite"
         >
-          {rateLimitMessage}
-        </p>
+          <span className="login-premium-error-card__icon" aria-hidden>
+            ⚠
+          </span>
+          <p className="login-premium-error-card__text">{rateLimitMessage}</p>
+        </div>
       )}
       {passwordResetMessage && !rateLimitMessage && (
         <p
-          className="rounded-[var(--radius-md)] bg-[var(--accent-light)] px-4 py-3 text-sm text-[var(--accent)]"
+          className="mb-4 rounded-lg border border-[#BFDBF7] bg-[#EBF5FF] px-4 py-3 text-[13px] leading-snug text-[#1565C0]"
           role="status"
           aria-live="polite"
         >
           {passwordResetMessage}
         </p>
       )}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div>
-          <label htmlFor="login-email" className={labelCls}>
-            Email <span className="text-[var(--error)]">*</span>
+
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label htmlFor="login-email" className="login-premium-label">
+            Email <span className="text-[#D92B3A]">*</span>
           </label>
-          <Input
+          <input
             id="login-email"
             name="email"
             type="email"
@@ -122,16 +155,21 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            inputSize="lg"
-            className="h-11 min-h-11"
+            className="login-premium-input"
           />
         </div>
-        <div>
-          <label htmlFor="login-password" className={labelCls}>
-            Password <span className="text-[var(--error)]">*</span>
-          </label>
+
+        <div className="mb-0">
+          <div className="mb-1.5 flex items-baseline justify-between gap-3">
+            <label htmlFor="login-password" className="login-premium-label !mb-0">
+              Password <span className="text-[#D92B3A]">*</span>
+            </label>
+            <Link href="/forgot-password" className="shrink-0 hover:underline" style={linkForgot}>
+              Forgot password?
+            </Link>
+          </div>
           <div className="relative">
-            <Input
+            <input
               id="login-password"
               name="password"
               type={showPassword ? 'text' : 'password'}
@@ -140,12 +178,11 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              inputSize="lg"
-              className={cn('h-11 min-h-11 pr-12')}
+              className={cn('login-premium-input', 'pr-12')}
             />
             <button
               type="button"
-              className="absolute right-2 top-1/2 flex size-11 min-h-11 min-w-11 -translate-y-1/2 items-center justify-center text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
+              className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#5B7FA6] transition-colors hover:text-[#0A1929]"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
               aria-pressed={showPassword}
@@ -153,53 +190,59 @@ export function LoginForm() {
               <EyeIcon off={showPassword} />
             </button>
           </div>
-          <div className="-mt-1 flex justify-end pt-1">
-            <Link href="/forgot-password" className="link-nav text-[13px] font-medium">
-              Forgot password?
-            </Link>
-          </div>
         </div>
-        {error && (
-          <p className="text-sm text-[var(--error)]" role="alert" aria-live="assertive">
-            {error}
-          </p>
-        )}
-        <Button type="submit" variant="primary" size="xl" fullWidth loading={loading} className="mt-3 min-h-12">
-          {loading ? 'Signing in…' : 'Sign in to dashboard'}
-        </Button>
+
+        <button type="submit" className="login-premium-btn" disabled={loading}>
+          <span className="login-premium-btn-inner text-white">
+            {loading && <Spinner />}
+            {loading ? 'Signing in...' : 'Sign in'}
+          </span>
+        </button>
       </form>
 
-      <div className="my-6 flex items-center gap-3">
-        <div className="h-px flex-1 bg-[var(--border-default)]" />
-        <span className="text-[12px] text-[var(--text-quaternary)]">or</span>
-        <div className="h-px flex-1 bg-[var(--border-default)]" />
-      </div>
+      {error && (
+        <div className="login-premium-error-card" role="alert" aria-live="assertive">
+          <span className="login-premium-error-card__icon" aria-hidden>
+            ⚠
+          </span>
+          <p className="login-premium-error-card__text">{error}</p>
+        </div>
+      )}
 
-      <p className="text-center text-[13px]">
-        <Link href="/signup" className="link-nav font-medium">
-          New to ClearPath? Start free →
-        </Link>
-      </p>
-      <p className="text-center text-[12px] text-[var(--text-tertiary)]">
-        Prefer the client portal page?{' '}
+      <div
+        style={{
+          marginTop: '24px',
+          paddingTop: '24px',
+          borderTop: '1px solid #E8F1F9',
+          textAlign: 'center',
+        }}
+      >
+        <span style={{ fontSize: '14px', color: '#5B7FA6' }}>New to ClearPath?</span>
         <Link
-          href="/client-login"
-          className="link-nav font-medium text-[var(--text-tertiary)] hover:text-[var(--accent)]"
+          href="/signup"
+          className="ml-1 font-medium hover:underline"
+          style={{ color: '#3B9EE8', fontSize: '14px' }}
         >
-          Client sign-in →
+          Get started →
         </Link>
-      </p>
-      <p className="text-center text-[12px] text-[var(--text-tertiary)]">
-        <Link href="/terms" className="link-nav">
-          Terms of Service
-        </Link>
-        <span className="mx-2 text-[var(--border-default)]" aria-hidden>
-          ·
-        </span>
-        <Link href="/privacy" className="link-nav">
-          Privacy Policy
-        </Link>
-      </p>
+        <p style={{ marginTop: '12px', fontSize: '12px', color: '#5B7FA6' }}>
+          Prefer the client portal?{' '}
+          <Link href="/client-login" className="font-medium hover:underline" style={{ color: '#3B9EE8' }}>
+            Client sign-in →
+          </Link>
+        </p>
+        <p style={{ marginTop: '8px', fontSize: '12px', color: '#9BB5CC' }}>
+          <Link href="/terms" className="hover:underline" style={{ color: '#5B7FA6' }}>
+            Terms of Service
+          </Link>
+          <span className="mx-2" aria-hidden>
+            ·
+          </span>
+          <Link href="/privacy" className="hover:underline" style={{ color: '#5B7FA6' }}>
+            Privacy Policy
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Input } from '@/components/ui/Input'
+import { cn } from '@/lib/utils'
 
 function EyeIcon({ off }: { off?: boolean }) {
   if (off) {
@@ -18,6 +18,19 @@ function EyeIcon({ off }: { off?: boolean }) {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function Spinner() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="animate-spin" aria-hidden>
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
     </svg>
   )
 }
@@ -51,74 +64,97 @@ export function ClientLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div>
-        <label htmlFor="client-email" className="mb-1 block text-[13px] font-medium text-[var(--color-text-primary)]">
-          Email
-        </label>
-        <Input
-          id="client-email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="min-h-[44px] w-full"
-        />
-      </div>
-      <div>
-        <label htmlFor="client-password" className="mb-1 block text-[13px] font-medium text-[var(--color-text-primary)]">
-          Password
-        </label>
-        <div className="relative">
-          <Input
-            id="client-password"
-            type={showPassword ? 'text' : 'password'}
-            autoComplete="current-password"
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label htmlFor="client-email" className="login-premium-label">
+            Email <span className="text-[#D92B3A]">*</span>
+          </label>
+          <input
+            id="client-email"
+            type="email"
+            autoComplete="email"
             required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="min-h-[44px] w-full py-3 pl-4 pr-12"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="login-premium-input"
           />
-          <button
-            type="button"
-            className="absolute right-2 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-[var(--color-text-secondary)]"
-            onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-          >
-            <EyeIcon off={showPassword} />
-          </button>
         </div>
-      </div>
-      {error && (
-        <p className="text-sm text-[var(--color-error)]" role="alert">
-          {error}
+
+        <div className="mb-4">
+          <label htmlFor="client-password" className="login-premium-label">
+            Password <span className="text-[#D92B3A]">*</span>
+          </label>
+          <div className="relative">
+            <input
+              id="client-password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className={cn('login-premium-input', 'pr-12')}
+            />
+            <button
+              type="button"
+              className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#5B7FA6] transition-colors hover:text-[#0A1929]"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              <EyeIcon off={showPassword} />
+            </button>
+          </div>
+        </div>
+
+        <p style={{ fontSize: '12px', lineHeight: 1.5, color: '#5B7FA6', marginBottom: '4px' }}>
+          First time? Use the temporary password your coach gave you. You&apos;ll set a new one after signing in.
         </p>
+
+        <button type="submit" className="login-premium-btn" disabled={loading}>
+          <span className="login-premium-btn-inner text-white">
+            {loading && <Spinner />}
+            {loading ? 'Signing in...' : 'Sign in'}
+          </span>
+        </button>
+      </form>
+
+      {error && (
+        <div className="login-premium-error-card" role="alert" aria-live="assertive">
+          <span className="login-premium-error-card__icon" aria-hidden>
+            ⚠
+          </span>
+          <p className="login-premium-error-card__text">{error}</p>
+        </div>
       )}
-      <button
-        type="submit"
-        disabled={loading}
-        className="min-h-[44px] w-full rounded-lg bg-[var(--color-accent)] px-4 py-3 font-medium text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-70"
+
+      <div
+        style={{
+          marginTop: '24px',
+          paddingTop: '24px',
+          borderTop: '1px solid #E8F1F9',
+          textAlign: 'center',
+        }}
       >
-        {loading ? 'Signing in…' : 'Sign in'}
-      </button>
-      <p className="text-center text-[12px] leading-relaxed text-[var(--color-muted)]">
-        First time? Use the temporary password your coach gave you. You&apos;ll be asked to set a new one after
-        signing in.
-      </p>
-      <div className="relative my-2">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[var(--color-border)]" />
-        </div>
-        <div className="relative flex justify-center text-[12px] text-[var(--color-muted)]">
-          <span className="bg-[var(--color-bg)] px-2 text-[13px] text-[var(--color-text-secondary)]">or</span>
-        </div>
+        <p style={{ fontSize: '14px', color: '#5B7FA6' }}>Having trouble? Contact your coach</p>
+        <p style={{ marginTop: '12px', fontSize: '12px', color: '#5B7FA6' }}>
+          <Link href="/login" className="font-medium hover:underline" style={{ color: '#3B9EE8' }}>
+            Coach? Sign in here →
+          </Link>
+        </p>
+        <p style={{ marginTop: '8px', fontSize: '12px', color: '#9BB5CC' }}>
+          <Link href="/terms" className="hover:underline" style={{ color: '#5B7FA6' }}>
+            Terms of Service
+          </Link>
+          <span className="mx-2" aria-hidden>
+            ·
+          </span>
+          <Link href="/privacy" className="hover:underline" style={{ color: '#5B7FA6' }}>
+            Privacy Policy
+          </Link>
+        </p>
       </div>
-      <p className="text-center text-sm">
-        <Link href="/login" className="text-[var(--color-accent)] hover:underline">
-          Coach? Sign in here →
-        </Link>
-      </p>
-    </form>
+    </div>
   )
 }
