@@ -134,7 +134,7 @@ export function QuickInvoiceModal({
             <label className="mb-3 block">
               <span className="mb-1 block text-[12px] font-medium text-[var(--text-secondary)]">Client</span>
               <select
-                className="h-11 w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[15px]"
+                className="h-11 w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[15px]"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
                 aria-label="Client"
@@ -188,7 +188,7 @@ export function QuickInvoiceModal({
                 {methods.map((m) => (
                   <li
                     key={m}
-                    className="rounded-full bg-[var(--bg-app)] px-2 py-0.5 text-[12px] text-[var(--text-secondary)]"
+                    className="rounded-full bg-[var(--cp-offwhite)] px-2 py-0.5 text-[12px] text-[var(--text-secondary)]"
                   >
                     {PAYMENT_METHOD_LABELS[m] ?? m}
                   </li>

@@ -215,6 +215,7 @@
 
   /* ClearPath Solutions — Coaching OS palette (--cp-*); coach accent via --cp-accent */
   --cp-navy: #0f172a;
+  --cp-navy-light: #1e3a5f; /* active nav row, between navy + sapphire */
   --cp-slate: #1e293b;
   --cp-white: #ffffff;
   --cp-offwhite: #f8fafc;
@@ -240,6 +241,11 @@
   --cp-card-bg: var(--cp-white);
   --cp-input-border: var(--cp-border);
   --cp-input-focus: var(--cp-accent);
+
+  /* ── Legacy bridges (Phase 3 cleanup) ──────────────────── */
+  --bg-app: var(--cp-offwhite);
+  --accent: var(--cp-accent);
+  --accent-hover: var(--cp-accent-hover);
 }
 
 html[data-theme='dark'] {

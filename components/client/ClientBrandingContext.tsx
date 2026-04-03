@@ -9,6 +9,8 @@ export type ClientBrandingContextValue = {
   /** Resolved from clients row for top nav */
   userDisplayName: string | null
   logoUrl: string | null
+  /** Coerced Phase-4 whitelist hex for `--cp-accent` */
+  accentColor: string | null
 }
 
 const ClientBrandingContext = createContext<ClientBrandingContextValue>({
@@ -17,6 +19,7 @@ const ClientBrandingContext = createContext<ClientBrandingContextValue>({
   workspaceId: null,
   userDisplayName: null,
   logoUrl: null,
+  accentColor: null,
 })
 
 export function ClientBrandingProvider({

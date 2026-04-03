@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/Input'
 
 function MailIllustration() {
   return (
-    <svg viewBox="0 0 120 96" fill="none" className="h-auto w-full max-w-[200px] text-[var(--accent)]" aria-hidden>
+    <svg viewBox="0 0 120 96" fill="none" className="h-auto w-full max-w-[200px] text-[var(--cp-accent)]" aria-hidden>
       <rect x="8" y="20" width="104" height="64" rx="12" className="stroke-current" strokeWidth="2" fill="var(--accent-light)" />
       <path d="M8 32l52 36 52-36" className="stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="88" cy="36" r="14" fill="var(--bg-app)" className="stroke-current" strokeWidth="2" />
+      <circle cx="88" cy="36" r="14" fill="var(--cp-offwhite)" className="stroke-current" strokeWidth="2" />
       <path d="M84 36l3 3 6-6" className="stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -72,7 +72,7 @@ export default function OnboardingStep3Page() {
 
   if (inviteSentTo) {
     return (
-      <div className="space-y-6 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8">
+      <div className="space-y-6 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-sm)] md:p-8">
         <div className="flex flex-col items-center text-center">
           <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-[var(--color-success-light)] text-[var(--success)]">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
@@ -98,9 +98,9 @@ export default function OnboardingStep3Page() {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
       <form
         onSubmit={handleSubmit}
-        className="space-y-8 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8"
+        className="space-y-8 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-sm)] md:p-8"
       >
-        <div className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(130deg,#FFF7ED_0%,var(--bg-app)_55%)] p-5 md:p-6">
+        <div className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(130deg,#FFF7ED_0%,var(--cp-offwhite)_55%)] p-5 md:p-6">
           <div
             className="pointer-events-none absolute -left-4 bottom-0 h-20 w-20 rounded-full bg-[var(--warning)]/20 blur-2xl"
             aria-hidden
@@ -178,25 +178,25 @@ export default function OnboardingStep3Page() {
         </div>
       </form>
 
-      <aside className="flex flex-col items-center gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 text-center shadow-[var(--shadow-sm)] lg:sticky lg:top-24">
+      <aside className="flex flex-col items-center gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 text-center shadow-[var(--shadow-sm)] lg:sticky lg:top-24">
         <MailIllustration />
         <div className="space-y-2 text-[12px] leading-relaxed text-[var(--text-secondary)]">
           <p className="font-medium text-[var(--text-primary)]">What happens next</p>
           <ul className="space-y-2 text-left">
             <li className="flex gap-2">
-              <span className="text-[var(--accent)]" aria-hidden>
+              <span className="text-[var(--cp-accent)]" aria-hidden>
                 •
               </span>
               We create their client record under your workspace.
             </li>
             <li className="flex gap-2">
-              <span className="text-[var(--accent)]" aria-hidden>
+              <span className="text-[var(--cp-accent)]" aria-hidden>
                 •
               </span>
               They get an email to set a password and open the portal.
             </li>
             <li className="flex gap-2">
-              <span className="text-[var(--accent)]" aria-hidden>
+              <span className="text-[var(--cp-accent)]" aria-hidden>
                 •
               </span>
               You can resend invites anytime from Clients.

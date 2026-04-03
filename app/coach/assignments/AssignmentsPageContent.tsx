@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
@@ -17,6 +17,30 @@ import {
 } from '@/components/coach/AssignmentTemplateSubmissionsModal'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { cn } from '@/lib/utils'
+
+const AssignmentAnalyticsCharts = dynamic(
+  () => import('@/components/coach/AssignmentAnalyticsCharts').then((m) => m.AssignmentAnalyticsCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        style={{
+          height: 200,
+          background: 'var(--cp-offwhite)',
+          borderRadius: 10,
+          border: '1px solid var(--cp-border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--cp-gray)',
+          fontSize: 13,
+        }}
+      >
+        Loading…
+      </div>
+    ),
+  }
+)
 
 type Tab = 'review' | 'all' | 'templates' | 'analytics'
 
@@ -138,7 +162,7 @@ export function AssignmentsPageContent() {
       render: (r) => (
         <button
           type="button"
-          className="max-w-[220px] text-left text-[var(--accent)] hover:underline"
+          className="max-w-[220px] text-left text-[var(--cp-accent)] hover:underline"
           onClick={() =>
             openTemplateSubmissions(r.assignment_template_id, r.assignment_templates?.title ?? 'Assignment')
           }
@@ -182,13 +206,6 @@ export function AssignmentsPageContent() {
         ),
     },
   ]
-
-  const pieData = overview
-    ? [
-        { name: 'Done', value: overview.completionRatePct },
-        { name: 'Rest', value: Math.max(0, 100 - overview.completionRatePct) },
-      ]
-    : []
 
   const sendAssignment = async (templateId: string, clientId: string) => {
     const res = await fetch('/api/assignments/assign', {
@@ -289,7 +306,7 @@ export function AssignmentsPageContent() {
             className={cn(
               'relative h-8 min-h-[32px] px-4 text-[14px] transition-colors duration-150',
               tab === k
-                ? 'font-semibold text-[var(--accent)] after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                ? 'font-semibold text-[var(--cp-accent)] after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-t after:bg-[var(--cp-accent)]'
                 : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
             )}
           >
@@ -309,7 +326,7 @@ export function AssignmentsPageContent() {
             </p>
           </div>
           {queueRows.length === 0 ? (
-            <Card className="border border-[var(--border-default)] bg-[var(--bg-app)] p-10 text-center shadow-[var(--shadow-xs)]">
+            <Card className="border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-10 text-center shadow-[var(--shadow-xs)]">
               <p className="text-[20px]" aria-hidden>
                 🎉
               </p>
@@ -322,14 +339,14 @@ export function AssignmentsPageContent() {
                 key={r.id}
                 className="flex flex-wrap items-center gap-4 border border-[var(--border-default)] p-4 shadow-[var(--shadow-xs)]"
               >
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[13px] font-semibold text-[var(--accent)]">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
                   {queueInitials(fullName(r.clients))}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[14px] font-semibold text-[var(--text-primary)]">{fullName(r.clients)}</p>
                   <button
                     type="button"
-                    className="text-left text-[13px] text-[var(--text-tertiary)] hover:text-[var(--accent)] hover:underline"
+                    className="text-left text-[13px] text-[var(--text-tertiary)] hover:text-[var(--cp-accent)] hover:underline"
                     onClick={() =>
                       openTemplateSubmissions(
                         r.assignment_template_id,
@@ -374,7 +391,7 @@ export function AssignmentsPageContent() {
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <select
-              className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] sm:max-w-xs"
+              className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[14px] sm:max-w-xs"
               value={quickTemplateId}
               onChange={(e) => setQuickTemplateId(e.target.value)}
               disabled={loading || templates.length === 0}
@@ -388,7 +405,7 @@ export function AssignmentsPageContent() {
               ))}
             </select>
             <select
-              className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] sm:max-w-xs"
+              className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[14px] sm:max-w-xs"
               value={quickClientId}
               onChange={(e) => setQuickClientId(e.target.value)}
               disabled={loading || clients.length === 0}
@@ -420,7 +437,7 @@ export function AssignmentsPageContent() {
               Showing overdue assignments only.{' '}
               <button
                 type="button"
-                className="font-medium text-[var(--accent)] underline"
+                className="font-medium text-[var(--cp-accent)] underline"
                 onClick={() => {
                   router.replace('/coach/assignments')
                   setTab('all')
@@ -472,7 +489,7 @@ export function AssignmentsPageContent() {
             <Card key={t.id} className="space-y-3 p-4">
               <button
                 type="button"
-                className="w-full text-left font-medium text-[var(--text-primary)] hover:text-[var(--accent)]"
+                className="w-full text-left font-medium text-[var(--text-primary)] hover:text-[var(--cp-accent)]"
                 onClick={() => openTemplateSubmissions(t.id, t.title)}
               >
                 {t.title}
@@ -519,36 +536,10 @@ export function AssignmentsPageContent() {
       ) : null}
 
       {!loading && tab === 'analytics' && overview ? (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="p-4">
-            <h3 className="mb-2 text-sm font-medium">Completion rate</h3>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" innerRadius={50} outerRadius={70} paddingAngle={2}>
-                    <Cell fill="var(--accent)" />
-                    <Cell fill="var(--border-default)" />
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="text-center text-sm text-[var(--text-secondary)]">{overview.completionRatePct}% completed</p>
-          </Card>
-          <Card className="p-4">
-            <h3 className="mb-2 text-sm font-medium">Top clients by XP</h3>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={overview.topClientsByXp.slice(0, 5)}>
-                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Bar dataKey="totalXp" fill="var(--accent)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </div>
+        <AssignmentAnalyticsCharts
+          completionRatePct={overview.completionRatePct}
+          topClientsByXp={overview.topClientsByXp}
+        />
       ) : null}
 
       <CreateAssignmentTemplateModal

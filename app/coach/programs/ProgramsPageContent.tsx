@@ -30,7 +30,7 @@ type ViewMode = 'grid' | 'list'
 function programGradient(title: string): string {
   const c = (title.trim()[0] ?? 'A').toUpperCase()
   if (c >= 'A' && c <= 'E')
-    return 'linear-gradient(135deg, var(--accent) 0%, var(--brand-primary, #1565C0) 100%)'
+    return 'linear-gradient(135deg, var(--cp-accent) 0%, var(--brand-primary, #1565C0) 100%)'
   if (c >= 'F' && c <= 'J') return 'linear-gradient(135deg, #10B981 0%, #065F46 100%)'
   if (c >= 'K' && c <= 'O') return 'linear-gradient(135deg, #8B5CF6 0%, #4C1D95 100%)'
   if (c >= 'P' && c <= 'T') return 'linear-gradient(135deg, #F59E0B 0%, #92400E 100%)'
@@ -45,7 +45,7 @@ function previewLetters(title: string): string {
 
 function ProgramCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)]">
+    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
       <div className="h-[160px] animate-pulse bg-[var(--bg-muted)]" />
       <div className="space-y-2 p-3">
         <div className="h-4 w-2/3 animate-pulse rounded bg-[var(--bg-muted)]" />
@@ -182,7 +182,7 @@ export function ProgramsPageContent() {
               onClick={() => setView('list')}
               className={cn(
                 'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
-                view === 'list' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+                view === 'list' ? 'bg-[var(--cp-accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
               )}
             >
               ☰
@@ -194,7 +194,7 @@ export function ProgramsPageContent() {
               onClick={() => setView('grid')}
               className={cn(
                 'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
-                view === 'grid' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+                view === 'grid' ? 'bg-[var(--cp-accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
               )}
             >
               ⊞
@@ -217,7 +217,7 @@ export function ProgramsPageContent() {
             className={cn(
               'relative h-9 px-4 text-[14px] transition-colors duration-150',
               tab === t.value
-                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--cp-accent)]'
                 : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
             )}
           >
@@ -244,7 +244,7 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && !error && programs.length === 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] p-12 text-center">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-12 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent-light)] text-xl" aria-hidden>
             📚
           </div>
@@ -263,7 +263,7 @@ export function ProgramsPageContent() {
           {filtered.map((prog) => (
             <div
               key={prog.id}
-              className="card-interactive group relative flex w-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] text-left"
+              className="card-interactive group relative flex w-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-left"
               onClick={() => router.push(`/coach/programs/${prog.id}`)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -282,8 +282,8 @@ export function ProgramsPageContent() {
                   className={cn(
                     'absolute right-2 top-2 z-[1] rounded-[8px] px-2 py-0.5 text-[11px] font-semibold',
                     prog.status === 'published'
-                      ? 'bg-[var(--bg-app)] text-[var(--accent)]'
-                      : 'bg-[var(--bg-app)]/60 text-white'
+                      ? 'bg-[var(--cp-offwhite)] text-[var(--cp-accent)]'
+                      : 'bg-[var(--cp-offwhite)]/60 text-white'
                   )}
                 >
                   {prog.status === 'published' ? 'Published' : 'Draft'}
@@ -304,7 +304,7 @@ export function ProgramsPageContent() {
                       <summary className="flex size-6 cursor-pointer list-none items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]">
                         ···
                       </summary>
-                      <div className="absolute right-0 z-20 mt-1 min-w-[160px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-[var(--shadow-lg)]">
+                      <div className="absolute right-0 z-20 mt-1 min-w-[160px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] py-1 shadow-[var(--shadow-lg)]">
                         <Link
                           href={`/coach/programs/${prog.id}`}
                           className="block px-3 py-2 text-left text-[13px] hover:bg-[var(--bg-muted)]"

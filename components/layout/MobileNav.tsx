@@ -309,7 +309,7 @@ export function MobileNav({
     <nav
       className={cn(
         'safe-bottom fixed bottom-0 left-0 right-0 z-40 lg:hidden',
-        'border-t border-[var(--border-subtle)] bg-[var(--bg-app)]/92 backdrop-blur-[12px]',
+        'border-t border-[var(--border-subtle)] bg-[var(--cp-offwhite)]/92 backdrop-blur-[12px]',
         className
       )}
       role="navigation"
@@ -341,8 +341,8 @@ export function MobileNav({
                   : 'min-h-[44px] min-w-[52px] max-w-[76px] shrink-0',
                 isActive
                   ? isClientPortalTabs
-                    ? 'text-[var(--accent)]'
-                    : 'bg-[var(--accent-light)] text-[var(--accent)]'
+                    ? 'text-[var(--cp-accent)]'
+                    : 'bg-[var(--accent-light)] text-[var(--cp-accent)]'
                   : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
               )}
               aria-current={isActive ? 'page' : undefined}
@@ -351,20 +351,20 @@ export function MobileNav({
                 className={cn(
                   'size-[22px] shrink-0',
                   isClientPortalTabs && 'stroke-[2]',
-                  isActive ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'
+                  isActive ? 'text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]'
                 )}
               />
               <span
                 className={cn(
                   'line-clamp-1 w-full text-center',
-                  isActive && isClientPortalTabs && 'text-[var(--accent)]'
+                  isActive && isClientPortalTabs && 'text-[var(--cp-accent)]'
                 )}
               >
                 {label}
               </span>
               {showMsgBadge ? (
                 <span
-                  className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
+                  className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--cp-accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
                   aria-label={`${messageUnreadCount} unread messages`}
                 >
                   {messageUnreadCount > 99 ? '99+' : messageUnreadCount}
@@ -372,7 +372,7 @@ export function MobileNav({
               ) : null}
               {showTasksBadge ? (
                 <span
-                  className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
+                  className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--cp-accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
                   aria-label={`${pendingAssignmentsCount} tasks due`}
                 >
                   {pendingAssignmentsCount > 99 ? '99+' : pendingAssignmentsCount}

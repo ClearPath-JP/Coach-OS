@@ -131,7 +131,7 @@ export function CoachKeyboardShortcuts() {
       <div
         className={cn(
           'relative max-h-[85vh] w-full max-w-md overflow-auto rounded-[var(--radius-lg)] border border-[var(--border-default)]',
-          'bg-[var(--bg-app)] p-6 shadow-[var(--shadow-xl)]'
+          'bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-xl)]'
         )}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}

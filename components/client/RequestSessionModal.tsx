@@ -103,7 +103,7 @@ export function RequestSessionModal({
           <Link
             href="/client/messages"
             onClick={() => onClose()}
-            className="flex h-11 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] text-[14px] font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            className="flex h-11 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] text-[14px] font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--cp-accent-hover)]"
           >
             View messages
           </Link>
@@ -128,7 +128,7 @@ export function RequestSessionModal({
                 min={todayYmd()}
                 value={preferredDate}
                 onChange={(e) => setPreferredDate(e.target.value)}
-                className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] text-[var(--text-primary)] focus:outline-none focus:shadow-[var(--focus-ring)]"
+                className="h-11 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[14px] text-[var(--text-primary)] focus:outline-none focus:shadow-[var(--focus-ring)]"
               />
             </div>
 
@@ -145,8 +145,8 @@ export function RequestSessionModal({
                       className={cn(
                         'rounded-[var(--radius-md)] border px-3 py-2.5 text-left text-[13px] transition-colors',
                         on
-                          ? 'border-[var(--accent)] bg-[var(--accent-light)] ring-1 ring-[var(--accent)]/25'
-                          : 'border-[var(--border-default)] bg-[var(--bg-app)] hover:bg-[var(--bg-subtle)]'
+                          ? 'border-[var(--cp-accent)] bg-[var(--accent-light)] ring-1 ring-[var(--cp-accent)]/25'
+                          : 'border-[var(--border-default)] bg-[var(--cp-offwhite)] hover:bg-[var(--bg-subtle)]'
                       )}
                     >
                       <span className="font-medium text-[var(--text-primary)]">{slot.label}</span>
@@ -166,8 +166,8 @@ export function RequestSessionModal({
                   className={cn(
                     'rounded-[var(--radius-md)] border px-4 py-3 text-left text-[13px] transition-colors',
                     sessionFormat === 'video'
-                      ? 'border-[var(--accent)] bg-[var(--accent-light)] ring-1 ring-[var(--accent)]/25'
-                      : 'border-[var(--border-default)] bg-[var(--bg-app)] hover:bg-[var(--bg-subtle)]'
+                      ? 'border-[var(--cp-accent)] bg-[var(--accent-light)] ring-1 ring-[var(--cp-accent)]/25'
+                      : 'border-[var(--border-default)] bg-[var(--cp-offwhite)] hover:bg-[var(--bg-subtle)]'
                   )}
                 >
                   <span className="font-medium text-[var(--text-primary)]">Video call</span>
@@ -178,8 +178,8 @@ export function RequestSessionModal({
                   className={cn(
                     'rounded-[var(--radius-md)] border px-4 py-3 text-left text-[13px] transition-colors',
                     sessionFormat === 'in_person'
-                      ? 'border-[var(--accent)] bg-[var(--accent-light)] ring-1 ring-[var(--accent)]/25'
-                      : 'border-[var(--border-default)] bg-[var(--bg-app)] hover:bg-[var(--bg-subtle)]'
+                      ? 'border-[var(--cp-accent)] bg-[var(--accent-light)] ring-1 ring-[var(--cp-accent)]/25'
+                      : 'border-[var(--border-default)] bg-[var(--cp-offwhite)] hover:bg-[var(--bg-subtle)]'
                   )}
                 >
                   <span className="font-medium text-[var(--text-primary)]">In person</span>

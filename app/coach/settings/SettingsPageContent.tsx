@@ -2,23 +2,21 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase'
-import { applyWorkspaceAccentVars } from '@/lib/accent-colors'
+import { applyWorkspaceAccentVars, getAccentLight } from '@/lib/accent-colors'
+import { coerceToAllowedCoachAccent, PHASE4_DEFAULT_COACH_ACCENT } from '@/lib/coach-accent-phase4'
 import { useWorkspace } from '@/lib/workspace-context'
-import {
-  COACH_THEME_PRESETS,
-  DEFAULT_COACH_ACCENT,
-  findCoachThemeByAccent,
-  type CoachThemePreset,
-} from '@/lib/coach-themes'
 import { cn } from '@/lib/utils'
 import { WorkspaceStorageSection } from '@/components/coach/WorkspaceStorageSection'
+import { AccentColorPicker } from '@/components/settings/AccentColorPicker'
 import { PageHeader } from '@/components/layout/PageHeader'
+import type { AccentColor } from '@/types/coach'
 import { DEFAULT_AUTO_CHECKIN_MESSAGE } from '@/lib/re-engagement-default-message'
 
 type TabKey = 'profile' | 'workspace' | 'payments' | 'appearance' | 'notifications'
@@ -145,8 +143,7 @@ export function SettingsPageContent() {
   const [paymentInstructions, setPaymentInstructions] = useState('')
   const [savingPayments, setSavingPayments] = useState(false)
 
-  const [accentColor, setAccentColor] = useState(DEFAULT_COACH_ACCENT)
-  const [savingTheme, setSavingTheme] = useState(false)
+  const [accentColor, setAccentColor] = useState<AccentColor>(PHASE4_DEFAULT_COACH_ACCENT)
 
   const [notifications, setNotifications] = useState<Record<NotificationKey, boolean>>({
     newMessage: true,
@@ -210,7 +207,11 @@ export function SettingsPageContent() {
         setZelleEmailOrPhone(json.data.workspace.zelleEmailOrPhone || '')
         setStripeConnected(json.data.workspace.stripeConnected || false)
         setPaymentInstructions(json.data.workspace.paymentInstructions || '')
-        setAccentColor((json.data.workspace.accentColor || DEFAULT_COACH_ACCENT).toUpperCase())
+        const coercedAccent = coerceToAllowedCoachAccent(json.data.workspace.accentColor)
+        setAccentColor(coercedAccent)
+        const accentLightStored = json.data.workspace.accentColorLight?.trim()
+        const lightForVars = accentLightStored || getAccentLight(coercedAccent)
+        applyWorkspaceAccentVars(coercedAccent, lightForVars.toUpperCase())
         setNotifications({
           newMessage: json.data.profile.notifications.newMessage,
           sessionReminder: json.data.profile.notifications.sessionReminder,
@@ -495,42 +496,24 @@ export function SettingsPageContent() {
     }
   }
 
-  const selectColorTheme = async (preset: CoachThemePreset) => {
-    const normalized = preset.accent.toUpperCase()
-    const light = preset.light.toUpperCase()
-    setSavingTheme(true)
-    try {
-      const res = await fetch('/api/settings/workspace', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          accentColor: normalized,
-          accentColorLight: light,
-        }),
-      })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setToast(json.error ?? 'Could not save theme')
-        return
-      }
-
-      updateSettings({
-        accentColor: normalized,
-        accentColorLight: light,
-      })
-      document.documentElement.style.setProperty('--accent', normalized)
-      document.documentElement.style.setProperty('--accent-light', light)
-      setAccentColor(normalized)
-      applyWorkspaceAccentVars(normalized, light)
-      setToast('Theme saved')
-      void refetchSettings()
-      router.refresh()
-    } catch {
-      setToast('Something went wrong — check your connection and try again')
-    } finally {
-      setSavingTheme(false)
+  const saveCoachAccent = async (hex: AccentColor) => {
+    const res = await fetch('/api/coach/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ accentColor: hex }),
+    })
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      throw new Error(typeof json.error === 'string' ? json.error : 'Save failed')
     }
+    const light = getAccentLight(hex).toUpperCase()
+    setAccentColor(hex)
+    updateSettings({ accentColor: hex, accentColorLight: light })
+    applyWorkspaceAccentVars(hex, light)
+    setToast('Accent saved')
+    void refetchSettings()
+    router.refresh()
   }
 
   const saveNotification = (key: NotificationKey, nextValue: boolean) => {
@@ -619,7 +602,7 @@ export function SettingsPageContent() {
     cn(
       'min-h-10 shrink-0 rounded-[var(--radius-md)] px-3 py-2.5 text-left text-[13px] font-medium transition-colors duration-[80ms] max-lg:whitespace-nowrap lg:w-full',
       activeTab === key
-        ? 'bg-[var(--bg-app)] text-[var(--accent)] shadow-[var(--shadow-xs)]'
+        ? 'bg-[var(--cp-offwhite)] text-[var(--cp-accent)] shadow-[var(--shadow-xs)]'
         : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
     )
 
@@ -1018,77 +1001,18 @@ export function SettingsPageContent() {
           <div className="max-w-5xl space-y-8">
             <p className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[13px] leading-snug text-[var(--color-text-secondary)]">
               <span className="font-medium text-[var(--color-text-primary)]">Dark mode:</span> use the sun/moon toggle in the top bar.
-              Color theme is saved to your workspace and applies to buttons, nav, focus rings, and client-facing accents.
+              Accent color is saved to your workspace and applies to buttons, nav, focus rings, and your client portal (message bubbles stay brand sapphire).
             </p>
-            <h2 className="text-[18px] font-semibold leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
-              Color theme
-            </h2>
-            <p className="text-[15px] leading-[var(--leading-body)] text-[var(--color-text-secondary)]">
-              Pick a preset — it saves immediately to your workspace.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {COACH_THEME_PRESETS.map((t) => {
-                const selected = findCoachThemeByAccent(accentColor)?.id === t.id
-                const displayName = t.id === 'sky' ? 'Sky (default)' : t.label
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    disabled={savingTheme}
-                    onClick={() => void selectColorTheme(t)}
-                    className={cn(
-                      'w-[140px] shrink-0 cursor-pointer rounded-[var(--radius-lg)] border-[1.5px] p-3 text-left transition-all duration-[150ms] disabled:opacity-60',
-                      selected
-                        ? 'border-[var(--accent)] shadow-[var(--focus-ring)]'
-                        : 'border-transparent hover:-translate-y-px hover:border-[var(--border-strong)]'
-                    )}
-                  >
-                    <div
-                      className="flex h-16 w-full overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)]"
-                      aria-hidden
-                    >
-                      <div
-                        className="flex w-8 shrink-0 flex-col justify-center border-r border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-1 py-1.5"
-                      >
-                        <div
-                          className="mb-1 h-2 w-full rounded-sm"
-                          style={{ backgroundColor: t.light }}
-                        />
-                        <div
-                          className="h-2 w-full rounded-sm"
-                          style={{
-                            backgroundColor: t.light,
-                            boxShadow: selected ? `inset 2px 0 0 0 ${t.accent}` : undefined,
-                          }}
-                        />
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-2 py-1.5">
-                        <div
-                          className="h-5 w-full rounded-[4px]"
-                          style={{ backgroundColor: t.accent }}
-                        />
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
-                          <div className="h-full w-2/3 rounded-full" style={{ backgroundColor: t.accent }} />
-                        </div>
-                        <span
-                          className="inline-flex w-fit rounded-[var(--radius-full)] border px-2 py-0.5 text-[10px] font-medium"
-                          style={{
-                            backgroundColor: t.light,
-                            color: t.accent,
-                            borderColor: t.muted,
-                          }}
-                        >
-          Active
-                        </span>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-[12px] font-medium text-[var(--text-secondary)]">{displayName}</p>
-                  </button>
-                )
-              })}
+            <div className="rounded-[12px] border border-[var(--cp-border)] bg-[var(--cp-white)] p-6">
+              <AccentColorPicker currentAccent={accentColor} onSave={saveCoachAccent} />
             </div>
+            <p className="text-[13px] text-[var(--text-tertiary)]">
+              <Link href="/coach/settings/appearance" className="text-[var(--cp-accent)] underline-offset-2 hover:underline">
+                Open appearance-only page
+              </Link>
+            </p>
             <div className="pt-2">
-              <div className="w-[200px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] p-3">
+              <div className="w-[200px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-3">
                 <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-2">
                   <span className="inline-flex size-5 rounded-[6px]" style={{ backgroundColor: accentColor }} />
                   <span className="truncate text-[12px] font-medium text-[var(--text-primary)]">{brandName.trim() || 'ClearPath'}</span>

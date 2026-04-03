@@ -169,18 +169,18 @@ export function CoachMobileDock() {
       ) : null}
       <div
         className={cn(
-          'safe-bottom fixed bottom-0 left-0 right-0 z-50 max-h-[min(72vh,520px)] overflow-y-auto rounded-t-[16px] border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xl)] transition-transform duration-200 ease-out lg:hidden',
+          'safe-bottom fixed bottom-0 left-0 right-0 z-50 max-h-[min(72vh,520px)] overflow-y-auto rounded-t-[16px] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)] transition-transform duration-200 ease-out lg:hidden',
           sheetOpen ? 'translate-y-0' : 'pointer-events-none translate-y-full opacity-0'
         )}
         role="dialog"
         aria-label="More navigation"
         aria-hidden={!sheetOpen}
       >
-        <div className="sticky top-0 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-4 py-3">
+        <div className="sticky top-0 flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite)] px-4 py-3">
           <p className="text-[15px] font-semibold text-[var(--text-primary)]">More</p>
           <button
             type="button"
-            className="rounded-[var(--radius-md)] px-3 py-1.5 text-[14px] font-medium text-[var(--accent)]"
+            className="rounded-[var(--radius-md)] px-3 py-1.5 text-[14px] font-medium text-[var(--cp-accent)]"
             onClick={() => setSheetOpen(false)}
           >
             Done
@@ -197,7 +197,7 @@ export function CoachMobileDock() {
                     className={cn(
                       'flex min-h-[44px] items-center rounded-[var(--radius-md)] px-3 text-[15px] font-medium transition-colors duration-[80ms]',
                       active
-                        ? 'bg-[var(--accent-light)] text-[var(--accent)]'
+                        ? 'bg-[var(--accent-light)] text-[var(--cp-accent)]'
                         : 'text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
                     )}
                     onClick={() => setSheetOpen(false)}
@@ -212,7 +212,7 @@ export function CoachMobileDock() {
       </div>
 
       <nav
-        className="safe-bottom fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-subtle)] bg-[var(--bg-app)]/92 backdrop-blur-[12px] lg:hidden"
+        className="safe-bottom fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--border-subtle)] bg-[var(--cp-offwhite)]/92 backdrop-blur-[12px] lg:hidden"
         role="navigation"
         aria-label="Coach main"
       >
@@ -227,15 +227,15 @@ export function CoachMobileDock() {
                 className={cn(
                   'relative flex min-h-[56px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-md)] px-1 py-1 text-[10px] font-medium transition-[color,transform] duration-150 [transition-timing-function:var(--ease-out)]',
                   'focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]',
-                  active ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
+                  active ? 'text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
                 )}
                 aria-current={active ? 'page' : undefined}
               >
-                <Icon className={cn('size-[22px] shrink-0', active ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]')} />
+                <Icon className={cn('size-[22px] shrink-0', active ? 'text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]')} />
                 <span className="line-clamp-1 w-full text-center">{label}</span>
                 {showUnread ? (
                   <span
-                    className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
+                    className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--cp-accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
                     aria-label={`${unreadTotal} unread messages`}
                   >
                     {unreadTotal > 99 ? '99+' : unreadTotal}
@@ -250,7 +250,7 @@ export function CoachMobileDock() {
               'relative flex min-h-[56px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-md)] px-1 py-1 text-[10px] font-medium transition-[color,transform] duration-150 [transition-timing-function:var(--ease-out)]',
               'focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]',
               moreActive || sheetOpen
-                ? 'text-[var(--accent)]'
+                ? 'text-[var(--cp-accent)]'
                 : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
             )}
             aria-expanded={sheetOpen}
@@ -260,7 +260,7 @@ export function CoachMobileDock() {
             <MoreIcon
               className={cn(
                 'size-[22px] shrink-0',
-                moreActive || sheetOpen ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'
+                moreActive || sheetOpen ? 'text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]'
               )}
             />
             <span className="line-clamp-1 w-full text-center">More</span>

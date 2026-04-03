@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useClientBranding } from '@/components/client/ClientBrandingContext'
+import { coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
 import { ClientLayoutWithUnread } from '@/components/layout/ClientLayoutWithUnread'
 
 /**
@@ -16,11 +17,22 @@ export default function ClientMainLayout({ children }: { children: React.ReactNo
     brandTagline: serverBrandTagline,
     userDisplayName,
     logoUrl: serverLogoUrl,
+    accentColor: serverAccentColor,
   } = useClientBranding()
   const pathname = usePathname()
   const [brandName, setBrandName] = useState(serverBrandName)
   const [brandTagline, setBrandTagline] = useState(serverBrandTagline)
   const [logoUrl, setLogoUrl] = useState(serverLogoUrl)
+  const [portalAccent, setPortalAccent] = useState(serverAccentColor)
+
+  useEffect(() => {
+    setPortalAccent(serverAccentColor)
+  }, [serverAccentColor])
+
+  useEffect(() => {
+    const hex = coerceToAllowedCoachAccent(portalAccent)
+    document.documentElement.style.setProperty('--cp-accent', hex)
+  }, [portalAccent])
 
   useEffect(() => {
     setBrandName(serverBrandName)
@@ -38,7 +50,12 @@ export default function ClientMainLayout({ children }: { children: React.ReactNo
     void fetch('/api/client/workspace-branding', { credentials: 'include', cache: 'no-store' })
       .then(async (res) => {
         const json = (await res.json().catch(() => null)) as {
-          data?: { brandName?: string | null; brandTagline?: string | null; logoUrl?: string | null }
+          data?: {
+            brandName?: string | null
+            brandTagline?: string | null
+            logoUrl?: string | null
+            accentColor?: string | null
+          }
         } | null
         if (!res.ok || !json?.data || typeof json.data !== 'object') return
         if ('brandName' in json.data) {
@@ -49,6 +66,9 @@ export default function ClientMainLayout({ children }: { children: React.ReactNo
         }
         if ('logoUrl' in json.data) {
           setLogoUrl(json.data.logoUrl?.trim() ? json.data.logoUrl.trim() : null)
+        }
+        if ('accentColor' in json.data && json.data.accentColor != null) {
+          setPortalAccent(coerceToAllowedCoachAccent(String(json.data.accentColor)))
         }
       })
       .catch(() => null)

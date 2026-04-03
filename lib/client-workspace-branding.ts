@@ -11,6 +11,8 @@ export type ClientWorkspaceBranding = {
   clientWelcomeMessage: string | null
   /** Workspace / coach logo for portal chrome */
   logoUrl: string | null
+  /** Workspace accent hex (Phase 4 whitelist enforced in app) */
+  accentColor: string | null
   cashappUsername: string | null
   venmoUsername: string | null
   paypalEmail: string | null
@@ -41,6 +43,7 @@ function mapWorkspaceRowToBranding(ws: Record<string, unknown>): ClientWorkspace
     clientPortalHeading: (ws['client_portal_heading'] as string | null) ?? null,
     clientWelcomeMessage: (ws['client_welcome_message'] as string | null) ?? null,
     logoUrl: (ws['logo_url'] as string | null) ?? null,
+    accentColor: (ws['accent_color'] as string | null) ?? null,
     cashappUsername: (ws['cashapp_username'] as string | null) ?? null,
     venmoUsername: (ws['venmo_username'] as string | null) ?? null,
     paypalEmail: (ws['paypal_email'] as string | null) ?? null,
@@ -71,9 +74,9 @@ export async function fetchWorkspaceBrandingWithService(
   workspaceId: string
 ): Promise<ClientWorkspaceBranding | null> {
   const fullSelect =
-    'id, name, workspace_display_name, brand_name, brand_tagline, client_portal_heading, client_welcome_message, logo_url, cashapp_username, venmo_username, paypal_email, zelle_email_or_phone, stripe_connected, stripe_connect_account_id, payment_instructions'
+    'id, name, workspace_display_name, brand_name, brand_tagline, client_portal_heading, client_welcome_message, logo_url, accent_color, cashapp_username, venmo_username, paypal_email, zelle_email_or_phone, stripe_connected, stripe_connect_account_id, payment_instructions'
   const legacySelect =
-    'id, name, workspace_display_name, brand_name, brand_tagline, client_portal_heading, client_welcome_message, logo_url'
+    'id, name, workspace_display_name, brand_name, brand_tagline, client_portal_heading, client_welcome_message, logo_url, accent_color'
   const fullRes = await service.from('workspaces').select(fullSelect).eq('id', workspaceId).maybeSingle()
   const legacyRes =
     fullRes.error?.message?.includes('does not exist')

@@ -39,7 +39,7 @@ export function ClientPortalXpBar({ percent, className }: Props) {
       className={`relative h-2.5 w-full overflow-hidden rounded-full bg-[var(--border-default)] ${className ?? ''}`}
     >
       <div
-        className={`h-full rounded-full bg-[var(--accent)] transition-[width] duration-700 ease-out ${celebrate ? 'animate-xp-bar-celebrate' : ''}`}
+        className={`h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-700 ease-out ${celebrate ? 'animate-xp-bar-celebrate' : ''}`}
         style={{ width: `${clamped}%` }}
       />
     </div>

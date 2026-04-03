@@ -30,7 +30,7 @@ function CelebrateCard({ meta }: { meta: { xp: number; streak: number; record: b
       </div>
       <p className="text-[18px] font-semibold text-[var(--success)]">Checked in! +5 XP earned 🎉</p>
       {meta.record ? (
-        <p className={cn('mt-2 text-[14px] font-semibold text-[var(--accent)]', 'animate-streak-pulse')}>
+        <p className={cn('mt-2 text-[14px] font-semibold text-[var(--cp-accent)]', 'animate-streak-pulse')}>
           🏆 New streak record! {meta.streak} days
         </p>
       ) : (
@@ -174,7 +174,7 @@ export function ClientPortalDailyCheckIn({
   if (view === 'loading') {
     return (
       <div
-        className="shrink-0 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-5 shadow-[var(--shadow-sm)]"
+        className="shrink-0 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-5 shadow-[var(--shadow-sm)]"
         aria-busy
       >
         <div className="h-5 w-3/4 max-w-xs animate-pulse rounded bg-[var(--bg-muted)]" />
@@ -203,7 +203,7 @@ export function ClientPortalDailyCheckIn({
           <p className="text-[14px] font-medium text-[var(--success)]">Checked in today ✓</p>
           {preview ? <p className="truncate text-[12px] text-[var(--text-tertiary)]">{preview}</p> : null}
         </div>
-        <p className="shrink-0 text-[13px] font-medium text-[var(--accent)]">🔥 {streakDays} day streak</p>
+        <p className="shrink-0 text-[13px] font-medium text-[var(--cp-accent)]">🔥 {streakDays} day streak</p>
       </div>
     )
   }
@@ -244,10 +244,10 @@ export function ClientPortalDailyCheckIn({
               aria-label={`Mood ${v} of 5`}
               onClick={() => setMood(v)}
               className={cn(
-                'flex size-[52px] items-center justify-center rounded-full border-2 border-[var(--border-default)] bg-[var(--bg-app)] text-[24px] transition-all duration-150 ease-out',
-                'hover:border-[var(--accent)] hover:scale-110 hover:shadow-[var(--shadow-sm)]',
+                'flex size-[52px] items-center justify-center rounded-full border-2 border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[24px] transition-all duration-150 ease-out',
+                'hover:border-[var(--cp-accent)] hover:scale-110 hover:shadow-[var(--shadow-sm)]',
                 selected &&
-                  'scale-[1.15] border-[var(--accent)] bg-[var(--accent)] shadow-[var(--shadow-md)]'
+                  'scale-[1.15] border-[var(--cp-accent)] bg-[var(--cp-accent)] shadow-[var(--shadow-md)]'
               )}
             >
               <span aria-hidden>{em}</span>
@@ -270,7 +270,7 @@ export function ClientPortalDailyCheckIn({
               onChange={(e) => setNote(e.target.value.slice(0, 300))}
               placeholder="Anything on your mind? A win, a challenge, a question..."
               rows={3}
-              className="min-h-[72px] w-full resize-y rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:shadow-[var(--focus-ring)]"
+              className="min-h-[72px] w-full resize-y rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:shadow-[var(--focus-ring)]"
             />
           </label>
         </div>

@@ -3,6 +3,8 @@
  * optional STRIPE_API_KEY alias (Stripe CLI / some docs use that name).
  */
 
+import 'server-only'
+
 function stripBomAndTrim(value: string | undefined): string {
   if (value == null) return ''
   return value.replace(/^\uFEFF/, '').trim()

@@ -13,7 +13,7 @@ import { AnimatedBar } from '@/components/client/AnimatedBar'
 const CATEGORY_CLASS: Record<string, string> = {
   fitness: 'border-[var(--info-border)] bg-[var(--info-bg)] text-[var(--info)]',
   nutrition: 'border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success)]',
-  mindset: 'border-[var(--accent-muted)] bg-[var(--accent-light)] text-[var(--accent)]',
+  mindset: 'border-[var(--accent-muted)] bg-[var(--accent-light)] text-[var(--cp-accent)]',
   business: 'border-[var(--warning-border)] bg-[var(--warning-bg)] text-[var(--warning)]',
   relationship: 'border-[var(--error-border)] bg-[var(--error-bg)] text-[var(--error)]',
   health: 'border-[var(--error-border)] bg-[var(--error-bg)] text-[var(--error)]',
@@ -130,7 +130,7 @@ export default function ClientGoalsPage() {
       )}
 
       <div className="mt-8">
-        <Link href="/client/portal" className="text-[14px] font-medium text-[var(--accent)]">
+        <Link href="/client/portal" className="text-[14px] font-medium text-[var(--cp-accent)]">
           ← Back to home
         </Link>
       </div>
@@ -181,7 +181,7 @@ function GoalCard({
               <AnimatedBar
                 percent={g.progressPercent ?? 0}
                 className="h-2 w-full"
-                fillClassName={g.status === 'achieved' ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}
+                fillClassName={g.status === 'achieved' ? 'bg-[var(--success)]' : 'bg-[var(--cp-accent)]'}
               />
             </div>
             <p className="mt-2 text-right text-[13px] text-[var(--text-tertiary)]">
@@ -207,7 +207,7 @@ function GoalCard({
             <button
               type="button"
               onClick={onToggleHistory}
-              className="flex w-full items-center justify-between text-left text-[13px] font-medium text-[var(--accent)]"
+              className="flex w-full items-center justify-between text-left text-[13px] font-medium text-[var(--cp-accent)]"
             >
               Show history ({nUpdates} updates)
               <span className="text-[var(--text-tertiary)]" aria-hidden>

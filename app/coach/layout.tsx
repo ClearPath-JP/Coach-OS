@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { getAccentLight, resolveAccentFamily } from '@/lib/accent-colors'
+import { coachAccentStyleTagContent, coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { Nav } from '@/components/layout/Nav'
@@ -12,6 +12,7 @@ import { getCoachSidebarNav } from '@/components/layout/coach-sidebar-nav'
 import { WorkspaceProvider } from '@/lib/workspace-context'
 import { workspaceProviderKey } from '@/lib/workspace-settings'
 import { CoachClientErrorReportingShell } from '@/components/shared/CoachClientErrorReporting'
+import { AccentInjector } from '@/components/layout/AccentInjector'
 
 /**
  * Coach layout: require auth + role === 'coach' (11-auth §4.2).
@@ -30,16 +31,20 @@ export default async function CoachLayout({
   if (!user) {
     redirect('/login')
   }
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, full_name, logo_url')
-    .eq('id', user.id)
-    .maybeSingle()
+
+  const [profileRes, workspaceId, headerList] = await Promise.all([
+    supabase.from('profiles').select('role, full_name, logo_url').eq('id', user.id).maybeSingle(),
+    resolveCoachWorkspaceIdForSession(supabase, user.id),
+    headers(),
+  ])
+  const profile = profileRes.data
+  const pathname = headerList.get('x-pathname') ?? ''
+
   if (profile?.role !== 'coach') {
     redirect('/client/portal')
   }
 
-  let workspaceAccentStyle = ''
+  let resolvedCpAccent = coerceToAllowedCoachAccent(null)
   let initialWorkspaceSettings = {
     workspaceDisplayName: null,
     brandName: null,
@@ -47,29 +52,37 @@ export default async function CoachLayout({
     accentColorLight: null,
     logoUrl: null,
   }
-  const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
-  const pathname = (await headers()).get('x-pathname') ?? ''
-  if (workspaceId && !pathname.startsWith('/coach/suspended')) {
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('status, current_period_end')
-      .eq('workspace_id', workspaceId)
-      .maybeSingle()
-    if (sub?.status === 'past_due' || sub?.status === 'cancelled') {
-      const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : new Date(0)
-      if (periodEnd < new Date()) {
-        redirect('/billing?warning=subscription')
+
+  if (workspaceId) {
+    const skipSubCheck = pathname.startsWith('/coach/suspended')
+    const [subResult, workspaceResult] = await Promise.all([
+      skipSubCheck
+        ? Promise.resolve({ data: null as { status: string; current_period_end: string | null } | null })
+        : supabase
+            .from('subscriptions')
+            .select('status, current_period_end')
+            .eq('workspace_id', workspaceId)
+            .maybeSingle(),
+      supabase
+        .from('workspaces')
+        .select(
+          'workspace_display_name, name, logo_url, accent_color, accent_color_light, brand_name'
+        )
+        .eq('id', workspaceId)
+        .maybeSingle(),
+    ])
+
+    if (!skipSubCheck) {
+      const sub = subResult.data
+      if (sub?.status === 'past_due' || sub?.status === 'cancelled') {
+        const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : new Date(0)
+        if (periodEnd < new Date()) {
+          redirect('/billing?warning=subscription')
+        }
       }
     }
-  }
-  if (workspaceId) {
-    const { data: workspace } = await supabase
-      .from('workspaces')
-      .select(
-        'workspace_display_name, name, logo_url, accent_color, accent_color_light, brand_name'
-      )
-      .eq('id', workspaceId)
-      .maybeSingle()
+
+    const workspace = workspaceResult.data
 
     initialWorkspaceSettings = {
       workspaceDisplayName: workspace?.workspace_display_name ?? workspace?.name ?? null,
@@ -79,12 +92,10 @@ export default async function CoachLayout({
       logoUrl: workspace?.logo_url ?? null,
     }
 
-    if (workspace?.accent_color) {
-      const light = workspace.accent_color_light ?? getAccentLight(workspace.accent_color)
-      const fam = resolveAccentFamily(workspace.accent_color, light)
-      workspaceAccentStyle = `:root { --accent: ${fam.accent}; --accent-dark: ${fam.accentDark}; --accent-hover: ${fam.hover}; --accent-light: ${fam.light}; --accent-muted: ${fam.muted}; }`
-    }
+    resolvedCpAccent = coerceToAllowedCoachAccent(workspace?.accent_color ?? null)
   }
+
+  const cpAccentStyle = coachAccentStyleTagContent(resolvedCpAccent)
 
   const displayName =
     profile?.full_name?.trim() ||
@@ -110,8 +121,9 @@ export default async function CoachLayout({
       key={workspaceProviderKey(initialWorkspaceSettings)}
       initialSettings={initialWorkspaceSettings}
     >
-      <div className="flex min-h-screen min-h-0 flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
-        {workspaceAccentStyle ? <style>{workspaceAccentStyle}</style> : null}
+      <div className="flex min-h-screen min-h-0 flex-col bg-[var(--cp-offwhite)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
+        <style>{cpAccentStyle}</style>
+        <AccentInjector accentColor={resolvedCpAccent} />
         <Nav
           coachApp
           showThemeToggle

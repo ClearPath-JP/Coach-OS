@@ -1,9 +1,24 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { AdminRevenueCharts } from '@/components/admin/AdminRevenueCharts'
 import { DataTable } from '@/components/ui/DataTable'
+
+const AdminRevenueCharts = dynamic(
+  () => import('@/components/admin/AdminRevenueCharts').then((m) => m.AdminRevenueCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="flex h-[200px] items-center justify-center rounded-[10px] border border-slate-200 bg-slate-50 text-sm text-slate-500"
+        aria-busy
+      >
+        Loading charts…
+      </div>
+    ),
+  }
+)
 
 type RevenueData = {
   byPlan: Record<string, { coaches: number; mrrCents: number }>

@@ -330,7 +330,7 @@ export function InvoicesPageContent() {
               className={cn(
                 'h-9 min-h-9 rounded-[var(--radius-md)] px-3 text-[12px] font-medium transition-colors duration-[80ms]',
                 statusTab === key
-                  ? 'bg-[var(--bg-app)] text-[var(--accent)] shadow-[var(--shadow-xs)]'
+                  ? 'bg-[var(--cp-offwhite)] text-[var(--cp-accent)] shadow-[var(--shadow-xs)]'
                   : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
               )}
             >
@@ -342,7 +342,7 @@ export function InvoicesPageContent() {
         <select
           value={clientFilter}
           onChange={(e) => setClientFilter(e.target.value)}
-          className="h-9 min-h-9 w-full max-w-[280px] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)] sm:w-auto"
+          className="h-9 min-h-9 w-full max-w-[280px] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[14px] text-[var(--text-primary)] outline-none focus:border-[var(--cp-accent)] focus:shadow-[var(--focus-ring)] sm:w-auto"
           aria-label="Filter by client"
         >
           <option value="">All clients</option>

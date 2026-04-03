@@ -17,12 +17,20 @@ import {
 import { Calendar, CreditCard, MessageSquare, Users } from 'lucide-react'
 import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { CountUpValue } from '@/components/ui/CountUpValue'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { StatCard } from '@/components/dashboard/StatCard'
+import { DashboardSectionHeader } from '@/components/dashboard/DashboardSectionHeader'
+import { EmptyState } from '@/components/dashboard/EmptyState'
+import {
+  DashboardTableShell,
+  DashboardTable,
+  AvatarCell,
+  StatusBadge,
+} from '@/components/dashboard/DashboardTablePrimitives'
 import { formatTrendLabel } from '@/lib/dashboard-trends'
+import { formatConversationListTime } from '@/lib/conversation-time'
 import { formatCents } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
 
@@ -151,6 +159,13 @@ function initials(name: string): string {
   return name.slice(0, 2).toUpperCase() || '?'
 }
 
+function sessionStatusForBadge(status: string): 'active' | 'pending' | 'inactive' {
+  const s = status.toLowerCase()
+  if (s === 'confirmed' || s === 'completed') return 'active'
+  if (s === 'pending') return 'pending'
+  return 'inactive'
+}
+
 function activityIcon(kind: string) {
   if (kind === 'module_completed') {
     return (
@@ -161,7 +176,7 @@ function activityIcon(kind: string) {
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
-        className="text-[var(--accent)]"
+        className="text-[var(--cp-accent)]"
         aria-hidden
       >
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -178,7 +193,7 @@ function activityIcon(kind: string) {
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
-        className="text-[var(--accent)]"
+        className="text-[var(--cp-accent)]"
         aria-hidden
       >
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -194,103 +209,12 @@ function activityIcon(kind: string) {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      className="text-[var(--accent)]"
+      className="text-[var(--cp-accent)]"
       aria-hidden
     >
       <circle cx="12" cy="12" r="10" />
       <path d="M12 6v6l4 2" />
     </svg>
-  )
-}
-
-function StatCardGhost({
-  label,
-  value,
-  icon,
-  trendUp,
-  trendLabel,
-  formatter,
-  footer,
-  subtitle,
-  href,
-  animateOnce,
-}: {
-  label: string
-  value: number
-  icon: React.ReactNode
-  trendUp?: boolean
-  trendLabel?: string
-  formatter?: (value: number) => string
-  footer?: React.ReactNode
-  subtitle?: React.ReactNode
-  href?: string
-  animateOnce?: boolean
-}) {
-  const inner = (
-    <Card
-      variant="ghost"
-      padding="default"
-      className={cn(
-        'border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xs)]',
-        'p-5',
-        href && 'card-interactive h-full border-[var(--border-default)]'
-      )}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[var(--text-tertiary)] [&_svg]:block">
-          {icon}
-        </span>
-        {trendLabel ? (
-          <span
-            className={cn(
-              'inline-flex items-center gap-0.5 rounded-[var(--radius-full)] px-2 py-[3px] text-[11px] font-semibold',
-              trendUp === true && 'bg-[var(--success-bg)] text-[var(--success)]',
-              trendUp === false && 'bg-[var(--error-bg)] text-[var(--error)]',
-              trendUp === undefined && 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
-            )}
-            title="vs last week"
-          >
-            {trendUp === true ? (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            ) : trendUp === false ? (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                <path d="M12 5v14M19 12l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            ) : null}
-            {trendLabel}
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-3 text-[36px] font-bold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
-        {formatter ? (
-          <CountUpValue value={value} formatter={formatter} durationMs={600} animateOnce={animateOnce ?? false} />
-        ) : (
-          <CountUpValue value={value} durationMs={600} animateOnce={animateOnce ?? false} />
-        )}
-      </p>
-      <p className="mt-0.5 text-[13px] font-normal text-[var(--text-tertiary)]">{label}</p>
-      {subtitle ? <p className="mt-0.5 text-[11px] font-normal text-[var(--text-quaternary)]">{subtitle}</p> : null}
-      {footer}
-    </Card>
-  )
-  if (href) {
-    return (
-      <Link href={href} className="block h-full min-h-0 no-underline">
-        {inner}
-      </Link>
-    )
-  }
-  return inner
-}
-
-function PanelHeader({ title, action }: { title: string; action?: React.ReactNode }) {
-  return (
-    <div className="flex h-11 min-h-[44px] shrink-0 items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-4">
-      <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">{title}</h2>
-      {action}
-    </div>
   )
 }
 
@@ -314,10 +238,10 @@ function QuickAction({
         'hover:border-[var(--accent-muted)] hover:bg-[var(--accent-light)]'
       )}
     >
-      <span className="text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--accent)] [&_svg]:size-5">
+      <span className="text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--cp-accent)] [&_svg]:size-5">
         {icon}
       </span>
-      <span className="transition-colors group-hover:text-[var(--accent)]">{label}</span>
+      <span className="transition-colors group-hover:text-[var(--cp-accent)]">{label}</span>
     </button>
   )
 }
@@ -583,7 +507,8 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
   const statAnimateOnce = !loading && summary !== null
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:min-h-0">
+    <div className="min-h-full w-full bg-cp-offwhite px-4 py-5 md:px-8 md:py-7">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1200px] flex-1 flex-col overflow-hidden lg:min-h-0">
       <div
         style={{
           background: 'var(--warning-bg)',
@@ -603,7 +528,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         <button
           type="button"
           onClick={() => void loadDashboard()}
-          className="ml-auto shrink-0 rounded-[var(--radius-sm)] border border-[var(--warning-border)] bg-[var(--bg-app)] px-3 py-1 text-[12px] font-medium text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+          className="ml-auto shrink-0 rounded-[var(--radius-sm)] border border-[var(--warning-border)] bg-[var(--cp-offwhite)] px-3 py-1 text-[12px] font-medium text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
         >
           Try again
         </button>
@@ -644,10 +569,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           variant="default"
           padding="default"
           className={cn(
-            'mb-4 shrink-0 border !p-0',
+            'mb-4 shrink-0 !border-[var(--cp-border)] !p-0 shadow-none',
             attentionHasItems
-              ? 'border-l-[3px] border-l-[var(--warning)] border-t-[var(--border-default)] border-r-[var(--border-default)] border-b-[var(--border-default)] bg-[var(--warning-bg)]/35'
-              : 'border-[var(--success-border)] bg-[var(--success-bg)]/60'
+              ? 'border-l-[3px] !border-l-[var(--warning)] border-t-[var(--cp-border)] border-r-[var(--cp-border)] border-b-[var(--cp-border)] bg-[var(--warning-bg)]/35'
+              : '!border-[var(--success-border)] bg-[var(--success-bg)]/60'
           )}
         >
           <div className={cn('pl-3', attentionHasItems ? 'border-l-0' : '')}>
@@ -929,7 +854,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           </button>
           <div className="flex flex-wrap items-start justify-between gap-2 pr-16">
             <h2 className="text-[14px] font-semibold text-[var(--text-primary)]">Get started with ClearPath</h2>
-            <span className="text-[13px] font-medium text-[var(--accent)]">
+            <span className="text-[13px] font-medium text-[var(--cp-accent)]">
               {onboardingCompletedCount} of 4 complete
             </span>
           </div>
@@ -939,7 +864,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           >
             <div
               className="h-full rounded-full transition-[width] duration-300"
-              style={{ background: 'var(--accent)', width: `${(onboardingCompletedCount / 4) * 100}%` }}
+              style={{ background: 'var(--cp-accent)', width: `${(onboardingCompletedCount / 4) * 100}%` }}
             />
           </div>
           <ul className="mt-3 space-y-0">
@@ -952,7 +877,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   {item.done ? (
                     <span
                       className="flex size-[22px] shrink-0 items-center justify-center rounded-full text-white"
-                      style={{ background: 'var(--accent)' }}
+                      style={{ background: 'var(--cp-accent)' }}
                       aria-hidden
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -992,27 +917,42 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         </div>
       ) : null}
 
-      <div className="mb-6 grid shrink-0 grid-cols-2 gap-4 min-[1280px]:grid-cols-5">
+      <div
+        className="mb-7 shrink-0"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 14,
+        }}
+      >
         {loading && !summary ? (
           <>
             {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-[132px] w-full rounded-[var(--radius-lg)]" />
+              <Skeleton key={i} className="h-[132px] w-full rounded-[12px]" />
             ))}
           </>
         ) : (
           <>
-            <StatCardGhost
-              animateOnce={statAnimateOnce}
+            <StatCard
               label="Active clients"
               value={summary?.activeClientsCount ?? 0}
-              subtitle={
-                clientsAddedThisMonth > 0
-                  ? `+${clientsAddedThisMonth} this month`
-                  : 'Add clients to get started'
-              }
+              animateValue
+              animateOnce={statAnimateOnce}
               {...(() => {
-                const f = formatTrendLabel(summary?.trends?.activeClients ?? null)
-                return f ? { trendLabel: f.label, trendUp: f.up } : {}
+                const st = [
+                  clientsAddedThisMonth > 0
+                    ? `+${clientsAddedThisMonth} this month`
+                    : totalClients === 0
+                      ? 'Add clients to get started'
+                      : '',
+                  formatTrendLabel(summary?.trends?.activeClients ?? null)?.label ?? '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+                return {
+                  ...(st ? { subtext: st } : {}),
+                  ...(clientsAddedThisMonth > 0 ? { subtextPositive: true as const } : {}),
+                }
               })()}
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1021,21 +961,23 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 </svg>
               }
             />
-            <StatCardGhost
-              animateOnce={statAnimateOnce}
+            <StatCard
               label="Sessions this week"
               value={summary?.sessionsThisWeek ?? 0}
-              subtitle={
-                upcomingToday > 0
-                  ? `${upcomingToday} today`
-                  : upcomingThisWeek > 0
-                    ? `${upcomingThisWeek} upcoming`
-                    : 'Schedule your first session'
+              animateValue
+              animateOnce={statAnimateOnce}
+              subtext={
+                [
+                  upcomingToday > 0
+                    ? `${upcomingToday} today`
+                    : upcomingThisWeek > 0
+                      ? `${upcomingThisWeek} upcoming`
+                      : 'Schedule your first session',
+                  formatTrendLabel(summary?.trends?.sessionsThisWeek ?? null)?.label,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
               }
-              {...(() => {
-                const f = formatTrendLabel(summary?.trends?.sessionsThisWeek ?? null)
-                return f ? { trendLabel: f.label, trendUp: f.up } : {}
-              })()}
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -1043,28 +985,29 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 </svg>
               }
             />
-            <StatCardGhost
-              animateOnce={statAnimateOnce}
+            <StatCard
               label="Revenue this month"
-              value={summary?.revenueMonthCents ?? 0}
-              formatter={(n) => formatCents(Math.round(n))}
-              {...((summary?.revenueMonthCents ?? 0) <= 0 ? { subtitle: 'Record your first payment' } : {})}
+              value={formatCents(summary?.revenueMonthCents ?? 0)}
               {...(() => {
-                const f = formatTrendLabel(summary?.trends?.revenueMonth ?? null)
-                return f ? { trendLabel: f.label, trendUp: f.up } : {}
+                const st = [
+                  (summary?.revenueMonthCents ?? 0) <= 0
+                    ? 'Record your first payment'
+                    : revenueMoMPct !== null
+                      ? `${revenueMoMPct >= 0 ? '↑' : '↓'} ${Math.abs(revenueMoMPct)}% vs last month`
+                      : '',
+                  formatTrendLabel(summary?.trends?.revenueMonth ?? null)?.label ?? '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+                const pos =
+                  (summary?.revenueMonthCents ?? 0) > 0 && revenueMoMPct !== null
+                    ? revenueMoMPct >= 0
+                    : null
+                return {
+                  ...(st ? { subtext: st } : {}),
+                  ...(pos !== null ? { subtextPositive: pos } : {}),
+                }
               })()}
-              footer={
-                (summary?.revenueMonthCents ?? 0) > 0 && revenueMoMPct !== null ? (
-                  <p
-                    className={cn(
-                      'mt-2 text-[12px] font-medium',
-                      revenueMoMPct >= 0 ? 'text-[var(--success)]' : 'text-[var(--error)]'
-                    )}
-                  >
-                    {revenueMoMPct >= 0 ? '↑' : '↓'} {Math.abs(revenueMoMPct)}% vs last month
-                  </p>
-                ) : null
-              }
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" x2="12" y1="1" y2="23" />
@@ -1072,66 +1015,70 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 </svg>
               }
             />
-            <StatCardGhost
-              animateOnce={statAnimateOnce}
+            <StatCard
               label="Unread messages"
               value={unreadMessagesTotal}
-              subtitle={unreadMessagesTotal > 0 ? 'Tap to reply' : 'All caught up ✓'}
-              {...(unreadMessagesTotal > 0 ? { href: '/coach/messages' } : {})}
-              {...(() => {
-                const f = formatTrendLabel(summary?.trends?.messagesToCoach ?? null)
-                return f ? { trendLabel: f.label, trendUp: f.up } : {}
-              })()}
+              animateValue
+              animateOnce={statAnimateOnce}
+              subtext={
+                [
+                  unreadMessagesTotal > 0 ? 'Tap to reply' : 'All caught up',
+                  formatTrendLabel(summary?.trends?.messagesToCoach ?? null)?.label,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              }
+              {...(unreadMessagesTotal > 0 ? { href: '/coach/messages' as const } : {})}
               icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               }
             />
-            <Card
-              variant="ghost"
-              padding="default"
-              className="border border-[var(--border-default)] bg-[var(--bg-app)] p-5 shadow-[var(--shadow-xs)]"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[var(--text-tertiary)] [&_svg]:block">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
-                  </svg>
-                </span>
-              </div>
-              <p className="mt-3 text-[36px] font-bold leading-none tracking-[-0.04em] text-[var(--text-primary)] tabular-nums">
-                {storage ? `${storage.usedGb.toFixed(1)} / ${storage.maxGb}` : '—'}
-              </p>
-              <p className="mt-0.5 text-[13px] font-normal text-[var(--text-tertiary)]">Storage (GB)</p>
-              {storage ? (
-                <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
-                  <div
-                    className={cn(
-                      'h-full rounded-full',
-                      storage.pct >= 95
-                        ? 'bg-[var(--error)]'
-                        : storage.pct >= 80
-                          ? 'bg-amber-500'
-                          : 'bg-[var(--accent)]'
-                    )}
-                    style={{ width: `${Math.min(100, storage.pct)}%` }}
-                  />
-                </div>
-              ) : null}
-            </Card>
+            <StatCard
+              label="Storage (GB)"
+              value={storage ? `${storage.usedGb.toFixed(1)} / ${storage.maxGb}` : '—'}
+              icon={
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
+                </svg>
+              }
+              {...(storage
+                ? {
+                    footer: (
+                      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--cp-border)]">
+                        <div
+                          className={cn(
+                            'h-full rounded-full',
+                            storage.pct >= 95
+                              ? 'bg-[var(--error)]'
+                              : storage.pct >= 80
+                                ? 'bg-amber-500'
+                                : 'bg-[var(--cp-accent)]'
+                          )}
+                          style={{ width: `${Math.min(100, storage.pct)}%` }}
+                        />
+                      </div>
+                    ),
+                  }
+                : {})}
+            />
           </>
         )}
       </div>
 
-      <Card variant="default" padding="default" className="mb-4 shrink-0 !p-3">
+      <Card
+        variant="default"
+        padding="default"
+        className="mb-4 shrink-0 !border-[var(--cp-border)] !bg-[var(--cp-white)] !p-3 shadow-none"
+      >
         <p className="section-label-coach mb-3 md:hidden">Quick actions</p>
         <div className="grid grid-cols-2 gap-2 md:hidden">
           <button
             type="button"
             onClick={() => router.push('/coach/clients')}
-            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--cp-accent)]"
           >
             <Users className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
             <span>Add client</span>
@@ -1139,7 +1086,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           <button
             type="button"
             onClick={() => router.push('/coach/schedule')}
-            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--cp-accent)]"
           >
             <Calendar className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
             <span>Book session</span>
@@ -1147,7 +1094,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           <button
             type="button"
             onClick={() => setQuickInvoiceOpen(true)}
-            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--cp-accent)]"
           >
             <CreditCard className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
             <span>Quick invoice</span>
@@ -1155,7 +1102,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           <button
             type="button"
             onClick={() => router.push('/coach/messages')}
-            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--cp-accent)]"
           >
             <MessageSquare className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
             <span>Messages</span>
@@ -1174,89 +1121,127 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
       </Card>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-3">
-        <Card variant="default" padding="default" className="flex min-h-0 flex-col overflow-hidden !p-0">
-          <PanelHeader
-            title="Today's sessions"
-            action={
-              <Link href="/coach/schedule" className="text-[12px] font-medium text-[var(--accent)] hover:underline">
-                View all
-              </Link>
-            }
-          />
-          <div className="panel-body-scroll max-h-[280px] min-h-0 flex-1 overflow-y-auto px-4 py-2">
+        <Card
+          variant="default"
+          padding="default"
+          className="flex min-h-0 flex-col overflow-hidden !rounded-[12px] !border-[var(--cp-border)] !bg-[var(--cp-white)] !p-0 shadow-none"
+        >
+          <div className="border-b border-[var(--cp-border)] px-4 py-3">
+            <DashboardSectionHeader
+              dense
+              title="Today's sessions"
+              action={{ label: 'View all', onClick: () => router.push('/coach/schedule') }}
+            />
+          </div>
+          <div className="panel-body-scroll max-h-[280px] min-h-0 flex-1 overflow-y-auto p-2">
             {loading ? (
-              <ul className="space-y-3">
+              <ul className="space-y-3 px-2 py-2">
                 {[1, 2, 3].map((i) => (
                   <li key={i} className="skeleton h-14 rounded-[var(--radius-md)]" />
                 ))}
               </ul>
             ) : todaySessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
-                  📅 Your calendar is clear today
-                </p>
-                <p className="mt-2 max-w-[280px] text-[14px] leading-[1.6] text-[var(--text-tertiary)]">
-                  Book a session or set availability so clients can grab time with you.
-                </p>
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                  <Button variant="primary" size="sm" type="button" onClick={() => router.push('/coach/schedule')}>
-                    Book session
-                  </Button>
-                  <Button variant="secondary" size="sm" type="button" onClick={() => router.push('/coach/schedule')}>
-                    Set availability
-                  </Button>
-                </div>
-              </div>
+              <EmptyState
+                icon={<span className="text-[22px]">📅</span>}
+                title="Your calendar is clear today"
+                subtitle="Book a session or set availability so clients can grab time with you."
+                action={{ label: 'Book session', onClick: () => router.push('/coach/schedule') }}
+              />
             ) : (
-              <ul className="space-y-3">
+              <div className="px-0 pb-2">
                 {upcomingSessionSoon ? (
-                  <li className="mb-4">
+                  <div className="mb-3 px-2">
                     <Link
                       href={`/coach/schedule?session=${upcomingSessionSoon.session.id}`}
-                      className="block rounded-[var(--radius-lg)] border-2 border-[var(--accent)] bg-[var(--accent-light)] px-4 py-3 shadow-[var(--shadow-sm)] transition-colors hover:bg-[var(--accent-muted)]/40"
+                      className="block rounded-[12px] border-2 border-[var(--cp-accent)] bg-[var(--accent-light)] px-4 py-3 transition-colors hover:bg-[var(--accent-muted)]/40"
                     >
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--accent)]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--cp-accent)]">
                         Starting soon
                       </p>
-                      <p className="mt-1 text-[15px] font-semibold leading-snug text-[var(--text-primary)]">
+                      <p className="mt-1 text-[15px] font-semibold leading-snug text-[var(--cp-navy)]">
                         Your next session with {upcomingSessionSoon.name} starts{' '}
                         {formatDistanceToNow(upcomingSessionSoon.start, { addSuffix: true })}
                       </p>
-                      <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">
+                      <p className="mt-0.5 text-[13px] text-[var(--cp-gray)]">
                         {format(upcomingSessionSoon.start, 'h:mm a')} · {upcomingSessionSoon.session.status}
                       </p>
                     </Link>
-                  </li>
+                  </div>
                 ) : null}
-                {todaySessions.map((s) => {
-                  if (upcomingSessionSoon && s.id === upcomingSessionSoon.session.id) return null
-                  const name =
-                    [s.clients?.first_name, s.clients?.last_name].filter(Boolean).join(' ') || 'Client'
-                  const start = parseISO(s.scheduled_time)
-                  return (
-                    <li key={s.id}>
-                      <Link
-                        href={`/coach/schedule?session=${s.id}`}
-                        className="clickable-row flex h-14 items-center gap-3 rounded-[var(--radius-md)] px-2"
-                      >
-                        <div className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-light)] text-[11px] font-semibold text-[var(--accent)]">
-                          {initials(name)}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">{name}</p>
-                          <p className="text-[12px] text-[var(--text-tertiary)]">{format(start, 'h:mm a')}</p>
-                        </div>
-                        <Badge variant="accent" className="shrink-0">
-                          {s.status}
-                        </Badge>
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
+                <DashboardTableShell>
+                  <DashboardTable>
+                    <thead>
+                      <tr className="bg-cp-offwhite">
+                        <th
+                          className="border-b border-cp-border px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-cp-gray"
+                        >
+                          Client
+                        </th>
+                        <th
+                          className="border-b border-cp-border px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-cp-gray"
+                        >
+                          Time
+                        </th>
+                        <th
+                          className="border-b border-cp-border px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-cp-gray"
+                        >
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {todaySessions
+                        .filter((s) => !upcomingSessionSoon || s.id !== upcomingSessionSoon.session.id)
+                        .map((s, idx, arr) => {
+                        const name =
+                          [s.clients?.first_name, s.clients?.last_name].filter(Boolean).join(' ') || 'Client'
+                        const start = parseISO(s.scheduled_time)
+                        const isLast = idx === arr.length - 1
+                        return (
+                          <tr
+                            key={s.id}
+                            role="link"
+                            tabIndex={0}
+                            onClick={() => router.push(`/coach/schedule?session=${s.id}`)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                router.push(`/coach/schedule?session=${s.id}`)
+                              }
+                            }}
+                            style={{
+                              borderBottom: isLast ? 'none' : '1px solid var(--cp-border)',
+                              transition: 'background 0.1s',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={(e) => {
+                              ;(e.currentTarget as HTMLTableRowElement).style.background = 'var(--cp-offwhite)'
+                            }}
+                            onMouseLeave={(e) => {
+                              ;(e.currentTarget as HTMLTableRowElement).style.background = 'transparent'
+                            }}
+                          >
+                            <td className="px-4 py-3 align-middle">
+                              <AvatarCell name={name} />
+                            </td>
+                            <td
+                              className="px-4 py-3 align-middle text-[14px] font-medium text-cp-navy"
+                            >
+                              {format(start, 'h:mm a')}
+                            </td>
+                            <td className="px-4 py-3 align-middle">
+                              <StatusBadge status={sessionStatusForBadge(s.status)} />
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </DashboardTable>
+                </DashboardTableShell>
+              </div>
             )}
           </div>
-          <div className="shrink-0 border-t border-[var(--border-subtle)] px-5 py-3">
+          <div className="shrink-0 border-t border-[var(--cp-border)] px-5 py-3">
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="ghost"
@@ -1273,63 +1258,94 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           </div>
         </Card>
 
-        <Card variant="default" padding="default" className="flex min-h-0 flex-col overflow-hidden !p-0">
-          <PanelHeader
-            title="Messages"
-            action={
-              <Link href="/coach/messages" className="text-[12px] font-medium text-[var(--accent)] hover:underline">
-                View all
-              </Link>
-            }
-          />
-          <div className="panel-body-scroll max-h-[280px] min-h-0 flex-1 overflow-y-auto px-4 py-2">
+        <Card
+          variant="default"
+          padding="default"
+          className="flex min-h-0 flex-col overflow-hidden !rounded-[12px] !border-[var(--cp-border)] !bg-[var(--cp-white)] !p-0 shadow-none"
+        >
+          <div className="border-b border-[var(--cp-border)] px-4 py-3">
+            <DashboardSectionHeader
+              dense
+              title="Messages"
+              action={{ label: 'View all', onClick: () => router.push('/coach/messages') }}
+            />
+          </div>
+          <div className="panel-body-scroll max-h-[280px] min-h-0 flex-1 overflow-y-auto px-2 py-2">
             {loading ? (
-              <ul className="space-y-3">
+              <ul className="space-y-3 px-2">
                 {[1, 2, 3].map((i) => (
                   <li key={i} className="skeleton h-14 rounded-[var(--radius-md)]" />
                 ))}
               </ul>
             ) : unreadThreads.length === 0 ? (
-              <p className="py-8 text-center text-[13px] text-[var(--text-tertiary)]">You&apos;re all caught up</p>
+              <EmptyState
+                icon={<MessageSquare className="size-5" strokeWidth={2} aria-hidden />}
+                title="You're all caught up"
+                subtitle="Unread threads will show up here when clients message you."
+              />
             ) : (
-              <ul className="space-y-3">
-                {unreadThreads.map((c) => (
-                  <li key={c.clientId}>
-                    <Link
-                      href={`/coach/messages?clientId=${encodeURIComponent(c.clientId)}`}
-                      className="clickable-row flex h-14 items-center gap-3 rounded-[var(--radius-md)] px-2"
-                    >
-                      <div className="relative shrink-0">
-                        <div className="flex size-6 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-semibold text-[var(--accent)]">
-                          {initials(c.fullName)}
-                        </div>
-                        <span
-                          className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-[var(--accent)] ring-2 ring-[var(--bg-app)]"
-                          aria-hidden
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-[13px] font-medium text-[var(--text-primary)]">
-                            {c.fullName}
-                          </span>
-                          <span className="shrink-0 text-[11px] text-[var(--text-quaternary)]">
-                            {c.lastMessageAt
-                              ? formatDistanceToNow(parseISO(c.lastMessageAt), { addSuffix: true })
-                              : ''}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 line-clamp-1 text-[12px] text-[var(--text-tertiary)]">
+              <DashboardTableShell>
+                <DashboardTable>
+                  <thead>
+                    <tr className="bg-cp-offwhite">
+                      <th className="border-b border-cp-border px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-cp-gray">
+                        Client
+                      </th>
+                      <th className="border-b border-cp-border px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-cp-gray">
+                        Preview
+                      </th>
+                      <th className="border-b border-cp-border px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-cp-gray">
+                        When
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {unreadThreads.map((c, idx) => (
+                      <tr
+                        key={c.clientId}
+                        role="link"
+                        tabIndex={0}
+                        onClick={() =>
+                          router.push(`/coach/messages?clientId=${encodeURIComponent(c.clientId)}`)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            router.push(`/coach/messages?clientId=${encodeURIComponent(c.clientId)}`)
+                          }
+                        }}
+                        style={{
+                          borderBottom: idx < unreadThreads.length - 1 ? '1px solid var(--cp-border)' : 'none',
+                          transition: 'background 0.1s',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          ;(e.currentTarget as HTMLTableRowElement).style.background = 'var(--cp-offwhite)'
+                        }}
+                        onMouseLeave={(e) => {
+                          ;(e.currentTarget as HTMLTableRowElement).style.background = 'transparent'
+                        }}
+                      >
+                        <td className="px-4 py-3 align-middle">
+                          <AvatarCell name={c.fullName} />
+                        </td>
+                        <td
+                          className="max-w-[140px] truncate px-4 py-3 align-middle text-[14px] font-medium text-cp-navy"
+                          title={c.lastMessagePreview}
+                        >
                           {c.lastMessagePreview}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 align-middle text-[12px] text-cp-gray">
+                          {c.lastMessageAt ? formatConversationListTime(c.lastMessageAt) : ''}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </DashboardTable>
+              </DashboardTableShell>
             )}
           </div>
-          <div className="shrink-0 border-t border-[var(--border-subtle)] px-5 py-3 text-center">
+          <div className="shrink-0 border-t border-[var(--cp-border)] px-5 py-3 text-center">
             <Button
               variant="ghost"
               size="sm"
@@ -1342,36 +1358,46 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           </div>
         </Card>
 
-        <Card variant="default" padding="default" className="flex min-h-0 flex-col overflow-hidden !p-0">
-          <PanelHeader
-            title="Activity"
-            action={
-              <Link href="/coach/programs" className="text-[12px] font-medium text-[var(--accent)] hover:underline">
-                View all
-              </Link>
-            }
-          />
-          <div className="panel-body-scroll max-h-[280px] min-h-0 flex-1 overflow-y-auto px-4 py-2">
+        <Card
+          variant="default"
+          padding="default"
+          className="flex min-h-0 flex-col overflow-hidden !rounded-[12px] !border-[var(--cp-border)] !bg-[var(--cp-white)] !p-0 shadow-none"
+        >
+          <div className="border-b border-[var(--cp-border)] px-4 py-3">
+            <DashboardSectionHeader
+              dense
+              title="Activity"
+              action={{ label: 'View all', onClick: () => router.push('/coach/programs') }}
+            />
+          </div>
+          <div className="panel-body-scroll max-h-[280px] min-h-0 flex-1 overflow-y-auto px-2 py-2">
             {loading ? (
-              <ul className="space-y-3">
+              <ul className="space-y-3 px-2">
                 {[1, 2, 3].map((i) => (
                   <li key={i} className="skeleton h-14 rounded-[var(--radius-md)]" />
                 ))}
               </ul>
             ) : activityPreview.length === 0 ? (
-              <p className="py-8 text-center text-[13px] text-[var(--text-tertiary)]">No recent activity</p>
+              <EmptyState
+                icon={<span className="text-[20px]">📊</span>}
+                title="No recent activity"
+                subtitle="When clients complete modules or start programs, it will show up here."
+              />
             ) : (
-              <ul className="space-y-3">
+              <ul className="space-y-0 divide-y divide-[var(--cp-border)] px-2">
                 {activityPreview.map((row) => (
-                  <li key={row.id} className="flex h-[52px] gap-3 rounded-[var(--radius-md)] px-1 py-1">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)]">
+                  <li
+                    key={row.id}
+                    className="flex gap-3 py-3 first:pt-2"
+                  >
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--cp-lavender)] text-[var(--cp-accent)]">
                       {activityIcon(row.kind)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-[13px] leading-snug text-[var(--text-primary)]">
+                      <p className="line-clamp-2 text-[13px] leading-snug text-[var(--cp-navy)]">
                         {row.summary}
                       </p>
-                      <p className="mt-0.5 text-[11px] text-[var(--text-quaternary)]">
+                      <p className="mt-0.5 text-[11px] text-[var(--cp-gray)]">
                         {formatDistanceToNow(parseISO(row.at), { addSuffix: true })}
                       </p>
                     </div>
@@ -1380,7 +1406,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </ul>
             )}
           </div>
-          <div className="shrink-0 border-t border-[var(--border-subtle)] px-5 py-3">
+          <div className="shrink-0 border-t border-[var(--cp-border)] px-5 py-3">
             <p className="text-center text-[11px] text-[var(--text-quaternary)]">
               Last updated {format(new Date(), 'MMM d, h:mm a')}
             </p>
@@ -1413,6 +1439,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           {invoiceToast}
         </div>
       ) : null}
+      </div>
     </div>
   )
 }

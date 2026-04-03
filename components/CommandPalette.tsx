@@ -92,7 +92,7 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-[130] flex items-start justify-center bg-black/40 pt-[12vh] backdrop-blur-[4px]">
       <button type="button" className="absolute inset-0" aria-label="Close command palette" onClick={() => setOpen(false)} />
-      <div className="relative z-10 w-full max-w-[640px] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xl)]">
+      <div className="relative z-10 w-full max-w-[640px] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)]">
         <input
           autoFocus
           value={query}

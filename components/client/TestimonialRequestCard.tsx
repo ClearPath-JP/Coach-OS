@@ -104,7 +104,7 @@ export function TestimonialRequestCard({
                 className={`min-h-11 min-w-11 rounded-lg border text-lg transition-colors ${
                   rating >= n
                     ? 'border-amber-400 bg-amber-50 text-amber-700'
-                    : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-tertiary)]'
+                    : 'border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[var(--text-tertiary)]'
                 }`}
                 aria-label={`${n} stars`}
                 onClick={() => setRating(n)}

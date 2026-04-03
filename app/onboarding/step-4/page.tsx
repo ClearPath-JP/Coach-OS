@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 
 function CardIcon({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--accent-light)] text-[var(--accent)]">
+    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--accent-light)] text-[var(--cp-accent)]">
       {children}
     </div>
   )
@@ -43,7 +43,7 @@ function IconVideo() {
 }
 
 const ctaClass =
-  'mt-4 inline-flex min-h-[44px] w-full items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] text-[14px] font-medium text-[var(--text-primary)] transition-colors group-hover:border-[var(--accent-muted)] group-hover:bg-[var(--accent-light)] group-hover:text-[var(--accent)]'
+  'mt-4 inline-flex min-h-[44px] w-full items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[14px] font-medium text-[var(--text-primary)] transition-colors group-hover:border-[var(--accent-muted)] group-hover:bg-[var(--accent-light)] group-hover:text-[var(--cp-accent)]'
 
 export default function OnboardingStep4Page() {
   const router = useRouter()
@@ -94,17 +94,17 @@ export default function OnboardingStep4Page() {
   }
 
   return (
-    <div className="space-y-10 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-sm)]">
-      <div className="relative overflow-hidden border-b border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,var(--bg-app)_45%,#E8F4FC_100%)] px-6 py-8 md:px-8 md:py-10">
+    <div className="space-y-10 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-sm)]">
+      <div className="relative overflow-hidden border-b border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,var(--cp-offwhite)_45%,#E8F4FC_100%)] px-6 py-8 md:px-8 md:py-10">
         <div
-          className="pointer-events-none absolute -right-10 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-[var(--accent)]/20 blur-3xl"
+          className="pointer-events-none absolute -right-10 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-[var(--cp-accent)]/20 blur-3xl"
           aria-hidden
         />
         <div
           className="pointer-events-none absolute left-10 top-0 h-24 w-24 rounded-full bg-[#1056A0]/10 blur-2xl"
           aria-hidden
         />
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">Finish line</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--cp-accent)]">Finish line</p>
         <h1 className="mt-1 max-w-2xl text-[var(--text-24)] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] md:text-[28px]">
           You&apos;re all set{coachFirstName ? `, ${coachFirstName}` : ''}! Your coaching business is ready.
         </h1>
@@ -117,7 +117,7 @@ export default function OnboardingStep4Page() {
       <div className="grid gap-4 px-6 pb-2 md:grid-cols-3 md:px-8">
         <Link
           href="/coach/clients"
-          className="group block rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
+          className="group block rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--cp-accent)] hover:shadow-md"
         >
           <CardIcon>
             <IconUser />
@@ -131,7 +131,7 @@ export default function OnboardingStep4Page() {
 
         <Link
           href="/coach/programs"
-          className="group block rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
+          className="group block rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--cp-accent)] hover:shadow-md"
         >
           <CardIcon>
             <IconClipboard />
@@ -145,7 +145,7 @@ export default function OnboardingStep4Page() {
 
         <Link
           href="/coach/videos"
-          className="group block rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-md"
+          className="group block rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-6 transition-all hover:-translate-y-0.5 hover:border-[var(--cp-accent)] hover:shadow-md"
         >
           <CardIcon>
             <IconVideo />

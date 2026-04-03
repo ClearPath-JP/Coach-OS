@@ -58,7 +58,7 @@ export function ClientNotificationsBell() {
           setOpen((v) => !v)
           if (!open) void load()
         }}
-        className="relative flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-tertiary)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] lg:size-9 lg:min-h-9 lg:min-w-9"
+        className="relative flex size-9 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[var(--text-tertiary)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] lg:size-9 lg:min-h-9 lg:min-w-9"
         aria-label="Notifications"
         aria-expanded={open}
       >
@@ -83,7 +83,7 @@ export function ClientNotificationsBell() {
         ) : null}
       </button>
       {open ? (
-        <div className="absolute right-0 top-11 z-[120] w-[min(100vw-2rem,320px)] overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)]">
+        <div className="absolute right-0 top-11 z-[120] w-[min(100vw-2rem,320px)] overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
           <div className="border-b border-[var(--border-subtle)] px-4 py-3">
             <p className="text-[14px] font-semibold text-[var(--text-primary)]">Notifications</p>
           </div>

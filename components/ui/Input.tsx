@@ -7,12 +7,12 @@ const inputTransition =
   'transition-[border-color,box-shadow] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]'
 
 const inputBase = cn(
-  'w-full rounded-[var(--radius-md)] border-[1.5px] border-[var(--border-default)] bg-[var(--bg-app)]',
+  'w-full rounded-[var(--radius-md)] border-[1.5px] border-[var(--border-default)] bg-[var(--cp-offwhite)]',
   'px-3 font-normal text-[length:var(--text-14)] leading-[var(--leading-normal)] text-[var(--text-primary)] [font-family:var(--font)]',
   'placeholder:text-[var(--text-placeholder)]',
   inputTransition,
   'hover:border-[var(--border-strong)]',
-  'focus:border-[var(--accent)] focus:outline-none focus:shadow-[var(--focus-ring)]',
+  'focus:border-[var(--cp-accent)] focus:outline-none focus:shadow-[var(--focus-ring)]',
   'disabled:cursor-not-allowed disabled:bg-[var(--bg-subtle)] disabled:text-[var(--text-tertiary)]'
 )
 

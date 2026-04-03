@@ -108,7 +108,7 @@ export function AssignmentReviewModal({
     >
       <button type="button" className="absolute inset-0 bg-black/40" onClick={onClose} aria-label="Close" />
       <div
-        className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-lg"
+        className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="review-assignment-title" className="text-lg font-medium text-[var(--text-primary)]">
@@ -134,7 +134,7 @@ export function AssignmentReviewModal({
               </div>
             ) : null}
             {latest.submission_type === 'file' && latest.file_url ? (
-              <a href={latest.file_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[var(--accent)]">
+              <a href={latest.file_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[var(--cp-accent)]">
                 Open attached file
               </a>
             ) : null}
@@ -160,7 +160,7 @@ export function AssignmentReviewModal({
           onChange={(e) => setFeedback(e.target.value)}
           rows={4}
           placeholder="Great work! Here's what I noticed…"
-          className="mt-1 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[15px]"
+          className="mt-1 w-full rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 py-2 text-[15px]"
         />
 
         <div className="mt-4">

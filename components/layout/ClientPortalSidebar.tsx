@@ -47,7 +47,7 @@ function NavRows({
             className={cn(
               'relative mb-px flex h-9 items-center gap-2 rounded-[var(--radius-md)] px-2 text-[14px] no-underline transition-[color,background-color] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]',
               isActive
-                ? 'bg-[var(--accent-light)] font-medium text-[var(--accent)] [&_svg]:text-[var(--accent)]'
+                ? 'bg-[var(--accent-light)] font-medium text-[var(--cp-accent)] [&_svg]:text-[var(--cp-accent)]'
                 : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-primary)]'
             )}
           >
@@ -80,7 +80,7 @@ export function ClientPortalDesktopSidebar({ className }: { className?: string }
             className={cn(
               'relative mb-px flex h-9 items-center gap-2 rounded-[var(--radius-md)] px-2 text-[14px] no-underline transition-[color,background-color] duration-[var(--duration-fast)]',
               profileActive
-                ? 'bg-[var(--accent-light)] font-medium text-[var(--accent)] [&_svg]:text-[var(--accent)]'
+                ? 'bg-[var(--accent-light)] font-medium text-[var(--cp-accent)] [&_svg]:text-[var(--cp-accent)]'
                 : 'font-normal text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
             )}
           >

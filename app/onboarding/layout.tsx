@@ -41,7 +41,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
         />
       </aside>
 
-      <div className="relative flex min-h-screen flex-col bg-[var(--bg-app)]">
+      <div className="relative flex min-h-screen flex-col bg-[var(--cp-offwhite)]">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-[128px] border-b border-white/10 lg:hidden"
           style={{ background: MOBILE_NAVY }}
@@ -54,7 +54,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
             <OnboardingHeaderActions className="text-white/90 hover:bg-white/10 hover:text-white" />
           </div>
 
-          <header className="hidden border-b border-[var(--border-subtle)] bg-[var(--bg-app)] lg:block">
+          <header className="hidden border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite)] lg:block">
             <div className="flex items-center justify-between gap-4 px-10 pb-4 pt-10">
               <div className="min-w-0">
                 <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-quaternary)]">

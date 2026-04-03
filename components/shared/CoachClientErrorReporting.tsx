@@ -41,7 +41,7 @@ export class CoachClientErrorBoundary extends Component<BoundaryProps, BoundaryS
           </p>
           <button
             type="button"
-            className="mt-4 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-2 text-sm font-medium"
+            className="mt-4 rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 py-2 text-sm font-medium"
             onClick={() => window.location.reload()}
           >
             Refresh page

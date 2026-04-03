@@ -110,7 +110,7 @@ export function ClientLayoutWithUnread({
   }, [fetchPendingAssignments])
 
   return (
-    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
+    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[var(--cp-offwhite)] lg:grid lg:h-[100dvh] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
       <Nav
         userDisplayName={userDisplayName}
         logoHref="/client/portal"
@@ -128,7 +128,7 @@ export function ClientLayoutWithUnread({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-[88px] lg:min-h-0 lg:overflow-y-auto lg:pb-0">
           {children}
           <div className="mt-auto flex shrink-0 justify-center px-4 pb-2 pt-4 text-center text-[11px] text-[var(--text-quaternary)] lg:hidden">
-            Powered by <span className="font-medium text-[var(--accent)]">ClearPath</span>
+            Powered by <span className="font-medium text-[var(--cp-accent)]">ClearPath</span>
           </div>
         </div>
       </div>

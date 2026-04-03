@@ -194,14 +194,14 @@ export function VideosPageContent() {
           </Button>
           <Link
             href="/coach/settings"
-            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
+            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
           >
             Drive settings
           </Link>
           <button
             type="button"
             onClick={() => setInfoOpen(true)}
-            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
+            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
             aria-label="How do I add videos from my phone?"
           >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -221,7 +221,7 @@ export function VideosPageContent() {
               id="video-cat-filter"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 min-h-9 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)]"
+              className="h-9 min-h-9 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--cp-accent)] focus:shadow-[var(--focus-ring)]"
             >
               <option value="all">All videos</option>
               <option value="__none__">Uncategorized</option>

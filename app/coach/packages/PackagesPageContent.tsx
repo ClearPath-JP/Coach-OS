@@ -428,7 +428,7 @@ export function PackagesPageContent() {
                 <span
                   className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
                     pkg.is_virtual !== false
-                      ? 'bg-[var(--accent-light)] text-[var(--accent)]'
+                      ? 'bg-[var(--accent-light)] text-[var(--cp-accent)]'
                       : 'bg-[var(--bg-muted)] text-[var(--text-secondary)]'
                   }`}
                 >

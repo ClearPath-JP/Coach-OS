@@ -86,18 +86,18 @@ export function ClientSessionsContent() {
               return (
                 <li
                   key={s.id}
-                  className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xs)]"
+                  className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xs)]"
                 >
                   <div className="p-4">
                     <p className="text-[18px] font-bold text-[var(--text-primary)]">{format(start, 'EEEE, MMMM d')}</p>
                     <p className="mt-1 text-[14px] text-[var(--text-secondary)]">
                       {format(start, 'h:mm a')} · {dur} minutes
                     </p>
-                    <span className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--accent)]">
+                    <span className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--cp-accent)]">
                       {stype}
                     </span>
                     {within24h ? (
-                      <div className="mt-3 rounded-[var(--radius-md)] bg-[var(--accent-light)] px-3 py-2 text-[13px] font-medium text-[var(--accent)]">
+                      <div className="mt-3 rounded-[var(--radius-md)] bg-[var(--accent-light)] px-3 py-2 text-[13px] font-medium text-[var(--cp-accent)]">
                         {isToday ? 'Today!' : isTomorrow ? 'Tomorrow!' : 'Coming up soon'}
                         {minsUntil > 0 && minsUntil < 24 * 60 ? (
                           <span className="ml-1 text-[var(--text-secondary)]">

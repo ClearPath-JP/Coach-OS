@@ -10,7 +10,7 @@ export function AnimatedBar({
 }: {
   percent: number
   className?: string
-  /** e.g. bg-[var(--accent)] or bg-[var(--success)] */
+  /** e.g. bg-[var(--cp-accent)] or bg-[var(--success)] */
   fillClassName?: string
 }) {
   const [w, setW] = useState(0)
@@ -22,7 +22,7 @@ export function AnimatedBar({
   return (
     <div className={cn('h-full w-full overflow-hidden rounded-full bg-[var(--border-default)]', className)}>
       <div
-        className={cn('h-full rounded-full transition-[width] duration-[600ms] ease-out', fillClassName ?? 'bg-[var(--accent)]')}
+        className={cn('h-full rounded-full transition-[width] duration-[600ms] ease-out', fillClassName ?? 'bg-[var(--cp-accent)]')}
         style={{ width: `${w}%` }}
       />
     </div>

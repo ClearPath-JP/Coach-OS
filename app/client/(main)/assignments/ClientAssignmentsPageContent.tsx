@@ -107,7 +107,7 @@ export function ClientAssignmentsPageContent() {
         >
           <div className="flex flex-wrap items-start gap-4">
             <div className="flex flex-col items-center">
-              <div className="flex size-14 items-center justify-center rounded-full bg-[var(--accent)] text-lg font-semibold text-white">
+              <div className="flex size-14 items-center justify-center rounded-full bg-[var(--cp-accent)] text-lg font-semibold text-white">
                 {rewards.level}
               </div>
               <p className="mt-1 text-center text-xs text-[var(--text-secondary)]">{rewards.levelName}</p>
@@ -116,7 +116,7 @@ export function ClientAssignmentsPageContent() {
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-tertiary)]">XP progress</p>
               <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
                 <div
-                  className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-[800ms] ease-out"
+                  className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-[800ms] ease-out"
                   style={{ width: `${xpBarPct}%` }}
                 />
               </div>
@@ -129,7 +129,7 @@ export function ClientAssignmentsPageContent() {
               <p>Done {rewards.assignmentsCompleted}</p>
             </div>
           </div>
-          <Link href="/client/portal" className="mt-3 inline-block text-sm font-medium text-[var(--accent)]">
+          <Link href="/client/portal" className="mt-3 inline-block text-sm font-medium text-[var(--cp-accent)]">
             Back to portal
           </Link>
         </Card>
@@ -143,7 +143,7 @@ export function ClientAssignmentsPageContent() {
             onClick={() => setFilter(f)}
             className={cn(
               'rounded-full px-3 py-1.5 text-sm font-medium',
-              filter === f ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)]'
+              filter === f ? 'bg-[var(--cp-accent)] text-white' : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)]'
             )}
           >
             {f === 'all' ? 'All' : f === 'pending' ? 'Pending' : 'Completed'}
@@ -153,7 +153,7 @@ export function ClientAssignmentsPageContent() {
 
       <div className="space-y-3">
         {!loading && rows.length === 0 ? (
-          <div className="rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] px-6 py-12 text-center">
+          <div className="rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-6 py-12 text-center">
             <p className="text-3xl" aria-hidden>
               ✨
             </p>

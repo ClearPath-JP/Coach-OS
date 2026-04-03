@@ -54,7 +54,7 @@ export default function AdminClientsPage() {
       </div>
 
       {loadingError ? (
-        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 text-[14px] text-[var(--text-tertiary)]">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-4 text-[14px] text-[var(--text-tertiary)]">
           {loadingError}
         </div>
       ) : null}

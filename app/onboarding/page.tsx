@@ -144,7 +144,7 @@ export default function OnboardingStep1Page() {
   if (ensuringSignup) {
     return (
       <div
-        className="animate-pulse space-y-5 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8"
+        className="animate-pulse space-y-5 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-sm)] md:p-8"
         aria-busy
         aria-label="Preparing your workspace"
       >
@@ -158,7 +158,7 @@ export default function OnboardingStep1Page() {
 
   if (bootstrapError) {
     return (
-      <div className="space-y-4 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8">
+      <div className="space-y-4 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-sm)] md:p-8">
         <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
           Could not start onboarding
         </h1>
@@ -194,14 +194,14 @@ export default function OnboardingStep1Page() {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_min(100%,300px)] lg:items-start">
       <form
         onSubmit={handleSubmit}
-        className="space-y-8 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8"
+        className="space-y-8 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-sm)] md:p-8"
       >
-        <div className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,var(--bg-app)_55%)] p-5 md:p-6">
+        <div className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,var(--cp-offwhite)_55%)] p-5 md:p-6">
           <div
-            className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[var(--accent)]/15 blur-2xl"
+            className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[var(--cp-accent)]/15 blur-2xl"
             aria-hidden
           />
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">Workspace</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--cp-accent)]">Workspace</p>
           <h1 className="mt-1 text-[22px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] md:text-[24px]">
             Set up your workspace
           </h1>
@@ -241,7 +241,7 @@ export default function OnboardingStep1Page() {
               type="file"
               accept={ACCEPT_IMAGE}
               onChange={handleAvatarChange}
-              className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--bg-app)] file:px-3 file:py-2 file:font-medium file:shadow-sm"
+              className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--cp-offwhite)] file:px-3 file:py-2 file:font-medium file:shadow-sm"
             />
             {avatarPreview && (
               <div className="relative mt-3 h-24 w-24 overflow-hidden rounded-full border border-[var(--color-border)] shadow-sm">
@@ -268,10 +268,10 @@ export default function OnboardingStep1Page() {
               type="file"
               accept={ACCEPT_IMAGE}
               onChange={handleLogoChange}
-              className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--bg-app)] file:px-3 file:py-2 file:font-medium file:shadow-sm"
+              className="block w-full text-sm text-[var(--color-text-secondary)] file:mr-2 file:rounded-lg file:border-0 file:bg-[var(--cp-offwhite)] file:px-3 file:py-2 file:font-medium file:shadow-sm"
             />
             {logoPreview && (
-              <div className="relative mt-3 h-16 w-32 overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--bg-app)] shadow-sm">
+              <div className="relative mt-3 h-16 w-32 overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--cp-offwhite)] shadow-sm">
                 <Image
                   src={logoPreview}
                   alt="Logo preview"
@@ -297,23 +297,23 @@ export default function OnboardingStep1Page() {
       </form>
 
       <aside className="space-y-4 lg:sticky lg:top-24">
-        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5 shadow-[var(--shadow-sm)]">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-5 shadow-[var(--shadow-sm)]">
           <h2 className="text-[14px] font-semibold text-[var(--text-primary)]">Why this matters</h2>
           <ul className="mt-3 space-y-3 text-[13px] leading-relaxed text-[var(--text-secondary)]">
             <li className="flex gap-2">
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--accent)]">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--cp-accent)]">
                 1
               </span>
               <span>Your workspace name is how you&apos;ll spot this account in ClearPath and on client-facing surfaces.</span>
             </li>
             <li className="flex gap-2">
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--accent)]">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--cp-accent)]">
                 2
               </span>
               <span>Photos and logos are optional — skip them now if you&apos;re in a hurry; you can upload later in settings.</span>
             </li>
             <li className="flex gap-2">
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--accent)]">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--cp-accent)]">
                 3
               </span>
               <span>We accept JPEG, PNG, GIF, or WebP up to {MAX_SIZE_MB} MB per file.</span>

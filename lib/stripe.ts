@@ -3,6 +3,8 @@
  * Use STRIPE_SECRET_KEY server-side only; never expose to the client.
  */
 
+import 'server-only'
+
 import Stripe from 'stripe'
 import { readStripeSecretKey, readStripeWebhookSecret } from '@/lib/stripe-env-read'
 

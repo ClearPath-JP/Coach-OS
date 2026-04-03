@@ -349,7 +349,7 @@ export function PaymentsPageContent() {
         className="border border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,transparent_55%)] p-6 shadow-[var(--shadow-sm)]"
       >
         <p className="text-[12px] font-medium text-[var(--text-tertiary)]">This month</p>
-        <p className="mt-1 text-[40px] font-bold leading-none tracking-[-0.03em] text-[var(--accent)]">
+        <p className="mt-1 text-[40px] font-bold leading-none tracking-[-0.03em] text-[var(--cp-accent)]">
           {formatCents(kpiMonth)}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-x-2 text-[13px] text-[var(--text-tertiary)]">
@@ -377,7 +377,7 @@ export function PaymentsPageContent() {
         <Link href="/coach/invoices" className="block h-full min-h-[44px] hover:opacity-95 md:col-span-1">
           <Card variant="raised" padding="lg" className="h-full border border-[var(--border-default)] shadow-[var(--shadow-xs)]">
             <p className="text-[13px] text-[var(--text-tertiary)]">Pending invoices</p>
-            <p className="mt-1 text-[20px] font-semibold text-[var(--accent)]">{formatCents(pendingCents)}</p>
+            <p className="mt-1 text-[20px] font-semibold text-[var(--cp-accent)]">{formatCents(pendingCents)}</p>
           </Card>
         </Link>
       </div>

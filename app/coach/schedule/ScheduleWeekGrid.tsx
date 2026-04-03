@@ -86,7 +86,7 @@ export function ScheduleWeekGrid({
   }
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)]">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
       <div className="relative min-h-0 min-w-0 flex-1 overflow-auto">
         <div className="flex min-w-[640px]">
           <div className="shrink-0" style={{ width: TIME_COL_W }} />
@@ -98,7 +98,7 @@ export function ScheduleWeekGrid({
                 key={day.toISOString()}
                 className={cn(
                   'min-w-0 flex-1 border-b border-l border-[var(--border-subtle)] px-1 py-2 text-center first:border-l-0',
-                  today ? 'bg-[var(--accent-light)]/40' : 'bg-[var(--bg-app)]'
+                  today ? 'bg-[var(--accent-light)]/40' : 'bg-[var(--cp-offwhite)]'
                 )}
                 style={{ height: HEADER_PX }}
               >
@@ -108,7 +108,7 @@ export function ScheduleWeekGrid({
                 <span
                   className={cn(
                     'mt-0.5 inline-flex h-7 min-w-[28px] items-center justify-center text-[20px] font-semibold tabular-nums text-[var(--text-primary)]',
-                    today && 'rounded-full bg-[var(--accent)] px-2 text-[15px] text-white'
+                    today && 'rounded-full bg-[var(--cp-accent)] px-2 text-[15px] text-white'
                   )}
                 >
                   {format(day, 'd')}
@@ -123,7 +123,7 @@ export function ScheduleWeekGrid({
                       />
                     ))}
                     {daySessions.length > 3 ? (
-                      <span className="text-[10px] font-medium text-[var(--accent)]">+{daySessions.length - 3}</span>
+                      <span className="text-[10px] font-medium text-[var(--cp-accent)]">+{daySessions.length - 3}</span>
                     ) : null}
                   </div>
                 ) : null}
@@ -232,7 +232,7 @@ export function ScheduleWeekGrid({
                     >
                       {inAvail ? (
                         <Plus
-                          className="h-4 w-4 text-[var(--accent)] opacity-0 transition-opacity group-hover:opacity-100"
+                          className="h-4 w-4 text-[var(--cp-accent)] opacity-0 transition-opacity group-hover:opacity-100"
                           aria-hidden
                         />
                       ) : null}

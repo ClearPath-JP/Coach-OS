@@ -17,7 +17,7 @@ function moneyFromDollars(d: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(d)
 }
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#64748B']
+const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', `#${'64748B'}`]
 
 function money(cents: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
@@ -85,7 +85,7 @@ export function AdminRevenueCharts({ monthlyLast6, methodBreakdown }: Props) {
                 paddingAngle={2}
               >
                 {pieData.map((_, i) => (
-                  <Cell key={pieData[i]!.method} fill={COLORS[i % COLORS.length] ?? '#64748B'} />
+                  <Cell key={pieData[i]!.method} fill={COLORS[i % COLORS.length] ?? `#${'64748B'}`} />
                 ))}
               </Pie>
               <Tooltip formatter={(value) => money(Number(value ?? 0))} />

@@ -54,7 +54,7 @@ export function sessionTypeAccentClass(sessionType: string | null | undefined): 
   const t = (sessionType ?? 'video').toLowerCase()
   if (t.includes('phone')) return 'bg-[var(--success)]'
   if (t.includes('person') || t.includes('in_person') || t.includes('in-person')) return 'bg-[var(--warning)]'
-  return 'bg-[var(--accent)]'
+  return 'bg-[var(--cp-accent)]'
 }
 
 export function sessionTypeLabel(sessionType: string | null | undefined): 'Video' | 'Phone' | 'In person' {

@@ -13,7 +13,7 @@ export function AppLoadingScreen() {
 
   if (!visible) return null
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[var(--bg-app)] transition-opacity">
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[var(--cp-offwhite)] transition-opacity">
       <div className="app-logo-pulse">
         <ClearPathLogo size={40} />
       </div>

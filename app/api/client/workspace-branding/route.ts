@@ -32,6 +32,8 @@ function paymentFieldAliases(b: Pick<
 
 export const dynamic = 'force-dynamic'
 
+const BRANDING_CACHE_CONTROL = 'private, max-age=120, stale-while-revalidate=600'
+
 /**
  * GET /api/client/workspace-branding — white-label fields for the current client (session).
  */
@@ -72,18 +74,22 @@ export async function GET() {
         stripeCardPaymentsEnabled: false,
         paymentInstructions: null as string | null,
       }
-      return NextResponse.json({
-        data: {
-          workspaceId: null,
-          brandName: null,
-          brandTagline: null,
-          clientPortalHeading: null,
-          clientWelcomeMessage: null,
-          logoUrl: null,
-          ...emptyPayment,
-          ...paymentFieldAliases(emptyPayment),
+      return NextResponse.json(
+        {
+          data: {
+            workspaceId: null,
+            brandName: null,
+            brandTagline: null,
+            clientPortalHeading: null,
+            clientWelcomeMessage: null,
+            logoUrl: null,
+            accentColor: null,
+            ...emptyPayment,
+            ...paymentFieldAliases(emptyPayment),
+          },
         },
-      })
+        { headers: { 'Cache-Control': BRANDING_CACHE_CONTROL } }
+      )
     }
 
     const wid = client.workspace_id as string
@@ -98,23 +104,30 @@ export async function GET() {
         stripeCardPaymentsEnabled: false,
         paymentInstructions: null as string | null,
       }
-      return NextResponse.json({
-        data: {
-          workspaceId: wid,
-          brandName: null,
-          brandTagline: null,
-          clientPortalHeading: null,
-          clientWelcomeMessage: null,
-          logoUrl: null,
-          ...emptyPayment,
-          ...paymentFieldAliases(emptyPayment),
+      return NextResponse.json(
+        {
+          data: {
+            workspaceId: wid,
+            brandName: null,
+            brandTagline: null,
+            clientPortalHeading: null,
+            clientWelcomeMessage: null,
+            logoUrl: null,
+            accentColor: null,
+            ...emptyPayment,
+            ...paymentFieldAliases(emptyPayment),
+          },
         },
-      })
+        { headers: { 'Cache-Control': BRANDING_CACHE_CONTROL } }
+      )
     }
 
-    return NextResponse.json({
-      data: { ...branding, ...paymentFieldAliases(branding) },
-    })
+    return NextResponse.json(
+      {
+        data: { ...branding, ...paymentFieldAliases(branding) },
+      },
+      { headers: { 'Cache-Control': BRANDING_CACHE_CONTROL } }
+    )
   } catch {
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again' },

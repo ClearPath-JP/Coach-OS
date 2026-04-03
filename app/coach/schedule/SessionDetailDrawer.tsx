@@ -328,7 +328,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
 
   return (
     <div
-      className={cn('flex h-full flex-col bg-[var(--bg-app)]', className)}
+      className={cn('flex h-full flex-col bg-[var(--cp-offwhite)]', className)}
       role="dialog"
       aria-modal="false"
     >
@@ -347,11 +347,11 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
       </div>
       <div className="flex-1 overflow-auto">
         <div className="flex gap-3 border-b border-[var(--border-subtle)] p-4">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-medium text-white">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-sm font-medium text-white">
             {initials(clientName)}
           </span>
           <div className="min-w-0">
-            <Link href={`/coach/clients/${session.client_id}`} className="text-[15px] font-semibold text-[var(--accent)] hover:underline">
+            <Link href={`/coach/clients/${session.client_id}`} className="text-[15px] font-semibold text-[var(--cp-accent)] hover:underline">
               {clientName}
             </Link>
             {clientEmail ? <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">{clientEmail}</p> : null}

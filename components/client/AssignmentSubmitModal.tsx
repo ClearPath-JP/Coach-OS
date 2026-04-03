@@ -239,12 +239,12 @@ export function AssignmentSubmitModal({
   return (
     <>
       {celebrate ? (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[var(--bg-app)] p-6">
+        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[var(--cp-offwhite)] p-6">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             {Array.from({ length: 24 }).map((_, i) => (
               <span
                 key={i}
-                className="absolute h-2 w-2 animate-ping rounded-full bg-[var(--accent)] opacity-60"
+                className="absolute h-2 w-2 animate-ping rounded-full bg-[var(--cp-accent)] opacity-60"
                 style={{
                   left: `${(i * 37) % 100}%`,
                   top: `${(i * 23) % 100}%`,
@@ -257,7 +257,7 @@ export function AssignmentSubmitModal({
           <p className="mt-2 text-[15px] text-[var(--text-secondary)]">
             +{XP_ACTIONS.ASSIGNMENT_SUBMITTED} XP · {celebrate.totalXp} XP total
           </p>
-          <p className="mt-4 text-lg text-[var(--accent)]">You are {celebrate.levelName}</p>
+          <p className="mt-4 text-lg text-[var(--cp-accent)]">You are {celebrate.levelName}</p>
           <Button type="button" className="mt-8" onClick={() => { setCelebrate(null); onClose() }}>
             Keep going
           </Button>
@@ -272,7 +272,7 @@ export function AssignmentSubmitModal({
       >
         <button type="button" className="absolute inset-0 bg-black/40" onClick={onClose} aria-label="Close" />
         <div
-          className="relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-t-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-lg max-md:max-w-none md:max-w-lg md:rounded-xl"
+          className="relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-t-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-lg max-md:max-w-none md:max-w-lg md:rounded-xl"
           onClick={(e) => e.stopPropagation()}
         >
           <h2 id="submit-assignment-title" className="text-lg font-medium text-[var(--text-primary)]">
@@ -290,7 +290,7 @@ export function AssignmentSubmitModal({
                 onChange={(e) => setTextContent(e.target.value)}
                 rows={6}
                 placeholder="Describe what you did, how it went, any questions…"
-                className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[15px] text-[var(--text-primary)]"
+                className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 py-2 text-[15px] text-[var(--text-primary)]"
               />
             )}
             {assignmentType === 'video' && (
@@ -310,7 +310,7 @@ export function AssignmentSubmitModal({
                 {uploadPct != null && (
                   <div className="space-y-1">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                      <div className="h-full bg-[var(--accent)] transition-all" style={{ width: `${uploadPct}%` }} />
+                      <div className="h-full bg-[var(--cp-accent)] transition-all" style={{ width: `${uploadPct}%` }} />
                     </div>
                     {uploadPct < 100 ? (
                       <p className="text-xs text-[var(--text-tertiary)]">Uploading… {uploadPct}%</p>
@@ -340,7 +340,7 @@ export function AssignmentSubmitModal({
                 </label>
                 {uploadPct != null && uploadPct < 100 && (
                   <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                    <div className="h-full bg-[var(--accent)] transition-all" style={{ width: `${uploadPct}%` }} />
+                    <div className="h-full bg-[var(--cp-accent)] transition-all" style={{ width: `${uploadPct}%` }} />
                   </div>
                 )}
                 {fileUrl ? <p className="mt-2 text-xs text-[var(--text-tertiary)]">File attached</p> : null}

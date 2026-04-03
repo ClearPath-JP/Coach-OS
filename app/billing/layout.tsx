@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getAccentLight, resolveAccentFamily } from '@/lib/accent-colors'
+import { coachAccentStyleTagContent, coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
 import { createClient } from '@/lib/supabase-server'
 import { Nav } from '@/components/layout/Nav'
 import { MobileNav, coachTabs } from '@/components/layout/MobileNav'
@@ -8,6 +8,7 @@ import { getCoachSidebarNav } from '@/components/layout/coach-sidebar-nav'
 import { WorkspaceProvider } from '@/lib/workspace-context'
 import { workspaceProviderKey } from '@/lib/workspace-settings'
 import { CommandPalette } from '@/components/CommandPalette'
+import { AccentInjector } from '@/components/layout/AccentInjector'
 
 /**
  * Billing layout: coach-only; same shell as coach area (Nav + sidebar + MobileNav).
@@ -37,7 +38,7 @@ export default async function BillingLayout({
     'Coach'
   const { topItems, sections } = getCoachSidebarNav()
 
-  let workspaceAccentStyle = ''
+  let resolvedCpAccent = coerceToAllowedCoachAccent(null)
   let initialWorkspaceSettings = {
     workspaceDisplayName: null,
     brandName: null,
@@ -68,20 +69,19 @@ export default async function BillingLayout({
       logoUrl: workspace?.logo_url ?? null,
     }
 
-    if (workspace?.accent_color) {
-      const light = workspace.accent_color_light ?? getAccentLight(workspace.accent_color)
-      const fam = resolveAccentFamily(workspace.accent_color, light)
-      workspaceAccentStyle = `:root { --accent: ${fam.accent}; --accent-dark: ${fam.accentDark}; --accent-hover: ${fam.hover}; --accent-light: ${fam.light}; --accent-muted: ${fam.muted}; }`
-    }
+    resolvedCpAccent = coerceToAllowedCoachAccent(workspace?.accent_color ?? null)
   }
+
+  const cpAccentStyle = coachAccentStyleTagContent(resolvedCpAccent)
 
   return (
     <WorkspaceProvider
       key={workspaceProviderKey(initialWorkspaceSettings)}
       initialSettings={initialWorkspaceSettings}
     >
-      <div className="flex min-h-screen min-h-0 flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
-        {workspaceAccentStyle ? <style>{workspaceAccentStyle}</style> : null}
+      <div className="flex min-h-screen min-h-0 flex-col bg-[var(--cp-offwhite)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
+        <style>{cpAccentStyle}</style>
+        <AccentInjector accentColor={resolvedCpAccent} />
         <Nav
           coachApp
           showThemeToggle

@@ -137,9 +137,9 @@ export default function OnboardingStep2Page() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-8 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-sm)] md:p-8"
+      className="space-y-8 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-sm)] md:p-8"
     >
-      <div className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(125deg,#F0FDF4_0%,var(--bg-app)_50%)] p-5 md:p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[linear-gradient(125deg,#F0FDF4_0%,var(--cp-offwhite)_50%)] p-5 md:p-6">
         <div
           className="pointer-events-none absolute -right-6 top-0 h-24 w-24 rounded-full bg-[var(--success)]/15 blur-2xl"
           aria-hidden
@@ -174,7 +174,7 @@ export default function OnboardingStep2Page() {
                 <span
                   className={cn(
                     'flex size-7 items-center justify-center rounded-full',
-                    on ? 'bg-white/20 text-white' : 'bg-[var(--bg-app)] text-[var(--accent)]'
+                    on ? 'bg-white/20 text-white' : 'bg-[var(--cp-offwhite)] text-[var(--cp-accent)]'
                   )}
                 >
                   <Icon className="size-3.5" />

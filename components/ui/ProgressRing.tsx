@@ -31,7 +31,7 @@ export function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--accent)"
+          stroke="var(--cp-accent)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}

@@ -71,8 +71,8 @@ export function AdminNav() {
                     className={clsx(
                       'mx-2 flex h-8 items-center rounded-md px-3 text-[13px] text-[#94A3B8] transition-colors',
                       active
-                        ? 'bg-[#1E3A5F] text-[#60A5FA]'
-                        : 'hover:bg-[#1E293B] hover:text-[#E2E8F0]'
+                        ? 'bg-[var(--cp-navy-light)] text-[var(--cp-sky)]'
+                        : 'hover:bg-[var(--cp-slate)] hover:text-[var(--cp-border)]'
                     )}
                   >
                     {item.label}

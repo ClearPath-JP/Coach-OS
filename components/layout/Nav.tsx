@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
@@ -61,7 +62,7 @@ function ClientPortalQuickLinks({ pathname }: { pathname: string }) {
             className={cn(
               'whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12px] font-medium transition-[background-color,color,transform] duration-150',
               active
-                ? 'bg-[var(--accent-light)] text-[var(--accent)]'
+                ? 'bg-[var(--accent-light)] text-[var(--cp-accent)]'
                 : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] active:scale-[0.98]'
             )}
           >
@@ -169,8 +170,13 @@ function CoachUserMenu({
         aria-label="Account menu"
       >
         {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" className="size-full object-cover" />
+          <Image
+            src={avatarUrl}
+            alt={`${displayName} avatar`}
+            width={28}
+            height={28}
+            className="size-full object-cover"
+          />
         ) : (
           initials(displayName)
         )}
@@ -178,7 +184,7 @@ function CoachUserMenu({
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-52 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-[var(--shadow-lg)]"
+          className="absolute right-0 top-full z-50 mt-2 w-52 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] py-1 shadow-[var(--shadow-lg)]"
         >
           <Link
             role="menuitem"
@@ -285,7 +291,7 @@ export function Nav({
             ? clientNavSurface
             : coachApp
               ? coachNavSurface
-              : headerBg ?? 'var(--bg-app)',
+              : headerBg ?? 'var(--cp-offwhite)',
         }}
       >
         {coachApp ? (
@@ -302,7 +308,7 @@ export function Nav({
               className="flex min-w-0 max-w-[min(100%,240px)] shrink-0 items-center gap-2 sm:max-w-[min(100%,280px)] sm:gap-2.5 lg:max-w-[min(100%,320px)] lg:gap-3 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               {showClientPortalLogo ? (
-                <span className="relative size-8 shrink-0 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] lg:size-10">
+                <span className="relative size-8 shrink-0 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--cp-offwhite)] lg:size-10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     key={clientPortalLogoTrimmed}
@@ -314,7 +320,7 @@ export function Nav({
                 </span>
               ) : null}
               <span className="flex min-w-0 flex-col justify-center gap-0.5">
-                <span className="truncate text-[15px] font-semibold tracking-[var(--tracking-heading)] text-[var(--text-primary)] transition-colors duration-150 hover:text-[var(--accent)] lg:text-[17px]">
+                <span className="truncate text-[15px] font-semibold tracking-[var(--tracking-heading)] text-[var(--text-primary)] transition-colors duration-150 hover:text-[var(--cp-accent)] lg:text-[17px]">
                   {logoLabel}
                 </span>
                 {clientPortalBrandTagline?.trim() ? (
@@ -409,10 +415,10 @@ export function Nav({
                 </button>
               </Tooltip>
               {notifOpen ? (
-                <div className="absolute right-2 top-11 z-[110] w-[320px] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xl)]">
+                <div className="absolute right-2 top-11 z-[110] w-[320px] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)]">
                   <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-3">
                     <p className="text-[14px] font-semibold text-[var(--text-primary)]">Notifications</p>
-                    <button type="button" className="text-[12px] text-[var(--accent)]" onClick={() => { setNotifications((prev) => prev.map((n) => ({ ...n, unread: false }))); setUnreadCount(0) }}>Mark all read</button>
+                    <button type="button" className="text-[12px] text-[var(--cp-accent)]" onClick={() => { setNotifications((prev) => prev.map((n) => ({ ...n, unread: false }))); setUnreadCount(0) }}>Mark all read</button>
                   </div>
                   <div className="max-h-[360px] overflow-y-auto">
                     {notifications.length === 0 ? (
@@ -423,7 +429,7 @@ export function Nav({
                       </div>
                     ) : notifications.map((n) => (
                       <button key={n.id} type="button" className={`group relative flex w-full gap-2 border-b border-[var(--border-subtle)] px-4 py-3 text-left hover:bg-[var(--bg-subtle)] ${n.unread ? 'bg-[var(--accent-light)]' : ''}`}>
-                        {n.unread ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[var(--accent)]" aria-hidden /> : null}
+                        {n.unread ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[var(--cp-accent)]" aria-hidden /> : null}
                         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[14px]">{n.type === 'message' ? '💬' : n.type === 'session' ? '📅' : n.type === 'payment' ? '💰' : '📚'}</span>
                         <span className="min-w-0">
                           <span className="block text-[13px] font-medium text-[var(--text-primary)]">{n.title}</span>
@@ -433,7 +439,7 @@ export function Nav({
                       </button>
                     ))}
                   </div>
-                  <button type="button" className="w-full border-t border-[var(--border-subtle)] px-3 py-3 text-[13px] text-[var(--accent)]">View all notifications</button>
+                  <button type="button" className="w-full border-t border-[var(--border-subtle)] px-3 py-3 text-[13px] text-[var(--cp-accent)]">View all notifications</button>
                 </div>
               ) : null}
               {showThemeToggle ? <Tooltip content="Toggle theme"><span><NavThemeIconButton /></span></Tooltip> : null}

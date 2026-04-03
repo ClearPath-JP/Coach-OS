@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { handleUploadPost } from '@/lib/post-upload'
 
 /**
@@ -5,5 +6,10 @@ import { handleUploadPost } from '@/lib/post-upload'
  * Validates MIME, size, magic bytes; rate limit 20/hour per user.
  */
 export async function POST(request: Request) {
-  return handleUploadPost(request)
+  try {
+    return await handleUploadPost(request)
+  } catch (error) {
+    console.error('[POST /api/upload]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

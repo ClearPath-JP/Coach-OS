@@ -229,7 +229,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
     >
       <button type="button" className="absolute inset-0 bg-black/40" onClick={onClose} aria-label="Close dialog" tabIndex={-1} />
       <div
-        className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-lg)] max-md:max-w-none md:rounded-xl max-md:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+        className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-lg)] max-md:max-w-none md:rounded-xl max-md:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="availability-modal-title" className="text-lg font-semibold text-[var(--text-primary)]">
@@ -247,7 +247,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
                 key={d.dayOfWeek}
                 className={cn(
                   'rounded-xl border border-[var(--border-default)] p-3',
-                  d.enabled ? 'bg-[var(--bg-app)]' : 'bg-[var(--bg-subtle)]'
+                  d.enabled ? 'bg-[var(--cp-offwhite)]' : 'bg-[var(--bg-subtle)]'
                 )}
               >
                 <label className="flex cursor-pointer items-center gap-2">
@@ -266,7 +266,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
                         <select
                           value={w.start}
                           onChange={(e) => updateWindow(d.dayOfWeek, w.tempId, 'start', e.target.value)}
-                          className="min-h-10 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-2 text-[13px]"
+                          className="min-h-10 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-2 text-[13px]"
                         >
                           {THIRTY_MIN_OPTIONS.map((t) => (
                             <option key={t} value={t}>
@@ -278,7 +278,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
                         <select
                           value={w.end}
                           onChange={(e) => updateWindow(d.dayOfWeek, w.tempId, 'end', e.target.value)}
-                          className="min-h-10 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-2 text-[13px]"
+                          className="min-h-10 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-2 text-[13px]"
                         >
                           {THIRTY_MIN_OPTIONS.map((t) => (
                             <option key={t} value={t}>
@@ -298,7 +298,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
                     ))}
                     <button
                       type="button"
-                      className="text-[13px] font-medium text-[var(--accent)] hover:underline"
+                      className="text-[13px] font-medium text-[var(--cp-accent)] hover:underline"
                       onClick={() => addWindow(d.dayOfWeek)}
                     >
                       + Add break

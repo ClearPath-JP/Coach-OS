@@ -4,7 +4,7 @@ export default function AdminNotAuthorizedPage() {
   return (
     <div
       className="flex min-h-screen flex-col items-center justify-center px-6 py-12"
-      style={{ background: 'var(--bg-app)', padding: '48px' }}
+      style={{ background: 'var(--cp-offwhite)', padding: '48px' }}
     >
       <div className="flex max-w-md flex-col items-center text-center">
         <div
@@ -22,13 +22,13 @@ export default function AdminNotAuthorizedPage() {
         <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/coach/dashboard"
-            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] px-6 text-[15px] font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] px-6 text-[15px] font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--cp-accent-hover)]"
           >
             Go to dashboard
           </Link>
           <Link
             href="/login"
-            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-6 text-[15px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-subtle)]"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-6 text-[15px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-subtle)]"
           >
             Sign in differently
           </Link>

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -218,7 +219,7 @@ function CoachSidebarHeader() {
           <div className="text-[15px] font-semibold tracking-[-0.02em] text-white">ClearPath</div>
           <div
             className="text-[10px] font-medium uppercase tracking-[0.1em]"
-            style={{ color: 'var(--accent)' }}
+            style={{ color: 'var(--cp-accent)' }}
           >
             Coach OS
           </div>
@@ -233,7 +234,7 @@ function CoachSidebarHeader() {
         >
           <span
             className="flex size-6 shrink-0 items-center justify-center rounded-[6px] text-[11px] font-bold text-white"
-            style={{ background: 'var(--accent)' }}
+            style={{ background: 'var(--cp-accent)' }}
           >
             {initial}
           </span>
@@ -265,13 +266,13 @@ function CoachSidebarSearch({
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search..."
         aria-label="Search navigation"
-        className="h-8 w-full rounded-[6px] border bg-[#1e1e1e] py-0 pl-8 pr-2.5 text-[13px] text-[#cccccc] outline-none transition-[border-color,box-shadow] duration-[80ms] placeholder:text-[#666666] focus:border-[var(--accent)]"
+        className="h-8 w-full rounded-[6px] border bg-[#1e1e1e] py-0 pl-8 pr-2.5 text-[13px] text-[#cccccc] outline-none transition-[border-color,box-shadow] duration-[80ms] placeholder:text-[#666666] focus:border-[var(--cp-accent)]"
         style={{
           borderColor: '#2a2a2a',
           boxShadow: undefined,
         }}
         onFocus={(e) => {
-          e.target.style.borderColor = 'var(--accent)'
+          e.target.style.borderColor = 'var(--cp-accent)'
           e.target.style.boxShadow = '0 0 0 2px rgba(var(--accent-rgb), 0.2)'
         }}
         onBlur={(e) => {
@@ -296,7 +297,7 @@ function CoachThemeToggleRow() {
         onClick={toggleTheme}
         className={cn(
           'relative h-[22px] w-[38px] shrink-0 rounded-full border transition-colors duration-[80ms]',
-          isDark ? 'border-transparent bg-[var(--accent)]' : 'border-[#2a2a2a] bg-[#1e1e1e]'
+          isDark ? 'border-transparent bg-[var(--cp-accent)]' : 'border-[#2a2a2a] bg-[#1e1e1e]'
         )}
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
@@ -335,7 +336,7 @@ function NavRowsDefault({
             className={cn(
               'relative mb-px flex h-8 items-center gap-2 rounded-[var(--radius-md)] px-2 text-[14px] no-underline transition-[color,background-color] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]',
               isActive
-                ? 'nav-item-active bg-[var(--accent-light)] font-medium text-[var(--accent)] [&_svg]:text-[var(--accent)]'
+                ? 'nav-item-active bg-[var(--accent-light)] font-medium text-[var(--cp-accent)] [&_svg]:text-[var(--cp-accent)]'
                 : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-primary)]'
             )}
           >
@@ -363,13 +364,13 @@ function SidebarThemeToggleFooter() {
         onClick={toggleTheme}
         className={cn(
           'relative h-[22px] w-[38px] shrink-0 rounded-full border border-[var(--border-default)] transition-colors duration-[var(--duration-fast)]',
-          isDark ? 'bg-[var(--accent)]' : 'bg-[var(--bg-app)]'
+          isDark ? 'bg-[var(--cp-accent)]' : 'bg-[var(--cp-offwhite)]'
         )}
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         <span
           className={cn(
-            'absolute top-[2px] h-[16px] w-[16px] rounded-full bg-[var(--bg-app)] shadow-[var(--shadow-xs)] transition-transform duration-[var(--duration-fast)]',
+            'absolute top-[2px] h-[16px] w-[16px] rounded-full bg-[var(--cp-offwhite)] shadow-[var(--shadow-xs)] transition-transform duration-[var(--duration-fast)]',
             isDark ? 'left-[18px]' : 'left-[2px]'
           )}
         />
@@ -413,7 +414,7 @@ function NavRowsCoach({
             className={cn(
               'relative mb-px flex h-[30px] items-center gap-2 rounded-[5px] px-2 text-[13px] no-underline transition-[color,background-color] duration-[80ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[#1e1e1e] font-medium text-white [&_svg]:text-[var(--accent)]'
+                ? 'nav-item-active-coach bg-[#1e1e1e] font-medium text-white [&_svg]:text-[var(--cp-accent)]'
                 : 'font-normal text-[#888888] [&_svg]:text-[#555555] hover:bg-[#1e1e1e] hover:text-[#cccccc] [&:hover_svg]:text-[#bbbbbb]'
             )}
           >
@@ -425,7 +426,7 @@ function NavRowsCoach({
               <span
                 className="badge shrink-0 rounded-full px-1.5 py-px text-center text-[10px] font-semibold text-white transition-[filter] duration-[80ms] hover:brightness-[0.9]"
                 style={{
-                  background: 'var(--accent)',
+                  background: 'var(--cp-accent)',
                   minWidth: '16px',
                 }}
               >
@@ -520,10 +521,15 @@ export function Sidebar({
               href={settingsHref}
               className="mt-2 flex h-9 cursor-pointer items-center gap-2 rounded-[5px] px-2 transition-colors duration-[80ms] hover:bg-[#1e1e1e]"
             >
-              <div className="avatar-hover flex size-[22px] shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold text-white" style={{ background: 'var(--accent)' }}>
+              <div className="avatar-hover flex size-[22px] shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold text-white" style={{ background: 'var(--cp-accent)' }}>
                 {userBar.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- coach avatar from storage
-                  <img src={userBar.avatarUrl} alt="" className="size-full object-cover" />
+                  <Image
+                    src={userBar.avatarUrl}
+                    alt={`${userBar.displayName} avatar`}
+                    width={22}
+                    height={22}
+                    className="size-full object-cover"
+                  />
                 ) : (
                   initials(userBar.displayName)
                 )}
@@ -591,10 +597,15 @@ export function Sidebar({
             href={settingsHref}
             className="flex h-10 cursor-pointer items-center gap-2 rounded-[var(--radius-md)] px-2 transition-[background-color] duration-[var(--duration-fast)] hover:bg-[var(--bg-muted)]"
           >
-            <div className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-light)] text-[11px] font-semibold text-[var(--accent)]">
+            <div className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-light)] text-[11px] font-semibold text-[var(--cp-accent)]">
               {userBar.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element -- coach avatar from storage
-                <img src={userBar.avatarUrl} alt="" className="size-full object-cover" />
+                <Image
+                  src={userBar.avatarUrl}
+                  alt={`${userBar.displayName} avatar`}
+                  width={24}
+                  height={24}
+                  className="size-full object-cover"
+                />
               ) : (
                 initials(userBar.displayName)
               )}

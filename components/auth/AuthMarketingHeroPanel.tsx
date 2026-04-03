@@ -24,7 +24,7 @@ export function AuthMarketingHeroPanel() {
             style={{ animationDelay: '0.05s' }}
           >
             <span className="font-bold text-white">ClearPath</span>
-            <span className="font-light text-[#60A5FA]"> Solutions</span>
+            <span className="font-light text-cp-sky"> Solutions</span>
           </p>
 
           <h2
@@ -52,7 +52,7 @@ export function AuthMarketingHeroPanel() {
                 style={{ animationDelay: `${0.22 + i * 0.1}s` }}
               >
                 <span
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[rgba(96,165,250,0.3)] bg-[rgba(96,165,250,0.15)] text-[#60A5FA]"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-cp-sky/30 bg-cp-sky/15 text-cp-sky"
                   aria-hidden
                 >
                   <Icon className="size-4" strokeWidth={2} />

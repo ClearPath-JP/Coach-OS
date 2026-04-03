@@ -79,13 +79,10 @@ export function resolveAccentFamily(accentHex: string, accentLightHex: string) {
 export function applyWorkspaceAccentVars(accentHex: string, accentLightHex: string): void {
   if (typeof document === 'undefined') return
   const root = document.documentElement
-  const { accent, accentDark, hover, light, muted } = resolveAccentFamily(accentHex, accentLightHex)
-  root.style.setProperty('--accent', accent)
+  const { accentDark, light, muted } = resolveAccentFamily(accentHex, accentLightHex)
+  root.style.setProperty('--cp-accent', accentHex)
   root.style.setProperty('--accent-dark', accentDark)
-  root.style.setProperty('--accent-hover', hover)
   root.style.setProperty('--accent-muted', muted)
-  root.style.setProperty('--color-accent', accent)
-  root.style.setProperty('--color-accent-hover', hover)
   if (root.getAttribute('data-theme') === 'dark') {
     root.style.removeProperty('--accent-light')
     root.style.removeProperty('--color-accent-light')

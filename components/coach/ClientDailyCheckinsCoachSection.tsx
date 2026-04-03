@@ -25,7 +25,7 @@ type Trend = {
 
 function circleClass(mood: number | undefined): string {
   if (mood == null) return 'border-2 border-[var(--border-default)] bg-transparent'
-  if (mood >= 4) return 'border-0 bg-[var(--accent)] text-[var(--text-on-accent)]'
+  if (mood >= 4) return 'border-0 bg-[var(--cp-accent)] text-[var(--text-on-accent)]'
   if (mood >= 2) return 'border-0 bg-amber-400 text-[var(--text-primary)]'
   return 'border-0 bg-red-500 text-white'
 }

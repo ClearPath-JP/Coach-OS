@@ -296,7 +296,7 @@ function HowToPayBlock({
 
       {toast ? (
         <div
-          className="fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--text-primary)] px-4 py-2 text-center text-[14px] text-[var(--bg-app)] shadow-[var(--shadow-lg)]"
+          className="fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--text-primary)] px-4 py-2 text-center text-[14px] text-[var(--cp-offwhite)] shadow-[var(--shadow-lg)]"
           role="status"
         >
           {toast}
@@ -436,7 +436,7 @@ export function ClientInvoicesList({ clientId, invoices }: { clientId: string; i
 export function ClientInvoicesBackLink() {
   return (
     <div className="mb-4">
-      <Link href="/client/portal" className="text-[14px] font-medium text-[var(--accent)]">
+      <Link href="/client/portal" className="text-[14px] font-medium text-[var(--cp-accent)]">
         ← Back to home
       </Link>
     </div>

@@ -8,25 +8,15 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns'
-import { InvoiceCard } from '@/components/coach/InvoiceCard'
-import {
-  SessionBookingMessageCard,
-  type SessionBookingCardData,
-} from '@/components/shared/SessionBookingMessageCard'
+import { formatConversationListTime } from '@/lib/conversation-time'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { formatAutoCheckinMessage } from '@/lib/re-engagement-default-message'
 import { cn, mergeByIdSortByCreatedAt } from '@/lib/utils'
+import { ConversationSidebar } from '@/components/messages/ConversationSidebar'
+import { ChatWindow } from '@/components/messages/ChatWindow'
+import { MessagesThreadMessagesList } from '@/components/messages/MessagesThreadMessagesList'
+import type { MessagesUIConversation } from '@/types/messages-ui'
 import { BookSessionModal } from '@/app/coach/schedule/BookSessionModal'
-import {
-  CoachAssignmentChatCard,
-  CoachAssignmentFeedbackCard,
-} from '@/components/shared/AssignmentChatCards'
-import {
-  CoachSessionNotesMessageCard,
-  parseSessionNotesPayload,
-} from '@/components/shared/SessionNotesMessageCard'
-
 /** Extra inset from bottom of layout viewport when the OS keyboard shrinks visualViewport (mobile browsers). */
 function useVisualViewportKeyboardOverlap(enabled: boolean) {
   const [overlapPx, setOverlapPx] = useState(0)
@@ -91,13 +81,17 @@ function statusBadgeVariant(status: string): 'active' | 'inactive' | 'pending' {
 }
 
 function conversationTimeLabel(iso: string): string {
-  try {
-    const d = new Date(iso)
-    if (isToday(d)) return format(d, 'h:mm a')
-    if (isYesterday(d)) return 'Yesterday'
-    return formatDistanceToNow(d, { addSuffix: true })
-  } catch {
-    return '—'
+  return formatConversationListTime(iso)
+}
+
+function toMessagesUIConversation(c: Conversation): MessagesUIConversation {
+  return {
+    id: c.clientId,
+    participantName: c.fullName,
+    participantRole: 'student',
+    lastMessage: c.hasMessages ? (c.lastMessagePreview || 'Message') : 'Start a conversation',
+    lastMessageTime: c.lastMessageAt ? conversationTimeLabel(c.lastMessageAt) : '—',
+    unreadCount: c.unreadCount,
   }
 }
 
@@ -107,267 +101,6 @@ function conversationTypeHint(preview: string | null | undefined): string | null
   if (/session|booked|calendar|schedule/i.test(p)) return '📅 Session'
   if (/assignment|task|submit/i.test(p)) return '📋 Assignment'
   return null
-}
-
-function groupMessagesByDate(messages: Message[]): { dateLabel: string; msgs: Message[] }[] {
-  const groups = new Map<string, Message[]>()
-  for (const m of messages) {
-    const d = new Date(m.created_at)
-    const label = isToday(d) ? 'Today' : isYesterday(d) ? 'Yesterday' : format(d, 'MMMM d, yyyy')
-    if (!groups.has(label)) groups.set(label, [])
-    groups.get(label)!.push(m)
-  }
-  return [...groups.entries()].map(([dateLabel, msgs]) => ({ dateLabel, msgs }))
-}
-
-function MessagesThreadMessagesList({
-  messages,
-  userId,
-  selectedClientName,
-  selectedClientId,
-  fetchMessages,
-  onBookRequestedTime,
-  onSuggestDifferentTime,
-}: {
-  messages: Message[]
-  userId: string | null
-  selectedClientName: string
-  selectedClientId: string
-  fetchMessages: (clientId: string) => void | Promise<void>
-  onBookRequestedTime: (payload: { clientId: string; date: string | null; time: string | null }) => void
-  onSuggestDifferentTime: () => void
-}) {
-  return (
-    <div className="space-y-6">
-      {groupMessagesByDate(messages).map(({ dateLabel, msgs }) => (
-        <div key={dateLabel}>
-          <div className="mb-4 flex items-center gap-3">
-            <span className="h-px flex-1 bg-[var(--border-subtle)]" aria-hidden />
-            <span className="shrink-0 text-[11px] text-[var(--text-quaternary)]">{dateLabel}</span>
-            <span className="h-px flex-1 bg-[var(--border-subtle)]" aria-hidden />
-          </div>
-          <div className="space-y-4">
-            {msgs.map((msg) => {
-              const isInvoice = msg.message_type === 'invoice'
-              const isSession = msg.message_type === 'session'
-              const isSessionRequest = msg.message_type === 'session_request'
-              const isAssignment = msg.message_type === 'assignment'
-              const isAssignmentFeedback = msg.message_type === 'assignment_feedback'
-              const isTestimonialRequest = msg.message_type === 'testimonial_request'
-              const isSessionNotes = msg.message_type === 'session_notes'
-              let testimonialProgram: string | null = null
-              if (isTestimonialRequest) {
-                try {
-                  const p = JSON.parse(msg.content) as { programName?: string | null }
-                  testimonialProgram = p?.programName ?? null
-                } catch {
-                  testimonialProgram = null
-                }
-              }
-              const sessionNotesPayload = isSessionNotes ? parseSessionNotesPayload(msg.content) : null
-              let invoiceData: Parameters<typeof InvoiceCard>[0]['data'] | null = null
-              let sessionData: SessionBookingCardData | null = null
-              let requestData: {
-                preferredDate?: string
-                preferredTime?: string
-                timeSlotLabel?: string | null
-                sessionTypePreference?: string
-                note?: string | null
-              } | null = null
-              if (isInvoice) {
-                try {
-                  const parsed = JSON.parse(msg.content) as {
-                    type?: string
-                    invoiceId?: string
-                    packageTitle?: string
-                    packageDescription?: string | null
-                    amountCents?: number
-                    currency?: string
-                    status?: string
-                    dueDate?: string | null
-                    paymentMethod?: string | null
-                    paidAt?: string | null
-                  }
-                  if (parsed?.type === 'invoice' && parsed.invoiceId) {
-                    invoiceData = {
-                      type: 'invoice',
-                      invoiceId: parsed.invoiceId,
-                      packageTitle: parsed.packageTitle ?? 'Invoice',
-                      packageDescription: parsed.packageDescription ?? null,
-                      amountCents: parsed.amountCents ?? 0,
-                      currency: parsed.currency ?? 'usd',
-                      status: parsed.status ?? 'pending',
-                      dueDate: parsed.dueDate ?? null,
-                      paymentMethod: parsed.paymentMethod ?? null,
-                      paidAt: parsed.paidAt ?? null,
-                    }
-                  }
-                } catch {
-                  invoiceData = null
-                }
-              }
-              if (isSession) {
-                try {
-                  const parsed = JSON.parse(msg.content) as {
-                    type?: string
-                    sessionId?: string
-                    scheduledTime?: string
-                    endTime?: string | null
-                    durationMinutes?: number
-                    status?: string
-                    notes?: string | null
-                  }
-                  if (parsed?.type === 'session' && parsed.sessionId && parsed.scheduledTime) {
-                    sessionData = {
-                      type: 'session',
-                      sessionId: parsed.sessionId,
-                      scheduledTime: parsed.scheduledTime,
-                      endTime: parsed.endTime ?? null,
-                      durationMinutes: parsed.durationMinutes ?? 60,
-                      status: parsed.status ?? 'confirmed',
-                      notes: parsed.notes ?? null,
-                    }
-                  }
-                } catch {
-                  sessionData = null
-                }
-              }
-              if (isSessionRequest) {
-                try {
-                  requestData = JSON.parse(msg.content) as {
-                    preferredDate?: string
-                    preferredTime?: string
-                    timeSlotLabel?: string | null
-                    sessionTypePreference?: string
-                    note?: string | null
-                  }
-                } catch {
-                  requestData = null
-                }
-              }
-              return (
-                <div
-                  key={msg.id}
-                  data-message-id={msg.id}
-                  className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
-                >
-                  {invoiceData ? (
-                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
-                      <InvoiceCard
-                        data={invoiceData}
-                        clientName={selectedClientName || 'Client'}
-                        onPaymentRecorded={() => void fetchMessages(selectedClientId)}
-                      />
-                      <p className="mt-1 text-[12px] text-[var(--color-muted)]">
-                        {format(new Date(msg.created_at), 'h:mm a')}
-                      </p>
-                    </div>
-                  ) : sessionData ? (
-                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
-                      <SessionBookingMessageCard data={sessionData} />
-                      <p className="mt-1 text-[12px] text-[var(--color-muted)]">
-                        {format(new Date(msg.created_at), 'h:mm a')}
-                      </p>
-                    </div>
-                  ) : isAssignment ? (
-                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
-                      <CoachAssignmentChatCard
-                        content={msg.content}
-                        createdAt={msg.created_at}
-                        userId={userId}
-                        senderId={msg.sender_id}
-                        selectedClientId={selectedClientId}
-                        selectedClientName={selectedClientName}
-                        fetchMessages={fetchMessages}
-                      />
-                    </div>
-                  ) : isAssignmentFeedback ? (
-                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
-                      <CoachAssignmentFeedbackCard
-                        content={msg.content}
-                        createdAt={msg.created_at}
-                        sentByCoach={msg.sender_id === userId}
-                      />
-                    </div>
-                  ) : isTestimonialRequest ? (
-                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3.5">
-                      <p className="text-[14px] font-semibold text-[var(--text-primary)]">🌟 Testimonial request</p>
-                      <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
-                        {testimonialProgram
-                          ? `Asking how ${testimonialProgram} went.`
-                          : 'Asking for a client review.'}
-                      </p>
-                      <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
-                        {format(new Date(msg.created_at), 'h:mm a')}
-                      </p>
-                    </div>
-                  ) : sessionNotesPayload ? (
-                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
-                      <CoachSessionNotesMessageCard
-                        payload={sessionNotesPayload}
-                        clientName={selectedClientName || 'Client'}
-                        messageCreatedAt={msg.created_at}
-                      />
-                      <p className="mt-1 text-[12px] text-[var(--text-quaternary)]">
-                        {format(new Date(msg.created_at), 'h:mm a')}
-                      </p>
-                    </div>
-                  ) : requestData ? (
-                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3.5">
-                      <p className="text-[14px] font-semibold text-[var(--text-primary)]">{selectedClientName} requested a session</p>
-                      <p className="mt-1 text-[12px] text-[var(--accent)]">
-                        {requestData.sessionTypePreference === 'in_person' ? '📍 In person' : '📹 Video session'}
-                      </p>
-                      <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
-                        📅 {requestData.preferredDate ?? '—'}
-                        {requestData.timeSlotLabel
-                          ? ` · ${requestData.timeSlotLabel}`
-                          : requestData.preferredTime
-                            ? ` · ${requestData.preferredTime}`
-                            : ''}
-                      </p>
-                      {requestData.note ? <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">💬 &quot;{requestData.note}&quot;</p> : null}
-                      <div className="mt-2 flex gap-2">
-                        <Button
-                          variant="secondary"
-                          className="text-xs"
-                          onClick={() => onBookRequestedTime({ clientId: selectedClientId, date: requestData?.preferredDate ?? null, time: requestData?.preferredTime ?? null })}
-                        >
-                          Book this time
-                        </Button>
-                        <Button variant="ghost" className="text-xs" onClick={onSuggestDifferentTime}>
-                          Suggest different time
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className={cn(
-                        'max-w-[70%] px-3.5 py-2.5 text-[14px] leading-relaxed',
-                        msg.sender_id === userId
-                          ? 'rounded-[12px] rounded-br-[2px] bg-[var(--accent)] text-white'
-                          : 'rounded-[12px] rounded-bl-[2px] border border-[var(--border-subtle)] bg-[var(--bg-muted)] text-[var(--text-primary)]'
-                      )}
-                    >
-                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                      <p
-                        className={cn(
-                          'mt-1 text-[11px]',
-                          msg.sender_id === userId ? 'text-white/75' : 'text-[var(--text-quaternary)]'
-                        )}
-                      >
-                        {format(new Date(msg.created_at), 'h:mm a')}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
 }
 
 export function CoachMessagesPageContent() {
@@ -670,9 +403,6 @@ export function CoachMessagesPageContent() {
     }
   }
 
-  const showListOnly = !selectedClientId
-  const showThreadOnly = selectedClientId
-
   const activeClientsCount = useMemo(
     () => conversations.filter((c) => c.status === 'active').length,
     [conversations]
@@ -705,357 +435,333 @@ export function CoachMessagesPageContent() {
     Boolean(isNarrowViewport && selectedClientId)
   )
 
-  return (
-    <div className="flex min-h-0 flex-1 flex-col lg:min-h-[calc(100dvh-var(--nav-height))] lg:flex-row">
+  const activeUiConversation = useMemo((): MessagesUIConversation | null => {
+    if (!selectedClientId) return null
+    return {
+      id: selectedClientId,
+      participantName: selectedClientName || 'Client',
+      participantRole: 'student',
+      lastMessage: '',
+      lastMessageTime: '',
+      unreadCount: conversations.find((c) => c.clientId === selectedClientId)?.unreadCount ?? 0,
+    }
+  }, [selectedClientId, selectedClientName, conversations])
+
+  const handleSidebarSelect = (id: string) => {
+    setSelectedClientId(id)
+    const conv = conversations.find((c) => c.clientId === id)
+    if (conv?.fullName) setSelectedClientName(conv.fullName)
+    router.replace(`/coach/messages?clientId=${encodeURIComponent(id)}`, { scroll: false })
+  }
+
+  const handleBackToConversations = () => {
+    setSelectedClientId(null)
+    router.replace('/coach/messages', { scroll: false })
+  }
+
+  const sidebarConversations = useMemo(
+    () => displayedConversations.map(toMessagesUIConversation),
+    [displayedConversations]
+  )
+
+  const coachEmptySidebar = (
+    <div className="p-6 text-center">
       <div
-        className={`flex h-full flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-subtle)] ${
-          showListOnly ? 'w-full' : 'hidden lg:flex lg:w-[320px] lg:shrink-0'
-        }`}
+        className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full text-xl"
+        style={{ background: 'var(--cp-lavender)' }}
+        aria-hidden
       >
-        <div className="flex min-h-11 shrink-0 items-center justify-between border-b border-[var(--border-subtle)] px-4 py-2">
-          <div className="flex items-center gap-2">
-            <h1 className="text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Messages</h1>
-            {totalUnread > 0 ? (
-              <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-on-accent)]">
-                {totalUnread > 99 ? '99+' : totalUnread}
-              </span>
-            ) : null}
+        💬
+      </div>
+      <p className="text-[15px] font-semibold tracking-[-0.02em]" style={{ color: 'var(--cp-navy)' }}>
+        Your client conversations live here
+      </p>
+      <p className="mx-auto mt-2 max-w-[320px] text-[14px] font-normal leading-[1.6]" style={{ color: 'var(--cp-gray)' }}>
+        Add a client first — then every thread stays in one place.
+      </p>
+      <Link href="/coach/clients" className="mt-6 inline-block">
+        <Button variant="primary" className="min-h-11">
+          View clients
+        </Button>
+      </Link>
+    </div>
+  )
+
+  const filterEmptyHint =
+    convFilter === 'unread'
+      ? 'You’re all caught up — no unread threads.'
+      : convFilter === 'invoices'
+        ? 'No invoice threads match. They’ll show when clients get invoice messages.'
+        : 'No conversations match your search.'
+
+  const threadBody =
+    selectedClientId ? (
+      <>
+        {loadingOlder && (
+          <p className="mb-2 text-center text-[12px] text-[var(--color-muted)]">Loading older messages…</p>
+        )}
+        {loadingMessages && <ThreadSkeleton />}
+        {!loadingMessages && messagesError && <p className="text-[var(--color-muted)]">{messagesError}</p>}
+        {!loadingMessages && !messagesError && messages.length === 0 && (
+          <div className="py-8 text-center">
+            <p className="text-[15px] text-[var(--color-muted)]">
+              No messages yet — type below to start the conversation.
+            </p>
           </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="h-8 min-h-8 shrink-0 text-[12px]"
-            onClick={() => {
-              setBroadcastText('')
-              setBroadcastOpen(true)
-            }}
+        )}
+        {!loadingMessages && !messagesError && messages.length > 0 && selectedClientId && (
+          <ErrorBoundary
+            fallback={
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
+                <p className="font-medium text-[var(--color-text-primary)]">Could not display this thread</p>
+                <p className="mt-1 text-[13px] text-[var(--color-muted)]">
+                  Live updates may be unavailable. Try again or refresh the page.
+                </p>
+              </div>
+            }
           >
-            Broadcast
-          </Button>
+            <MessagesThreadMessagesList
+              messages={messages}
+              userId={userId}
+              selectedClientName={selectedClientName}
+              selectedClientId={selectedClientId}
+              fetchMessages={fetchMessages}
+              onBookRequestedTime={({ clientId, date, time }) => {
+                setSelectedClientId(clientId)
+                setBookInitialDate(date)
+                setBookInitialTime(time)
+                setBookModalOpen(true)
+              }}
+              onSuggestDifferentTime={() => {
+                setInputValue('I can do a different time. How about tomorrow afternoon?')
+              }}
+            />
+          </ErrorBoundary>
+        )}
+      </>
+    ) : null
+
+  const composeSlot =
+    selectedClientId ? (
+      <div
+        className={cn(
+          'shrink-0 border-t border-[var(--border-subtle)] bg-[var(--cp-white)] px-5 py-3',
+          isNarrowViewport
+            ? 'fixed left-0 right-0 z-[38] shadow-[0_-4px_24px_rgba(15,23,42,0.06)]'
+            : 'safe-bottom'
+        )}
+        style={
+          isNarrowViewport
+            ? {
+                bottom: `calc(4.75rem + env(safe-area-inset-bottom, 0px) + ${keyboardOverlapPx}px)`,
+              }
+            : undefined
+        }
+      >
+        <div className="flex items-end gap-2">
+          <textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value.slice(0, 2000))}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSend()
+              }
+            }}
+            placeholder="Message"
+            rows={1}
+            maxLength={2000}
+            className="min-h-[40px] max-h-[120px] flex-1 resize-none rounded-[var(--radius-lg)] border border-[var(--cp-border)] bg-[var(--cp-offwhite)] px-3.5 py-2.5 text-[14px] leading-normal placeholder:text-[var(--text-tertiary)] focus:border-[var(--cp-input-focus)] focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            style={{ color: 'var(--cp-navy)' }}
+            aria-label="Message"
+          />
+          <button
+            type="button"
+            onClick={() => void handleSend()}
+            disabled={!inputValue.trim() || sending}
+            className="flex size-[38px] shrink-0 items-center justify-center rounded-full text-white transition-[transform,opacity] duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:shadow-[var(--focus-ring)]"
+            style={{ background: 'var(--cp-sapphire)' }}
+            aria-label="Send message"
+          >
+            {sending ? (
+              <span
+                className="inline-block size-3.5 rounded-full border-2 border-white/30 border-t-white"
+                style={{ animation: 'cp-spin 0.7s linear infinite' }}
+              />
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
         </div>
-        <div className="flex shrink-0 gap-1 border-b border-[var(--border-subtle)] px-3 py-2">
-          {(
-            [
-              ['all', 'All'] as const,
-              ['unread', 'Unread'] as const,
-              ['invoices', 'Invoices'] as const,
-            ]
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setConvFilter(key)}
-              className={cn(
-                'h-8 min-h-8 rounded-[var(--radius-md)] px-3 text-[12px] font-medium transition-colors duration-[80ms]',
-                convFilter === key
-                  ? 'bg-[var(--bg-app)] text-[var(--accent)] shadow-[var(--shadow-xs)]'
-                  : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="shrink-0 px-3 py-2">
-          <input
-            type="search"
-            placeholder="Search by name or last message…"
-            value={convSearch}
-            onChange={(e) => setConvSearch(e.target.value)}
-            className="h-9 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)]"
-            aria-label="Search conversations"
+        {inputValue.length > 1900 && (
+          <p className="mt-1 text-[var(--text-12)] text-[var(--text-tertiary)]">{inputValue.length} / 2000</p>
+        )}
+      </div>
+    ) : undefined
+
+  const selectedConv = selectedClientId
+    ? conversations.find((c) => c.clientId === selectedClientId)
+    : null
+
+  return (
+    <>
+      <style>{`
+        @keyframes cp-spin { to { transform: rotate(360deg); } }
+      `}</style>
+      <div
+        className="flex min-h-0 w-full flex-1 overflow-hidden"
+        style={{
+          height: 'calc(100dvh - var(--nav-height))',
+          maxHeight: 'calc(100dvh - var(--nav-height))',
+          background: 'var(--cp-offwhite)',
+        }}
+      >
+        <div
+          className={cn(
+            'min-h-0 h-full min-w-0 shrink-0',
+            isNarrowViewport && selectedClientId ? 'hidden' : 'flex',
+            !isNarrowViewport && 'flex'
+          )}
+        >
+          <ConversationSidebar
+            conversations={sidebarConversations}
+            activeId={selectedClientId}
+            onSelect={handleSidebarSelect}
+            currentUserRole="coach"
+            searchQuery={convSearch}
+            onSearchChange={setConvSearch}
+            loading={loadingConversations}
+            error={conversationsError}
+            onRetry={fetchConversations}
+            emptyState={
+              !loadingConversations && !conversationsError && conversations.length === 0
+                ? coachEmptySidebar
+                : !loadingConversations &&
+                    !conversationsError &&
+                    conversations.length > 0 &&
+                    displayedConversations.length === 0
+                  ? (
+                      <div style={{ padding: 32, textAlign: 'center', color: 'var(--cp-gray)', fontSize: 13 }}>
+                        {filterEmptyHint}
+                      </div>
+                    )
+                  : undefined
+            }
+            loadingContent={<ConversationListSkeleton />}
+            headerActions={
+              <div className="flex shrink-0 items-center gap-2">
+                {totalUnread > 0 ? (
+                  <span
+                    className="rounded-full px-2 py-0.5 text-[11px] font-semibold text-white"
+                    style={{ background: 'var(--cp-sapphire)' }}
+                  >
+                    {totalUnread > 99 ? '99+' : totalUnread}
+                  </span>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 min-h-8 shrink-0 text-[12px]"
+                  onClick={() => {
+                    setBroadcastText('')
+                    setBroadcastOpen(true)
+                  }}
+                >
+                  Broadcast
+                </Button>
+              </div>
+            }
+            belowHeader={
+              <div className="mb-2 flex gap-1">
+                {(
+                  [
+                    ['all', 'All'] as const,
+                    ['unread', 'Unread'] as const,
+                    ['invoices', 'Invoices'] as const,
+                  ]
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setConvFilter(key)}
+                    className={cn(
+                      'h-8 min-h-8 rounded-lg px-3 text-[12px] font-medium transition-colors duration-[80ms]',
+                      convFilter === key
+                        ? 'shadow-sm'
+                        : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
+                    )}
+                    style={
+                      convFilter === key
+                        ? { background: 'var(--cp-white)', color: 'var(--cp-sapphire)' }
+                        : undefined
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            }
           />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {loadingConversations && <ConversationListSkeleton />}
-          {!loadingConversations && conversationsError && (
-            <div className="p-4">
-              <p className="text-[var(--color-muted)]">{conversationsError}</p>
-              <Button variant="secondary" className="mt-2" onClick={fetchConversations}>
-                Try again
-              </Button>
-            </div>
+
+        <div
+          className={cn(
+            'flex min-h-0 min-w-0 flex-1 flex-col',
+            isNarrowViewport && !selectedClientId && 'hidden',
+            !isNarrowViewport && 'flex'
           )}
-          {!loadingConversations && !conversationsError && conversations.length === 0 && (
-            <div className="p-6 text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
-                💬
-              </div>
-              <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
-                Your client conversations live here
-              </p>
-              <p className="mx-auto mt-2 max-w-[320px] text-[14px] font-normal leading-[1.6] text-[var(--color-muted)]">
-                Add a client first — then every thread stays in one place.
-              </p>
-              <Link href="/coach/clients" className="mt-6 inline-block">
-                <Button variant="primary" className="min-h-11">
-                  View clients
-                </Button>
-              </Link>
-            </div>
-          )}
-          {!loadingConversations && !conversationsError && conversations.length > 0 && (
-            <ul>
-              {displayedConversations.length === 0 ? (
-                <li className="px-4 py-8 text-center text-[13px] text-[var(--text-tertiary)]">
-                  {convFilter === 'unread'
-                    ? 'You’re all caught up — no unread threads.'
-                    : convFilter === 'invoices'
-                      ? 'No invoice threads match. They’ll show when clients get invoice messages.'
-                      : 'No conversations match your search.'}
-                </li>
-              ) : null}
-              {displayedConversations.map((c) => {
-                const unread = c.unreadCount > 0
-                const hint = conversationTypeHint(c.lastMessagePreview)
-                return (
-                  <li key={c.clientId}>
+        >
+          <ChatWindow
+            conversation={activeUiConversation}
+            messages={[]}
+            currentUserId={userId ?? ''}
+            currentUserRole="coach"
+            onSend={async () => {}}
+            isSending={false}
+            threadContent={threadBody ?? undefined}
+            composeSlot={composeSlot}
+            showBackButton={isNarrowViewport}
+            onBack={handleBackToConversations}
+            threadScrollRef={threadScrollRef}
+            threadEndRef={threadEndRef}
+            onThreadScroll={(e) => {
+              const t = e.currentTarget
+              if (t.scrollTop < 72 && hasMoreOlder && !loadingOlder && !loadingMessages) {
+                void loadOlderMessages()
+              }
+            }}
+            threadScrollClassName={cn(isNarrowViewport && 'pb-40')}
+            headerExtras={
+              selectedClientId ? (
+                <>
+                  {selectedConv ? (
+                    <Badge variant={statusBadgeVariant(selectedConv.status)}>{selectedConv.status}</Badge>
+                  ) : null}
+                  <div className="hidden shrink-0 items-center gap-2 sm:flex">
+                    <Link
+                      href={`/coach/clients/${selectedClientId}`}
+                      className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)]"
+                    >
+                      View profile
+                    </Link>
                     <button
                       type="button"
-                      onClick={() => {
-                        setSelectedClientId(c.clientId)
-                        setSelectedClientName(c.fullName)
-                      }}
-                      className={cn(
-                        'relative flex min-h-[68px] w-full items-center gap-3 border-l-[3px] py-2.5 pl-3 pr-4 text-left transition-[background-color] duration-[80ms] hover:bg-[var(--bg-app)] focus:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--accent)]',
-                        unread ? 'border-l-[var(--accent)]' : 'border-l-transparent',
-                        selectedClientId === c.clientId && 'bg-[var(--bg-app)]'
-                      )}
+                      onClick={() => setBookModalOpen(true)}
+                      className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)]"
                     >
-                      <div
-                        className={cn(
-                          'flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[12px] font-semibold text-[var(--accent)]',
-                          unread &&
-                            'ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]'
-                        )}
-                        aria-hidden
-                      >
-                        {getInitials(c.fullName)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <p
-                            className={cn(
-                              'truncate text-[14px]',
-                              unread ? 'font-semibold text-[var(--text-primary)]' : 'font-normal text-[var(--text-primary)]'
-                            )}
-                          >
-                            {c.fullName}
-                          </p>
-                          <span className="shrink-0 text-[11px] text-[var(--text-quaternary)]">
-                            {c.lastMessageAt ? conversationTimeLabel(c.lastMessageAt) : '—'}
-                          </span>
-                        </div>
-                        <p
-                          className={cn(
-                            'mt-0.5 truncate text-[12px] leading-snug',
-                            unread ? 'font-medium text-[var(--text-secondary)]' : 'font-normal text-[var(--text-tertiary)]'
-                          )}
-                        >
-                          {c.hasMessages ? c.lastMessagePreview || 'Message' : 'Start a conversation'}
-                        </p>
-                        {hint ? (
-                          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">{hint}</p>
-                        ) : null}
-                      </div>
+                      Book session
                     </button>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
+                  </div>
+                </>
+              ) : undefined
+            }
+          />
         </div>
       </div>
 
-      {/* Right: thread — 2/3 on desktop, full on mobile when selected */}
-      <div
-        className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg-app)] ${
-          showThreadOnly ? 'flex w-full lg:min-w-0 lg:flex-1' : 'hidden lg:flex lg:min-w-0 lg:flex-1'
-        }`}
-      >
-        {!selectedClientId && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-            <span className="text-4xl" aria-hidden>
-              💬
-            </span>
-            <p className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
-              Your client conversations live here
-            </p>
-            <p className="max-w-sm text-[14px] font-normal leading-[1.6] text-[var(--color-muted)]">
-              Select a client from the list or add a new client to get started.
-            </p>
-            <Link href="/coach/clients">
-              <Button variant="primary" type="button" className="min-h-11">
-                View clients
-              </Button>
-            </Link>
-          </div>
-        )}
-        {selectedClientId && (
-          <>
-            <div className="flex h-[52px] shrink-0 items-center gap-3 border-b border-[var(--border-subtle)] px-5">
-              {isNarrowViewport && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedClientId(null)}
-                  className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] hover:bg-[var(--bg-subtle)] focus-visible:shadow-[var(--focus-ring)]"
-                  aria-label="Back to all conversations"
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <Link
-                  href={`/coach/clients/${selectedClientId}`}
-                  className="truncate text-[15px] font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] focus-visible:rounded focus-visible:shadow-[var(--focus-ring)]"
-                >
-                  {selectedClientName || 'Client'}
-                </Link>
-                {conversations.find((c) => c.clientId === selectedClientId) && (
-                  <Badge
-                    variant={statusBadgeVariant(
-                      conversations.find((c) => c.clientId === selectedClientId)!.status
-                    )}
-                  >
-                    {conversations.find((c) => c.clientId === selectedClientId)!.status}
-                  </Badge>
-                )}
-              </div>
-              <div className="hidden shrink-0 items-center gap-2 sm:flex">
-                <Link
-                  href={`/coach/clients/${selectedClientId}`}
-                  className="rounded-[var(--radius-md)] px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)]"
-                >
-                  View profile
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setBookModalOpen(true)}
-                  className="rounded-[var(--radius-md)] px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)]"
-                >
-                  Book session
-                </button>
-              </div>
-            </div>
-
-            <div
-              ref={threadScrollRef}
-              className={cn(
-                'min-h-0 flex-1 overflow-y-auto p-5',
-                isNarrowViewport && 'pb-40'
-              )}
-              onScroll={(e) => {
-                const t = e.currentTarget
-                if (t.scrollTop < 72 && hasMoreOlder && !loadingOlder && !loadingMessages) {
-                  void loadOlderMessages()
-                }
-              }}
-            >
-              {loadingOlder && (
-                <p className="mb-2 text-center text-[12px] text-[var(--color-muted)]">Loading older messages…</p>
-              )}
-              {loadingMessages && <ThreadSkeleton />}
-              {!loadingMessages && messagesError && (
-                <p className="text-[var(--color-muted)]">{messagesError}</p>
-              )}
-              {!loadingMessages && !messagesError && messages.length === 0 && (
-                <div className="py-8 text-center">
-                  <p className="text-[15px] text-[var(--color-muted)]">
-                    No messages yet — type below to start the conversation.
-                  </p>
-                </div>
-              )}
-              {!loadingMessages && !messagesError && messages.length > 0 && selectedClientId && (
-                <ErrorBoundary
-                  fallback={
-                    <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-6 text-center">
-                      <p className="font-medium text-[var(--color-text-primary)]">Could not display this thread</p>
-                      <p className="mt-1 text-[13px] text-[var(--color-muted)]">
-                        Live updates may be unavailable. Try again or refresh the page.
-                      </p>
-                    </div>
-                  }
-                >
-                  <MessagesThreadMessagesList
-                    messages={messages}
-                    userId={userId}
-                    selectedClientName={selectedClientName}
-                    selectedClientId={selectedClientId}
-                    fetchMessages={fetchMessages}
-                    onBookRequestedTime={({ clientId, date, time }) => {
-                      setSelectedClientId(clientId)
-                      setBookInitialDate(date)
-                      setBookInitialTime(time)
-                      setBookModalOpen(true)
-                    }}
-                    onSuggestDifferentTime={() => {
-                      setInputValue('I can do a different time. How about tomorrow afternoon?')
-                    }}
-                  />
-                </ErrorBoundary>
-              )}
-              <div ref={threadEndRef} />
-            </div>
-
-            <div
-              className={cn(
-                'shrink-0 border-t border-[var(--border-subtle)] bg-[var(--bg-app)] px-5 py-3',
-                isNarrowViewport
-                  ? 'fixed left-0 right-0 z-[38] shadow-[0_-4px_24px_rgba(15,23,42,0.06)]'
-                  : 'safe-bottom'
-              )}
-              style={
-                isNarrowViewport
-                  ? {
-                      bottom: `calc(4.75rem + env(safe-area-inset-bottom, 0px) + ${keyboardOverlapPx}px)`,
-                    }
-                  : undefined
-              }
-            >
-              <div className="flex items-end gap-2">
-                <textarea
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value.slice(0, 2000))}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSend()
-                    }
-                  }}
-                  placeholder="Type a message..."
-                  rows={1}
-                  maxLength={2000}
-                  className="min-h-10 max-h-[120px] flex-1 resize-none rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-[14px] leading-normal text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                  aria-label="Message"
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleSend()}
-                  disabled={!inputValue.trim() || sending}
-                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-[transform,opacity] duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:shadow-[var(--focus-ring)]"
-                  aria-label="Send message"
-                >
-                  {sending ? (
-                    <span className="text-xs">…</span>
-                  ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                      <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {inputValue.length > 1900 && (
-                <p className="mt-1 text-[var(--text-12)] text-[var(--text-tertiary)]">
-                  {inputValue.length} / 2000
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </div>
       {toast ? (
         <div className="toast-coach" role="status">
           {toast}
@@ -1072,7 +778,7 @@ export function CoachMessagesPageContent() {
           this message.
         </p>
         <textarea
-          className="mt-4 min-h-[120px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)]"
+          className="mt-4 min-h-[120px] w-full rounded-[var(--radius-md)] border border-[var(--cp-border)] bg-[var(--cp-offwhite)] px-3 py-2 text-[14px] text-[var(--cp-text)]"
           placeholder="Write your message…"
           maxLength={2000}
           value={broadcastText}
@@ -1128,7 +834,7 @@ export function CoachMessagesPageContent() {
         initialDate={bookInitialDate}
         initialTime={bookInitialTime}
       />
-    </div>
+    </>
   )
 }
 

@@ -23,7 +23,7 @@ const DONUT_COLORS = [
   '#f59e0b',
   '#6366f1',
   '#ec4899',
-  '#64748b',
+  'var(--cp-gray)',
   '#14b8a6',
 ]
 

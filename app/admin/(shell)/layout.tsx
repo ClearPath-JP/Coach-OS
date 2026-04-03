@@ -17,8 +17,8 @@ export default async function AdminShellLayout({ children }: { children: React.R
   const email = user.email ?? ''
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[#0F172A] text-white">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-[#1E293B] bg-[#0F172A] px-4">
+    <div className="flex h-screen flex-col overflow-hidden bg-[var(--cp-navy)] text-white">
+      <header className="flex h-12 shrink-0 items-center justify-between border-b border-[var(--cp-slate)] bg-[var(--cp-navy)] px-4">
         <div className="flex items-center gap-2">
           <Link href="/admin/overview" className="text-[15px] font-semibold text-white">
             ClearPath
@@ -38,11 +38,11 @@ export default async function AdminShellLayout({ children }: { children: React.R
         </div>
       </header>
       <div className="flex min-h-0 flex-1">
-        <aside className="flex h-full min-h-0 w-[220px] shrink-0 flex-col border-r border-[#1E293B] bg-[#0F172A] py-3">
+        <aside className="flex h-full min-h-0 w-[220px] shrink-0 flex-col border-r border-[var(--cp-slate)] bg-[var(--cp-navy)] py-3">
           <AdminNav />
           <AdminSidebarFooter email={email} />
         </aside>
-        <main className="min-w-0 flex-1 overflow-y-auto bg-[#F8FAFC] p-8 text-slate-900">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-[var(--cp-offwhite)] p-8 text-slate-900">
           <AdminWarningBanner />
           {children}
         </main>

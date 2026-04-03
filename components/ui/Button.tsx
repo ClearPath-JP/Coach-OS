@@ -65,18 +65,18 @@ const variantClasses: Record<
   string
 > = {
   primary: cn(
-    'bg-[var(--accent)] text-[var(--text-on-accent)] border-transparent',
-    'shadow-[var(--shadow-xs),inset_0_1px_0_rgba(255,255,255,0.15)]',
-    'hover:bg-[var(--accent-hover)] hover:-translate-y-px hover:shadow-[var(--shadow-md)]',
-    'active:translate-y-0 active:shadow-[var(--shadow-xs)]',
-    'disabled:hover:bg-[var(--accent)]'
+    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-semibold',
+    'bg-[var(--cp-btn-bg)] text-white border-transparent shadow-none',
+    'hover:bg-[var(--cp-btn-hover)] transition-[background,transform] duration-150',
+    'active:translate-y-0',
+    'disabled:hover:bg-[var(--cp-btn-bg)]'
   ),
   secondary: cn(
-    'bg-[var(--bg-app)] text-[var(--text-primary)] border-[var(--border-default)]',
-    'shadow-[var(--shadow-xs)]',
-    'hover:bg-[var(--bg-subtle)] hover:border-[var(--border-strong)] hover:-translate-y-px hover:shadow-[var(--shadow-sm)]',
+    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-semibold',
+    'bg-transparent text-[var(--cp-accent)] border-[1.5px] border-[var(--cp-border)] shadow-none',
+    'hover:border-[var(--cp-accent)] hover:bg-[var(--cp-offwhite)] transition-[border-color,background] duration-150',
     'active:translate-y-0',
-    'disabled:hover:bg-[var(--bg-app)]'
+    'disabled:hover:bg-transparent'
   ),
   ghost: cn(
     'bg-transparent text-[var(--text-tertiary)] border-transparent shadow-none',
@@ -84,7 +84,7 @@ const variantClasses: Record<
     'active:translate-y-0'
   ),
   accentGhost: cn(
-    'bg-[var(--accent-light)] text-[var(--accent)] border-transparent shadow-none',
+    'bg-[var(--accent-light)] text-[var(--cp-accent)] border-transparent shadow-none',
     'hover:bg-[var(--accent-muted)]',
     'active:translate-y-0'
   ),

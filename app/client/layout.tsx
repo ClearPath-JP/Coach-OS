@@ -5,6 +5,8 @@ import { getClientWorkspaceBranding } from '@/lib/client-workspace-branding'
 import { normalizeEmail } from '@/lib/utils'
 import { ClientBrandingProvider } from '@/components/client/ClientBrandingContext'
 import { CoachClientErrorReportingShell } from '@/components/shared/CoachClientErrorReporting'
+import { AccentInjector } from '@/components/layout/AccentInjector'
+import { coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
 
 /**
  * Client layout: require auth + role !== 'coach' (11-auth §4.2).
@@ -51,8 +53,12 @@ export default async function ClientLayout({
   }
 
   const branding = await getClientWorkspaceBranding(user.email)
+  const clientCpAccent = coerceToAllowedCoachAccent(branding?.accentColor ?? null)
 
   return (
+    <>
+      <style>{`:root { --cp-accent: ${clientCpAccent}; }`}</style>
+      <AccentInjector accentColor={clientCpAccent} />
     <ClientBrandingProvider
       value={{
         brandName: branding?.brandName ?? null,
@@ -60,9 +66,11 @@ export default async function ClientLayout({
         workspaceId: branding?.workspaceId ?? null,
         userDisplayName: clientDisplayName,
         logoUrl: branding?.logoUrl?.trim() ? branding.logoUrl.trim() : null,
+        accentColor: clientCpAccent,
       }}
     >
       <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
     </ClientBrandingProvider>
+    </>
   )
 }

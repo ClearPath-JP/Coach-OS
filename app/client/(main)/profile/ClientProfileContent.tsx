@@ -76,7 +76,7 @@ export function ClientProfileContent({
       <section>
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Profile</h2>
         <div className="mt-4 flex flex-col items-center">
-          <div className="flex size-16 items-center justify-center rounded-full bg-[var(--accent-light)] text-[18px] font-bold text-[var(--accent)]">
+          <div className="flex size-16 items-center justify-center rounded-full bg-[var(--accent-light)] text-[18px] font-bold text-[var(--cp-accent)]">
             {initials(firstName, lastName)}
           </div>
           <p className="mt-2 text-[13px] text-[var(--text-tertiary)]">Photo updates go through your coach.</p>
@@ -110,7 +110,7 @@ export function ClientProfileContent({
         <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Security</h2>
         <Link
           href="/client/change-password"
-          className="mt-4 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-4 text-[14px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--bg-subtle)]"
+          className="mt-4 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 text-[14px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--bg-subtle)]"
         >
           Change password
         </Link>
@@ -126,13 +126,13 @@ export function ClientProfileContent({
             onClick={toggleTheme}
             className={cn(
               'relative h-7 w-12 rounded-full border border-[var(--border-default)] transition-colors',
-              theme === 'dark' ? 'bg-[var(--accent)]' : 'bg-[var(--bg-app)]'
+              theme === 'dark' ? 'bg-[var(--cp-accent)]' : 'bg-[var(--cp-offwhite)]'
             )}
             aria-label="Toggle theme"
           >
             <span
               className={cn(
-                'absolute top-0.5 size-6 rounded-full bg-[var(--bg-app)] shadow-sm transition-transform',
+                'absolute top-0.5 size-6 rounded-full bg-[var(--cp-offwhite)] shadow-sm transition-transform',
                 theme === 'dark' ? 'left-6' : 'left-0.5'
               )}
             />

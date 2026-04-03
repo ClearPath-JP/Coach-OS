@@ -4,14 +4,17 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Button } from '@/components/ui/Button'
 import { format, isToday, isYesterday } from 'date-fns'
 import { InvoiceCardClient } from '@/components/client/InvoiceCardClient'
 import {
   SessionBookingMessageCard,
   type SessionBookingCardData,
 } from '@/components/shared/SessionBookingMessageCard'
-import { mergeByIdSortByCreatedAt } from '@/lib/utils'
+import { cn, mergeByIdSortByCreatedAt } from '@/lib/utils'
+import { ConversationSidebar } from '@/components/messages/ConversationSidebar'
+import { ChatWindow } from '@/components/messages/ChatWindow'
+import type { MessagesUIConversation } from '@/types/messages-ui'
+import { formatConversationListTime } from '@/lib/conversation-time'
 import {
   ClientAssignmentChatCard,
   ClientAssignmentFeedbackCard,
@@ -67,6 +70,17 @@ export function ClientMessagesContent({
   const threadEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const supabase = useMemo(() => createClient(), [])
+  const [convSearch, setConvSearch] = useState('')
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false)
+  const [mobileShowChat, setMobileShowChat] = useState(true)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const sync = () => setIsNarrowViewport(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   const fetchMessages = useCallback(async () => {
     setError(null)
@@ -275,236 +289,335 @@ export function ClientMessagesContent({
     }
   }
 
-  return (
-    <div className="flex min-h-0 flex-1 flex-col lg:min-h-[calc(100dvh-7rem)]">
-      <div className="flex shrink-0 items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
-        <Link
-          href="/client/portal"
-          className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg text-[var(--color-muted)] hover:bg-[var(--color-surface)] focus:ring-2 focus:ring-[var(--color-accent)]"
-          aria-label="Back to portal"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <h1 className="text-lg font-medium text-[var(--color-ink)]">
-          Messages with {coachName}
-        </h1>
-      </div>
+  const coachSidebarModel = useMemo((): MessagesUIConversation => {
+    const last = messages[messages.length - 1]
+    let lastMessage = 'Start the conversation'
+    let lastMessageTime = '—'
+    if (last) {
+      if (last.message_type === 'invoice') lastMessage = 'Invoice'
+      else if (last.message_type === 'session') lastMessage = 'Session'
+      else {
+        const t = last.content || 'Message'
+        lastMessage = t.length > 90 ? `${t.slice(0, 90)}…` : t
+      }
+      lastMessageTime = formatConversationListTime(last.created_at)
+    }
+    return {
+      id: clientId,
+      participantName: coachName,
+      participantRole: 'coach',
+      lastMessage,
+      lastMessageTime,
+      unreadCount: 0,
+    }
+  }, [clientId, coachName, messages])
 
+  const threadBody = (
+    <>
+      {loadingOlder && (
+        <p className="mb-2 text-center text-[12px] text-[var(--color-muted)]">Loading older messages…</p>
+      )}
+      {loading && <ThreadSkeleton />}
+      {!loading && error && <p className="text-[var(--color-muted)]">{error}</p>}
+      {!loading && !error && messages.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="font-medium" style={{ color: 'var(--cp-navy)' }}>
+            No messages yet.
+          </p>
+          <p className="mt-1 text-[15px] text-[var(--color-muted)]">Send your coach a message to get started.</p>
+        </div>
+      )}
+      {!loading && !error && messages.length > 0 && (
+        <div className="space-y-4">
+          {groupMessagesByDate(messages).map(({ dateLabel, msgs }) => (
+            <div key={dateLabel}>
+              <p className="mb-2 text-center text-[12px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                {dateLabel}
+              </p>
+              <div className="space-y-2">
+                {msgs.map((msg) => {
+                  const isInvoice = msg.message_type === 'invoice'
+                  const isSession = msg.message_type === 'session'
+                  const isAssignment = msg.message_type === 'assignment'
+                  const isAssignmentFeedback = msg.message_type === 'assignment_feedback'
+                  const isTestimonialRequest = msg.message_type === 'testimonial_request'
+                  const isSessionNotes = msg.message_type === 'session_notes'
+                  const sessionNotesPayload = isSessionNotes ? parseSessionNotesPayload(msg.content) : null
+                  let invoiceData: Parameters<typeof InvoiceCardClient>[0]['data'] | null = null
+                  let sessionData: SessionBookingCardData | null = null
+                  if (isInvoice) {
+                    try {
+                      const parsed = JSON.parse(msg.content) as {
+                        type?: string
+                        invoiceId?: string
+                        packageTitle?: string
+                        packageDescription?: string | null
+                        amountCents?: number
+                        currency?: string
+                        status?: string
+                        dueDate?: string | null
+                        paidAt?: string | null
+                      }
+                      if (parsed?.type === 'invoice' && parsed.invoiceId) {
+                        invoiceData = {
+                          type: 'invoice',
+                          invoiceId: parsed.invoiceId,
+                          clientId: msg.client_id,
+                          packageTitle: parsed.packageTitle ?? 'Invoice',
+                          packageDescription: parsed.packageDescription ?? null,
+                          amountCents: parsed.amountCents ?? 0,
+                          currency: parsed.currency ?? 'usd',
+                          status: parsed.status ?? 'pending',
+                          dueDate: parsed.dueDate ?? null,
+                          paidAt: parsed.paidAt ?? null,
+                        }
+                      }
+                    } catch {
+                      invoiceData = null
+                    }
+                  }
+                  if (isSession) {
+                    try {
+                      const parsed = JSON.parse(msg.content) as {
+                        type?: string
+                        sessionId?: string
+                        scheduledTime?: string
+                        endTime?: string | null
+                        durationMinutes?: number
+                        status?: string
+                        notes?: string | null
+                      }
+                      if (parsed?.type === 'session' && parsed.sessionId && parsed.scheduledTime) {
+                        sessionData = {
+                          type: 'session',
+                          sessionId: parsed.sessionId,
+                          scheduledTime: parsed.scheduledTime,
+                          endTime: parsed.endTime ?? null,
+                          durationMinutes: parsed.durationMinutes ?? 60,
+                          status: parsed.status ?? 'confirmed',
+                          notes: parsed.notes ?? null,
+                        }
+                      }
+                    } catch {
+                      sessionData = null
+                    }
+                  }
+                  return (
+                    <div
+                      key={msg.id}
+                      data-message-id={msg.id}
+                      className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {invoiceData ? (
+                        <div className="max-w-[320px]">
+                          <InvoiceCardClient data={invoiceData} paymentDetails={paymentDetails ?? {}} />
+                          <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                            {format(new Date(msg.created_at), 'h:mm a')}
+                          </p>
+                        </div>
+                      ) : sessionData ? (
+                        <div className="max-w-[320px]">
+                          <SessionBookingMessageCard data={sessionData} />
+                          <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                            {format(new Date(msg.created_at), 'h:mm a')}
+                          </p>
+                        </div>
+                      ) : isAssignment ? (
+                        <div className="max-w-[320px]">
+                          <ClientAssignmentChatCard
+                            content={msg.content}
+                            createdAt={msg.created_at}
+                            userId={userId}
+                            senderId={msg.sender_id}
+                            fetchMessages={fetchMessages}
+                          />
+                        </div>
+                      ) : isAssignmentFeedback ? (
+                        <div className="max-w-[320px]">
+                          <ClientAssignmentFeedbackCard content={msg.content} createdAt={msg.created_at} />
+                        </div>
+                      ) : isTestimonialRequest ? (
+                        <div className="max-w-[320px]">
+                          <TestimonialRequestCard
+                            content={msg.content}
+                            createdAt={msg.created_at}
+                            coachName={coachName}
+                            onSubmitted={() => void fetchMessages()}
+                          />
+                        </div>
+                      ) : sessionNotesPayload ? (
+                        <div className="max-w-[360px]">
+                          <ClientSessionNotesMessageCard
+                            payload={sessionNotesPayload}
+                            coachName={coachName}
+                            onActionUpdated={() => void fetchMessages()}
+                          />
+                          <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                            {format(new Date(msg.created_at), 'h:mm a')}
+                          </p>
+                        </div>
+                      ) : (
+                        <div
+                          className={cn(
+                            'max-w-[85%] rounded-xl px-4 py-2',
+                            msg.sender_id === userId
+                              ? 'text-white'
+                              : 'border border-[var(--cp-border)] bg-[var(--cp-white)] text-[var(--cp-navy)]'
+                          )}
+                          style={msg.sender_id === userId ? { background: 'var(--cp-sapphire)' } : undefined}
+                        >
+                          <p className="whitespace-pre-wrap break-words text-[15px]">{msg.content}</p>
+                          <p
+                            className={cn(
+                              'mt-1 text-[12px]',
+                              msg.sender_id === userId ? 'text-white/80' : 'text-[var(--color-muted)]'
+                            )}
+                          >
+                            {format(new Date(msg.created_at), 'h:mm a')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+
+  const composeSlot = (
+    <div
+      className="safe-bottom shrink-0 border-t border-[var(--cp-border)] bg-[var(--cp-white)] px-4 py-3 lg:px-5"
+      style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 0px))' }}
+    >
+      <div className="flex items-end gap-2">
+        <textarea
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value.slice(0, 2000))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              void handleSend()
+            }
+          }}
+          placeholder="Message"
+          rows={1}
+          maxLength={2000}
+          className="min-h-[40px] max-h-[120px] flex-1 resize-none rounded-xl border border-[var(--cp-border)] bg-[var(--cp-offwhite)] px-4 py-2.5 text-[15px] placeholder:text-[var(--color-muted)] focus:border-[var(--cp-input-focus)] focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          style={{ color: 'var(--cp-navy)' }}
+          aria-label="Message"
+        />
+        <button
+          type="button"
+          onClick={() => void handleSend()}
+          disabled={!inputValue.trim() || sending}
+          aria-label="Send message"
+          className="flex size-[38px] shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          style={{ background: 'var(--cp-sapphire)' }}
+        >
+          {sending ? (
+            <span
+              className="inline-block size-4 rounded-full border-2 border-white/30 border-t-white"
+              style={{ animation: 'cp-spin 0.7s linear infinite' }}
+            />
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      </div>
+      {inputValue.length > 1900 && (
+        <p className="mt-1 text-[12px] text-[var(--color-muted)]">{inputValue.length} / 2000</p>
+      )}
+    </div>
+  )
+
+  const shellHeight =
+    isNarrowViewport ? 'calc(100dvh - var(--nav-height) - 5.5rem)' : 'calc(100dvh - var(--nav-height))'
+
+  return (
+    <>
+      <style>{`
+        @keyframes cp-spin { to { transform: rotate(360deg); } }
+      `}</style>
       <div
-        ref={threadScrollRef}
-        className="flex-1 overflow-y-auto p-4"
-        onScroll={(e) => {
-          const t = e.currentTarget
-          if (t.scrollTop < 72 && hasMoreOlder && !loadingOlder && !loading) {
-            void loadOlderMessages()
-          }
+        className="flex min-h-0 w-full flex-1 overflow-hidden"
+        style={{
+          height: shellHeight,
+          maxHeight: shellHeight,
+          background: 'var(--cp-offwhite)',
         }}
       >
-        {loadingOlder && (
-          <p className="mb-2 text-center text-[12px] text-[var(--color-muted)]">Loading older messages…</p>
-        )}
-        {loading && <ThreadSkeleton />}
-        {!loading && error && (
-          <p className="text-[var(--color-muted)]">{error}</p>
-        )}
-        {!loading && !error && messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="font-medium text-[var(--color-ink)]">No messages yet.</p>
-            <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-              Send your coach a message to get started.
-            </p>
-          </div>
-        )}
-        {!loading && !error && messages.length > 0 && (
-          <div className="space-y-4">
-            {groupMessagesByDate(messages).map(({ dateLabel, msgs }) => (
-              <div key={dateLabel}>
-                <p className="mb-2 text-center text-[12px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
-                  {dateLabel}
-                </p>
-                <div className="space-y-2">
-                  {msgs.map((msg) => {
-                    const isInvoice = msg.message_type === 'invoice'
-                    const isSession = msg.message_type === 'session'
-                    const isAssignment = msg.message_type === 'assignment'
-                    const isAssignmentFeedback = msg.message_type === 'assignment_feedback'
-                    const isTestimonialRequest = msg.message_type === 'testimonial_request'
-                    const isSessionNotes = msg.message_type === 'session_notes'
-                    const sessionNotesPayload = isSessionNotes ? parseSessionNotesPayload(msg.content) : null
-                    let invoiceData: Parameters<typeof InvoiceCardClient>[0]['data'] | null = null
-                    let sessionData: SessionBookingCardData | null = null
-                    if (isInvoice) {
-                      try {
-                        const parsed = JSON.parse(msg.content) as { type?: string; invoiceId?: string; packageTitle?: string; packageDescription?: string | null; amountCents?: number; currency?: string; status?: string; dueDate?: string | null; paidAt?: string | null }
-                        if (parsed?.type === 'invoice' && parsed.invoiceId) {
-                          invoiceData = {
-                            type: 'invoice',
-                            invoiceId: parsed.invoiceId,
-                            clientId: msg.client_id,
-                            packageTitle: parsed.packageTitle ?? 'Invoice',
-                            packageDescription: parsed.packageDescription ?? null,
-                            amountCents: parsed.amountCents ?? 0,
-                            currency: parsed.currency ?? 'usd',
-                            status: parsed.status ?? 'pending',
-                            dueDate: parsed.dueDate ?? null,
-                            paidAt: parsed.paidAt ?? null,
-                          }
-                        }
-                      } catch {
-                        invoiceData = null
-                      }
-                    }
-                    if (isSession) {
-                      try {
-                        const parsed = JSON.parse(msg.content) as {
-                          type?: string
-                          sessionId?: string
-                          scheduledTime?: string
-                          endTime?: string | null
-                          durationMinutes?: number
-                          status?: string
-                          notes?: string | null
-                        }
-                        if (parsed?.type === 'session' && parsed.sessionId && parsed.scheduledTime) {
-                          sessionData = {
-                            type: 'session',
-                            sessionId: parsed.sessionId,
-                            scheduledTime: parsed.scheduledTime,
-                            endTime: parsed.endTime ?? null,
-                            durationMinutes: parsed.durationMinutes ?? 60,
-                            status: parsed.status ?? 'confirmed',
-                            notes: parsed.notes ?? null,
-                          }
-                        }
-                      } catch {
-                        sessionData = null
-                      }
-                    }
-                    return (
-                      <div
-                        key={msg.id}
-                        data-message-id={msg.id}
-                        className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {invoiceData ? (
-                          <div className="max-w-[320px]">
-                            <InvoiceCardClient data={invoiceData} paymentDetails={paymentDetails ?? {}} />
-                            <p className="mt-1 text-[12px] text-[var(--color-muted)]">
-                              {format(new Date(msg.created_at), 'h:mm a')}
-                            </p>
-                          </div>
-                        ) : sessionData ? (
-                          <div className="max-w-[320px]">
-                            <SessionBookingMessageCard data={sessionData} />
-                            <p className="mt-1 text-[12px] text-[var(--color-muted)]">
-                              {format(new Date(msg.created_at), 'h:mm a')}
-                            </p>
-                          </div>
-                        ) : isAssignment ? (
-                          <div className="max-w-[320px]">
-                            <ClientAssignmentChatCard
-                              content={msg.content}
-                              createdAt={msg.created_at}
-                              userId={userId}
-                              senderId={msg.sender_id}
-                              fetchMessages={fetchMessages}
-                            />
-                          </div>
-                        ) : isAssignmentFeedback ? (
-                          <div className="max-w-[320px]">
-                            <ClientAssignmentFeedbackCard content={msg.content} createdAt={msg.created_at} />
-                          </div>
-                        ) : isTestimonialRequest ? (
-                          <div className="max-w-[320px]">
-                            <TestimonialRequestCard
-                              content={msg.content}
-                              createdAt={msg.created_at}
-                              coachName={coachName}
-                              onSubmitted={() => void fetchMessages()}
-                            />
-                          </div>
-                        ) : sessionNotesPayload ? (
-                          <div className="max-w-[360px]">
-                            <ClientSessionNotesMessageCard
-                              payload={sessionNotesPayload}
-                              coachName={coachName}
-                              onActionUpdated={() => void fetchMessages()}
-                            />
-                            <p className="mt-1 text-[12px] text-[var(--color-muted)]">
-                              {format(new Date(msg.created_at), 'h:mm a')}
-                            </p>
-                          </div>
-                        ) : (
-                          <div
-                            className={`max-w-[85%] rounded-xl px-4 py-2 ${
-                              msg.sender_id === userId
-                                ? 'bg-[var(--color-accent)] text-white'
-                                : 'bg-[var(--color-surface)] text-[var(--color-ink)] border border-[var(--color-border)]'
-                            }`}
-                          >
-                            <p className="whitespace-pre-wrap break-words text-[15px]">{msg.content}</p>
-                            <p
-                              className={`mt-1 text-[12px] ${
-                                msg.sender_id === userId ? 'text-white/80' : 'text-[var(--color-muted)]'
-                              }`}
-                            >
-                              {format(new Date(msg.created_at), 'h:mm a')}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        <div ref={threadEndRef} />
-      </div>
+        <div
+          className={cn(
+            'min-h-0 h-full min-w-0 shrink-0',
+            isNarrowViewport && mobileShowChat ? 'hidden' : 'flex',
+            !isNarrowViewport && 'flex'
+          )}
+        >
+          <ConversationSidebar
+            conversations={[coachSidebarModel]}
+            activeId={clientId}
+            onSelect={() => setMobileShowChat(true)}
+            currentUserRole="student"
+            searchQuery={convSearch}
+            onSearchChange={setConvSearch}
+            loading={false}
+            error={null}
+          />
+        </div>
 
-      <div className="border-t border-[var(--color-border)] p-4">
-        <div className="flex gap-2">
-          <textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value.slice(0, 2000))}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                handleSend()
+        <div
+          className={cn(
+            'flex min-h-0 min-w-0 flex-1 flex-col',
+            isNarrowViewport && !mobileShowChat && 'hidden',
+            !isNarrowViewport && 'flex'
+          )}
+        >
+          <ChatWindow
+            conversation={coachSidebarModel}
+            messages={[]}
+            currentUserId={userId ?? ''}
+            currentUserRole="student"
+            onSend={async () => {}}
+            isSending={false}
+            threadContent={threadBody}
+            composeSlot={composeSlot}
+            showBackButton={isNarrowViewport}
+            onBack={() => setMobileShowChat(false)}
+            threadScrollRef={threadScrollRef}
+            threadEndRef={threadEndRef}
+            onThreadScroll={(e) => {
+              const t = e.currentTarget
+              if (t.scrollTop < 72 && hasMoreOlder && !loadingOlder && !loading) {
+                void loadOlderMessages()
               }
             }}
-            placeholder="Type a message..."
-            rows={1}
-            maxLength={2000}
-            className="min-h-[44px] flex-1 resize-y rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-0"
-            aria-label="Message"
+            threadScrollClassName={cn(isNarrowViewport && 'pb-4')}
+            headerExtras={
+              <Link
+                href="/client/portal"
+                className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-muted)]"
+              >
+                Portal
+              </Link>
+            }
           />
-          <Button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || sending}
-            className="shrink-0"
-          >
-            {sending ? 'Sending…' : 'Send'}
-          </Button>
         </div>
-        {inputValue.length > 1900 && (
-          <p className="mt-1 text-[12px] text-[var(--color-muted)]">
-            {inputValue.length} / 2000
-          </p>
-        )}
       </div>
       {toast ? (
         <div
-          className="fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-lg border border-[var(--color-border)] bg-[var(--color-ink)] px-4 py-2 text-center text-[14px] text-white shadow-lg"
+          className="fixed bottom-24 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-lg border border-[var(--color-border)] bg-[var(--color-ink)] px-4 py-2 text-center text-[14px] text-white shadow-lg lg:bottom-6"
           role="status"
         >
           {toast}
         </div>
       ) : null}
-    </div>
+    </>
   )
 }
 

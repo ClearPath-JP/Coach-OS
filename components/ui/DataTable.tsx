@@ -62,10 +62,10 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)]">
+    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
       <div className="max-h-[65vh] overflow-auto">
         <table className="w-full text-left">
-          <thead className="sticky top-0 z-10 bg-[var(--bg-app)]">
+          <thead className="sticky top-0 z-10 bg-[var(--cp-offwhite)]">
             <tr className="h-10 border-b border-[var(--border-subtle)]">
               {selectable ? <th className="w-10 px-3"><input type="checkbox" aria-label="Select all" /></th> : null}
               {columns.map((col) => {
@@ -80,7 +80,7 @@ export function DataTable<T>({
                     >
                       <span>{col.header}</span>
                       {sortable ? (
-                        <span className={cn('text-[10px]', active ? 'text-[var(--accent)]' : 'text-[var(--text-quaternary)]')}>
+                        <span className={cn('text-[10px]', active ? 'text-[var(--cp-accent)]' : 'text-[var(--text-quaternary)]')}>
                           {active ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
                         </span>
                       ) : null}

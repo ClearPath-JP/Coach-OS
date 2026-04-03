@@ -361,7 +361,7 @@ export function CoachClientsPageContent() {
               </p>
               <div className="mt-1 h-0.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
                 <div
-                  className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-200"
+                  className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-200"
                   style={{ width: `${p.percent}%` }}
                 />
               </div>
@@ -385,12 +385,12 @@ export function CoachClientsPageContent() {
         header: 'Actions',
         render: (client) => (
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <Link href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`} className="text-[13px] font-medium text-[var(--accent)] hover:underline">
+            <Link href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`} className="text-[13px] font-medium text-[var(--cp-accent)] hover:underline">
               Message
             </Link>
             <details className="relative">
               <summary className="cursor-pointer list-none text-[18px] leading-none text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">···</summary>
-              <div className="absolute right-0 z-20 mt-1 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-md">
+              <div className="absolute right-0 z-20 mt-1 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] py-1 shadow-md">
                 <button
                   type="button"
                   className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
@@ -430,7 +430,7 @@ export function CoachClientsPageContent() {
               onClick={() => setViewPersist('list')}
               className={cn(
                 'flex size-9 min-h-[44px] min-w-9 items-center justify-center rounded-[6px] transition-colors duration-[80ms] sm:size-8 sm:min-h-8 sm:min-w-8',
-                view === 'list' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+                view === 'list' ? 'bg-[var(--cp-accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
               )}
             >
               <span className="text-[14px]" aria-hidden>
@@ -444,7 +444,7 @@ export function CoachClientsPageContent() {
               onClick={() => setViewPersist('grid')}
               className={cn(
                 'flex size-9 min-h-[44px] min-w-9 items-center justify-center rounded-[6px] transition-colors duration-[80ms] sm:size-8 sm:min-h-8 sm:min-w-8',
-                view === 'grid' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+                view === 'grid' ? 'bg-[var(--cp-accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
               )}
             >
               <span className="text-[14px]" aria-hidden>
@@ -474,7 +474,7 @@ export function CoachClientsPageContent() {
               className={cn(
                 'relative h-9 px-4 text-[14px] transition-colors duration-150',
                 statusFilter === tab.value
-                  ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                  ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--cp-accent)]'
                   : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
               )}
             >
@@ -535,7 +535,7 @@ export function CoachClientsPageContent() {
               return (
                 <div
                   key={client.id}
-                  className="card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)]"
+                  className="card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]"
                   onClick={() => router.push(`/coach/clients/${client.id}`)}
                   onKeyDown={(ev) => {
                     if (ev.key === 'Enter' || ev.key === ' ') {
@@ -554,13 +554,13 @@ export function CoachClientsPageContent() {
                           ? 'bg-[var(--warning)]'
                           : e?.label === 'moderate'
                             ? 'bg-[var(--text-tertiary)]'
-                            : 'bg-[var(--accent)]'
+                            : 'bg-[var(--cp-accent)]'
                       )}
                     >
                       {getInitials(client.first_name, client.last_name, client.email)}
                       <span
                         className={cn(
-                          'absolute bottom-0 right-0 size-2 rounded-full border-2 border-[var(--bg-app)] ring-1 ring-[var(--bg-app)]',
+                          'absolute bottom-0 right-0 size-2 rounded-full border-2 border-[var(--cp-offwhite)] ring-1 ring-[var(--cp-offwhite)]',
                           statusDotClass(client.status)
                         )}
                         style={{ width: 8, height: 8 }}
@@ -582,7 +582,7 @@ export function CoachClientsPageContent() {
                           <summary className="flex size-6 cursor-pointer list-none items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]">
                             ···
                           </summary>
-                          <div className="absolute right-2 top-10 z-30 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-[var(--shadow-lg)]">
+                          <div className="absolute right-2 top-10 z-30 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] py-1 shadow-[var(--shadow-lg)]">
                             <Link
                               href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`}
                               className="block px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
@@ -632,7 +632,7 @@ export function CoachClientsPageContent() {
                             </p>
                             <div className="mt-1.5 h-1 w-full rounded-full bg-[var(--bg-muted)]" aria-hidden>
                               <div
-                                className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-200"
+                                className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-200"
                                 style={{ width: `${p.percent}%` }}
                               />
                             </div>
@@ -718,7 +718,7 @@ function ClientListSkeleton({ view }: { view: ViewMode }) {
       <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)]">
         <div className="h-12 animate-pulse bg-[var(--bg-muted)]" />
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-[52px] animate-pulse border-t border-[var(--border-subtle)] bg-[var(--bg-app)]" />
+          <div key={i} className="h-[52px] animate-pulse border-t border-[var(--border-subtle)] bg-[var(--cp-offwhite)]" />
         ))}
       </div>
     )

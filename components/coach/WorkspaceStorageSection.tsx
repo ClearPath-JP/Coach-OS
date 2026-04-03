@@ -96,7 +96,7 @@ export function WorkspaceStorageSection() {
       {data.pct > 60 ? (
         <Link
           href="/billing"
-          className="inline-flex h-9 min-h-9 w-full items-center justify-center rounded-[var(--radius-md)] border-[1.5px] border-[var(--border-default)] bg-[var(--bg-app)] px-3.5 text-[14px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-all hover:-translate-y-px hover:border-[var(--border-strong)] hover:bg-[var(--bg-subtle)] hover:shadow-[var(--shadow-sm)] sm:w-auto"
+          className="inline-flex h-9 min-h-9 w-full items-center justify-center rounded-[var(--radius-md)] border-[1.5px] border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3.5 text-[14px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-all hover:-translate-y-px hover:border-[var(--border-strong)] hover:bg-[var(--bg-subtle)] hover:shadow-[var(--shadow-sm)] sm:w-auto"
         >
           Upgrade for more storage
         </Link>

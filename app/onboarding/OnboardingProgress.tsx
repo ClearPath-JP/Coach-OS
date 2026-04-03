@@ -44,7 +44,7 @@ export function OnboardingProgress() {
           aria-label={`Onboarding ${pct} percent complete`}
         >
           <div
-            className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-500 ease-out"
+            className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-500 ease-out"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -69,7 +69,7 @@ export function OnboardingProgress() {
                 <div
                   className={`flex w-full flex-col items-center gap-1.5 rounded-2xl px-2 py-2 sm:w-auto sm:flex-row sm:gap-2 sm:rounded-full sm:px-3 sm:py-1.5 ${
                     active
-                      ? 'bg-[var(--accent-light)] text-[var(--accent)] ring-1 ring-[var(--accent)]/20'
+                      ? 'bg-[var(--accent-light)] text-[var(--cp-accent)] ring-1 ring-[var(--cp-accent)]/20'
                       : done
                         ? 'text-[var(--text-secondary)]'
                         : 'text-[var(--text-tertiary)]'
@@ -78,10 +78,10 @@ export function OnboardingProgress() {
                   <span
                     className={`flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
                       active
-                        ? 'bg-[var(--accent)] text-[var(--text-on-accent)] shadow-sm'
+                        ? 'bg-[var(--cp-accent)] text-[var(--text-on-accent)] shadow-sm'
                         : done
-                          ? 'bg-[var(--accent-muted)] text-[var(--accent)]'
-                          : 'border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-tertiary)]'
+                          ? 'bg-[var(--accent-muted)] text-[var(--cp-accent)]'
+                          : 'border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[var(--text-tertiary)]'
                     }`}
                   >
                     {done ? '✓' : s.num}

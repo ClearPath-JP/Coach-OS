@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { format, formatDistanceToNow, parseISO } from 'date-fns'
@@ -8,11 +9,35 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CountUpValue } from '@/components/ui/CountUpValue'
 import { PAYMENT_METHOD_LABELS, type PaymentMethodValue } from '@/lib/payment-methods'
-import {
-  AnalyticsPaymentMethodsChartCard,
-  AnalyticsRevenueChartCard,
-} from './AnalyticsChartsPanel'
 import { formatCents } from '@/lib/format-currency'
+
+function ChartLoadingBlock({ minHeight }: { minHeight: number }) {
+  return (
+    <div
+      className="flex w-full min-w-0 items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[13px] font-medium text-[var(--text-tertiary)]"
+      style={{ minHeight }}
+      aria-busy
+    >
+      Loading chart…
+    </div>
+  )
+}
+
+const AnalyticsRevenueChartCard = dynamic(
+  () => import('./AnalyticsChartsPanel').then((m) => m.AnalyticsRevenueChartCard),
+  {
+    ssr: false,
+    loading: () => <ChartLoadingBlock minHeight={420} />,
+  }
+)
+
+const AnalyticsPaymentMethodsChartCard = dynamic(
+  () => import('./AnalyticsChartsPanel').then((m) => m.AnalyticsPaymentMethodsChartCard),
+  {
+    ssr: false,
+    loading: () => <ChartLoadingBlock minHeight={260} />,
+  }
+)
 import type { PaymentSummaryResult } from '@/lib/payments-summary'
 
 type Period = 'week' | 'month' | 'year' | 'all'
@@ -180,7 +205,7 @@ function ActivityIcon({ kind }: { kind: string }) {
     return (
       <span
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)]"
-        style={{ color: 'var(--accent)' }}
+        style={{ color: 'var(--cp-accent)' }}
         aria-hidden
       >
         ◷
@@ -333,7 +358,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
             onClick={() => setMainTab(t.id)}
             className={`relative h-9 px-4 text-[14px] transition-colors duration-150 ${
               mainTab === t.id
-                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--cp-accent)]'
                 : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
             }`}
           >
@@ -352,8 +377,8 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
             onClick={() => setPeriod(p)}
             className={`min-h-11 rounded-full px-4 py-2 text-[14px] font-medium ${
               period === p
-                ? 'bg-[var(--accent)] text-[var(--text-on-accent)]'
-                : 'border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-secondary)]'
+                ? 'bg-[var(--cp-accent)] text-[var(--text-on-accent)]'
+                : 'border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[var(--text-secondary)]'
             }`}
           >
             {periodLabel(p)}
@@ -389,7 +414,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
             </p>
             <Link
               href="/coach/clients"
-              className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] px-5 text-[14px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--accent-hover)]"
+              className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] px-5 text-[14px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--cp-accent-hover)]"
             >
               Add your first client
             </Link>
@@ -452,7 +477,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
                               </span>
                             </div>
                             <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-subtle)]">
-                              <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-700 ease-out" style={{ width: `${w}%` }} />
+                              <div className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-700 ease-out" style={{ width: `${w}%` }} />
                             </div>
                           </li>
                         )
@@ -543,7 +568,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
                             <span className="shrink-0 text-[var(--text-tertiary)]">{formatCents(c.total)}</span>
                           </div>
                           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-subtle)]">
-                            <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${w}%` }} />
+                            <div className="h-full rounded-full bg-[var(--cp-accent)]" style={{ width: `${w}%` }} />
                           </div>
                         </li>
                       )
@@ -559,7 +584,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
                   <ul className="space-y-3">
                     {assignOverview.topClientsByXp.map((c) => (
                       <li key={c.clientId} className="flex items-center justify-between text-[14px]">
-                        <Link href={`/coach/clients/${c.clientId}`} className="font-medium text-[var(--accent)] hover:underline">
+                        <Link href={`/coach/clients/${c.clientId}`} className="font-medium text-[var(--cp-accent)] hover:underline">
                           {c.name}
                         </Link>
                         <span className="text-[var(--text-tertiary)]">

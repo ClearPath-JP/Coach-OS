@@ -374,7 +374,7 @@ export function BookSessionModal({
     >
       <button type="button" className="absolute inset-0 bg-black/40" onClick={onClose} aria-label="Close dialog" tabIndex={-1} />
       <div
-        className="relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-lg)] max-md:max-w-none md:max-w-lg md:rounded-xl max-md:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+        className="relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-6 shadow-[var(--shadow-lg)] max-md:max-w-none md:max-w-lg md:rounded-xl max-md:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="book-session-title" className="text-lg font-semibold text-[var(--text-primary)]">
@@ -386,7 +386,7 @@ export function BookSessionModal({
             <div
               className={cn(
                 'flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-semibold',
-                step === 1 ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+                step === 1 ? 'bg-[var(--cp-accent)] text-white' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
               )}
             >
               1
@@ -395,7 +395,7 @@ export function BookSessionModal({
             <div
               className={cn(
                 'flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-semibold',
-                step === 2 ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+                step === 2 ? 'bg-[var(--cp-accent)] text-white' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
               )}
             >
               2
@@ -437,7 +437,7 @@ export function BookSessionModal({
                       value={clientSearch}
                       onChange={(e) => setClientSearch(e.target.value)}
                       placeholder="Search clients"
-                      className="mb-2 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm"
+                      className="mb-2 w-full rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 py-2 text-sm"
                     />
                     <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-[var(--border-default)] p-2">
                       {filteredClients.map((c) => {
@@ -451,11 +451,11 @@ export function BookSessionModal({
                             className={cn(
                               'flex w-full items-center gap-2 rounded-lg border p-2 text-left transition-colors',
                               active
-                                ? 'border-[var(--accent)] bg-[var(--accent-light)] ring-1 ring-[var(--accent)]'
+                                ? 'border-[var(--cp-accent)] bg-[var(--accent-light)] ring-1 ring-[var(--cp-accent)]'
                                 : 'border-transparent hover:bg-[var(--bg-subtle)]'
                             )}
                           >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm text-white">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-sm text-white">
                               {initials(name)}
                             </span>
                             <div className="min-w-0">
@@ -486,7 +486,7 @@ export function BookSessionModal({
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   min={today}
-                  className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-[var(--text-primary)] min-h-[44px]"
+                  className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 py-3 text-[var(--text-primary)] min-h-[44px]"
                   required
                 />
                 {date ? (
@@ -514,8 +514,8 @@ export function BookSessionModal({
                             occ
                               ? 'cursor-not-allowed border-[var(--border-subtle)] bg-[var(--bg-muted)] text-[var(--text-quaternary)] line-through'
                               : active
-                                ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
-                                : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-primary)] hover:border-[var(--border-strong)]'
+                                ? 'border-[var(--cp-accent)] bg-[var(--cp-accent)] text-white'
+                                : 'border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[var(--text-primary)] hover:border-[var(--border-strong)]'
                           )}
                         >
                           {labelForTimeValue(slot)}
@@ -537,8 +537,8 @@ export function BookSessionModal({
                       className={cn(
                         'h-9 min-w-[72px] rounded-[var(--radius-md)] border text-[13px] font-medium',
                         durationMinutes === d.value
-                          ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
-                          : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-primary)]'
+                          ? 'border-[var(--cp-accent)] bg-[var(--cp-accent)] text-white'
+                          : 'border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[var(--text-primary)]'
                       )}
                     >
                       {d.label}
@@ -564,8 +564,8 @@ export function BookSessionModal({
                       className={cn(
                         'flex min-h-[80px] flex-col items-center justify-center gap-1 rounded-[var(--radius-md)] border p-3 text-[13px] font-medium transition-colors',
                         sessionType === opt.id
-                          ? 'border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent)]'
-                          : 'border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-primary)]'
+                          ? 'border-[var(--cp-accent)] bg-[var(--accent-light)] text-[var(--cp-accent)]'
+                          : 'border-[var(--border-default)] bg-[var(--cp-offwhite)] text-[var(--text-primary)]'
                       )}
                     >
                       <span className="text-xl" aria-hidden>
@@ -590,7 +590,7 @@ export function BookSessionModal({
                   placeholder="Any notes for this session…"
                   rows={2}
                   style={{ minHeight: 60 }}
-                  className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
+                  className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
                   maxLength={2000}
                 />
               </div>
@@ -600,7 +600,7 @@ export function BookSessionModal({
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="w-fit text-sm font-medium text-[var(--accent)] hover:underline"
+                className="w-fit text-sm font-medium text-[var(--cp-accent)] hover:underline"
               >
                 ← Back to details
               </button>
@@ -619,8 +619,8 @@ export function BookSessionModal({
                   className={cn(
                     'w-full rounded-[var(--radius-md)] border p-4 text-left transition-colors',
                     paymentStep === 'invoice'
-                      ? 'border-[var(--accent)] bg-[var(--accent-light)]'
-                      : 'border-[var(--border-default)] bg-[var(--bg-app)]'
+                      ? 'border-[var(--cp-accent)] bg-[var(--accent-light)]'
+                      : 'border-[var(--border-default)] bg-[var(--cp-offwhite)]'
                   )}
                 >
                   <span className="text-lg" aria-hidden>
@@ -635,7 +635,7 @@ export function BookSessionModal({
                     <select
                       value={selectedPackageId}
                       onChange={(e) => setSelectedPackageId(e.target.value)}
-                      className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm"
+                      className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 py-2 text-sm"
                     >
                       <option value="">Custom amount</option>
                       {packages.map((p) => (
@@ -661,8 +661,8 @@ export function BookSessionModal({
                   className={cn(
                     'w-full rounded-[var(--radius-md)] border p-4 text-left transition-colors',
                     paymentStep === 'paid'
-                      ? 'border-[var(--accent)] bg-[var(--accent-light)]'
-                      : 'border-[var(--border-default)] bg-[var(--bg-app)]'
+                      ? 'border-[var(--cp-accent)] bg-[var(--accent-light)]'
+                      : 'border-[var(--border-default)] bg-[var(--cp-offwhite)]'
                   )}
                 >
                   <span className="text-lg" aria-hidden>
@@ -698,8 +698,8 @@ export function BookSessionModal({
                   className={cn(
                     'w-full rounded-[var(--radius-md)] border p-4 text-left transition-colors',
                     paymentStep === 'free'
-                      ? 'border-[var(--accent)] bg-[var(--accent-light)]'
-                      : 'border-[var(--border-default)] bg-[var(--bg-app)]'
+                      ? 'border-[var(--cp-accent)] bg-[var(--accent-light)]'
+                      : 'border-[var(--border-default)] bg-[var(--cp-offwhite)]'
                   )}
                 >
                   <span className="text-lg" aria-hidden>

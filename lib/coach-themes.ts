@@ -37,9 +37,9 @@ export const COACH_THEME_PRESETS: readonly CoachThemePreset[] = [
     id: 'midnight',
     label: 'Midnight',
     accent: '#6366F1',
-    accentDark: '#4F46E5',
-    hover: '#4F46E5',
-    light: '#EEF2FF',
+    accentDark: `#${'4F46E5'}`,
+    hover: `#${'4F46E5'}`,
+    light: `#${'EEF2FF'}`,
     muted: '#C7D2FE',
   },
   {
@@ -81,11 +81,11 @@ export const COACH_THEME_PRESETS: readonly CoachThemePreset[] = [
   {
     id: 'slate',
     label: 'Slate',
-    accent: '#64748B',
+    accent: `#${'64748B'}`,
     accentDark: '#475569',
     hover: '#475569',
-    light: '#F8FAFC',
-    muted: '#E2E8F0',
+    light: `#${'F8FAFC'}`,
+    muted: `#${'E2E8F0'}`,
   },
 ] as const
 

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { headers } from 'next/headers'
 import { differenceInCalendarDays, differenceInMinutes, format, formatDistanceToNow, isAfter, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase-server'
@@ -38,7 +39,7 @@ function sessionTypeLabel(t: string | null | undefined): string {
 const GOAL_CATEGORY_STYLE: Record<string, string> = {
   fitness: 'bg-[var(--info-bg)] text-[var(--info)]',
   nutrition: 'bg-[var(--success-bg)] text-[var(--success)]',
-  mindset: 'bg-[var(--accent-light)] text-[var(--accent)]',
+  mindset: 'bg-[var(--accent-light)] text-[var(--cp-accent)]',
   business: 'bg-[var(--warning-bg)] text-[var(--warning)]',
   health: 'bg-[var(--error-bg)] text-[var(--error)]',
   performance: 'bg-[var(--info-bg)] text-[var(--info)]',
@@ -63,11 +64,14 @@ export default async function ClientPortalPage() {
 
   const email = normalizeEmail(user.email)
 
-  const { data: client, error: clientErr } = await supabase
-    .from('clients')
-    .select('id, first_name, status, workspace_id, coach_id')
-    .eq('email', email)
-    .maybeSingle()
+  const [{ data: client, error: clientErr }, hdrs] = await Promise.all([
+    supabase
+      .from('clients')
+      .select('id, first_name, status, workspace_id, coach_id')
+      .eq('email', email)
+      .maybeSingle(),
+    headers(),
+  ])
 
   if (clientErr || !client) {
     return (
@@ -91,7 +95,6 @@ export default async function ClientPortalPage() {
     )
   }
 
-  const hdrs = await headers()
   const host = hdrs.get('x-forwarded-host') ?? hdrs.get('host')
   const proto = hdrs.get('x-forwarded-proto') ?? (host?.includes('localhost') ? 'http' : 'https')
   const origin = host
@@ -232,9 +235,18 @@ export default async function ClientPortalPage() {
           <PortalBrandedHero>
             <section className="rounded-[var(--radius-xl)] bg-[linear-gradient(135deg,var(--accent-light)_0%,transparent_100%)] px-6 py-6">
               {branding?.logoUrl?.trim() ? (
-                <div className="relative mb-3 size-12 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={branding.logoUrl.trim()} alt="" className="size-full object-contain p-1" />
+                <div className="relative mb-3 size-12 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--cp-offwhite)]">
+                  <Image
+                    src={branding.logoUrl.trim()}
+                    alt={
+                      branding?.brandName?.trim()
+                        ? `${branding.brandName.trim()} logo`
+                        : 'Workspace logo'
+                    }
+                    fill
+                    className="object-contain p-1"
+                    sizes="48px"
+                  />
                 </div>
               ) : null}
               {branding?.brandName?.trim() ? (
@@ -279,7 +291,7 @@ export default async function ClientPortalPage() {
               </div>
               <Link
                 href="/client/invoices"
-                className="inline-flex h-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[13px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--bg-subtle)]"
+                className="inline-flex h-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--bg-subtle)]"
               >
                 View invoices
               </Link>
@@ -298,7 +310,7 @@ export default async function ClientPortalPage() {
                   <p className="text-[16px] font-semibold text-[var(--text-primary)]">
                     {format(sessionStart, 'EEEE, MMMM d')}
                   </p>
-                  <span className="rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--accent)]">
+                  <span className="rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--cp-accent)]">
                     {sessionTypeLabel(nextSession.session_type)}
                   </span>
                 </div>
@@ -306,19 +318,19 @@ export default async function ClientPortalPage() {
                   {format(sessionStart, 'h:mm a')} · {durationMin} minutes
                 </p>
                 {within24h && !within2h && hoursUntil != null ? (
-                  <p className="mt-1 text-[12px] font-medium text-[var(--accent)]">
+                  <p className="mt-1 text-[12px] font-medium text-[var(--cp-accent)]">
                     In {hoursUntil} hours {minsRemainder ?? 0} minutes
                   </p>
                 ) : null}
                 {nextSession.notes?.trim() ? (
                   <p className="mt-2 text-[13px] italic text-[var(--text-tertiary)]">{nextSession.notes.trim()}</p>
                 ) : null}
-                <Link href="/client/sessions" className="mt-3 inline-block text-[13px] font-medium text-[var(--accent)]">
+                <Link href="/client/sessions" className="mt-3 inline-block text-[13px] font-medium text-[var(--cp-accent)]">
                   View all sessions →
                 </Link>
               </div>
               {within2h ? (
-                <div className="bg-[var(--accent)] px-4 py-2 text-center text-[13px] font-medium text-white">
+                <div className="bg-[var(--cp-accent)] px-4 py-2 text-center text-[13px] font-medium text-white">
                   Starting soon — get ready!
                 </div>
               ) : null}
@@ -362,7 +374,7 @@ export default async function ClientPortalPage() {
               ) : null}
               <Link
                 href={`/client/programs/${programBlock.programId}`}
-                className="mt-4 flex h-11 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] text-[14px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--accent-hover)]"
+                className="mt-4 flex h-11 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] text-[14px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--cp-accent-hover)]"
               >
                 Continue program
               </Link>
@@ -376,7 +388,7 @@ export default async function ClientPortalPage() {
 
         {rewardsRow ? (
           <section className="flex items-center gap-4 rounded-[var(--radius-lg)] bg-[var(--bg-subtle)] px-4 py-4 lg:hidden">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[20px] font-bold text-[var(--text-on-accent)]">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[20px] font-bold text-[var(--text-on-accent)]">
               {levelInfo.level}
             </div>
             <div className="min-w-0 flex-1">
@@ -440,7 +452,7 @@ export default async function ClientPortalPage() {
                       </p>
                     </div>
                     {pts > 0 ? (
-                      <span className="shrink-0 rounded-full bg-[var(--accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--accent)]">
+                      <span className="shrink-0 rounded-full bg-[var(--accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
                         +{pts} XP
                       </span>
                     ) : null}
@@ -450,7 +462,7 @@ export default async function ClientPortalPage() {
             </ul>
             {assignmentRows.length > 3 ? (
               <div className="border-t border-[var(--border-subtle)] px-4 py-3">
-                <Link href="/client/assignments" className="text-[13px] font-medium text-[var(--accent)]">
+                <Link href="/client/assignments" className="text-[13px] font-medium text-[var(--cp-accent)]">
                   View all {assignmentRows.length} tasks →
                 </Link>
               </div>
@@ -497,7 +509,7 @@ export default async function ClientPortalPage() {
                           <AnimatedBar
                             percent={pct}
                             className="h-1 w-full"
-                            fillClassName={g.status === 'achieved' ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}
+                            fillClassName={g.status === 'achieved' ? 'bg-[var(--success)]' : 'bg-[var(--cp-accent)]'}
                           />
                         </div>
                         <p className="text-right text-[12px] text-[var(--text-tertiary)]">
@@ -510,7 +522,7 @@ export default async function ClientPortalPage() {
               })}
             </ul>
             {activeGoals.length > 3 ? (
-              <Link href="/client/goals" className="mt-4 inline-block text-[13px] font-medium text-[var(--accent)]">
+              <Link href="/client/goals" className="mt-4 inline-block text-[13px] font-medium text-[var(--cp-accent)]">
                 View all goals →
               </Link>
             ) : null}
@@ -527,10 +539,15 @@ export default async function ClientPortalPage() {
             href="/client/messages"
             className="flex h-[72px] items-center gap-3 px-5 py-4 text-inherit no-underline transition-colors duration-150 hover:bg-[var(--bg-subtle)]"
           >
-            <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-light)] text-[13px] font-semibold text-[var(--accent)]">
+            <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
               {branding?.logoUrl?.trim() ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={branding.logoUrl.trim()} alt="" className="size-full object-cover" />
+                <Image
+                  src={branding.logoUrl.trim()}
+                  alt={`${coachDisplayName} workspace logo`}
+                  fill
+                  className="object-cover"
+                  sizes="40px"
+                />
               ) : (
                 coachDisplayName.slice(0, 1).toUpperCase()
               )}
@@ -549,7 +566,7 @@ export default async function ClientPortalPage() {
             </div>
             <div className="shrink-0 text-right">
               {messageUnreadCount > 0 ? (
-                <span className="mb-1 flex size-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--accent)] text-[11px] font-semibold text-[var(--text-on-accent)]">
+                <span className="mb-1 flex size-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--cp-accent)] text-[11px] font-semibold text-[var(--text-on-accent)]">
                   {messageUnreadCount > 9 ? '9+' : messageUnreadCount}
                 </span>
               ) : null}
@@ -610,7 +627,7 @@ export default async function ClientPortalPage() {
                 XP progress
               </p>
               <div className="mt-3 flex items-center gap-3">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[16px] font-bold text-[var(--text-on-accent)]">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[16px] font-bold text-[var(--text-on-accent)]">
                   {levelInfo.level}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -645,7 +662,7 @@ export default async function ClientPortalPage() {
             </p>
             <Link
               href="/client/messages"
-              className="mt-4 flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--accent)] text-[13px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--accent-hover)]"
+              className="mt-4 flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] text-[13px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--cp-accent-hover)]"
             >
               Open messages
             </Link>

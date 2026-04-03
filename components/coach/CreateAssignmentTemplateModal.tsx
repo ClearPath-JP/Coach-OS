@@ -125,7 +125,7 @@ export function CreateAssignmentTemplateModal({
         <div>
           <label className="mb-1 block text-sm font-medium">Type</label>
           <select
-            className="h-10 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3"
+            className="h-10 w-full rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3"
             value={form.assignmentType}
             onChange={(e) =>
               setForm((f) => ({

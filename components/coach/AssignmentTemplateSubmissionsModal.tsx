@@ -95,7 +95,7 @@ export function AssignmentTemplateSubmissionsModal({
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/coach/clients/${r.client_id}`}
-                      className="font-medium text-[var(--accent)] hover:underline"
+                      className="font-medium text-[var(--cp-accent)] hover:underline"
                     >
                       {fullName(r.clients)}
                     </Link>
@@ -129,11 +129,11 @@ export function AssignmentTemplateSubmissionsModal({
               {awaiting.map((r) => (
                 <li
                   key={r.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--cp-offwhite)] px-3 py-2"
                 >
                   <Link
                     href={`/coach/clients/${r.client_id}`}
-                    className="text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent)] hover:underline"
+                    className="text-sm font-medium text-[var(--text-primary)] hover:text-[var(--cp-accent)] hover:underline"
                   >
                     {fullName(r.clients)}
                   </Link>

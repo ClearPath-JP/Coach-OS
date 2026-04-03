@@ -74,7 +74,7 @@ export function ScheduleTodayPanel({
       <div className="mb-4">
         <p className="text-[13px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">{format(focusDay, 'EEEE')}</p>
         <p className="text-[28px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{format(focusDay, 'MMMM d')}</p>
-        <p className={cn('mt-1 text-[13px]', daySessions.length ? 'font-medium text-[var(--accent)]' : 'text-[var(--text-tertiary)]')}>
+        <p className={cn('mt-1 text-[13px]', daySessions.length ? 'font-medium text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]')}>
           {daySessions.length ? `${daySessions.length} session${daySessions.length === 1 ? '' : 's'}${isFocusToday ? ' today' : ` on ${format(focusDay, 'MMM d')}`}` : 'No sessions today'}
         </p>
       </div>
@@ -83,7 +83,7 @@ export function ScheduleTodayPanel({
         {isFocusToday ? 'Today' : format(focusDay, 'MMM d')}
       </p>
       {daySessions.length === 0 ? (
-        <div className="flex flex-col items-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-8 text-center">
+        <div className="flex flex-col items-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 py-8 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-muted)] text-2xl" aria-hidden>
             📅
           </span>
@@ -104,7 +104,7 @@ export function ScheduleTodayPanel({
             return (
               <li key={s.id}>
                 {isNext && isFocusToday ? (
-                  <span className="mb-1 inline-block rounded-full bg-[var(--accent)] px-2 py-0.5 text-[11px] font-medium text-white">
+                  <span className="mb-1 inline-block rounded-full bg-[var(--cp-accent)] px-2 py-0.5 text-[11px] font-medium text-white">
                     Next up
                   </span>
                 ) : null}
@@ -117,8 +117,8 @@ export function ScheduleTodayPanel({
                   type="button"
                   onClick={() => onSessionClick(s)}
                   className={cn(
-                    'relative w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] p-3 text-left transition-shadow hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-sm)]',
-                    isNext && isFocusToday && 'ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]',
+                    'relative w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-3 text-left transition-shadow hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-sm)]',
+                    isNext && isFocusToday && 'ring-2 ring-[var(--cp-accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]',
                     inProgress && isFocusToday && 'border-[var(--success)]'
                   )}
                 >
@@ -205,7 +205,7 @@ export function ScheduleTodayPanel({
         <button
           type="button"
           onClick={onViewFullSchedule}
-          className="mt-4 text-left text-[13px] font-medium text-[var(--accent)] hover:underline"
+          className="mt-4 text-left text-[13px] font-medium text-[var(--cp-accent)] hover:underline"
         >
           View full schedule →
         </button>
