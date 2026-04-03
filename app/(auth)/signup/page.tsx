@@ -2,7 +2,7 @@ import { AnimatedLoginPage } from '@/components/auth/AnimatedLoginPage'
 import { SignupCard } from '@/components/auth/SignupCard'
 
 /**
- * Coach signup — aurora shell + glass card (public; API rate-limited).
+ * Coach signup — same split auth shell as login (public; API rate-limited).
  */
 export default function SignupPage() {
   return (

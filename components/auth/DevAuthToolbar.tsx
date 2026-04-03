@@ -11,7 +11,9 @@ export function DevAuthToolbar() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
 
-  if (process.env.NODE_ENV !== 'development') return null
+  if (process.env.NODE_ENV !== 'development') {
+    return null
+  }
 
   const clear = async () => {
     setBusy(true)
@@ -33,26 +35,26 @@ export function DevAuthToolbar() {
 
   return (
     <div
-      className="mb-6 rounded-[var(--radius-lg)] border border-dashed border-amber-500/50 bg-amber-50/80 px-4 py-3 dark:border-amber-600/40 dark:bg-amber-950/30"
+      className="mb-6 rounded-lg border border-amber-200/80 border-l-[3px] border-l-[#F59E0B] bg-[#FFFBEB] px-4 py-3"
       role="region"
       aria-label="Development tools"
     >
-      <p className="text-[12px] font-medium uppercase tracking-wide text-amber-900 dark:text-amber-200">
+      <p className="text-[12px] font-semibold uppercase tracking-wide text-amber-900">
         Local development
       </p>
-      <p className="mt-1 text-[13px] text-amber-950/80 dark:text-amber-100/90">
+      <p className="mt-1 text-[13px] leading-snug text-amber-950/85">
         Clear the browser session and return to the login page to test another account or role.
       </p>
       <button
         type="button"
         onClick={() => void clear()}
         disabled={busy}
-        className="mt-3 min-h-[40px] rounded-[var(--radius-md)] border border-amber-700/30 bg-[var(--bg-app)] px-4 text-[13px] font-medium text-amber-950 transition-colors hover:bg-amber-100/80 disabled:opacity-60 dark:border-amber-500/30 dark:text-amber-100 dark:hover:bg-amber-900/40"
+        className="mt-3 min-h-[40px] rounded-lg border border-amber-300/90 bg-white px-4 text-[13px] font-medium text-amber-950 shadow-sm transition-colors hover:bg-amber-50 disabled:opacity-60"
       >
         {busy ? 'Clearing…' : 'Clear session & go to login'}
       </button>
       {msg ? (
-        <p className="mt-2 text-[12px] text-[var(--error)]" role="alert">
+        <p className="mt-2 text-[12px] text-red-700" role="alert">
           {msg}
         </p>
       ) : null}

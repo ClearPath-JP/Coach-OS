@@ -6,7 +6,7 @@ import { ClientLoginCard } from '@/components/auth/ClientLoginCard'
  */
 export default function ClientLoginPage() {
   return (
-    <AnimatedLoginPage showCoachValueProp={false}>
+    <AnimatedLoginPage layout="fullscreen">
       <main aria-labelledby="client-login-heading">
         <ClientLoginCard />
       </main>

@@ -6,6 +6,23 @@
 @import 'tailwindcss';
 @config '../tailwind.config.ts';
 
+/* ClearPath Coaching OS — brand tokens (design system PDF §04) + Tailwind utilities */
+@theme {
+  --color-cp-navy: var(--cp-navy);
+  --color-cp-slate: var(--cp-slate);
+  --color-cp-white: var(--cp-white);
+  --color-cp-offwhite: var(--cp-offwhite);
+  --color-cp-sapphire: var(--cp-sapphire);
+  --color-cp-royal: var(--cp-royal);
+  --color-cp-sky: var(--cp-sky);
+  --color-cp-periwinkle: var(--cp-periwinkle);
+  --color-cp-lavender: var(--cp-lavender);
+  --color-cp-gray: var(--cp-gray);
+  --color-cp-border: var(--cp-border);
+  --color-cp-text: var(--cp-text);
+  --color-cp-accent: var(--cp-accent);
+}
+
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 :root {
@@ -195,6 +212,34 @@
   --color-accent-bg: color-mix(in srgb, var(--accent) 14%, var(--bg-app));
   --shadow-card: var(--shadow-xs);
   --shadow-card-raised: var(--shadow-sm);
+
+  /* ClearPath Solutions — Coaching OS palette (--cp-*); coach accent via --cp-accent */
+  --cp-navy: #0f172a;
+  --cp-slate: #1e293b;
+  --cp-white: #ffffff;
+  --cp-offwhite: #f8fafc;
+  --cp-sapphire: #1d4ed8;
+  --cp-royal: #4f46e5;
+  --cp-sky: #60a5fa;
+  --cp-periwinkle: #818cf8;
+  --cp-lavender: #eef2ff;
+  --cp-gray: #64748b;
+  --cp-border: #e2e8f0;
+  --cp-text: #374151;
+  --cp-accent: var(--cp-sapphire);
+  --cp-accent-hover: color-mix(in srgb, var(--cp-accent) 85%, #000);
+  --cp-accent-light: color-mix(in srgb, var(--cp-accent) 15%, #fff);
+  --cp-role-coach: var(--cp-sapphire);
+  --cp-role-student: var(--cp-royal);
+  --cp-btn-bg: var(--cp-accent);
+  --cp-btn-hover: var(--cp-accent-hover);
+  --cp-focus-ring: var(--cp-accent-light);
+  --cp-nav-bg: var(--cp-navy);
+  --cp-nav-text: #94a3b8;
+  --cp-nav-active: var(--cp-sky);
+  --cp-card-bg: var(--cp-white);
+  --cp-input-border: var(--cp-border);
+  --cp-input-focus: var(--cp-accent);
 }
 
 html[data-theme='dark'] {
@@ -284,7 +329,7 @@ html[data-theme='dark'] {
 }
 
 html {
-  font-family: var(--font);
+  font-family: var(--font-dm-sans), var(--font);
   font-size: var(--text-14);
   line-height: var(--leading-normal);
   color: var(--text-primary);
@@ -812,8 +857,26 @@ tr:hover td {
  * ClearPath Sky Blue Color Family
  * ================================ */
 
-.login-aurora {
+/* Fixed shell clips to viewport; inner aurora is absolute (split layout offsets shell on lg). */
+.login-auth-motion-layer {
   position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  /* Aurora + hero art on the left; form column fixed width on the right */
+  .login-auth-motion-layer--split {
+    left: 0;
+    right: 480px;
+    top: 0;
+    bottom: 0;
+  }
+}
+
+.login-aurora {
+  position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
@@ -924,7 +987,7 @@ tr:hover td {
 
 /* Grain texture overlay for depth */
 .login-aurora-grain {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 1;
   opacity: 0.03;
@@ -935,17 +998,34 @@ tr:hover td {
 
 /* Subtle radial vignette to focus attention on the center card */
 .login-aurora-vignette {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 2;
   background: radial-gradient(ellipse at center, transparent 40%, rgba(10, 26, 42, 0.4) 100%);
   pointer-events: none;
 }
 
+/* Split layout: form on light panel — solid card instead of heavy glass */
 @media (min-width: 1024px) {
-  .login-value-prop {
-    display: block !important;
+  .auth-split-form-panel .login-premium-card {
+    width: 100%;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #ffffff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 1px solid #e8f1f9;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9),
+      0 12px 40px rgba(10, 26, 42, 0.07),
+      0 4px 12px rgba(10, 26, 42, 0.04);
   }
+}
+
+.login-premium-card--minimal {
+  padding: 32px 36px;
+  border-radius: 16px;
 }
 
 /* Premium auth card + form controls (hardcoded light; not theme variables) */
@@ -1139,5 +1219,211 @@ tr:hover td {
 
   .login-premium-btn::after {
     animation: none !important;
+  }
+}
+
+/* --- Coach login (spec: split panel + form polish) --- */
+@keyframes login-hero-pulse-glow {
+  from {
+    opacity: 0.28;
+  }
+  to {
+    opacity: 0.52;
+  }
+}
+
+@keyframes login-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-hero-root {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(145deg, #0a1628 0%, #0d2444 50%, #0f3060 100%);
+}
+
+.login-hero-root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 85% 65% at 72% 18%,
+    rgba(96, 165, 250, 0.28),
+    transparent 55%
+  );
+  animation: login-hero-pulse-glow 6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-hero-root::before {
+    animation: none;
+    opacity: 0.4;
+  }
+
+  .login-hero-fade-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.login-hero-fade-up {
+  animation: login-fade-up 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.coach-login-split-panel {
+  background: #ffffff;
+}
+
+@media (min-width: 1024px) {
+  .coach-login-split-panel {
+    padding: 48px 40px;
+    border-left: 1px solid #e5e7eb;
+  }
+
+  .coach-login-split-panel .login-premium-card--minimal {
+    padding: 0;
+    max-width: 440px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+    opacity: 1;
+  }
+
+  .coach-login-split-panel .login-premium-card {
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 1023px) {
+  .coach-login-split-panel {
+    padding: 32px 24px;
+  }
+
+  .coach-login-split-panel .login-premium-card--minimal {
+    border-radius: 16px;
+  }
+}
+
+.coach-login-split-panel .login-premium-label {
+  color: #374151;
+}
+
+.coach-login-split-panel .login-premium-input {
+  background: #fff;
+  border-color: #e5e7eb;
+  color: #111827;
+}
+
+.coach-login-split-panel .login-premium-input::placeholder {
+  color: #9ca3af;
+}
+
+.coach-login-split-panel .login-premium-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: #fff;
+}
+
+.coach-login-split-panel .login-premium-input.login-premium-input--error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.coach-login-split-panel .login-premium-input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.coach-login-split-panel .login-premium-btn {
+  background: #2563eb;
+  margin-top: 24px;
+}
+
+.coach-login-split-panel .login-premium-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.coach-login-split-panel .login-premium-error-card {
+  background: #fef2f2;
+  border-color: #fecaca;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.coach-login-split-panel .login-premium-error-card__text,
+.coach-login-split-panel .login-premium-error-card__icon {
+  color: #b91c1c;
+}
+
+@keyframes login-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login-coach-spinner {
+  animation: login-spinner-rotate 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-coach-spinner {
+    animation: none;
+    border-color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+/* Dual-role login (Phase 2) — spinner + mobile layout */
+@keyframes cp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cp-login-spinner {
+  animation: cp-spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-login-spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .cp-login-left {
+    display: none !important;
+  }
+
+  .cp-login-right {
+    max-width: 100% !important;
+    flex: 1 1 auto !important;
+    padding: 32px 24px !important;
   }
 }

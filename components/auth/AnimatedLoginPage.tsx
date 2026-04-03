@@ -1,27 +1,34 @@
 'use client'
 
 import { useEffect, useRef, type ReactNode } from 'react'
+import { AuthBrandWordmark } from '@/components/auth/AuthBrandWordmark'
+import { AuthMarketingHeroPanel } from '@/components/auth/AuthMarketingHeroPanel'
 import { useLoginAuroraMotion } from '@/components/auth/useLoginAuroraMotion'
-
-const COACH_FEATURES = [
-  'Know which clients need attention today',
-  'Get paid faster with smart invoicing',
-  'Keep clients engaged between sessions',
-] as const
+import { cn } from '@/lib/utils'
 
 type AnimatedLoginPageProps = {
   children: ReactNode
-  /** Coach marketing bullets (bottom-left, lg+). Hidden for client portal login. */
-  showCoachValueProp?: boolean
+  /**
+   * `split` — marketing + aurora on the left, form panel on the right (lg+).
+   * `fullscreen` — centered card on full aurora (e.g. client portal).
+   */
+  layout?: 'split' | 'fullscreen'
+  /** Coach login: white form column, no card shadow, spec typography (see globals `.coach-login-split-panel`). */
+  splitShellVariant?: 'default' | 'coach'
 }
 
 /**
- * Full-viewport aurora background + fixed chrome. Forces light `data-theme` on
- * `document.documentElement` while mounted so auth chrome stays consistent.
+ * Auth shell: animated aurora, optional split layout, light `data-theme` on `html`.
  */
-export function AnimatedLoginPage({ children, showCoachValueProp = true }: AnimatedLoginPageProps) {
+export function AnimatedLoginPage({
+  children,
+  layout = 'split',
+  splitShellVariant = 'default',
+}: AnimatedLoginPageProps) {
   const auroraRef = useRef<HTMLDivElement>(null)
   useLoginAuroraMotion(auroraRef)
+  const split = layout === 'split'
+  const coachShell = split && splitShellVariant === 'coach'
 
   useEffect(() => {
     const root = document.documentElement
@@ -39,113 +46,65 @@ export function AnimatedLoginPage({ children, showCoachValueProp = true }: Anima
   }, [])
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        padding: '16px',
-      }}
-    >
-      <div ref={auroraRef} className="login-aurora login-aurora--driven" aria-hidden>
-        <div className="blob-1" />
-        <div className="blob-2" />
-        <div className="blob-3" />
-      </div>
-
-      <div className="login-aurora-grain" aria-hidden />
-      <div className="login-aurora-vignette" aria-hidden />
-
+    <div className="relative min-h-screen w-full overflow-x-hidden">
       <div
-        style={{
-          position: 'fixed',
-          top: '24px',
-          left: '28px',
-          zIndex: 20,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}
+        className={cn('login-auth-motion-layer', split && 'login-auth-motion-layer--split')}
+        aria-hidden
       >
-        <div
-          style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '7px',
-            background: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          }}
-        >
-          <span style={{ fontSize: '14px', fontWeight: 800, color: '#3B9EE8' }}>C</span>
+        <div ref={auroraRef} className="login-aurora login-aurora--driven">
+          <div className="blob-1" />
+          <div className="blob-2" />
+          <div className="blob-3" />
         </div>
-        <span
-          style={{
-            fontSize: '15px',
-            fontWeight: 700,
-            color: 'white',
-            letterSpacing: '-0.02em',
-          }}
-        >
-          ClearPath
-        </span>
+        <div className="login-aurora-grain" />
+        <div className="login-aurora-vignette" />
       </div>
 
-      {showCoachValueProp ? (
+      {split ? (
         <div
-          style={{
-            position: 'fixed',
-            bottom: '40px',
-            left: '40px',
-            zIndex: 20,
-            maxWidth: '320px',
-            display: 'none',
-          }}
-          className="login-value-prop"
+          className={cn(
+            'pointer-events-none fixed inset-0 z-[4] hidden lg:left-0 lg:top-0 lg:bottom-0 lg:block',
+            coachShell ? 'lg:right-[520px]' : 'lg:right-[480px]'
+          )}
         >
-          <p
-            style={{
-              fontSize: '22px',
-              fontWeight: 700,
-              color: 'white',
-              lineHeight: 1.3,
-              letterSpacing: '-0.03em',
-              marginBottom: '12px',
-            }}
-          >
-            &ldquo;Run your coaching business like a pro.&rdquo;
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {COACH_FEATURES.map((text) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.2)',
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <span style={{ fontSize: '9px', color: 'white' }}>✓</span>
-                </div>
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.4 }}>{text}</span>
-              </div>
-            ))}
-          </div>
+          <AuthMarketingHeroPanel />
         </div>
       ) : null}
 
-      <div style={{ position: 'relative', zIndex: 10 }}>{children}</div>
+      <div
+        className={cn(
+          'fixed left-7 top-6 z-20',
+          split && 'lg:hidden'
+        )}
+      >
+        <AuthBrandWordmark tone="on-dark" size="sm" />
+      </div>
+
+      <div
+        className={cn(
+          'relative z-10',
+          split &&
+            cn(
+              'flex min-h-screen flex-col justify-center px-4 py-10 lg:grid lg:min-h-screen lg:items-stretch lg:justify-normal lg:px-0 lg:py-0',
+              coachShell ? 'lg:grid-cols-[1fr_520px]' : 'lg:grid-cols-[1fr_480px]'
+            ),
+          !split && 'flex min-h-screen items-center justify-center px-4 py-12'
+        )}
+      >
+        {split ? <div className="hidden min-h-screen lg:block" aria-hidden /> : null}
+
+        <div
+          className={cn(
+            'mx-auto w-full max-w-[440px]',
+            split &&
+              (coachShell
+                ? 'auth-split-form-panel coach-login-split-panel flex flex-col justify-center lg:mx-0 lg:max-w-none lg:min-h-screen'
+                : 'auth-split-form-panel flex flex-col justify-center lg:mx-0 lg:max-w-none lg:min-h-screen lg:border-l lg:border-[#E8EEF4] lg:bg-[#FAFBFC] lg:px-10 lg:py-16')
+          )}
+        >
+          {children}
+        </div>
+      </div>
     </div>
   )
 }

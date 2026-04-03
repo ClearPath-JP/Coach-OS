@@ -6,22 +6,13 @@ import { SignupForm } from '@/app/(auth)/signup/SignupForm'
 
 export function SignupCard() {
   return (
-    <AuthPremiumCard>
+    <AuthPremiumCard className="login-premium-card--minimal">
       <AuthPremiumCardHeader />
-      <h1
-        style={{
-          fontSize: '26px',
-          fontWeight: 700,
-          letterSpacing: '-0.03em',
-          color: '#0A1929',
-          marginBottom: '6px',
-          lineHeight: 1.2,
-        }}
-      >
-        Create your account
+      <h1 className="text-[1.375rem] font-semibold leading-tight tracking-[-0.03em] text-[#0A1929]">
+        Create account
       </h1>
-      <p style={{ fontSize: '15px', color: '#5B7FA6', marginBottom: '28px', lineHeight: 1.5 }}>
-        Start your free trial. No credit card required.
+      <p className="mb-8 mt-1.5 text-[14px] leading-relaxed text-[#5B7FA6]">
+        Free trial — no credit card required.
       </p>
       <Suspense
         fallback={<div className="h-64 animate-pulse rounded-[12px] bg-[#E8F1F9]" aria-hidden />}

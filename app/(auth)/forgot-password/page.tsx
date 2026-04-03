@@ -4,13 +4,13 @@ import { AuthPremiumCardHeader } from '@/components/auth/AuthPremiumCardHeader'
 import { ForgotPasswordForm } from './ForgotPasswordForm'
 
 /**
- * Forgot password — aurora shell + glass card (public; rate-limited in proxy).
+ * Forgot password — split auth shell (public; rate-limited in proxy).
  */
 export default function ForgotPasswordPage() {
   return (
     <AnimatedLoginPage>
       <main aria-label="Reset password">
-        <AuthPremiumCard>
+        <AuthPremiumCard className="login-premium-card--minimal">
           <AuthPremiumCardHeader />
           <ForgotPasswordForm />
         </AuthPremiumCard>

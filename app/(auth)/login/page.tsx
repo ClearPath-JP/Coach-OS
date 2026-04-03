@@ -1,15 +1,17 @@
-import { AnimatedLoginPage } from '@/components/auth/AnimatedLoginPage'
-import { LoginCard } from '@/components/auth/LoginCard'
+import { Suspense } from 'react'
+import { DualRoleLoginPage } from './DualRoleLoginPage'
 
 /**
- * Coach sign-in — aurora background + centered glass card (public; rate-limited in proxy).
+ * Dual-role coach / student sign-in (design system Phase 2).
  */
 export default function LoginPage() {
   return (
-    <AnimatedLoginPage>
-      <main id="login-main" aria-labelledby="login-heading">
-        <LoginCard />
-      </main>
-    </AnimatedLoginPage>
+    <Suspense
+      fallback={
+        <div className="min-h-screen w-full bg-[var(--cp-offwhite)]" aria-hidden />
+      }
+    >
+      <DualRoleLoginPage />
+    </Suspense>
   )
 }
