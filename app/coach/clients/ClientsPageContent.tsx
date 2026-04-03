@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
@@ -14,6 +14,7 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { calculateEngagementScore, engagementLabelText } from '@/lib/client-engagement'
 import { AddClientModal } from './AddClientModal'
 import { formatDistanceToNow } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 type Engagement = ReturnType<typeof calculateEngagementScore>
 
@@ -43,6 +44,7 @@ type Client = {
 }
 
 type StatusFilter = '' | 'active' | 'paused' | 'completed'
+type ViewMode = 'grid' | 'list'
 
 function getInitials(first: string | null, last: string | null, email: string | null): string {
   if (first?.trim() || last?.trim()) {
@@ -50,7 +52,7 @@ function getInitials(first: string | null, last: string | null, email: string | 
     const b = (last?.trim() ?? '').slice(0, 1).toUpperCase()
     if (a || b) return `${a}${b}`
   }
-  if (email?.trim()) return (email.trim().slice(0, 2)).toUpperCase()
+  if (email?.trim()) return email.trim().slice(0, 2).toUpperCase()
   return '?'
 }
 
@@ -60,17 +62,43 @@ function statusTone(status: string): 'active' | 'pending' | 'inactive' {
   return 'inactive'
 }
 
+function engagementThumbClass(label: 'engaged' | 'moderate' | 'at-risk' | undefined): string {
+  if (label === 'engaged') {
+    return 'bg-[linear-gradient(135deg,var(--accent-light)_0%,var(--bg-muted)_100%)]'
+  }
+  if (label === 'moderate') {
+    return 'bg-[linear-gradient(135deg,var(--warning-bg)_0%,var(--bg-muted)_100%)]'
+  }
+  return 'bg-[linear-gradient(135deg,var(--error-bg)_0%,var(--bg-muted)_100%)]'
+}
+
+function statusDotClass(status: string): string {
+  if (status === 'active') return 'bg-[var(--success)]'
+  if (status === 'paused') return 'bg-[var(--warning)]'
+  return 'bg-[var(--error)]'
+}
+
+function lastActiveLabel(client: Client): string {
+  const last = client.rewards?.last_activity_at
+  if (last) return formatDistanceToNow(new Date(last), { addSuffix: true })
+  if (client.updated_at) return formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })
+  return '—'
+}
+
 export function CoachClientsPageContent() {
+  const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('')
+  const [view, setView] = useState<ViewMode>('grid')
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [quickInvoiceOpen, setQuickInvoiceOpen] = useState(false)
   const [quickInvoiceClientId, setQuickInvoiceClientId] = useState<string | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const fetchClients = useCallback(async () => {
     setError(null)
@@ -78,7 +106,6 @@ export function CoachClientsPageContent() {
     try {
       const params = new URLSearchParams()
       if (search.trim()) params.set('search', search.trim())
-      if (statusFilter) params.set('status', statusFilter)
       const res = await fetch(`/api/clients?${params.toString()}`)
       const json = await res.json()
       if (!res.ok) {
@@ -93,11 +120,16 @@ export function CoachClientsPageContent() {
     } finally {
       setLoading(false)
     }
-  }, [search, statusFilter])
+  }, [search])
 
   useEffect(() => {
     fetchClients()
   }, [fetchClients])
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setSearch(searchInput.trim()), 320)
+    return () => clearTimeout(t)
+  }, [searchInput])
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined
@@ -116,16 +148,27 @@ export function CoachClientsPageContent() {
     }
   }, [])
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSearch(searchInput.trim())
-  }
-
   const handleAddSuccess = () => {
     setToast('Client added')
     fetchClients()
     setTimeout(() => setToast(null), 4000)
   }
+
+  const tabCounts = useMemo(() => {
+    return {
+      all: clients.length,
+      active: clients.filter((c) => c.status === 'active').length,
+      paused: clients.filter((c) => c.status === 'paused').length,
+      completed: clients.filter((c) => c.status === 'completed').length,
+    }
+  }, [clients])
+
+  const displayedClients = useMemo(() => {
+    if (!statusFilter) return clients
+    return clients.filter((c) => c.status === statusFilter)
+  }, [clients, statusFilter])
+
+  const visibleClients = displayedClients
 
   const tabs: { value: StatusFilter; label: string }[] = [
     { value: '', label: 'All' },
@@ -134,38 +177,221 @@ export function CoachClientsPageContent() {
     { value: 'completed', label: 'Completed' },
   ]
 
+  const deleteClient = async (client: Client) => {
+    const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || client.email || 'this client'
+    if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return
+    try {
+      const res = await fetch(`/api/clients/${encodeURIComponent(client.id)}`, { method: 'DELETE', credentials: 'include' })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(typeof json.error === 'string' ? json.error : 'Could not delete client')
+        return
+      }
+      setToast('Client removed')
+      setOpenMenuId(null)
+      fetchClients()
+    } catch {
+      setToast('Could not delete client — try again')
+    }
+  }
+
+  const columns: DataColumn<Client>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        header: 'Name',
+        sortValue: (r) => `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim(),
+        render: (client) => {
+          const e = client.engagement
+          const label = e?.label
+          return (
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  'flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white',
+                  engagementThumbClass(label)
+                )}
+              >
+                {getInitials(client.first_name, client.last_name, client.email)}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-medium">{[client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'}</p>
+                <p className="truncate text-[12px] text-[var(--text-tertiary)]">{client.email || '—'}</p>
+              </div>
+            </div>
+          )
+        },
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        sortValue: (r) => r.status,
+        render: (client) => (
+          <span className="inline-flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
+            <StatusDot tone={statusTone(client.status)} />
+            {client.status}
+          </span>
+        ),
+      },
+      {
+        key: 'engagement',
+        header: 'Engagement',
+        sortValue: (r) => r.engagement?.score ?? 0,
+        render: (client) => {
+          const e = client.engagement
+          if (!e) return <span className="text-[13px] text-[var(--text-tertiary)]">—</span>
+          const dot = e.label === 'engaged' ? '🟢' : e.label === 'moderate' ? '🟡' : '🔴'
+          const last = client.rewards?.last_activity_at
+          const done = client.rewards?.assignments_completed ?? 0
+          const total = client.rewards?.assignments_total ?? 0
+          const streak = client.rewards?.current_streak_days ?? 0
+          const activeLine = last ? `Active ${formatDistanceToNow(new Date(last), { addSuffix: true })}` : 'No recent activity logged'
+          const tip = `${activeLine} · ${done}/${total} assignments complete · ${streak}-day streak`
+          const label = engagementLabelText(e.label)
+          return (
+            <Tooltip content={tip}>
+              <span className="inline-flex cursor-default items-center gap-1.5 text-[13px] font-medium" style={{ color: e.color }}>
+                <span aria-hidden>{dot}</span>
+                {label}
+              </span>
+            </Tooltip>
+          )
+        },
+      },
+      {
+        key: 'xp',
+        header: 'XP',
+        sortValue: (r) => r.rewards?.total_xp ?? 0,
+        render: (client) => (
+          <div className="flex items-center gap-2">
+            <span className="tabular-nums text-[13px] text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</span>
+            <Badge variant="accent">L{client.rewards?.level ?? 1}</Badge>
+          </div>
+        ),
+      },
+      {
+        key: 'sessions',
+        header: 'Sessions',
+        sortValue: (r) => r.sessionsCompletedCount ?? 0,
+        render: (client) => {
+          const n = client.sessionsCompletedCount ?? 0
+          return (
+            <span className="text-[13px] text-[var(--text-primary)]">
+              <span className="tabular-nums font-medium">{n}</span>
+              <span className="text-[var(--text-tertiary)]"> {n === 1 ? 'session' : 'sessions'}</span>
+            </span>
+          )
+        },
+      },
+      {
+        key: 'program',
+        header: 'Program',
+        sortValue: (r) => r.activeProgramTitle ?? '',
+        render: (client) => (
+          <span className="line-clamp-2 text-[13px] text-[var(--text-primary)]">
+            {client.activeProgramTitle?.trim() ? client.activeProgramTitle : 'None'}
+          </span>
+        ),
+      },
+      {
+        key: 'lastActive',
+        header: 'Last active',
+        sortValue: (r) => r.updated_at,
+        render: (client) => (
+          <span className="text-[13px] text-[var(--text-tertiary)]">
+            {client.updated_at ? formatDistanceToNow(new Date(client.updated_at), { addSuffix: true }) : '—'}
+          </span>
+        ),
+      },
+      {
+        key: 'actions',
+        header: 'Actions',
+        render: (client) => (
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <Link href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`} className="text-[13px] font-medium text-[var(--accent)] hover:underline">
+              Message
+            </Link>
+            <details className="relative">
+              <summary className="cursor-pointer list-none text-[18px] leading-none text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">···</summary>
+              <div className="absolute right-0 z-20 mt-1 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-md">
+                <button
+                  type="button"
+                  className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                  onClick={() => {
+                    setQuickInvoiceClientId(client.id)
+                    setQuickInvoiceOpen(true)
+                  }}
+                >
+                  Quick invoice
+                </button>
+              </div>
+            </details>
+          </div>
+        ),
+      },
+    ],
+    []
+  )
+
   return (
     <>
-      <PageHeader
-        title="Clients"
-        contextInfo={`${clients.filter((c) => c.status === 'active').length} active · ${clients.filter((c) => c.status === 'paused').length} paused`}
-      >
-        <Button size="sm" variant="secondary" onClick={() => fetchClients()}>
-          Refresh
-        </Button>
-        <Button size="sm" className="w-full min-[480px]:w-auto" onClick={() => setAddModalOpen(true)}>
-          Add client
-        </Button>
-      </PageHeader>
-
-      <div className="mt-6 space-y-4">
-        <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="min-w-0 flex-1">
+      <div className="coach-route-enter px-6 pb-10 pt-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-4">
+            <h1 className="text-2xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Clients</h1>
+            <span className="rounded-full bg-[var(--bg-muted)] px-2.5 py-1 text-[13px] text-[var(--text-tertiary)]">
+              {clients.length} clients
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <Input
               type="search"
-              placeholder="Search by name or email..."
+              placeholder="Search clients..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               aria-label="Search clients"
-              className="w-full max-w-md"
+              className="h-9 w-[240px] max-w-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[14px]"
             />
+            <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] p-0.5">
+              <button
+                type="button"
+                aria-label="List view"
+                aria-pressed={view === 'list'}
+                onClick={() => setView('list')}
+                className={cn(
+                  'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
+                  view === 'list' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+                )}
+              >
+                <span className="text-[14px]" aria-hidden>
+                  ☰
+                </span>
+              </button>
+              <button
+                type="button"
+                aria-label="Grid view"
+                aria-pressed={view === 'grid'}
+                onClick={() => setView('grid')}
+                className={cn(
+                  'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
+                  view === 'grid' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+                )}
+              >
+                <span className="text-[14px]" aria-hidden>
+                  ⊞
+                </span>
+              </button>
+            </div>
+            <Button size="sm" onClick={() => setAddModalOpen(true)}>
+              Add client
+            </Button>
+            <Button size="sm" variant="secondary" type="button" onClick={() => fetchClients()}>
+              Refresh
+            </Button>
           </div>
-          <Button type="submit" variant="secondary" className="w-full sm:w-auto">
-            Search
-          </Button>
-        </form>
+        </div>
 
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by status">
+        <div className="mb-6 flex flex-wrap gap-0 border-b border-[var(--border-subtle)]" role="tablist" aria-label="Filter by status">
           {tabs.map((tab) => (
             <button
               key={tab.value || 'all'}
@@ -173,182 +399,177 @@ export function CoachClientsPageContent() {
               role="tab"
               aria-selected={statusFilter === tab.value}
               onClick={() => setStatusFilter(tab.value)}
-              className={`min-h-[44px] rounded-lg border px-4 py-2 text-[15px] font-medium transition-colors ${
+              className={cn(
+                'relative h-9 px-4 text-[14px] transition-colors duration-150',
                 statusFilter === tab.value
-                  ? 'border-[var(--color-accent)] bg-[var(--color-accent-light)] text-[var(--color-accent)]'
-                  : 'border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface)]'
-              }`}
+                  ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                  : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+              )}
             >
               {tab.label}
+              <span className="ml-1 text-[13px] text-[var(--text-quaternary)]">
+                (
+                {tab.value === ''
+                  ? tabCounts.all
+                  : tab.value === 'active'
+                    ? tabCounts.active
+                    : tab.value === 'paused'
+                      ? tabCounts.paused
+                      : tabCounts.completed}
+                )
+              </span>
             </button>
           ))}
         </div>
 
-        {loading && <ClientListSkeleton />}
+        {loading && <ClientListSkeleton view={view} />}
         {!loading && error && (
-          <Card className="rounded-xl border border-[var(--color-border)] p-6 text-center">
-            <p className="text-[var(--color-text-primary)]">{error}</p>
+          <Card className="rounded-[var(--radius-lg)] border border-[var(--border-default)] p-8 text-center">
+            <p className="text-[var(--text-primary)]">{error}</p>
             <Button variant="secondary" className="mt-4" onClick={() => fetchClients()}>
               Try again
             </Button>
           </Card>
         )}
         {!loading && !error && clients.length === 0 && (
-          <Card className="p-12 text-center">
-            <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">👥</div>
-            <h2 className="mt-4 text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
-              Your first client is waiting
-            </h2>
-            <p className="mx-auto mt-3 max-w-[400px] text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-tertiary)]">
-              Add a client and send them their login details. They&apos;ll be able to see their programs, book sessions,
-              and message you directly.
+          <div className="flex flex-col items-center px-6 py-20 text-center">
+            <div className="mb-6 grid grid-cols-2 gap-2 opacity-30 sm:grid-cols-4" aria-hidden>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-24 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-muted)]" />
+              ))}
+            </div>
+            <div className="flex size-[72px] items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">👥</div>
+            <h2 className="mt-4 text-xl font-bold text-[var(--text-primary)]">Add your first client</h2>
+            <p className="mt-2 max-w-[360px] text-[14px] leading-relaxed text-[var(--text-tertiary)]">
+              Invite clients to access their programs, schedule sessions, and message you through ClearPath.
             </p>
-            <Button className="mt-8 min-h-11" onClick={() => setAddModalOpen(true)}>
-              Add your first client
+            <Button className="mt-6" onClick={() => setAddModalOpen(true)}>
+              Add first client
             </Button>
-          </Card>
+          </div>
         )}
-        {!loading && !error && clients.length > 0 && (
-          <DataTable
-            rows={clients}
-            loading={loading}
-            rowHref={(row) => `/coach/clients/${row.id}`}
-            emptyTitle="Your first client is waiting"
-            emptyDescription="Add a client and send them their login details. They will see programs, book sessions, and message you directly."
-            columns={[
-              {
-                key: 'name',
-                header: 'Name',
-                sortValue: (r) => `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim(),
-                render: (client) => (
-                  <div className="flex items-center gap-2">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-semibold text-[var(--accent)]">{getInitials(client.first_name, client.last_name, client.email)}</div>
-                    <div className="min-w-0">
-                      <p className="truncate">{[client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'}</p>
-                      <p className="truncate text-[12px] text-[var(--text-tertiary)]">{client.email || '—'}</p>
+        {!loading && !error && clients.length > 0 && view === 'grid' && (
+          <div
+            className="grid gap-3"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}
+          >
+            {visibleClients.map((client) => {
+              const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'
+              const e = client.engagement
+              const engLabel = e ? engagementLabelText(e.label) : '—'
+              const engDot = e?.label === 'engaged' ? '🟢' : e?.label === 'moderate' ? '🟡' : '🔴'
+              const sessionsN = client.sessionsCompletedCount ?? 0
+              const showMenu = openMenuId === client.id
+              return (
+                <div
+                  key={client.id}
+                  className="card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)]"
+                  onClick={() => router.push(`/coach/clients/${client.id}`)}
+                  onKeyDown={(ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                      ev.preventDefault()
+                      router.push(`/coach/clients/${client.id}`)
+                    }
+                  }}
+                  role="link"
+                  tabIndex={0}
+                >
+                  <div className={cn('relative flex h-[120px] items-center justify-center', engagementThumbClass(e?.label))}>
+                    <div className="relative flex size-16 items-center justify-center rounded-full bg-[var(--accent)] text-2xl font-bold text-white">
+                      {getInitials(client.first_name, client.last_name, client.email)}
+                      <span
+                        className={cn('absolute bottom-0 right-0 size-3 rounded-full border-2 border-white', statusDotClass(client.status))}
+                        aria-hidden
+                      />
                     </div>
                   </div>
-                ),
-              },
-              {
-                key: 'status',
-                header: 'Status',
-                sortValue: (r) => r.status,
-                render: (client) => <span className="inline-flex items-center gap-2 text-[13px] text-[var(--text-secondary)]"><StatusDot tone={statusTone(client.status)} />{client.status}</span>,
-              },
-              {
-                key: 'engagement',
-                header: 'Engagement',
-                sortValue: (r) => r.engagement?.score ?? 0,
-                render: (client) => {
-                  const e = client.engagement
-                  if (!e) return <span className="text-[13px] text-[var(--text-tertiary)]">—</span>
-                  const dot =
-                    e.label === 'engaged' ? '🟢' : e.label === 'moderate' ? '🟡' : '🔴'
-                  const last = client.rewards?.last_activity_at
-                  const done = client.rewards?.assignments_completed ?? 0
-                  const total = client.rewards?.assignments_total ?? 0
-                  const streak = client.rewards?.current_streak_days ?? 0
-                  const activeLine = last
-                    ? `Active ${formatDistanceToNow(new Date(last), { addSuffix: true })}`
-                    : 'No recent activity logged'
-                  const tip = `${activeLine} · ${done}/${total} assignments complete · ${streak}-day streak`
-                  const label = engagementLabelText(e.label)
-                  return (
-                    <Tooltip content={tip}>
-                      <span
-                        className="inline-flex cursor-default items-center gap-1.5 text-[13px] font-medium"
-                        style={{ color: e.color }}
+                  <div className="p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[var(--text-primary)]">{name}</p>
+                      <div
+                        className={cn(
+                          'relative opacity-0 transition-opacity duration-150 group-hover:opacity-100',
+                          showMenu && 'opacity-100'
+                        )}
+                        onClick={(ev) => ev.stopPropagation()}
                       >
-                        <span aria-hidden>{dot}</span>
-                        {label}
-                      </span>
-                    </Tooltip>
-                  )
-                },
-              },
-              {
-                key: 'xp',
-                header: 'XP',
-                sortValue: (r) => r.rewards?.total_xp ?? 0,
-                render: (client) => (
-                  <div className="flex items-center gap-2">
-                    <span className="tabular-nums text-[13px] text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</span>
-                    <Badge variant="accent">L{client.rewards?.level ?? 1}</Badge>
-                  </div>
-                ),
-              },
-              {
-                key: 'sessions',
-                header: 'Sessions',
-                sortValue: (r) => r.sessionsCompletedCount ?? 0,
-                render: (client) => {
-                  const n = client.sessionsCompletedCount ?? 0
-                  return (
-                    <span className="text-[13px] text-[var(--text-primary)]">
-                      <span className="tabular-nums font-medium">{n}</span>
-                      <span className="text-[var(--text-tertiary)]"> {n === 1 ? 'session' : 'sessions'}</span>
-                    </span>
-                  )
-                },
-              },
-              {
-                key: 'program',
-                header: 'Program',
-                sortValue: (r) => r.activeProgramTitle ?? '',
-                render: (client) => (
-                  <span className="line-clamp-2 text-[13px] text-[var(--text-primary)]">
-                    {client.activeProgramTitle?.trim() ? client.activeProgramTitle : 'None'}
-                  </span>
-                ),
-              },
-              {
-                key: 'lastActive',
-                header: 'Last active',
-                sortValue: (r) => r.updated_at,
-                render: (client) => <span className="text-[13px] text-[var(--text-tertiary)]">{client.updated_at ? formatDistanceToNow(new Date(client.updated_at), { addSuffix: true }) : '—'}</span>,
-              },
-              {
-                key: 'actions',
-                header: 'Actions',
-                render: (client) => (
-                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Link
-                      href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`}
-                      className="text-[13px] font-medium text-[var(--color-accent)] hover:underline"
-                    >
-                      Message
-                    </Link>
-                    <details className="relative">
-                      <summary className="cursor-pointer list-none text-[18px] leading-none text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
-                        ···
-                      </summary>
-                      <div className="absolute right-0 z-20 mt-1 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-md">
-                        <button
-                          type="button"
-                          className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
-                          onClick={() => {
-                            setQuickInvoiceClientId(client.id)
-                            setQuickInvoiceOpen(true)
-                          }}
-                        >
-                          Quick invoice
-                        </button>
+                        <details open={showMenu} onToggle={(ev) => setOpenMenuId((ev.target as HTMLDetailsElement).open ? client.id : null)}>
+                          <summary className="flex size-6 cursor-pointer list-none items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]">
+                            ···
+                          </summary>
+                          <div className="absolute right-2 top-10 z-30 min-w-[140px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-[var(--shadow-lg)]">
+                            <Link
+                              href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`}
+                              className="block px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                              onClick={() => setOpenMenuId(null)}
+                            >
+                              Message
+                            </Link>
+                            <Link
+                              href={`/coach/clients/${client.id}`}
+                              className="block px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                              onClick={() => setOpenMenuId(null)}
+                            >
+                              View
+                            </Link>
+                            <Link
+                              href={`/coach/clients/${client.id}`}
+                              className="block px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                              onClick={() => setOpenMenuId(null)}
+                            >
+                              Edit
+                            </Link>
+                            <button
+                              type="button"
+                              className="block w-full px-3 py-2 text-left text-[13px] text-[var(--error)] hover:bg-[var(--bg-muted)]"
+                              onClick={() => void deleteClient(client)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </details>
                       </div>
-                    </details>
+                    </div>
+                    <p className="mt-0.5 truncate text-[12px] text-[var(--text-tertiary)]">{client.email || '—'}</p>
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {client.activeProgramTitle?.trim() ? (
+                        <span className="max-w-full truncate rounded-full bg-[var(--accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--accent)]">
+                          📚 {client.activeProgramTitle}
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[12px] text-[var(--text-tertiary)]">No program</span>
+                      )}
+                      <span className="text-[12px] text-[var(--text-tertiary)]">
+                        {sessionsN} {sessionsN === 1 ? 'session' : 'sessions'}
+                      </span>
+                    </div>
                   </div>
-                ),
-              },
-            ] as DataColumn<Client>[]}
-          />
+                  <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2">
+                    <span className="text-[12px] text-[var(--text-tertiary)]">
+                      <span aria-hidden>{engDot}</span> {engLabel}
+                    </span>
+                    <span className="text-[12px] text-[var(--text-quaternary)]">{lastActiveLabel(client)}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {!loading && !error && clients.length > 0 && view === 'list' && (
+          <div className="[&_tbody_tr]:min-h-[52px] [&_tbody_tr]:h-[52px]">
+            <DataTable
+              rows={visibleClients}
+              loading={loading}
+              rowHref={(row) => `/coach/clients/${row.id}`}
+              emptyTitle="No clients match"
+              emptyDescription="Try another tab or search."
+              columns={columns}
+            />
+          </div>
         )}
       </div>
 
-      <AddClientModal
-        isOpen={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onSuccess={handleAddSuccess}
-      />
+      <AddClientModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} onSuccess={handleAddSuccess} />
 
       <QuickInvoiceModal
         open={quickInvoiceOpen}
@@ -367,7 +588,7 @@ export function CoachClientsPageContent() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 rounded-lg border border-[var(--color-border)] bg-[var(--color-text-primary)] px-4 py-3 text-[15px] font-medium text-white shadow-lg"
+          className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 rounded-lg border border-[var(--border-default)] bg-[var(--text-primary)] px-4 py-3 text-[15px] font-medium text-white shadow-lg"
         >
           {toast}
         </div>
@@ -376,25 +597,27 @@ export function CoachClientsPageContent() {
   )
 }
 
-function ClientListSkeleton() {
+function ClientListSkeleton({ view }: { view: ViewMode }) {
+  if (view === 'list') {
+    return (
+      <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)]">
+        <div className="h-12 animate-pulse bg-[var(--bg-muted)]" />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-[52px] animate-pulse border-t border-[var(--border-subtle)] bg-[var(--bg-app)]" />
+        ))}
+      </div>
+    )
+  }
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
       {[1, 2, 3, 4, 5, 6].map((i) => (
-        <Card
-          key={i}
-          variant="flat"
-          padding="lg"
-          className="h-full border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
-        >
-          <div className="flex items-start gap-4">
-            <div className="h-12 w-12 shrink-0 rounded-full bg-[var(--color-border)] animate-pulse" />
-            <div className="min-w-0 flex-1 space-y-2">
-              <div className="h-4 w-3/4 rounded bg-[var(--color-border)] animate-pulse" />
-              <div className="h-3 w-1/2 rounded bg-[var(--color-border)] animate-pulse" />
-              <div className="h-3 w-1/3 rounded bg-[var(--color-border)] animate-pulse" />
-            </div>
+        <div key={i} className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)]">
+          <div className="h-[120px] animate-pulse bg-[var(--bg-muted)]" />
+          <div className="space-y-2 p-3">
+            <div className="h-4 w-2/3 animate-pulse rounded bg-[var(--bg-muted)]" />
+            <div className="h-3 w-1/2 animate-pulse rounded bg-[var(--bg-muted)]" />
           </div>
-        </Card>
+        </div>
       ))}
     </div>
   )

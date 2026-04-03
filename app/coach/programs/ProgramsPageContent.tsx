@@ -1,14 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import Image from 'next/image'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
-import { PageHeader } from '@/components/layout/PageHeader'
 import { createProgramSchema } from '@/lib/validations'
 import { AssignProgramModal } from '@/components/coach/AssignProgramModal'
 import { cn } from '@/lib/utils'
@@ -25,23 +23,33 @@ type Program = {
   assigned_count?: number
 }
 
-type Tab = 'all' | 'draft' | 'published' | 'archived'
+type Tab = 'all' | 'draft' | 'published'
+type ViewMode = 'grid' | 'list'
+
+function programGradient(title: string): string {
+  const c = (title.trim()[0] ?? 'A').toUpperCase()
+  if (c >= 'A' && c <= 'E') return 'linear-gradient(135deg, #3B9EE8 0%, #1565C0 100%)'
+  if (c >= 'F' && c <= 'J') return 'linear-gradient(135deg, #10B981 0%, #065F46 100%)'
+  if (c >= 'K' && c <= 'O') return 'linear-gradient(135deg, #8B5CF6 0%, #4C1D95 100%)'
+  if (c >= 'P' && c <= 'T') return 'linear-gradient(135deg, #F59E0B 0%, #92400E 100%)'
+  return 'linear-gradient(135deg, #F43F5E 0%, #881337 100%)'
+}
+
+function previewLetters(title: string): string {
+  const t = title.trim()
+  if (t.length >= 2) return t.slice(0, 2).toUpperCase()
+  return (t.slice(0, 1) || '?').toUpperCase()
+}
 
 function ProgramCardSkeleton() {
   return (
-    <Card
-      variant="flat"
-      padding="lg"
-      className="animate-pulse border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
-    >
-      <div className="aspect-video rounded-lg bg-[var(--color-border)]" />
-      <div className="mt-4 h-5 w-2/3 rounded bg-[var(--color-border)]" />
-      <div className="mt-2 h-4 w-full rounded bg-[var(--color-border)]" />
-      <div className="mt-4 flex gap-2">
-        <div className="h-8 w-16 rounded-full bg-[var(--color-border)]" />
-        <div className="mt-4 h-10 flex-1 rounded-lg bg-[var(--color-border)]" />
+    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)]">
+      <div className="h-[140px] animate-pulse bg-[var(--bg-muted)]" />
+      <div className="space-y-2 p-3">
+        <div className="h-4 w-2/3 animate-pulse rounded bg-[var(--bg-muted)]" />
+        <div className="h-3 w-full animate-pulse rounded bg-[var(--bg-muted)]" />
       </div>
-    </Card>
+    </div>
   )
 }
 
@@ -51,8 +59,11 @@ export function ProgramsPageContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('all')
+  const [view, setView] = useState<ViewMode>('grid')
+  const [searchQuery, setSearchQuery] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [assignProgramId, setAssignProgramId] = useState<string | null>(null)
+  const [menuId, setMenuId] = useState<string | null>(null)
   const [createTitle, setCreateTitle] = useState('')
   const [createDescription, setCreateDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -62,7 +73,8 @@ export function ProgramsPageContent() {
     setError(null)
     try {
       const params = new URLSearchParams()
-      if (tab !== 'all') params.set('status', tab)
+      if (tab === 'draft') params.set('status', 'draft')
+      if (tab === 'published') params.set('status', 'published')
       const res = await fetch(`/api/programs?${params.toString()}`)
       const json = await res.json()
       if (!res.ok) {
@@ -83,6 +95,12 @@ export function ProgramsPageContent() {
     setLoading(true)
     fetchPrograms()
   }, [fetchPrograms])
+
+  const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return programs
+    return programs.filter((p) => p.title.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q))
+  }, [programs, searchQuery])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,32 +136,91 @@ export function ProgramsPageContent() {
     }
   }
 
+  const archiveProgram = async (id: string) => {
+    const res = await fetch(`/api/programs/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'archived' }),
+      credentials: 'include',
+    })
+    if (res.ok) fetchPrograms()
+    setMenuId(null)
+  }
+
+  const deleteProgram = async (id: string, title: string) => {
+    if (!window.confirm(`Delete ${title}?`)) return
+    const res = await fetch(`/api/programs/${encodeURIComponent(id)}`, { method: 'DELETE', credentials: 'include' })
+    if (res.ok) fetchPrograms()
+    setMenuId(null)
+  }
+
   const tabs: { value: Tab; label: string }[] = [
     { value: 'all', label: 'All' },
-    { value: 'draft', label: 'Draft' },
     { value: 'published', label: 'Published' },
-    { value: 'archived', label: 'Archived' },
+    { value: 'draft', label: 'Draft' },
   ]
 
   return (
-    <div>
-      <PageHeader title="Programs">
-        <Button className="min-h-[44px]" onClick={() => setCreateOpen(true)}>
-          Create program
-        </Button>
-      </PageHeader>
+    <div className="coach-route-enter px-6 pb-10 pt-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-4">
+          <h1 className="text-2xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Programs</h1>
+          <span className="rounded-full bg-[var(--bg-muted)] px-2.5 py-1 text-[13px] text-[var(--text-tertiary)]">
+            {programs.length} programs
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            type="search"
+            placeholder="Search programs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-9 w-[220px] max-w-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[14px]"
+            aria-label="Search programs"
+          />
+          <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] p-0.5">
+            <button
+              type="button"
+              aria-label="List view"
+              aria-pressed={view === 'list'}
+              onClick={() => setView('list')}
+              className={cn(
+                'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
+                view === 'list' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+              )}
+            >
+              ☰
+            </button>
+            <button
+              type="button"
+              aria-label="Grid view"
+              aria-pressed={view === 'grid'}
+              onClick={() => setView('grid')}
+              className={cn(
+                'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
+                view === 'grid' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+              )}
+            >
+              ⊞
+            </button>
+          </div>
+          <Button className="min-h-9" onClick={() => setCreateOpen(true)}>
+            Create program
+          </Button>
+        </div>
+      </div>
 
-      <div className="mt-6 flex gap-1 border-b border-[var(--color-border)]">
+      <div className="mb-6 flex flex-wrap gap-0 border-b border-[var(--border-subtle)]">
         {tabs.map((t) => (
           <button
             key={t.value}
             type="button"
             onClick={() => setTab(t.value)}
             className={cn(
-              'min-h-[44px] px-4 text-sm font-medium transition-colors border-b-2 -mb-px',
+              'relative h-9 px-4 text-[14px] transition-colors duration-150',
               tab === t.value
-                ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
-                : 'border-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)]'
+                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
             )}
           >
             {t.label}
@@ -152,7 +229,7 @@ export function ProgramsPageContent() {
       </div>
 
       {loading && (
-        <div className="mt-6 grid gap-4 grid-cols-1 md:grid-cols-2">
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
           {[1, 2, 3].map((i) => (
             <ProgramCardSkeleton key={i} />
           ))}
@@ -160,8 +237,8 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && error && (
-        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
-          <p className="text-[var(--color-muted)]">{error}</p>
+        <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-8 text-center">
+          <p className="text-[var(--text-tertiary)]">{error}</p>
           <Button variant="secondary" className="mt-4" onClick={fetchPrograms}>
             Try again
           </Button>
@@ -169,80 +246,144 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && !error && programs.length === 0 && (
-        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-10 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
+        <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] p-12 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent-light)] text-xl" aria-hidden>
             📚
           </div>
-          <p className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
-            Build your signature program
+          <p className="text-xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Build your signature program</p>
+          <p className="mx-auto mt-2 max-w-[420px] text-[14px] leading-relaxed text-[var(--text-tertiary)]">
+            Create a structured program for your clients with videos, notes, and assignments. Assign it once, use it forever.
           </p>
-          <p className="mx-auto mt-3 max-w-[420px] text-[var(--text-14)] font-normal leading-[1.6] text-[var(--color-muted)]">
-            Create a structured program for your clients with videos, notes, and assignments. Assign it once, use it
-            forever.
-          </p>
-          <Button className="mt-8 min-h-11" onClick={() => setCreateOpen(true)}>
+          <Button className="mt-8" onClick={() => setCreateOpen(true)}>
             Create a program
           </Button>
         </div>
       )}
 
-      {!loading && !error && programs.length > 0 && (
-        <div className="mt-6 grid gap-4 grid-cols-1 md:grid-cols-2">
-          {programs.map((prog) => (
-            <Card
+      {!loading && !error && programs.length > 0 && view === 'grid' && (
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+          {filtered.map((prog) => (
+            <div
               key={prog.id}
-              variant="flat"
-              padding="lg"
-              className="border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
+              className="card-interactive group relative flex w-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] text-left"
+              onClick={() => router.push(`/coach/programs/${prog.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  router.push(`/coach/programs/${prog.id}`)
+                }
+              }}
+              role="link"
+              tabIndex={0}
             >
-              <div className="relative aspect-video rounded-lg bg-[var(--color-border)] overflow-hidden">
-                {prog.thumbnail_url ? (
-                  <Image
-                    src={prog.thumbnail_url}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-[var(--color-muted)] text-sm">
-                    No image
-                  </div>
-                )}
-              </div>
-              <h3 className="mt-4 font-medium text-[var(--color-ink)]">{prog.title}</h3>
-              <span
-                className={cn(
-                  'mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium',
-                  prog.status === 'published' && 'bg-[var(--color-success)]/15 text-[var(--color-success)]',
-                  prog.status === 'draft' && 'bg-[var(--color-muted)]/20 text-[var(--color-muted)]',
-                  prog.status === 'archived' && 'bg-[var(--color-border)] text-[var(--color-muted)]'
-                )}
+              <div
+                className="relative h-[140px] shrink-0 overflow-hidden"
+                style={{ background: programGradient(prog.title) }}
               >
-                {prog.status.charAt(0).toUpperCase() + prog.status.slice(1)}
-              </span>
-              <p className="mt-2 text-sm text-[var(--color-muted)]">
-                {prog.total_modules} module{prog.total_modules !== 1 ? 's' : ''}
-              </p>
-              <p className="text-sm text-[var(--color-muted)]">
-                Assigned to {prog.assigned_count ?? 0} client{(prog.assigned_count ?? 0) !== 1 ? 's' : ''}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link href={`/coach/programs/${prog.id}`}>
-                  <Button variant="secondary" className="min-h-[44px]">
-                    Edit
-                  </Button>
-                </Link>
-                <Button
-                  variant="ghost"
-                  className="min-h-[44px]"
-                  onClick={() => setAssignProgramId(prog.id)}
+                <span
+                  className={cn(
+                    'absolute left-2 top-2 rounded px-2 py-0.5 text-[11px] font-medium',
+                    prog.status === 'published' ? 'bg-white/90 text-[var(--accent)]' : 'bg-white/30 text-white'
+                  )}
                 >
-                  Assign
-                </Button>
+                  {prog.status === 'published' ? 'Published' : 'Draft'}
+                </span>
+                <span className="absolute right-2 top-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium text-white">
+                  {prog.total_modules} modules
+                </span>
+                <div className="flex h-full items-center justify-center">
+                  <span className="text-[32px] font-bold text-white drop-shadow-sm">{previewLetters(prog.title)}</span>
+                </div>
               </div>
-            </Card>
+              <div className="p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="line-clamp-2 min-w-0 flex-1 text-[14px] font-semibold text-[var(--text-primary)]">{prog.title}</p>
+                  <div className="relative shrink-0 opacity-0 transition-opacity group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                    <details open={menuId === prog.id} onToggle={(ev) => setMenuId((ev.target as HTMLDetailsElement).open ? prog.id : null)}>
+                      <summary className="flex size-6 cursor-pointer list-none items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]">
+                        ···
+                      </summary>
+                      <div className="absolute right-0 z-20 mt-1 min-w-[160px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-[var(--shadow-lg)]">
+                        <Link
+                          href={`/coach/programs/${prog.id}`}
+                          className="block px-3 py-2 text-left text-[13px] hover:bg-[var(--bg-muted)]"
+                          onClick={() => setMenuId(null)}
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          className="block w-full px-3 py-2 text-left text-[13px] hover:bg-[var(--bg-muted)]"
+                          onClick={() => setAssignProgramId(prog.id)}
+                        >
+                          Assign
+                        </button>
+                        <button
+                          type="button"
+                          className="block w-full px-3 py-2 text-left text-[13px] hover:bg-[var(--bg-muted)]"
+                          onClick={() => void archiveProgram(prog.id)}
+                        >
+                          Archive
+                        </button>
+                        <button
+                          type="button"
+                          className="block w-full px-3 py-2 text-left text-[13px] text-[var(--error)] hover:bg-[var(--bg-muted)]"
+                          onClick={() => void deleteProgram(prog.id, prog.title)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+                {prog.description?.trim() ? (
+                  <p className="mt-1 line-clamp-1 text-[12px] text-[var(--text-tertiary)]">{prog.description}</p>
+                ) : null}
+              </div>
+              <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-[12px] text-[var(--text-tertiary)]">
+                <span>👤 {prog.assigned_count ?? 0} clients</span>
+                <span className="text-[var(--text-quaternary)]">
+                  {prog.updated_at ? formatDistanceToNow(new Date(prog.updated_at), { addSuffix: true }) : '—'}
+                </span>
+              </div>
+            </div>
           ))}
+        </div>
+      )}
+
+      {!loading && !error && programs.length > 0 && view === 'list' && (
+        <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)]">
+          <ul className="divide-y divide-[var(--border-subtle)]">
+            {filtered.map((prog) => (
+              <li key={prog.id}>
+                <Link
+                  href={`/coach/programs/${prog.id}`}
+                  className="flex items-center gap-4 px-4 py-3 transition-colors duration-[80ms] hover:bg-[var(--bg-subtle)]"
+                >
+                  <div
+                    className="size-10 shrink-0 rounded-full text-center text-[11px] font-bold leading-10 text-white"
+                    style={{ background: programGradient(prog.title) }}
+                  >
+                    {previewLetters(prog.title)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-[var(--text-primary)]">{prog.title}</p>
+                    <p className="text-[12px] text-[var(--text-tertiary)]">
+                      {prog.total_modules} modules · {prog.assigned_count ?? 0} clients
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      'shrink-0 rounded px-2 py-0.5 text-[11px] font-medium',
+                      prog.status === 'published' ? 'bg-[var(--success-bg)] text-[var(--success)]' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+                    )}
+                  >
+                    {prog.status}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -257,37 +398,16 @@ export function ProgramsPageContent() {
       >
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">
-              Title *
-            </label>
-            <Input
-              value={createTitle}
-              onChange={(e) => setCreateTitle(e.target.value)}
-              placeholder="e.g. Getting Started"
-              required
-            />
+            <label className="mb-1 block text-sm font-medium text-[var(--text-primary)]">Title *</label>
+            <Input value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} placeholder="e.g. Getting Started" required />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">
-              Description
-            </label>
-            <Textarea
-              value={createDescription}
-              onChange={(e) => setCreateDescription(e.target.value)}
-              placeholder="Optional"
-              rows={3}
-            />
+            <label className="mb-1 block text-sm font-medium text-[var(--text-primary)]">Description</label>
+            <Textarea value={createDescription} onChange={(e) => setCreateDescription(e.target.value)} placeholder="Optional" rows={3} />
           </div>
-          {submitError && (
-            <p className="text-sm text-[var(--color-error)]">{submitError}</p>
-          )}
-          <div className="flex gap-2 justify-end pt-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setCreateOpen(false)}
-              disabled={submitting}
-            >
+          {submitError && <p className="text-sm text-[var(--error)]">{submitError}</p>}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)} disabled={submitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>

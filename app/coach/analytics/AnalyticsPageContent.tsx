@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { format, formatDistanceToNow, parseISO } from 'date-fns'
-import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CountUpValue } from '@/components/ui/CountUpValue'
@@ -196,11 +195,23 @@ export type AnalyticsPageContentProps = {
   wrapCharts?: (node: ReactNode) => ReactNode
 }
 
+type MainTab = 'overview' | 'revenue' | 'clients' | 'sessions' | 'assignments'
+
+type AssignOverview = {
+  pendingReviewCount: number
+  overdueCount: number
+  completionRatePct: number
+  topClientsByXp: { clientId: string; name: string; totalXp: number; level: number }[]
+}
+
 export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageContentProps) {
+  const [mainTab, setMainTab] = useState<MainTab>('overview')
   const [period, setPeriod] = useState<Period>('month')
   const [data, setData] = useState<AnalyticsPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [assignOverview, setAssignOverview] = useState<AssignOverview | null>(null)
+  const [sessionsForTab, setSessionsForTab] = useState<{ status: string }[]>([])
 
   useEffect(() => {
     void (async () => {
@@ -218,6 +229,25 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
       }
     })()
   }, [period])
+
+  useEffect(() => {
+    void fetch('/api/assignments/overview', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((json) => {
+        if (json?.data) setAssignOverview(json.data as AssignOverview)
+      })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (mainTab !== 'sessions') return
+    void fetch('/api/coach/sessions', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((json) => {
+        if (Array.isArray(json.data)) setSessionsForTab(json.data as { status: string }[])
+      })
+      .catch(() => setSessionsForTab([]))
+  }, [mainTab])
 
   const summary = data?.paymentSummary
   const chartDataRaw =
@@ -251,9 +281,51 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
     data.sessionsCompleted === 0 &&
     (summary.totalRevenue ?? 0) === 0
 
+  function exportRevenueCsv() {
+    const rows = chartData.filter((r) => r.date)
+    const lines = ['Date,RevenueUSD', ...rows.map((r) => `${r.date},${r.dollars}`)]
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `clearpath-revenue-${period}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const completedSessionsInSample = sessionsForTab.filter((s) => s.status === 'completed').length
+  const mainTabs: { id: MainTab; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'revenue', label: 'Revenue' },
+    { id: 'clients', label: 'Clients' },
+    { id: 'sessions', label: 'Sessions' },
+    { id: 'assignments', label: 'Assignments' },
+  ]
+
   return (
-    <main className="min-h-screen space-y-6 p-4 md:p-6 lg:p-8">
-      <PageHeader title="Analytics" />
+    <main className="min-h-screen space-y-6 px-6 py-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Analytics</h1>
+      </div>
+
+      <div className="flex flex-wrap gap-0 border-b border-[var(--border-subtle)]" role="tablist" aria-label="Analytics views">
+        {mainTabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={mainTab === t.id}
+            onClick={() => setMainTab(t.id)}
+            className={`relative h-9 px-4 text-[14px] transition-colors duration-150 ${
+              mainTab === t.id
+                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Period">
         {(['week', 'month', 'year', 'all'] as const).map((p) => (
@@ -288,6 +360,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
         </div>
       ) : data && summary ? (
         noDataYet ? (
+          mainTab === 'overview' ? (
           <Card variant="raised" padding="lg" className="p-10 text-center">
             <p className="text-3xl" aria-hidden>
               📊
@@ -307,102 +380,232 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
             </Link>
           </Card>
         ) : (
+          <Card variant="raised" padding="lg" className="p-8 text-center">
+            <p className="text-[15px] text-[var(--text-tertiary)]">Not enough activity for this view yet. Try a longer period or add clients.</p>
+          </Card>
+        )
+      ) : (
         <>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Card variant="raised" padding="lg">
-              <p className="text-[14px] text-[var(--color-muted)]">Total revenue</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
-                <CountUpValue value={summary.totalRevenue} formatter={(n) => formatCents(Math.round(n))} />
-              </p>
-            </Card>
-            <Card variant="raised" padding="lg">
-              <p className="text-[14px] text-[var(--color-muted)]">Sessions completed</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
-                <CountUpValue value={data.sessionsCompleted} formatter={(n) => String(Math.round(n))} />
-              </p>
-            </Card>
-            <Card variant="raised" padding="lg">
-              <p className="text-[14px] text-[var(--color-muted)]">Active clients</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
-                <CountUpValue value={data.activeClients} formatter={(n) => String(Math.round(n))} />
-              </p>
-            </Card>
-            <Card variant="raised" padding="lg">
-              <p className="text-[14px] text-[var(--color-muted)]">Avg revenue per client</p>
-              <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">
-                <CountUpValue value={data.avgRevenuePerClient} formatter={(n) => formatCents(Math.round(n))} />
-              </p>
-            </Card>
-          </div>
+          {mainTab === 'overview' && (
+            <>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Summary</p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Card variant="raised" padding="lg">
+                  <p className="text-[13px] text-[var(--text-tertiary)]">Total revenue</p>
+                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                    <CountUpValue value={summary.totalRevenue} formatter={(n) => formatCents(Math.round(n))} />
+                  </p>
+                </Card>
+                <Card variant="raised" padding="lg">
+                  <p className="text-[13px] text-[var(--text-tertiary)]">Sessions completed</p>
+                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                    <CountUpValue value={data.sessionsCompleted} formatter={(n) => String(Math.round(n))} />
+                  </p>
+                </Card>
+                <Card variant="raised" padding="lg">
+                  <p className="text-[13px] text-[var(--text-tertiary)]">Active clients</p>
+                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                    <CountUpValue value={data.activeClients} formatter={(n) => String(Math.round(n))} />
+                  </p>
+                </Card>
+                <Card variant="raised" padding="lg">
+                  <p className="text-[13px] text-[var(--text-tertiary)]">Avg revenue per client</p>
+                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                    <CountUpValue value={data.avgRevenuePerClient} formatter={(n) => formatCents(Math.round(n))} />
+                  </p>
+                </Card>
+              </div>
 
-          {wrapCharts(<AnalyticsRevenueChartCard chartData={chartData} />)}
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Revenue trend</p>
+              {wrapCharts(<AnalyticsRevenueChartCard chartData={chartData} />)}
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card variant="raised" padding="lg">
-              <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-ink)]">
-                Top clients by revenue
-              </h2>
-              {topFive.length === 0 ? (
-                <p className="text-[15px] text-[var(--color-muted)]">No payments in this period.</p>
-              ) : (
-                <ul className="space-y-4">
-                  {topFive.map((c) => {
-                    const w = Math.max(8, Math.round((c.total / topMax) * 100))
-                    return (
-                      <li key={c.clientId}>
-                        <div className="flex items-center justify-between gap-2 text-[15px]">
-                          <span className="font-medium text-[var(--color-ink)] truncate">{c.clientName}</span>
-                          <span className="shrink-0 text-[var(--color-muted)]">
-                            {formatCents(c.total)} · {c.count} payments
-                          </span>
-                        </div>
-                        <div className="mt-2 h-2 w-full rounded-full bg-[var(--color-border)] overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-[var(--color-accent)] transition-[width] duration-700 ease-out"
-                            style={{ width: `${w}%` }}
-                          />
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card variant="raised" padding="lg">
+                  <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Top clients by revenue</h2>
+                  {topFive.length === 0 ? (
+                    <p className="text-[15px] text-[var(--text-tertiary)]">No payments in this period.</p>
+                  ) : (
+                    <ul className="space-y-4">
+                      {topFive.map((c) => {
+                        const w = Math.max(8, Math.round((c.total / topMax) * 100))
+                        return (
+                          <li key={c.clientId}>
+                            <div className="flex items-center justify-between gap-2 text-[15px]">
+                              <span className="truncate font-medium text-[var(--text-primary)]">{c.clientName}</span>
+                              <span className="shrink-0 text-[var(--text-tertiary)]">
+                                {formatCents(c.total)} · {c.count} payments
+                              </span>
+                            </div>
+                            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-subtle)]">
+                              <div className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-700 ease-out" style={{ width: `${w}%` }} />
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
+                </Card>
+                {wrapCharts(
+                  <AnalyticsPaymentMethodsChartCard donutData={donutData} methodEntries={methodEntries} methodTotal={methodTotal} />
+                )}
+              </div>
+
+              <Card variant="raised" padding="lg">
+                <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Recent activity</h2>
+                {data.recentActivity.length === 0 ? (
+                  <p className="text-[15px] text-[var(--text-tertiary)]">No recent activity.</p>
+                ) : (
+                  <ul className="space-y-4">
+                    {data.recentActivity.map((item, i) => (
+                      <li key={`${item.at}-${i}`} className="flex gap-3">
+                        <ActivityIcon kind={item.kind} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[15px] text-[var(--text-primary)]">
+                            {item.kind === 'payment' && 'Payment recorded: '}
+                            {item.kind === 'client' && 'New client: '}
+                            {item.text}
+                          </p>
+                          <p className="text-[13px] text-[var(--text-tertiary)]">
+                            {formatDistanceToNow(parseISO(item.at), { addSuffix: true })}
+                          </p>
                         </div>
                       </li>
-                    )
-                  })}
-                </ul>
-              )}
-            </Card>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </>
+          )}
 
-            {wrapCharts(
-              <AnalyticsPaymentMethodsChartCard
-                donutData={donutData}
-                methodEntries={methodEntries}
-                methodTotal={methodTotal}
-              />
-            )}
-          </div>
+          {mainTab === 'revenue' && (
+            <>
+              <div className="flex justify-end">
+                <Button type="button" variant="secondary" size="sm" onClick={exportRevenueCsv}>
+                  Export CSV
+                </Button>
+              </div>
+              {wrapCharts(<AnalyticsRevenueChartCard chartData={chartData} tall />)}
+              <Card variant="raised" padding="lg">
+                <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Monthly breakdown</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-[14px]">
+                    <thead>
+                      <tr className="border-b border-[var(--border-subtle)] text-[var(--text-tertiary)]">
+                        <th className="py-2 pr-4">Period</th>
+                        <th className="py-2">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {chartData
+                        .filter((r) => r.date)
+                        .map((r) => (
+                          <tr key={r.date} className="border-b border-[var(--border-subtle)]">
+                            <td className="py-2 pr-4">{r.label}</td>
+                            <td className="py-2 tabular-nums">{formatCents(Math.round(r.total))}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </>
+          )}
 
-          <Card variant="raised" padding="lg">
-            <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-ink)]">Recent activity</h2>
-            {data.recentActivity.length === 0 ? (
-              <p className="text-[15px] text-[var(--color-muted)]">No recent activity.</p>
-            ) : (
-              <ul className="space-y-4">
-                {data.recentActivity.map((item, i) => (
-                  <li key={`${item.at}-${i}`} className="flex gap-3">
-                    <ActivityIcon kind={item.kind} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[15px] text-[var(--color-ink)]">
-                        {item.kind === 'payment' && 'Payment recorded: '}
-                        {item.kind === 'client' && 'New client: '}
-                        {item.text}
-                      </p>
-                      <p className="text-[13px] text-[var(--color-muted)]">
-                        {formatDistanceToNow(parseISO(item.at), { addSuffix: true })}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
+          {mainTab === 'clients' && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card variant="raised" padding="lg">
+                <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Top clients by revenue</h2>
+                {topFive.length === 0 ? (
+                  <p className="text-[15px] text-[var(--text-tertiary)]">No payments in this period.</p>
+                ) : (
+                  <ul className="space-y-4">
+                    {topFive.map((c) => {
+                      const w = Math.max(8, Math.round((c.total / topMax) * 100))
+                      return (
+                        <li key={c.clientId}>
+                          <div className="flex items-center justify-between gap-2 text-[15px]">
+                            <span className="truncate font-medium text-[var(--text-primary)]">{c.clientName}</span>
+                            <span className="shrink-0 text-[var(--text-tertiary)]">{formatCents(c.total)}</span>
+                          </div>
+                          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-subtle)]">
+                            <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${w}%` }} />
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </Card>
+              <Card variant="raised" padding="lg">
+                <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">XP leaderboard</h2>
+                {!assignOverview?.topClientsByXp?.length ? (
+                  <p className="text-[15px] text-[var(--text-tertiary)]">No XP data yet.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {assignOverview.topClientsByXp.map((c) => (
+                      <li key={c.clientId} className="flex items-center justify-between text-[14px]">
+                        <Link href={`/coach/clients/${c.clientId}`} className="font-medium text-[var(--accent)] hover:underline">
+                          {c.name}
+                        </Link>
+                        <span className="text-[var(--text-tertiary)]">
+                          {c.totalXp} XP · L{c.level}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+          )}
 
+          {mainTab === 'sessions' && (
+            <div className="grid gap-6 lg:grid-cols-3">
+              <Card variant="raised" padding="lg" className="lg:col-span-1">
+                <p className="text-[13px] text-[var(--text-tertiary)]">Completed (sample window)</p>
+                <p className="mt-2 text-[36px] font-bold text-[var(--text-primary)]">{completedSessionsInSample}</p>
+                <p className="mt-1 text-[12px] text-[var(--text-quaternary)]">From upcoming sessions API snapshot</p>
+              </Card>
+              <Card variant="raised" padding="lg" className="lg:col-span-2">
+                <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Period summary</h2>
+                <p className="text-[14px] text-[var(--text-tertiary)]">
+                  Sessions completed in selected period:{' '}
+                  <span className="font-semibold text-[var(--text-primary)]">{data.sessionsCompleted}</span>
+                </p>
+              </Card>
+            </div>
+          )}
+
+          {mainTab === 'assignments' && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card variant="raised" padding="lg">
+                <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Completion & queue</h2>
+                {!assignOverview ? (
+                  <p className="text-[var(--text-tertiary)]">Loading…</p>
+                ) : (
+                  <ul className="space-y-3 text-[14px] text-[var(--text-secondary)]">
+                    <li>Completion rate: {assignOverview.completionRatePct}%</li>
+                    <li>Pending review: {assignOverview.pendingReviewCount}</li>
+                    <li>Overdue: {assignOverview.overdueCount}</li>
+                  </ul>
+                )}
+              </Card>
+              <Card variant="raised" padding="lg">
+                <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Top clients by XP</h2>
+                {!assignOverview?.topClientsByXp?.length ? (
+                  <p className="text-[var(--text-tertiary)]">No data.</p>
+                ) : (
+                  <ul className="space-y-2 text-[14px]">
+                    {assignOverview.topClientsByXp.map((c) => (
+                      <li key={c.clientId} className="flex justify-between">
+                        <span>{c.name}</span>
+                        <span className="text-[var(--text-tertiary)]">{c.totalXp} XP</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+          )}
         </>
         )
       ) : null}

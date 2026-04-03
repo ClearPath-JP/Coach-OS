@@ -118,9 +118,10 @@ export default async function CoachLayout({
           userDisplayName={displayName}
           coachAvatarUrl={coachAvatarUrl}
         />
-        <div className="flex min-h-0 flex-1 flex-col lg:min-h-0 lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]">
-          <div className="hidden min-h-0 lg:flex">
+        <div className="relative flex min-h-0 flex-1 flex-col lg:min-h-0">
+          <div className="pointer-events-none hidden lg:fixed lg:left-0 lg:top-[var(--nav-height)] lg:z-40 lg:flex lg:h-[calc(100dvh-var(--nav-height))] lg:w-[var(--sidebar-width)] lg:pointer-events-auto">
             <Sidebar
+              variant="coach"
               wordmark
               topItems={topItems}
               sections={sections}
@@ -135,7 +136,7 @@ export default async function CoachLayout({
           </div>
           <div
             id="coach-main-scroll"
-            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-16 lg:min-h-0 lg:overflow-y-auto lg:pb-0"
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-16 lg:min-h-0 lg:overflow-y-auto lg:pb-0 lg:pl-[var(--sidebar-width)]"
           >
             <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
           </div>

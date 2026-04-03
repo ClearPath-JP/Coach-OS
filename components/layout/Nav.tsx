@@ -7,8 +7,10 @@ import { useTheme } from '@/components/ThemeProvider'
 import { SignOutButton } from '@/components/layout/SignOutButton'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { ClearPathLogo } from '@/components/layout/ClearPathLogo'
+import { CoachNavTrail } from '@/components/layout/CoachNavTrail'
 import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/lib/workspace-context'
+import { openCommandPalette } from '@/lib/command-palette'
 
 export interface NavProps {
   className?: string
@@ -113,38 +115,18 @@ function CoachNavLeadingMark() {
   )
 }
 
-function coachTitleFromPath(pathname: string, fallbackLabel: string): string {
-  if (pathname === '/coach/dashboard' || pathname === '/billing') {
-    return pathname === '/billing' ? 'Billing' : 'Dashboard'
-  }
-  if (pathname.startsWith('/coach/clients/')) return 'Client'
-  if (pathname.startsWith('/coach/clients')) return 'Clients'
-  if (pathname.startsWith('/coach/schedule')) return 'Schedule'
-  if (pathname.startsWith('/coach/programs/')) return 'Program'
-  if (pathname.startsWith('/coach/programs')) return 'Programs'
-  if (pathname.startsWith('/coach/videos')) return 'Videos'
-  if (pathname.startsWith('/coach/messages')) return 'Messages'
-  if (pathname.startsWith('/coach/packages')) return 'Packages'
-  if (pathname.startsWith('/coach/invoices')) return 'Invoices'
-  if (pathname.startsWith('/coach/payments')) return 'Payments'
-  if (pathname.startsWith('/coach/analytics')) return 'Analytics'
-  if (pathname.startsWith('/coach/settings')) return 'Settings'
-  if (pathname.startsWith('/coach')) return 'Coach'
-  return fallbackLabel
-}
-
 function NavThemeIconButton() {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
   return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      className="flex size-7 shrink-0 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-primary)] transition-[background-color,box-shadow] duration-[var(--duration-normal)] hover:bg-[var(--bg-subtle)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      {isDark ? (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-primary)] transition-[background-color,box-shadow] duration-[80ms] hover:bg-[var(--bg-muted)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {isDark ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <circle cx="12" cy="12" r="4" />
           <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
         </svg>
@@ -181,7 +163,7 @@ function CoachUserMenu({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[11px] font-semibold text-[var(--text-primary)] transition-[box-shadow] duration-[var(--duration-normal)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        className="avatar-hover flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[11px] font-semibold text-[var(--text-primary)] transition-[box-shadow] duration-150 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Account menu"
@@ -239,13 +221,12 @@ export function Nav({
   const logoLabel = brandName?.trim() || 'ClearPath'
   const { theme } = useTheme()
   const [scrolled, setScrolled] = useState(false)
-  const [clientLogoFailed, setClientLogoFailed] = useState(false)
+  const clientPortalLogoTrimmed = clientPortalLogoUrl?.trim() ?? ''
+  const [portalLogoFailedForUrl, setPortalLogoFailedForUrl] = useState<string | null>(null)
+  const showClientPortalLogo = Boolean(clientPortalLogoTrimmed && portalLogoFailedForUrl !== clientPortalLogoTrimmed)
 
-  useEffect(() => {
-    setClientLogoFailed(false)
-  }, [clientPortalLogoUrl])
   const [notifOpen, setNotifOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(Math.max(notificationCount, 2))
+  const [unreadCount, setUnreadCount] = useState(notificationCount)
   const [notifications, setNotifications] = useState([
     { id: '1', type: 'message', title: 'New message from Sarah Johnson', body: 'Asked for a schedule change this week.', time: '2m ago', unread: true },
     { id: '2', type: 'session', title: 'Session starts in 30 minutes', body: 'Alex Carter · Performance review.', time: '25m ago', unread: true },
@@ -260,45 +241,59 @@ export function Nav({
     return () => window.removeEventListener('scroll', onScroll)
   }, [clientPortal])
 
+  useEffect(() => {
+    if (!coachApp) return
+    const load = () => {
+      void fetch('/api/messages/unread-count', { credentials: 'include' })
+        .then((r) => r.json())
+        .then((json) => {
+          if (typeof json?.data?.count === 'number') setUnreadCount(json.data.count)
+        })
+        .catch(() => {})
+    }
+    load()
+    const t = window.setInterval(load, 60_000)
+    return () => clearInterval(t)
+  }, [coachApp])
+
   const headerBg = clientPortal
     ? undefined
-    : scrolled && theme === 'light'
-      ? 'rgba(255,255,255,0.85)'
-      : scrolled && theme === 'dark'
-        ? 'rgba(25,25,25,0.85)'
-        : undefined
+    : coachApp
+      ? undefined
+      : scrolled && theme === 'light'
+        ? 'rgba(255,255,255,0.85)'
+        : scrolled && theme === 'dark'
+          ? 'rgba(25,25,25,0.85)'
+          : undefined
 
   const clientNavSurface = 'rgba(var(--bg-app-rgb), 0.9)'
-
-  function CoachAppTitle({ pathname }: { pathname: string }) {
-    const { settings } = useWorkspace()
-    const fallback = settings.workspaceDisplayName || settings.brandName || 'ClearPath'
-    return (
-      <h1 className="min-w-0 truncate text-[14px] font-medium text-[var(--text-primary)]">
-        {coachTitleFromPath(pathname, fallback)}
-      </h1>
-    )
-  }
+  const coachNavSurface = 'rgba(var(--bg-app-rgb), 0.9)'
 
   return (
     <header className={cn('z-30', className)} role="banner">
       <nav
         className={cn(
-          'sticky top-0 z-30 flex h-[var(--nav-height)] items-center border-b border-[var(--border-subtle)] backdrop-blur-[12px] transition-[background-color,box-shadow] duration-[var(--duration-normal)]',
+          'sticky top-0 z-30 flex h-[var(--nav-height)] items-center border-b border-[var(--border-subtle)] transition-[background-color,box-shadow] duration-[var(--duration-normal)]',
           clientPortal
             ? 'justify-center px-0 sm:px-0 lg:h-auto lg:min-h-[68px] lg:shadow-[var(--shadow-sm)]'
-            : 'justify-between px-4 sm:px-6'
+            : coachApp
+              ? 'justify-between gap-4 px-6 backdrop-blur-[8px]'
+              : 'justify-between px-4 sm:px-6'
         )}
         style={{
-          backgroundColor: clientPortal ? clientNavSurface : headerBg ?? 'var(--bg-app)',
+          backgroundColor: clientPortal
+            ? clientNavSurface
+            : coachApp
+              ? coachNavSurface
+              : headerBg ?? 'var(--bg-app)',
         }}
       >
         {coachApp ? (
-          <div className="flex min-w-0 max-w-[50%] items-center gap-3 sm:max-w-none">
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:max-w-none">
             <span className="shrink-0 lg:hidden">
               <CoachNavLeadingMark />
             </span>
-            <CoachAppTitle pathname={pathname} />
+            <CoachNavTrail key={pathname} />
           </div>
         ) : clientPortal ? (
           <div className="mx-auto flex h-full min-h-[var(--nav-height)] w-full max-w-[1600px] items-center justify-between gap-2 px-4 sm:px-6 lg:min-h-0 lg:gap-4 lg:px-8">
@@ -306,14 +301,15 @@ export function Nav({
               href={logoHref}
               className="flex min-w-0 max-w-[min(100%,240px)] shrink-0 items-center gap-2 sm:max-w-[min(100%,280px)] sm:gap-2.5 lg:max-w-[min(100%,320px)] lg:gap-3 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
-              {clientPortalLogoUrl && !clientLogoFailed ? (
+              {showClientPortalLogo ? (
                 <span className="relative size-8 shrink-0 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] lg:size-10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={clientPortalLogoUrl}
+                    key={clientPortalLogoTrimmed}
+                    src={clientPortalLogoTrimmed}
                     alt=""
                     className="size-full object-contain p-0.5"
-                    onError={() => setClientLogoFailed(true)}
+                    onError={() => setPortalLogoFailedForUrl(clientPortalLogoTrimmed)}
                   />
                 </span>
               ) : null}
@@ -344,6 +340,7 @@ export function Nav({
                   </div>
                 </div>
               ) : null}
+              <SignOutButton variant="nav" className="text-[12px] sm:text-[13px]" />
             </div>
           </div>
         ) : (
@@ -357,16 +354,41 @@ export function Nav({
 
         {!clientPortal ? (
           <>
-            <div className="flex min-w-0 flex-1 justify-center" aria-hidden={!coachApp} />
+            <div
+              className={cn('hidden min-w-0 flex-1 justify-center lg:block', coachApp && 'lg:block')}
+              aria-hidden={!coachApp}
+            />
 
             <div className={cn('flex items-center', coachApp ? 'gap-1' : 'gap-2')}>
           {coachApp ? (
             <>
+              <Tooltip content="Search">
+                <button
+                  type="button"
+                  onClick={() => openCommandPalette()}
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-tertiary)] transition-[background-color,color] duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  aria-label="Open command palette"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    aria-hidden
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="M21 21l-4.35-4.35" />
+                  </svg>
+                </button>
+              </Tooltip>
               <Tooltip content="Notifications">
                 <button
                   type="button"
                   onClick={() => setNotifOpen((v) => !v)}
-                  className="relative flex size-7 shrink-0 items-center justify-center rounded-full text-[var(--text-tertiary)] transition-[background-color,color] duration-[var(--duration-fast)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="relative flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-tertiary)] transition-[background-color,color] duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   aria-label="Notifications"
                 >
                 <svg

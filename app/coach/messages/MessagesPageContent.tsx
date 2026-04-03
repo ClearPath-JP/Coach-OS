@@ -321,17 +321,19 @@ function MessagesThreadMessagesList({
                     </div>
                   ) : (
                     <div
-                      className={`max-w-[85%] rounded-xl px-4 py-2 ${
+                      className={cn(
+                        'max-w-[70%] px-3.5 py-2.5 text-[14px] leading-relaxed',
                         msg.sender_id === userId
-                          ? 'bg-[var(--color-accent)] text-white'
-                          : 'bg-[var(--color-surface)] text-[var(--color-ink)] border border-[var(--color-border)]'
-                      }`}
+                          ? 'rounded-[12px] rounded-br-[2px] bg-[var(--accent)] text-white'
+                          : 'rounded-[12px] rounded-bl-[2px] border border-[var(--border-subtle)] bg-[var(--bg-muted)] text-[var(--text-primary)]'
+                      )}
                     >
-                      <p className="whitespace-pre-wrap break-words text-[15px]">{msg.content}</p>
+                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                       <p
-                        className={`mt-1 text-[12px] ${
-                          msg.sender_id === userId ? 'text-white/80' : 'text-[var(--color-muted)]'
-                        }`}
+                        className={cn(
+                          'mt-1 text-[11px]',
+                          msg.sender_id === userId ? 'text-white/75' : 'text-[var(--text-quaternary)]'
+                        )}
                       >
                         {format(new Date(msg.created_at), 'h:mm a')}
                       </p>
@@ -373,6 +375,7 @@ export function CoachMessagesPageContent() {
   const [broadcastText, setBroadcastText] = useState('')
   const [broadcastSending, setBroadcastSending] = useState(false)
   const checkinPrefillDone = useRef(false)
+  const [convSearch, setConvSearch] = useState('')
   const [bookModalOpen, setBookModalOpen] = useState(false)
   const [bookInitialDate, setBookInitialDate] = useState<string | null>(null)
   const [bookInitialTime, setBookInitialTime] = useState<string | null>(null)
@@ -642,38 +645,63 @@ export function CoachMessagesPageContent() {
     [conversations]
   )
 
+  const totalUnread = useMemo(
+    () => conversations.reduce((acc, c) => acc + (c.unreadCount > 0 ? c.unreadCount : 0), 0),
+    [conversations]
+  )
+
+  const filteredConversations = useMemo(() => {
+    const q = convSearch.trim().toLowerCase()
+    if (!q) return conversations
+    return conversations.filter(
+      (c) =>
+        c.fullName.toLowerCase().includes(q) ||
+        (c.lastMessagePreview ?? '').toLowerCase().includes(q)
+    )
+  }, [conversations, convSearch])
+
   const keyboardOverlapPx = useVisualViewportKeyboardOverlap(
     Boolean(isNarrowViewport && selectedClientId)
   )
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:min-h-[calc(100dvh-3.5rem)] lg:flex-row">
-      {/* Left: conversation list — 1/3 on desktop, full on mobile when no thread */}
+    <div className="flex min-h-0 flex-1 flex-col lg:min-h-[calc(100dvh-var(--nav-height))] lg:flex-row">
       <div
-        className={`flex h-full flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] ${
-          showListOnly ? 'w-full' : 'hidden lg:flex lg:w-1/3'
+        className={`flex h-full flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-subtle)] ${
+          showListOnly ? 'w-full' : 'hidden lg:flex lg:w-[320px] lg:shrink-0'
         }`}
       >
-        <div className="border-b border-[var(--color-border)] px-4 py-4">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
-              Messages
-            </h1>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="min-h-9 shrink-0"
-              onClick={() => {
-                setBroadcastText('')
-                setBroadcastOpen(true)
-              }}
-            >
-              Send to all clients
-            </Button>
+        <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-[var(--border-subtle)] px-4">
+          <div className="flex items-center gap-2">
+            <h1 className="text-[15px] font-semibold text-[var(--text-primary)]">Messages</h1>
+            {totalUnread > 0 ? (
+              <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[11px] font-semibold text-white">{totalUnread > 99 ? '99+' : totalUnread}</span>
+            ) : null}
           </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="min-h-8 shrink-0 text-[12px]"
+            onClick={() => {
+              setBroadcastText('')
+              setBroadcastOpen(true)
+            }}
+          >
+            Broadcast
+          </Button>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="shrink-0 px-3 py-2">
+          <input
+            type="search"
+            placeholder="Search conversations..."
+            value={convSearch}
+            onChange={(e) => setConvSearch(e.target.value)}
+            className="h-8 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)]"
+            aria-label="Search conversations"
+          />
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {loadingConversations && <ConversationListSkeleton />}
           {!loadingConversations && conversationsError && (
             <div className="p-4">
@@ -702,8 +730,8 @@ export function CoachMessagesPageContent() {
             </div>
           )}
           {!loadingConversations && !conversationsError && conversations.length > 0 && (
-            <ul className="divide-y divide-[var(--color-border)]">
-              {conversations.map((c) => (
+            <ul>
+              {filteredConversations.map((c) => (
                 <li key={c.clientId}>
                   <button
                     type="button"
@@ -711,37 +739,38 @@ export function CoachMessagesPageContent() {
                       setSelectedClientId(c.clientId)
                       setSelectedClientName(c.fullName)
                     }}
-                    className={`flex min-h-[44px] w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--color-border)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-inset ${
-                      selectedClientId === c.clientId ? 'bg-[var(--color-accent-light)]' : ''
-                    }`}
+                    className={cn(
+                      'relative flex w-full items-start gap-2.5 px-4 py-2.5 text-left transition-[background-color] duration-[80ms] hover:bg-[var(--bg-app)] focus:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--accent)]',
+                      selectedClientId === c.clientId && 'bg-[var(--bg-app)] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-[var(--accent)]'
+                    )}
                   >
+                    {c.unreadCount > 0 ? (
+                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[var(--accent)]" aria-hidden />
+                    ) : (
+                      <span className="mt-2 size-1.5 shrink-0" aria-hidden />
+                    )}
                     <div
-                      className="flex size-11 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-accent-bg)] text-sm font-medium text-[var(--color-accent)]"
+                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[12px] font-semibold text-[var(--accent)]"
                       aria-hidden
                     >
                       {getInitials(c.fullName)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-[var(--color-ink)]">{c.fullName}</p>
-                      <p className="truncate text-[13px] text-[var(--color-muted)]">
-                        {c.hasMessages
-                          ? c.lastMessagePreview || 'Message'
-                          : 'Start a conversation'}
-                      </p>
-                      <p className="mt-0.5 text-[12px] text-[var(--color-muted)]">
-                        {c.lastMessageAt
-                          ? format(new Date(c.lastMessageAt), 'MMM d, h:mm a')
-                          : '—'}
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="truncate text-[14px] font-medium text-[var(--text-primary)]">{c.fullName}</p>
+                        <span className="shrink-0 text-[11px] text-[var(--text-quaternary)]">
+                          {c.lastMessageAt ? format(new Date(c.lastMessageAt), 'h:mm a') : '—'}
+                        </span>
+                      </div>
+                      <p
+                        className={cn(
+                          'mt-0.5 truncate text-[12px]',
+                          c.unreadCount > 0 ? 'font-medium text-[var(--text-secondary)]' : 'text-[var(--text-tertiary)]'
+                        )}
+                      >
+                        {c.hasMessages ? c.lastMessagePreview || 'Message' : 'Start a conversation'}
                       </p>
                     </div>
-                    {c.unreadCount > 0 && (
-                      <span
-                        className="shrink-0 rounded-full bg-[var(--color-success)] px-2 py-0.5 text-xs font-medium text-white"
-                        aria-label={`${c.unreadCount} unread`}
-                      >
-                        {c.unreadCount > 99 ? '99+' : c.unreadCount}
-                      </span>
-                    )}
                   </button>
                 </li>
               ))}
@@ -753,7 +782,7 @@ export function CoachMessagesPageContent() {
       {/* Right: thread — 2/3 on desktop, full on mobile when selected */}
       <div
         className={`flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--bg-app)] ${
-          showThreadOnly ? 'flex w-full lg:w-2/3' : 'hidden lg:flex lg:w-2/3'
+          showThreadOnly ? 'flex w-full lg:min-w-0 lg:flex-1' : 'hidden lg:flex lg:min-w-0 lg:flex-1'
         }`}
       >
         {!selectedClientId && (
@@ -776,7 +805,7 @@ export function CoachMessagesPageContent() {
         )}
         {selectedClientId && (
           <>
-            <div className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
+            <div className="flex h-[52px] shrink-0 items-center gap-3 border-b border-[var(--border-subtle)] px-5">
               {isNarrowViewport && (
                 <button
                   type="button"
@@ -789,10 +818,10 @@ export function CoachMessagesPageContent() {
                   </svg>
                 </button>
               )}
-              <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
                 <Link
                   href={`/coach/clients/${selectedClientId}`}
-                  className="text-[var(--text-15)] font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] focus-visible:rounded focus-visible:shadow-[var(--focus-ring)]"
+                  className="truncate text-[15px] font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] focus-visible:rounded focus-visible:shadow-[var(--focus-ring)]"
                 >
                   {selectedClientName || 'Client'}
                 </Link>
@@ -801,18 +830,32 @@ export function CoachMessagesPageContent() {
                     variant={statusBadgeVariant(
                       conversations.find((c) => c.clientId === selectedClientId)!.status
                     )}
-                    className="ml-2"
                   >
                     {conversations.find((c) => c.clientId === selectedClientId)!.status}
                   </Badge>
                 )}
+              </div>
+              <div className="hidden shrink-0 items-center gap-2 sm:flex">
+                <Link
+                  href={`/coach/clients/${selectedClientId}`}
+                  className="rounded-[var(--radius-md)] px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)]"
+                >
+                  View profile
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setBookModalOpen(true)}
+                  className="rounded-[var(--radius-md)] px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)]"
+                >
+                  Book session
+                </button>
               </div>
             </div>
 
             <div
               ref={threadScrollRef}
               className={cn(
-                'min-h-0 flex-1 overflow-y-auto p-4',
+                'min-h-0 flex-1 overflow-y-auto p-5',
                 isNarrowViewport && 'pb-40'
               )}
               onScroll={(e) => {
@@ -870,10 +913,10 @@ export function CoachMessagesPageContent() {
 
             <div
               className={cn(
-                'shrink-0 border-t border-[var(--border-default)] bg-[var(--bg-app)]',
+                'shrink-0 border-t border-[var(--border-subtle)] bg-[var(--bg-app)] px-5 py-3',
                 isNarrowViewport
-                  ? 'fixed left-0 right-0 z-[38] p-3 shadow-[0_-4px_24px_rgba(15,23,42,0.06)]'
-                  : 'p-4 safe-bottom'
+                  ? 'fixed left-0 right-0 z-[38] shadow-[0_-4px_24px_rgba(15,23,42,0.06)]'
+                  : 'safe-bottom'
               )}
               style={
                 isNarrowViewport
@@ -883,7 +926,7 @@ export function CoachMessagesPageContent() {
                   : undefined
               }
             >
-              <div className="flex gap-2">
+              <div className="flex items-end gap-2">
                 <textarea
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value.slice(0, 2000))}
@@ -896,16 +939,24 @@ export function CoachMessagesPageContent() {
                   placeholder="Type a message..."
                   rows={1}
                   maxLength={2000}
-                  className="min-h-11 flex-1 resize-y rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2.5 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="min-h-10 max-h-[120px] flex-1 resize-none rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3.5 py-2.5 text-[14px] leading-normal text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--accent)] focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   aria-label="Message"
                 />
-                <Button
-                  onClick={handleSend}
+                <button
+                  type="button"
+                  onClick={() => void handleSend()}
                   disabled={!inputValue.trim() || sending}
-                  className="min-h-11 min-w-11 shrink-0 px-4"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-[transform,opacity] duration-150 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:shadow-[var(--focus-ring)]"
+                  aria-label="Send message"
                 >
-                  {sending ? 'Sending…' : 'Send'}
-                </Button>
+                  {sending ? (
+                    <span className="text-xs">…</span>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                      <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
               </div>
               {inputValue.length > 1900 && (
                 <p className="mt-1 text-[var(--text-12)] text-[var(--text-tertiary)]">

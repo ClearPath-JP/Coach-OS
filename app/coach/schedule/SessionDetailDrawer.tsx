@@ -9,6 +9,7 @@ import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
 import { parseActionItemsJson } from '@/lib/sessions/action-items'
 import { cn } from '@/lib/utils'
+import { initials } from './schedule-lib'
 
 export type SessionForDrawer = {
   id: string
@@ -18,11 +19,12 @@ export type SessionForDrawer = {
   status: string
   notes: string | null
   client_id: string
+  session_type?: string | null
   coach_private_notes?: string | null
   session_summary?: string | null
   action_items?: unknown
   notes_sent_at?: string | null
-  clients: { first_name: string | null; last_name: string | null } | null
+  clients: { first_name: string | null; last_name: string | null; email?: string | null } | null
 }
 
 export interface SessionDetailDrawerProps {
@@ -32,11 +34,12 @@ export interface SessionDetailDrawerProps {
   onToast?: (message: string, variant?: 'success' | 'error' | 'warning') => void
   /** Opens book flow with this session’s client and duration; old session is removed after a new time is booked. */
   onReschedule?: () => void
+  className?: string
 }
 
 type DraftAction = { id: string; text: string; assignedTo: 'client' | 'coach' }
 
-export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onReschedule }: SessionDetailDrawerProps) {
+export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onReschedule, className }: SessionDetailDrawerProps) {
   const [notesTab, setNotesTab] = useState<'client' | 'private'>('client')
   const [sessionSummary, setSessionSummary] = useState('')
   const [coachPrivateNotes, setCoachPrivateNotes] = useState('')
@@ -321,36 +324,75 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
 
   const statusVariant = session.status === 'confirmed' ? 'active' : session.status === 'completed' ? 'inactive' : 'pending'
 
+  const clientEmail = session.clients?.email?.trim() || null
+
   return (
-    <div className="h-full border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm flex flex-col" role="dialog" aria-modal="false">
-      <div className="flex items-center justify-between border-b border-[var(--color-border)] p-4">
-        <h2 className="text-lg font-medium text-[var(--color-text-primary)]">Session details</h2>
-        <button type="button" onClick={onClose} className="rounded-lg p-2 hover:bg-[var(--color-surface)] text-[var(--color-text-secondary)]" aria-label="Close">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
+    <div
+      className={cn('flex h-full flex-col bg-[var(--bg-app)]', className)}
+      role="dialog"
+      aria-modal="false"
+    >
+      <div className="flex h-[52px] shrink-0 items-center border-b border-[var(--border-subtle)] px-4">
+        <h2 className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">{clientName}</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+          aria-label="Close"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto p-4 space-y-4">
-        <div>
-          <p className="text-sm text-[var(--color-text-secondary)]">Client</p>
-          <Link href={`/coach/clients/${session.client_id}`} className="text-[var(--color-accent)] hover:underline font-medium">
-            {clientName}
-          </Link>
+      <div className="flex-1 overflow-auto">
+        <div className="flex gap-3 border-b border-[var(--border-subtle)] p-4">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-sm font-medium text-white">
+            {initials(clientName)}
+          </span>
+          <div className="min-w-0">
+            <Link href={`/coach/clients/${session.client_id}`} className="text-[15px] font-semibold text-[var(--accent)] hover:underline">
+              {clientName}
+            </Link>
+            {clientEmail ? <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">{clientEmail}</p> : null}
+            <div className="mt-2">
+              <Badge variant={statusVariant}>{session.status}</Badge>
+            </div>
+          </div>
         </div>
-        <div>
-          <p className="text-sm text-[var(--color-text-secondary)]">Date & time</p>
-          <p className="text-sm text-[var(--color-text-primary)]">{format(start, 'EEEE, MMM d, yyyy')} · {format(start, 'h:mm a')} – {format(end, 'h:mm a')}</p>
-          <p className="text-xs text-[var(--color-text-secondary)]">{durationMins} min</p>
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            To move this session, use Reschedule to pick a new date and time. The previous time is removed after the new session is booked.
+        <div className="space-y-4 p-4">
+        <div className="space-y-3 border-b border-[var(--border-subtle)] pb-4">
+          <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] py-1.5 last:border-0">
+            <span className="text-[13px] text-[var(--text-tertiary)]">Date</span>
+            <span className="text-right text-[13px] font-medium text-[var(--text-primary)]">{format(start, 'EEEE, MMM d, yyyy')}</span>
+          </div>
+          <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] py-1.5 last:border-0">
+            <span className="text-[13px] text-[var(--text-tertiary)]">Time</span>
+            <span className="text-right text-[13px] font-medium text-[var(--text-primary)]">
+              {format(start, 'h:mm a')} – {format(end, 'h:mm a')}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4 border-b border-[var(--border-subtle)] py-1.5 last:border-0">
+            <span className="text-[13px] text-[var(--text-tertiary)]">Duration</span>
+            <span className="text-right text-[13px] font-medium text-[var(--text-primary)]">{durationMins} minutes</span>
+          </div>
+          <div className="flex items-center justify-between gap-4 py-1.5">
+            <span className="text-[13px] text-[var(--text-tertiary)]">Type</span>
+            <span className="text-right text-[13px] font-medium text-[var(--text-primary)]">{session.session_type?.trim() || 'Video call'}</span>
+          </div>
+          <p className="text-[12px] text-[var(--text-tertiary)]">
+            To move this session, use Reschedule. The previous time is removed after the new session is booked.
           </p>
         </div>
         <div>
-          <p className="text-sm text-[var(--color-text-secondary)]">Status</p>
-          <Badge variant={statusVariant}>{session.status}</Badge>
-        </div>
-        <div>
-          <p className="text-sm text-[var(--color-text-secondary)]">Type</p>
-          <p className="text-[var(--color-text-primary)]">video</p>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Notes</p>
+          <p className="text-[13px] text-[var(--text-secondary)]">
+            {session.notes?.trim() ? (
+              session.notes
+            ) : (
+              <span className="italic text-[var(--text-quaternary)]">No notes</span>
+            )}
+          </p>
         </div>
         <div className="space-y-2 border-t border-[var(--color-border)] pt-4">
           <p className="text-sm font-medium text-[var(--color-text-primary)]">Payment</p>
@@ -540,13 +582,19 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
         </div>
         <div className="flex flex-col gap-2 pt-4 border-t border-[var(--color-border)]">
           {onReschedule && session.status !== 'completed' ? (
-            <Button type="button" variant="secondary" disabled={actionLoading} onClick={() => onReschedule()}>
+            <Button type="button" variant="secondary" className="w-full" disabled={actionLoading} onClick={() => onReschedule()}>
               Reschedule
             </Button>
           ) : null}
-          <Button onClick={markComplete} disabled={actionLoading} variant="secondary" className="border-[var(--color-success)] text-[var(--color-success)] hover:bg-[var(--color-success-light)]">
-            Mark complete
-          </Button>
+          {session.status !== 'completed' && session.status !== 'cancelled' ? (
+            <Button
+              onClick={markComplete}
+              disabled={actionLoading}
+              className="w-full"
+            >
+              Complete session
+            </Button>
+          ) : null}
           {!confirmCancel ? (
             <Button variant="destructive-secondary" onClick={() => setConfirmCancel(true)} disabled={actionLoading}>
               Cancel session
@@ -585,9 +633,10 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
               </div>
             )
           ) : null}
-          <Button variant="secondary" onClick={sendReminder} disabled={actionLoading}>
+          <Button variant="secondary" className="w-full" onClick={sendReminder} disabled={actionLoading}>
             Send reminder
           </Button>
+        </div>
         </div>
       </div>
       <RecordPaymentModal

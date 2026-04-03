@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { format, parseISO, startOfWeek, addDays, addMinutes, addMonths, startOfMonth, isSameDay, isSameMonth } from 'date-fns'
-import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase'
 import { AddAvailabilityModal } from './AddAvailabilityModal'
 import { BookSessionModal } from './BookSessionModal'
 import { SessionDetailDrawer, type SessionForDrawer } from './SessionDetailDrawer'
 import { WeeklyUnavailabilityEditor } from '@/components/unavailability/WeeklyUnavailabilityEditor'
+import { cn } from '@/lib/utils'
 
-type CalendarView = 'week' | 'month'
+type CalendarView = 'week' | 'month' | 'agenda'
 
 type RecurringRule = {
   id: string
@@ -36,10 +36,22 @@ type SessionWithClient = {
   status: string
   notes: string | null
   client_id: string
+  session_type: string | null
   clients: { first_name: string | null; last_name: string | null } | null
 }
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function sessionBlockClasses(session: SessionWithClient): string {
+  const t = (session.session_type ?? 'video').toLowerCase()
+  if (t.includes('phone')) {
+    return 'rounded border border-[var(--success)] bg-[var(--success-bg)] px-2 py-1 text-[12px] font-medium text-[var(--success)]'
+  }
+  if (t.includes('person') || t.includes('in_person') || t.includes('in-person')) {
+    return 'rounded border border-[var(--warning)] bg-[var(--warning-bg)] px-2 py-1 text-[12px] font-medium text-[var(--warning)]'
+  }
+  return 'rounded border border-[var(--accent)] bg-[var(--accent-light)] px-2 py-1 text-[12px] font-medium text-[var(--accent)]'
+}
 
 function formatTimeRange(start: string, end: string): string {
   const s = start.slice(0, 5)
@@ -83,7 +95,7 @@ export function SchedulePageContent() {
 
     const [slotsRes, sessionsRes] = await Promise.all([
       supabase.from('availability_slots').select('id, start_time, end_time, label').eq('coach_id', user.id).gte('start_time', startIso).lte('end_time', endIso).order('start_time'),
-      supabase.from('sessions').select('id, scheduled_time, end_time, duration_minutes, status, notes, client_id, clients(first_name, last_name)').eq('coach_id', user.id).gte('scheduled_time', startIso).lte('scheduled_time', endIso).in('status', ['pending', 'confirmed', 'completed', 'cancelled', 'no_show']).order('scheduled_time'),
+      supabase.from('sessions').select('id, scheduled_time, end_time, duration_minutes, status, notes, client_id, session_type, clients(first_name, last_name)').eq('coach_id', user.id).gte('scheduled_time', startIso).lte('scheduled_time', endIso).in('status', ['pending', 'confirmed', 'completed', 'cancelled', 'no_show']).order('scheduled_time'),
     ])
     if (slotsRes.data) setSlots(slotsRes.data)
     if (sessionsRes.data) setSessions(sessionsRes.data as unknown as SessionWithClient[])
@@ -166,22 +178,41 @@ export function SchedulePageContent() {
   )
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Schedule">
-        <Button variant="secondary" onClick={() => setAddModalOpen(true)}>
-          Set availability
-        </Button>
-        <Button
-          onClick={() => {
-            setBookModalRescheduleSessionId(null)
-            setBookModalInitialClientId(null)
-            setBookModalInitialDuration(null)
-            setBookModalOpen(true)
-          }}
-        >
-          Book session
-        </Button>
-      </PageHeader>
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
+      <div className="min-w-0 flex-1 space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-0 border-b border-[var(--border-subtle)]">
+          {(['week', 'month', 'agenda'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setView(v === 'agenda' ? 'agenda' : v)}
+              className={`relative h-9 px-4 text-[14px] capitalize transition-colors duration-150 ${
+                view === v
+                  ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                  : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => setAddModalOpen(true)}>
+            Set availability
+          </Button>
+          <Button
+            onClick={() => {
+              setBookModalRescheduleSessionId(null)
+              setBookModalInitialClientId(null)
+              setBookModalInitialDuration(null)
+              setBookModalOpen(true)
+            }}
+          >
+            Book session
+          </Button>
+        </div>
+      </div>
 
       {/* Availability settings card */}
       <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 md:p-6">
@@ -237,27 +268,52 @@ export function SchedulePageContent() {
 
       <WeeklyUnavailabilityEditor variant="coach" />
 
-      {/* Calendar / Agenda */}
-      <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4 md:p-6">
+      <section className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] p-4 md:p-6">
+        {view !== 'agenda' ? (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Button variant={view === 'week' ? 'primary' : 'secondary'} onClick={() => setView('week')}>
-            Week
-          </Button>
-          <Button variant={view === 'month' ? 'primary' : 'secondary'} onClick={() => setView('month')}>
-            Month
-          </Button>
-          <span className="ml-2 text-sm font-medium text-[var(--color-text-primary)]">
+          <span className="text-sm font-medium text-[var(--text-primary)]">
             {view === 'week' ? format(weekStart, 'MMM d, yyyy') : format(date, 'MMMM yyyy')}
           </span>
-          <Button variant="ghost" onClick={() => setDate(view === 'week' ? addDays(date, -7) : addMonths(date, -1))}>Previous</Button>
-          <Button variant="ghost" onClick={() => setDate(view === 'week' ? addDays(date, 7) : addMonths(date, 1))}>Next</Button>
+          <Button variant="ghost" onClick={() => setDate(view === 'week' ? addDays(date, -7) : addMonths(date, -1))}>
+            Previous
+          </Button>
+          <Button variant="ghost" onClick={() => setDate(view === 'week' ? addDays(date, 7) : addMonths(date, 1))}>
+            Next
+          </Button>
         </div>
+        ) : null}
 
         {loading ? (
-          <div className="h-[400px] animate-pulse rounded-lg bg-[var(--color-surface)]" />
+          <div className="h-[400px] animate-pulse rounded-lg bg-[var(--bg-subtle)]" />
         ) : (
           <>
             <div className="hidden lg:block overflow-x-auto">
+              {view === 'agenda' && (
+                <ul className="space-y-2">
+                  {agendaSessions.length === 0 ? (
+                    <p className="text-sm text-[var(--text-tertiary)]">No sessions in the next 6 weeks.</p>
+                  ) : (
+                    agendaSessions.map(({ date: d, session: s }) => {
+                      const start = parseISO(s.scheduled_time)
+                      const name = [s.clients?.first_name, s.clients?.last_name].filter(Boolean).join(' ') || 'Client'
+                      return (
+                        <li key={s.id}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSession(s as SessionForDrawer)}
+                            className="flex w-full items-center justify-between gap-3 rounded-md border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-left transition-colors duration-[80ms] hover:bg-[var(--bg-subtle)]"
+                          >
+                            <span className="min-w-0 flex-1 truncate font-medium text-[var(--text-primary)]">{name}</span>
+                            <span className={cn('shrink-0 rounded px-2 py-0.5 text-[11px] font-medium', sessionBlockClasses(s))}>
+                              {format(parseISO(d), 'EEE MMM d')} · {format(start, 'h:mm a')}
+                            </span>
+                          </button>
+                        </li>
+                      )
+                    })
+                  )}
+                </ul>
+              )}
               {view === 'week' && (
                 <div className="min-w-[600px] border border-[var(--color-border)] rounded-lg">
                   <div className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr] text-sm">
@@ -284,16 +340,18 @@ export function SchedulePageContent() {
                                 key={ev.start.toISOString() + ev.title}
                                 type="button"
                                 onClick={() => !ev.isSlot && ev.session && setSelectedSession(ev.session as SessionForDrawer)}
-                                className={`absolute left-0.5 right-0.5 top-0.5 bottom-0.5 rounded text-left px-2 py-1 text-xs truncate ${
+                                className={`absolute left-1 right-1 top-1 bottom-1 truncate rounded px-2 py-1 text-left text-[12px] leading-tight ${
                                   ev.isSlot
-                                    ? 'bg-[var(--color-surface)] border-l-4 border-[var(--color-border)]'
+                                    ? 'border border-[var(--border-default)] bg-[var(--bg-muted)] text-[var(--text-secondary)]'
                                     : ev.session?.status === 'completed'
-                                      ? 'bg-emerald-500 text-white border-l-4 border-emerald-600'
+                                      ? 'border border-emerald-600 bg-emerald-500 text-white'
                                       : ev.session?.status === 'cancelled'
-                                        ? 'bg-slate-400 text-white border-l-4 border-slate-500'
+                                        ? 'border border-slate-500 bg-slate-400 text-white'
                                         : ev.session?.status === 'no_show'
-                                          ? 'bg-amber-500 text-white border-l-4 border-amber-600'
-                                          : 'bg-[var(--color-accent)] text-white border-l-4 border-[var(--color-accent-hover)]'
+                                          ? 'border border-amber-600 bg-amber-500 text-white'
+                                          : ev.session
+                                            ? sessionBlockClasses(ev.session)
+                                            : 'border border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent)]'
                                 }`}
                               >
                                 {ev.title}
@@ -382,6 +440,42 @@ export function SchedulePageContent() {
         )}
       </section>
 
+      {selectedSession ? (
+        <div className="lg:hidden">
+          <SessionDetailDrawer
+            session={selectedSession}
+            onClose={() => setSelectedSession(null)}
+            onUpdated={load}
+            onReschedule={() => {
+              setBookModalRescheduleSessionId(selectedSession.id)
+              setBookModalInitialClientId(selectedSession.client_id)
+              setBookModalInitialDuration(selectedSession.duration_minutes ?? 60)
+              setSelectedSession(null)
+              setBookModalOpen(true)
+            }}
+          />
+        </div>
+      ) : null}
+      </div>
+
+      {selectedSession ? (
+        <div className="hidden w-[320px] shrink-0 border-l border-[var(--border-subtle)] bg-[var(--bg-app)] lg:block">
+          <SessionDetailDrawer
+            className="sticky top-2 max-h-[calc(100dvh-var(--nav-height)-16px)]"
+            session={selectedSession}
+            onClose={() => setSelectedSession(null)}
+            onUpdated={load}
+            onReschedule={() => {
+              setBookModalRescheduleSessionId(selectedSession.id)
+              setBookModalInitialClientId(selectedSession.client_id)
+              setBookModalInitialDuration(selectedSession.duration_minutes ?? 60)
+              setSelectedSession(null)
+              setBookModalOpen(true)
+            }}
+          />
+        </div>
+      ) : null}
+
       <AddAvailabilityModal open={addModalOpen} onClose={() => setAddModalOpen(false)} onSaved={fetchAvailability} />
       <BookSessionModal
         open={bookModalOpen}
@@ -398,20 +492,6 @@ export function SchedulePageContent() {
         rescheduleFromSessionId={bookModalRescheduleSessionId}
         initialDurationMinutes={bookModalInitialDuration}
       />
-      {selectedSession && (
-        <SessionDetailDrawer
-          session={selectedSession}
-          onClose={() => setSelectedSession(null)}
-          onUpdated={load}
-          onReschedule={() => {
-            setBookModalRescheduleSessionId(selectedSession.id)
-            setBookModalInitialClientId(selectedSession.client_id)
-            setBookModalInitialDuration(selectedSession.duration_minutes ?? 60)
-            setSelectedSession(null)
-            setBookModalOpen(true)
-          }}
-        />
-      )}
     </div>
   )
 }

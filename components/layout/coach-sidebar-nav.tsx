@@ -11,11 +11,10 @@ import {
   PaymentsIcon,
   ProgramsIcon,
   ScheduleIcon,
-  SettingsNavIcon,
   VideosIcon,
 } from '@/components/layout/coach-nav-icons'
 
-/** Desktop coach sidebar — Linear-style grouped nav. */
+/** Desktop coach sidebar — Figma-style grouped nav. */
 export function getCoachSidebarNav(): {
   topItems: SidebarNavItem[]
   sections: SidebarNavSection[]
@@ -24,7 +23,7 @@ export function getCoachSidebarNav(): {
     topItems: [],
     sections: [
       {
-        title: 'OVERVIEW',
+        title: 'WORKSPACE',
         items: [
           { href: '/coach/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
           { href: '/coach/analytics', label: 'Analytics', icon: <AnalyticsIcon /> },
@@ -52,7 +51,6 @@ export function getCoachSidebarNav(): {
           { href: '/coach/packages', label: 'Packages', icon: <PackagesIcon /> },
           { href: '/coach/invoices', label: 'Invoices', icon: <InvoicesIcon /> },
           { href: '/coach/payments', label: 'Payments', icon: <PaymentsIcon /> },
-          { href: '/coach/settings', label: 'Settings', icon: <SettingsNavIcon /> },
           { href: '/billing', label: 'Billing', icon: <BillingNavIcon /> },
         ],
       },

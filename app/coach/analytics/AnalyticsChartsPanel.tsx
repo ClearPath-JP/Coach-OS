@@ -36,13 +36,15 @@ export type AnalyticsChartsChartRow = {
 
 type RevenueProps = {
   chartData: AnalyticsChartsChartRow[]
+  tall?: boolean
 }
 
-export function AnalyticsRevenueChartCard({ chartData }: RevenueProps) {
+export function AnalyticsRevenueChartCard({ chartData, tall }: RevenueProps) {
+  const chartHeight = tall ? 420 : 320
   return (
     <Card variant="raised" padding="lg">
-      <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-ink)]">Revenue</h2>
-      <div className="h-[280px] w-full min-w-0">
+      <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Revenue</h2>
+      <div className="w-full min-w-0" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
@@ -95,9 +97,9 @@ type PaymentProps = {
 export function AnalyticsPaymentMethodsChartCard({ donutData, methodEntries, methodTotal }: PaymentProps) {
   return (
     <Card variant="raised" padding="lg">
-      <h2 className="mb-4 text-[var(--text-15)] font-semibold tracking-[0] text-[var(--color-ink)]">Payment methods</h2>
-      <div className="flex h-[260px] w-full min-w-0 flex-col items-center">
-        <ResponsiveContainer width="100%" height={220}>
+      <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Payment methods</h2>
+      <div className="flex w-full min-w-0 flex-col items-center" style={{ height: 260 }}>
+        <ResponsiveContainer width="100%" height={240}>
           <PieChart>
             <Pie
               data={donutData}
@@ -105,8 +107,8 @@ export function AnalyticsPaymentMethodsChartCard({ donutData, methodEntries, met
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={52}
-              outerRadius={80}
+              innerRadius={72}
+              outerRadius={108}
               paddingAngle={donutData.length > 1 ? 2 : 0}
               isAnimationActive
               animationDuration={900}

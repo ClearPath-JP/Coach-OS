@@ -66,7 +66,7 @@ export function DataTable<T>({
       <div className="max-h-[65vh] overflow-auto">
         <table className="w-full text-left">
           <thead className="sticky top-0 z-10 bg-[var(--bg-app)]">
-            <tr className="h-9 border-b border-[var(--border-subtle)]">
+            <tr className="h-10 border-b border-[var(--border-subtle)]">
               {selectable ? <th className="w-10 px-3"><input type="checkbox" aria-label="Select all" /></th> : null}
               {columns.map((col) => {
                 const sortable = Boolean(col.sortValue)
@@ -106,7 +106,7 @@ export function DataTable<T>({
                     <tr
                       key={idx}
                       className={cn(
-                        'h-12 border-b border-[var(--border-subtle)] transition-colors duration-[100ms] hover:bg-[var(--bg-subtle)]',
+                        'h-[52px] min-h-[52px] border-b border-[var(--border-subtle)] transition-colors duration-[80ms] hover:bg-[var(--bg-subtle)]',
                         href && 'cursor-pointer',
                         rowClassName?.(row)
                       )}

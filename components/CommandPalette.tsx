@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '@/components/ThemeProvider'
+import { OPEN_COMMAND_PALETTE_EVENT } from '@/lib/command-palette'
 
 type CommandItem = {
   id: string
@@ -51,6 +52,16 @@ export function CommandPalette() {
     () => items.filter((i) => i.label.toLowerCase().includes(query.toLowerCase())),
     [items, query]
   )
+
+  useEffect(() => {
+    const onOpen = () => {
+      setOpen(true)
+      setQuery('')
+      setSelected(0)
+    }
+    window.addEventListener(OPEN_COMMAND_PALETTE_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_COMMAND_PALETTE_EVENT, onOpen)
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

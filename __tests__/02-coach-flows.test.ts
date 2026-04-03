@@ -94,7 +94,7 @@ describe('coach flows', () => {
   })
 
   it('send invoice via messages', async () => {
-    const { res, json } = await fetchJson('/api/invoices', {
+    const { res, json, cookieJar } = await fetchJson('/api/invoices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -103,6 +103,7 @@ describe('coach flows', () => {
       }),
       cookieJar: testContext.coachCookie,
     })
+    testContext.coachCookie = cookieJar
     expect(res.status).toBe(200)
     const body = json as { data?: { id?: string; message_id?: string } }
     expect(body.data?.id).toBeTruthy()
@@ -112,6 +113,7 @@ describe('coach flows', () => {
       `/api/messages?clientId=${encodeURIComponent(testContext.clientId)}`,
       { cookieJar: testContext.coachCookie }
     )
+    testContext.coachCookie = thread.cookieJar
     expect(thread.res.status).toBe(200)
     const msgs = thread.json as { data?: { message_type?: string }[] }
     const invoiceMsg = (msgs.data ?? []).some((m) => m.message_type === 'invoice')

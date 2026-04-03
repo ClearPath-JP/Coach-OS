@@ -62,7 +62,7 @@ function formatMoney(unitAmount: number | null, currency: string): string {
   }).format(unitAmount / 100)
 }
 
-function PriceCell({ row, kind }: { row: PriceRow; kind: 'recurring' | 'one_time' }) {
+function PriceCell({ row }: { row: PriceRow }) {
   if (!row.configured) {
     return <span className="text-sm text-slate-400">Not set in env</span>
   }
@@ -324,10 +324,10 @@ export default function AdminStripePage() {
                         <p className="text-[11px] text-slate-500">{p.setupEnv}</p>
                       </td>
                       <td className="px-4 py-4">
-                        <PriceCell row={p.monthly} kind="recurring" />
+                        <PriceCell row={p.monthly} />
                       </td>
                       <td className="px-4 py-4">
-                        <PriceCell row={p.setupFee} kind="one_time" />
+                        <PriceCell row={p.setupFee} />
                       </td>
                     </tr>
                   ))}

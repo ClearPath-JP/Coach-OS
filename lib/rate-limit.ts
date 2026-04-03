@@ -2,6 +2,9 @@
  * Rate limiting for middleware and API routes.
  * Uses Upstash Redis when UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are set;
  * otherwise no limit (allow all) for local dev.
+ *
+ * If you use Upstash locally and hit 429s while testing, set CLEARPATH_DEV_DISABLE_RATE_LIMIT=1
+ * (non-production only) or temporarily comment out the UPSTASH_* vars.
  */
 
 const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL
@@ -80,6 +83,12 @@ export async function checkRateLimitAsync(
   key: string,
   options: RateLimitOptions
 ): Promise<RateLimitResult> {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    process.env.CLEARPATH_DEV_DISABLE_RATE_LIMIT === '1'
+  ) {
+    return { success: true }
+  }
   if (process.env.CLEARPATH_TEST_RATE_LIMIT === '1') {
     return checkInMemory(key, options)
   }
