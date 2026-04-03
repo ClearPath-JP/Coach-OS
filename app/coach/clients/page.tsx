@@ -2,7 +2,7 @@ import { CoachClientsPageContent } from './ClientsPageContent'
 
 export default function CoachClientsPage() {
   return (
-    <main className="min-h-screen p-6 lg:p-8">
+    <main className="flex min-h-0 min-h-screen flex-1 flex-col">
       <CoachClientsPageContent />
     </main>
   )

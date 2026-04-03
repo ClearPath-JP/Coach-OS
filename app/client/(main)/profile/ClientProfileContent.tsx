@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase'
 import { useTheme } from '@/components/ThemeProvider'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { WeeklyUnavailabilityEditor } from '@/components/unavailability/WeeklyUnavailabilityEditor'
 import { cn } from '@/lib/utils'
 
 function initials(first: string, last: string): string {
@@ -139,13 +138,6 @@ export function ClientProfileContent({
             />
           </button>
           <span className="text-[13px] text-[var(--text-tertiary)]">Dark</span>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Availability</h2>
-        <div className="mt-4">
-          <WeeklyUnavailabilityEditor variant="client" />
         </div>
       </section>
 

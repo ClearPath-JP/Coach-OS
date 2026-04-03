@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { format, formatDistanceToNow, parseISO } from 'date-fns'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { CountUpValue } from '@/components/ui/CountUpValue'
@@ -167,24 +168,40 @@ function AnalyticsTestimonialsSection() {
 function ActivityIcon({ kind }: { kind: string }) {
   if (kind === 'payment')
     return (
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800" aria-hidden>
+      <span
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--success-bg)]"
+        style={{ color: 'var(--success)' }}
+        aria-hidden
+      >
         $
       </span>
     )
   if (kind === 'session')
     return (
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800" aria-hidden>
+      <span
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)]"
+        style={{ color: 'var(--accent)' }}
+        aria-hidden
+      >
         ◷
       </span>
     )
   if (kind === 'client')
     return (
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-800" aria-hidden>
+      <span
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--info-bg)]"
+        style={{ color: 'var(--info)' }}
+        aria-hidden
+      >
         +
       </span>
     )
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-800" aria-hidden>
+    <span
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--warning-bg)]"
+      style={{ color: 'var(--warning)' }}
+      aria-hidden
+    >
       P
     </span>
   )
@@ -303,10 +320,8 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
   ]
 
   return (
-    <main className="min-h-screen space-y-6 px-6 py-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Analytics</h1>
-      </div>
+    <div className="flex min-h-0 flex-1 flex-col space-y-6">
+      <PageHeader title="Analytics" />
 
       <div className="flex flex-wrap gap-0 border-b border-[var(--border-subtle)]" role="tablist" aria-label="Analytics views">
         {mainTabs.map((t) => (
@@ -613,6 +628,6 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
       <div className="mt-6">
         <AnalyticsTestimonialsSection />
       </div>
-    </main>
+    </div>
   )
 }

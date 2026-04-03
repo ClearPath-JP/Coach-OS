@@ -284,7 +284,11 @@ function RecentSessionNotesSection({ clientId }: { clientId: string }) {
                           className="text-[14px] text-[var(--color-muted)]"
                         >
                           {item.completed ? '☑' : '☐'} {item.text}
-                          {item.completed ? <span className="ml-2 text-emerald-600">Done</span> : null}
+                          {item.completed ? (
+                            <span className="ml-2" style={{ color: 'var(--success)' }}>
+                              Done
+                            </span>
+                          ) : null}
                         </li>
                       ))}
                     </ul>

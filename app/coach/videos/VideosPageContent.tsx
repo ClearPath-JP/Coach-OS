@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
@@ -170,8 +171,16 @@ export function VideosPageContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-[var(--color-muted)]">Loading your videos...</p>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PageHeader title="Video library" />
+        <div className="flex flex-col items-center justify-center gap-3 py-16" aria-busy>
+          <div className="h-8 w-48 animate-pulse rounded-lg bg-[var(--border-default)]" />
+          <div className="grid w-full max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-xl bg-[var(--bg-subtle)]" />
+            ))}
+          </div>
+        </div>
       </div>
     )
   }
@@ -179,45 +188,40 @@ export function VideosPageContent() {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--color-ink)] sm:text-[var(--text-24)]">
-            Video library
-          </h1>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" className="min-h-[44px]" onClick={() => setDriveImportOpen(true)}>
-              Import from Google Drive
-            </Button>
-            <Link
-              href="/coach/settings"
-              className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-surface)] min-h-[44px]"
-            >
-              Drive settings
-            </Link>
-            <button
-              type="button"
-              onClick={() => setInfoOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm font-medium text-[var(--color-ink)] hover:bg-[var(--color-surface)] min-h-[44px]"
-              aria-label="How do I add videos from my phone?"
-            >
+        <PageHeader title="Video library" {...(videos.length > 0 ? { countLabel: `${videos.length} videos` } : {})}>
+          <Button type="button" size="sm" onClick={() => setDriveImportOpen(true)}>
+            Import from Google Drive
+          </Button>
+          <Link
+            href="/coach/settings"
+            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
+          >
+            Drive settings
+          </Link>
+          <button
+            type="button"
+            onClick={() => setInfoOpen(true)}
+            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
+            aria-label="How do I add videos from my phone?"
+          >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 16v-4M12 8h.01" />
               </svg>
               How do I add videos from my phone?
             </button>
-          </div>
-        </div>
+        </PageHeader>
 
         {!error && videos.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/50 p-3">
-            <label className="text-sm text-[var(--color-muted)] shrink-0" htmlFor="video-cat-filter">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3">
+            <label className="shrink-0 text-[13px] text-[var(--text-tertiary)]" htmlFor="video-cat-filter">
               Category
             </label>
             <select
               id="video-cat-filter"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-ink)] min-h-[40px]"
+              className="h-9 min-h-9 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)]"
             >
               <option value="all">All videos</option>
               <option value="__none__">Uncategorized</option>
@@ -230,7 +234,8 @@ export function VideosPageContent() {
             <Button
               type="button"
               variant={selectMode ? 'primary' : 'secondary'}
-              className="min-h-[40px]"
+              size="sm"
+              className="h-9 min-h-9"
               onClick={() => {
                 if (selectMode) exitSelectMode()
                 else setSelectMode(true)
@@ -240,13 +245,13 @@ export function VideosPageContent() {
             </Button>
             {selectMode && selectedIds.size > 0 && (
               <>
-                <span className="text-sm text-[var(--color-ink)]">
+                <span className="text-[13px] text-[var(--text-secondary)]">
                   {selectedIds.size} selected
                 </span>
-                <Button type="button" className="min-h-[40px]" onClick={() => setBulkCategoryOpen(true)}>
+                <Button type="button" size="sm" className="h-9 min-h-9" onClick={() => setBulkCategoryOpen(true)}>
                   Set category
                 </Button>
-                <Button type="button" variant="ghost" className="min-h-[40px]" onClick={() => setSelectedIds(new Set())}>
+                <Button type="button" variant="ghost" size="sm" className="h-9 min-h-9" onClick={() => setSelectedIds(new Set())}>
                   Clear selection
                 </Button>
               </>
@@ -257,15 +262,18 @@ export function VideosPageContent() {
         {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
 
         {!error && videos.length === 0 && (
-          <Card padding="lg" className="text-center max-w-md mx-auto">
-            <p className="font-medium text-[var(--color-ink)] mb-1">No videos yet</p>
-            <p className="text-sm text-[var(--color-muted)] mb-4">
+          <div className="empty-state-coach mx-auto max-w-md rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+            <div className="empty-state-coach__icon text-[28px]" aria-hidden>
+              🎬
+            </div>
+            <p className="empty-state-coach__title">No videos yet</p>
+            <p className="empty-state-coach__desc">
               Set your import folder in Settings, put videos in that Drive folder, then click <strong>Import from Google Drive</strong> to add them instantly — no upload to our servers.
             </p>
-            <Button variant="secondary" onClick={() => setInfoOpen(true)}>
+            <Button variant="secondary" className="empty-state-coach__cta" onClick={() => setInfoOpen(true)}>
               How do I add videos from my phone?
             </Button>
-          </Card>
+          </div>
         )}
 
         {!error && videos.length > 0 && (
@@ -288,15 +296,11 @@ export function VideosPageContent() {
         )}
 
         {!error && videos.length > 0 && filteredVideos.length === 0 && (
-          <p className="text-sm text-[var(--color-muted)]">No videos in this category.</p>
+          <p className="text-[13px] text-[var(--text-tertiary)]">No videos in this category.</p>
         )}
       </div>
 
-      {toast && (
-        <div className="fixed bottom-20 left-4 right-4 z-50 rounded-lg bg-[var(--color-ink)] text-white px-4 py-3 text-sm shadow-lg lg:bottom-4 lg:left-auto lg:right-4 lg:max-w-sm">
-          {toast}
-        </div>
-      )}
+      {toast ? <div className="toast-coach">{toast}</div> : null}
 
       {infoOpen && (
         <Modal isOpen onClose={() => setInfoOpen(false)} title="How to add videos from your phone" className="w-full max-w-none md:max-w-md">

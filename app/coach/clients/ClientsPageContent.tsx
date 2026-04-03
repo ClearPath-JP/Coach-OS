@@ -13,8 +13,11 @@ import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { calculateEngagementScore, engagementLabelText } from '@/lib/client-engagement'
 import { AddClientModal } from './AddClientModal'
-import { formatDistanceToNow } from 'date-fns'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { differenceInCalendarDays, formatDistanceToNow, isToday } from 'date-fns'
 import { cn } from '@/lib/utils'
+
+const CLIENTS_VIEW_KEY = 'clearpath_coach_clients_view'
 
 type Engagement = ReturnType<typeof calculateEngagementScore>
 
@@ -40,6 +43,10 @@ type Client = {
   } | null
   sessionsCompletedCount?: number
   activeProgramTitle?: string | null
+  modulesCompleted?: number
+  totalModules?: number
+  programProgress?: number
+  lastActivityAt?: string | null
   engagement?: Engagement
 }
 
@@ -78,11 +85,46 @@ function statusDotClass(status: string): string {
   return 'bg-[var(--error)]'
 }
 
-function lastActiveLabel(client: Client): string {
-  const last = client.rewards?.last_activity_at
-  if (last) return formatDistanceToNow(new Date(last), { addSuffix: true })
-  if (client.updated_at) return formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })
-  return '—'
+function lastActivityIso(client: Client): string | null {
+  return client.lastActivityAt ?? client.rewards?.last_activity_at ?? null
+}
+
+/** Coach-facing copy: real client activity only (not profile edits). */
+function formatLastActiveLine(iso: string | null): string {
+  if (!iso) return 'Never active'
+  const d = new Date(iso)
+  if (isToday(d)) return 'Active today'
+  return `Active ${formatDistanceToNow(d, { addSuffix: true })}`
+}
+
+function lastActiveTextClass(iso: string | null): string {
+  if (!iso) return 'text-[var(--text-quaternary)]'
+  const days = differenceInCalendarDays(new Date(), new Date(iso))
+  if (days < 3) return 'text-[var(--text-tertiary)]'
+  if (days <= 7) return 'text-[var(--warning)]'
+  return 'text-[var(--error)]'
+}
+
+function lastActiveSortValue(client: Client): number {
+  const iso = lastActivityIso(client)
+  if (!iso) return 0
+  return new Date(iso).getTime()
+}
+
+function programProgressParts(client: Client): {
+  hasProgram: boolean
+  percent: number
+  modulesCompleted: number
+  totalModules: number
+} {
+  const title = client.activeProgramTitle?.trim()
+  if (!title) {
+    return { hasProgram: false, percent: 0, modulesCompleted: 0, totalModules: 0 }
+  }
+  const total = client.totalModules ?? 0
+  const done = client.modulesCompleted ?? 0
+  const percent = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
+  return { hasProgram: true, percent, modulesCompleted: done, totalModules: total }
 }
 
 export function CoachClientsPageContent() {
@@ -94,6 +136,24 @@ export function CoachClientsPageContent() {
   const [searchInput, setSearchInput] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('')
   const [view, setView] = useState<ViewMode>('grid')
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(CLIENTS_VIEW_KEY)
+      if (v === 'list' || v === 'grid') setView(v)
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  const setViewPersist = useCallback((next: ViewMode) => {
+    setView(next)
+    try {
+      localStorage.setItem(CLIENTS_VIEW_KEY, next)
+    } catch {
+      /* ignore */
+    }
+  }, [])
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [quickInvoiceOpen, setQuickInvoiceOpen] = useState(false)
@@ -149,7 +209,7 @@ export function CoachClientsPageContent() {
   }, [])
 
   const handleAddSuccess = () => {
-    setToast('Client added')
+    setToast('Client added — they can sign in when you send their invite.')
     fetchClients()
     setTimeout(() => setToast(null), 4000)
   }
@@ -252,7 +312,8 @@ export function CoachClientsPageContent() {
             <Tooltip content={tip}>
               <span className="inline-flex cursor-default items-center gap-1.5 text-[13px] font-medium" style={{ color: e.color }}>
                 <span aria-hidden>{dot}</span>
-                {label}
+                {label}{' '}
+                <span className="tabular-nums text-[var(--text-tertiary)]">({e.score}/10)</span>
               </span>
             </Tooltip>
           )
@@ -287,21 +348,37 @@ export function CoachClientsPageContent() {
         key: 'program',
         header: 'Program',
         sortValue: (r) => r.activeProgramTitle ?? '',
-        render: (client) => (
-          <span className="line-clamp-2 text-[13px] text-[var(--text-primary)]">
-            {client.activeProgramTitle?.trim() ? client.activeProgramTitle : 'None'}
-          </span>
-        ),
+        render: (client) => {
+          const p = programProgressParts(client)
+          if (!p.hasProgram) {
+            return <span className="text-[13px] text-[var(--text-quaternary)]">No program assigned</span>
+          }
+          return (
+            <div className="min-w-0 max-w-[220px]">
+              <p className="truncate text-[13px] text-[var(--text-primary)]">{client.activeProgramTitle}</p>
+              <p className="mt-0.5 text-[11px] text-[var(--text-tertiary)]">
+                {p.modulesCompleted} of {p.totalModules} modules
+              </p>
+              <div className="mt-1 h-0.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
+                <div
+                  className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-200"
+                  style={{ width: `${p.percent}%` }}
+                />
+              </div>
+            </div>
+          )
+        },
       },
       {
         key: 'lastActive',
         header: 'Last active',
-        sortValue: (r) => r.updated_at,
-        render: (client) => (
-          <span className="text-[13px] text-[var(--text-tertiary)]">
-            {client.updated_at ? formatDistanceToNow(new Date(client.updated_at), { addSuffix: true }) : '—'}
-          </span>
-        ),
+        sortValue: (r) => lastActiveSortValue(r),
+        render: (client) => {
+          const iso = lastActivityIso(client)
+          return (
+            <span className={cn('text-[13px]', lastActiveTextClass(iso))}>{formatLastActiveLine(iso)}</span>
+          )
+        },
       },
       {
         key: 'actions',
@@ -335,61 +412,56 @@ export function CoachClientsPageContent() {
 
   return (
     <>
-      <div className="coach-route-enter px-6 pb-10 pt-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 flex-wrap items-center gap-4">
-            <h1 className="text-2xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Clients</h1>
-            <span className="rounded-full bg-[var(--bg-muted)] px-2.5 py-1 text-[13px] text-[var(--text-tertiary)]">
-              {clients.length} clients
-            </span>
+      <PageHeader title="Clients" countLabel={`${clients.length} clients`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            type="search"
+            placeholder="Search by name or email…"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            aria-label="Search clients"
+            className="h-9 w-[min(100vw-8rem,240px)] max-w-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[14px]"
+          />
+          <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] p-0.5">
+            <button
+              type="button"
+              aria-label="List view"
+              aria-pressed={view === 'list'}
+              onClick={() => setViewPersist('list')}
+              className={cn(
+                'flex size-9 min-h-[44px] min-w-9 items-center justify-center rounded-[6px] transition-colors duration-[80ms] sm:size-8 sm:min-h-8 sm:min-w-8',
+                view === 'list' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+              )}
+            >
+              <span className="text-[14px]" aria-hidden>
+                ☰
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-label="Grid view"
+              aria-pressed={view === 'grid'}
+              onClick={() => setViewPersist('grid')}
+              className={cn(
+                'flex size-9 min-h-[44px] min-w-9 items-center justify-center rounded-[6px] transition-colors duration-[80ms] sm:size-8 sm:min-h-8 sm:min-w-8',
+                view === 'grid' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
+              )}
+            >
+              <span className="text-[14px]" aria-hidden>
+                ⊞
+              </span>
+            </button>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Input
-              type="search"
-              placeholder="Search clients..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              aria-label="Search clients"
-              className="h-9 w-[240px] max-w-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[14px]"
-            />
-            <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] p-0.5">
-              <button
-                type="button"
-                aria-label="List view"
-                aria-pressed={view === 'list'}
-                onClick={() => setView('list')}
-                className={cn(
-                  'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
-                  view === 'list' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
-                )}
-              >
-                <span className="text-[14px]" aria-hidden>
-                  ☰
-                </span>
-              </button>
-              <button
-                type="button"
-                aria-label="Grid view"
-                aria-pressed={view === 'grid'}
-                onClick={() => setView('grid')}
-                className={cn(
-                  'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
-                  view === 'grid' ? 'bg-[var(--accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
-                )}
-              >
-                <span className="text-[14px]" aria-hidden>
-                  ⊞
-                </span>
-              </button>
-            </div>
-            <Button size="sm" onClick={() => setAddModalOpen(true)}>
-              Add client
-            </Button>
-            <Button size="sm" variant="secondary" type="button" onClick={() => fetchClients()}>
-              Refresh
-            </Button>
-          </div>
+          <Button size="sm" onClick={() => setAddModalOpen(true)}>
+            + Add client
+          </Button>
+          <Button size="sm" variant="secondary" type="button" onClick={() => fetchClients()}>
+            Refresh list
+          </Button>
         </div>
+      </PageHeader>
+
+      <div className="pb-10">
 
         <div className="mb-6 flex flex-wrap gap-0 border-b border-[var(--border-subtle)]" role="tablist" aria-label="Filter by status">
           {tabs.map((tab) => (
@@ -450,8 +522,8 @@ export function CoachClientsPageContent() {
         )}
         {!loading && !error && clients.length > 0 && view === 'grid' && (
           <div
-            className="grid gap-3"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}
+            className="grid gap-4"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
           >
             {visibleClients.map((client) => {
               const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'
@@ -474,18 +546,31 @@ export function CoachClientsPageContent() {
                   role="link"
                   tabIndex={0}
                 >
-                  <div className={cn('relative flex h-[120px] items-center justify-center', engagementThumbClass(e?.label))}>
-                    <div className="relative flex size-16 items-center justify-center rounded-full bg-[var(--accent)] text-2xl font-bold text-white">
+                  <div className={cn('relative flex h-20 min-h-[80px] items-center justify-center', engagementThumbClass(e?.label))}>
+                    <div
+                      className={cn(
+                        'relative flex size-12 items-center justify-center rounded-full text-[15px] font-bold text-white',
+                        e?.label === 'at-risk'
+                          ? 'bg-[var(--warning)]'
+                          : e?.label === 'moderate'
+                            ? 'bg-[var(--text-tertiary)]'
+                            : 'bg-[var(--accent)]'
+                      )}
+                    >
                       {getInitials(client.first_name, client.last_name, client.email)}
                       <span
-                        className={cn('absolute bottom-0 right-0 size-3 rounded-full border-2 border-white', statusDotClass(client.status))}
+                        className={cn(
+                          'absolute bottom-0 right-0 size-2 rounded-full border-2 border-[var(--bg-app)] ring-1 ring-[var(--bg-app)]',
+                          statusDotClass(client.status)
+                        )}
+                        style={{ width: 8, height: 8 }}
                         aria-hidden
                       />
                     </div>
                   </div>
-                  <div className="p-3">
+                  <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[var(--text-primary)]">{name}</p>
+                      <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-[var(--text-primary)]">{name}</p>
                       <div
                         className={cn(
                           'relative opacity-0 transition-opacity duration-150 group-hover:opacity-100',
@@ -530,25 +615,56 @@ export function CoachClientsPageContent() {
                         </details>
                       </div>
                     </div>
-                    <p className="mt-0.5 truncate text-[12px] text-[var(--text-tertiary)]">{client.email || '—'}</p>
-                    <div className="mt-2.5 flex flex-wrap gap-2">
-                      {client.activeProgramTitle?.trim() ? (
-                        <span className="max-w-full truncate rounded-full bg-[var(--accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--accent)]">
-                          📚 {client.activeProgramTitle}
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[12px] text-[var(--text-tertiary)]">No program</span>
-                      )}
-                      <span className="text-[12px] text-[var(--text-tertiary)]">
-                        {sessionsN} {sessionsN === 1 ? 'session' : 'sessions'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2">
-                    <span className="text-[12px] text-[var(--text-tertiary)]">
+                    <p className="mt-1 text-[12px] font-medium text-[var(--text-tertiary)]">
                       <span aria-hidden>{engDot}</span> {engLabel}
-                    </span>
-                    <span className="text-[12px] text-[var(--text-quaternary)]">{lastActiveLabel(client)}</span>
+                    </p>
+                    <div className="mt-3">
+                      {(() => {
+                        const p = programProgressParts(client)
+                        if (!p.hasProgram) {
+                          return <p className="text-[12px] text-[var(--text-quaternary)]">No program assigned</p>
+                        }
+                        return (
+                          <>
+                            <p className="truncate text-[12px] text-[var(--text-tertiary)]">{client.activeProgramTitle}</p>
+                            <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">
+                              {p.modulesCompleted} of {p.totalModules} modules
+                            </p>
+                            <div className="mt-1.5 h-1 w-full rounded-full bg-[var(--bg-muted)]" aria-hidden>
+                              <div
+                                className="h-full rounded-full bg-[var(--accent)] transition-[width] duration-200"
+                                style={{ width: `${p.percent}%` }}
+                              />
+                            </div>
+                          </>
+                        )
+                      })()}
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-3 text-[12px] text-[var(--text-tertiary)]">
+                      <span title="Sessions completed">
+                        📅 {sessionsN} {sessionsN === 1 ? 'session' : 'sessions'}
+                      </span>
+                      <span title="Total XP">⭐ {client.rewards?.total_xp ?? 0} XP</span>
+                    </div>
+                    <p className={cn('mt-1 text-[12px]', lastActiveTextClass(lastActivityIso(client)))}>
+                      {formatLastActiveLine(lastActivityIso(client))}
+                    </p>
+                  </div>
+                  <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4 py-2">
+                    <Link
+                      href={`/coach/messages?clientId=${encodeURIComponent(client.id)}`}
+                      onClick={(ev) => ev.stopPropagation()}
+                      className="inline-flex h-7 min-h-[28px] items-center rounded-[var(--radius-md)] px-2 text-[12px] font-medium text-[var(--text-tertiary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+                    >
+                      Message
+                    </Link>
+                    <Link
+                      href={`/coach/clients/${client.id}`}
+                      onClick={(ev) => ev.stopPropagation()}
+                      className="inline-flex h-7 min-h-[28px] items-center rounded-[var(--radius-md)] px-2 text-[12px] font-medium text-[var(--text-tertiary)] transition-colors duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+                    >
+                      View profile
+                    </Link>
                   </div>
                 </div>
               )
@@ -556,7 +672,7 @@ export function CoachClientsPageContent() {
           </div>
         )}
         {!loading && !error && clients.length > 0 && view === 'list' && (
-          <div className="[&_tbody_tr]:min-h-[52px] [&_tbody_tr]:h-[52px]">
+          <div className="[&_tbody_tr]:h-14 [&_tbody_tr]:min-h-[56px]">
             <DataTable
               rows={visibleClients}
               loading={loading}
@@ -579,17 +695,16 @@ export function CoachClientsPageContent() {
         }}
         defaultClientId={quickInvoiceClientId}
         onSent={(name) => {
-          setToast(`Invoice sent to ${name}`)
+          setToast(`Invoice sent to ${name} ✓`)
           setTimeout(() => setToast(null), 4000)
         }}
       />
 
       {toast && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 rounded-lg border border-[var(--border-default)] bg-[var(--text-primary)] px-4 py-3 text-[15px] font-medium text-white shadow-lg"
-        >
+        <div role="status" aria-live="polite" className="toast-coach flex items-center gap-2">
+          <span className="text-[var(--success)]" aria-hidden>
+            ✓
+          </span>
           {toast}
         </div>
       )}

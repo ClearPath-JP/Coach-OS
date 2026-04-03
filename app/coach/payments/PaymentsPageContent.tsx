@@ -331,31 +331,53 @@ export function PaymentsPageContent() {
     clients,
   }
 
+  const paymentCountLabel = filterSummary
+    ? `${filterSummary.totalPayments} payment${filterSummary.totalPayments === 1 ? '' : 's'}`
+    : `${rows.length} loaded`
+
   return (
-    <main className="min-h-screen p-4 md:p-6 space-y-6">
-      <PageHeader title="Payments" contextInfo={`${rows.length} records`}>
+    <main className="flex min-h-0 min-h-screen flex-1 flex-col space-y-6">
+      <PageHeader title="Payments" countLabel={paymentCountLabel}>
         <Button type="button" className="min-h-[44px]" onClick={() => { setEditing(null); setModalOpen(true) }}>
           Record payment
         </Button>
       </PageHeader>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card variant="raised" padding="lg">
-          <p className="text-[14px] text-[var(--color-muted)]">This week</p>
-          <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">{formatCents(kpiWeek)}</p>
+      <Card
+        variant="default"
+        padding="default"
+        className="border border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,transparent_55%)] p-6 shadow-[var(--shadow-sm)]"
+      >
+        <p className="text-[12px] font-medium text-[var(--text-tertiary)]">This month</p>
+        <p className="mt-1 text-[40px] font-bold leading-none tracking-[-0.03em] text-[var(--accent)]">
+          {formatCents(kpiMonth)}
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-2 text-[13px] text-[var(--text-tertiary)]">
+          <span>{paymentCountLabel}</span>
+          <span aria-hidden className="text-[var(--text-quaternary)]">
+            ·
+          </span>
+          <span>Pending invoices {formatCents(pendingCents)}</span>
+          <span aria-hidden className="text-[var(--text-quaternary)]">
+            ·
+          </span>
+          <span>All-time recorded {formatCents(kpiAll)}</span>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <Card variant="raised" padding="lg" className="border border-[var(--border-default)] shadow-[var(--shadow-xs)]">
+          <p className="text-[13px] text-[var(--text-tertiary)]">This week</p>
+          <p className="mt-1 text-[20px] font-semibold text-[var(--text-primary)]">{formatCents(kpiWeek)}</p>
         </Card>
-        <Card variant="raised" padding="lg">
-          <p className="text-[14px] text-[var(--color-muted)]">This month</p>
-          <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">{formatCents(kpiMonth)}</p>
+        <Card variant="raised" padding="lg" className="border border-[var(--border-default)] shadow-[var(--shadow-xs)]">
+          <p className="text-[13px] text-[var(--text-tertiary)]">Total all time</p>
+          <p className="mt-1 text-[20px] font-semibold text-[var(--text-primary)]">{formatCents(kpiAll)}</p>
         </Card>
-        <Card variant="raised" padding="lg">
-          <p className="text-[14px] text-[var(--color-muted)]">Total all time</p>
-          <p className="mt-1 text-xl font-medium text-[var(--color-ink)]">{formatCents(kpiAll)}</p>
-        </Card>
-        <Link href="/coach/invoices" className="block h-full hover:opacity-95">
-          <Card variant="raised" padding="lg" className="h-full">
-            <p className="text-[14px] text-[var(--color-muted)]">Pending invoices</p>
-            <p className="mt-1 text-xl font-medium text-[var(--color-accent)]">{formatCents(pendingCents)}</p>
+        <Link href="/coach/invoices" className="block h-full min-h-[44px] hover:opacity-95 md:col-span-1">
+          <Card variant="raised" padding="lg" className="h-full border border-[var(--border-default)] shadow-[var(--shadow-xs)]">
+            <p className="text-[13px] text-[var(--text-tertiary)]">Pending invoices</p>
+            <p className="mt-1 text-[20px] font-semibold text-[var(--accent)]">{formatCents(pendingCents)}</p>
           </Card>
         </Link>
       </div>

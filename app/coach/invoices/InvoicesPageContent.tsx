@@ -1,17 +1,25 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { differenceInCalendarDays } from 'date-fns'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { DataTable } from '@/components/ui/DataTable'
 import { StatusDot } from '@/components/ui/StatusDot'
+import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
+import { cn } from '@/lib/utils'
+
+type InvoiceStatusTab = 'all' | 'pending' | 'paid' | 'closed'
 
 type ClientRow = { id: string; first_name: string | null; last_name: string | null; email: string | null }
 type PackageRow = { id: string; title: string | null; description: string | null }
 type InvoiceRow = {
   id: string
+  client_id: string
+  message_id: string | null
   amount_cents: number
   currency: string
   status: string
@@ -75,19 +83,27 @@ function exportToCsv(invoices: InvoiceRow[]) {
   URL.revokeObjectURL(url)
 }
 
+function pendingOverdueDays(createdAt: string): number {
+  return differenceInCalendarDays(new Date(), new Date(createdAt))
+}
+
 export function InvoicesPageContent() {
+  const router = useRouter()
   const [invoices, setInvoices] = useState<InvoiceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [statusTab, setStatusTab] = useState<InvoiceStatusTab>('all')
   const [clientFilter, setClientFilter] = useState<string>('')
   const [clients, setClients] = useState<{ id: string; first_name: string | null; last_name: string | null }[]>([])
+  const [markPaidInvoice, setMarkPaidInvoice] = useState<InvoiceRow | null>(null)
+  const [resendBusyId, setResendBusyId] = useState<string | null>(null)
+  const [actionToast, setActionToast] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const fetchInvoices = useCallback(async () => {
     setError(null)
     try {
       const params = new URLSearchParams()
-      if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter)
       if (clientFilter) params.set('clientId', clientFilter)
       const res = await fetch(`/api/invoices?${params.toString()}`)
       const json = await res.json()
@@ -103,7 +119,7 @@ export function InvoicesPageContent() {
     } finally {
       setLoading(false)
     }
-  }, [statusFilter, clientFilter])
+  }, [clientFilter])
 
   const fetchClients = useCallback(async () => {
     try {
@@ -125,12 +141,151 @@ export function InvoicesPageContent() {
 
   const paid = invoices.filter((i) => i.status === 'paid')
   const pending = invoices.filter((i) => i.status === 'pending')
+  const closed = invoices.filter((i) => i.status === 'cancelled' || i.status === 'refunded')
   const totalReceived = paid.reduce((s, i) => s + i.amount_cents, 0)
   const totalPending = pending.reduce((s, i) => s + i.amount_cents, 0)
 
+  const displayedInvoices = useMemo(() => {
+    if (statusTab === 'all') return invoices
+    if (statusTab === 'pending') return invoices.filter((i) => i.status === 'pending')
+    if (statusTab === 'paid') return invoices.filter((i) => i.status === 'paid')
+    return invoices.filter((i) => i.status === 'cancelled' || i.status === 'refunded')
+  }, [invoices, statusTab])
+
+  const statusTabs: { key: InvoiceStatusTab; label: string; count: number }[] = [
+    { key: 'all', label: 'All', count: invoices.length },
+    { key: 'pending', label: 'Pending', count: pending.length },
+    { key: 'paid', label: 'Paid', count: paid.length },
+    { key: 'closed', label: 'Closed', count: closed.length },
+  ]
+
+  const openInvoiceThread = useCallback(
+    (inv: InvoiceRow) => {
+      const q = new URLSearchParams({ clientId: inv.client_id })
+      if (inv.message_id) q.set('messageId', inv.message_id)
+      router.push(`/coach/messages?${q.toString()}`)
+    },
+    [router]
+  )
+
+  const resendInvoice = useCallback(
+    async (inv: InvoiceRow) => {
+      setResendBusyId(inv.id)
+      setActionToast(null)
+      setActionError(null)
+      try {
+        const res = await fetch(`/api/invoices/${encodeURIComponent(inv.id)}/resend`, {
+          method: 'POST',
+          credentials: 'include',
+        })
+        const json = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          setActionError(typeof json.error === 'string' ? json.error : 'Could not resend invoice')
+          return
+        }
+        setActionToast('Invoice sent again in the message thread')
+        setTimeout(() => setActionToast(null), 4000)
+      } catch {
+        setActionError('Could not resend invoice — try again')
+      } finally {
+        setResendBusyId(null)
+      }
+    },
+    []
+  )
+
+  const invoiceColumns = useMemo(
+    () => [
+      { key: 'client', header: 'Client', sortValue: (r: InvoiceRow) => clientName(r.clients), render: (inv: InvoiceRow) => clientName(inv.clients) },
+      {
+        key: 'package',
+        header: 'Package',
+        render: (inv: InvoiceRow) => <span className="text-[var(--text-tertiary)]">{inv.session_packages?.title ?? '—'}</span>,
+      },
+      {
+        key: 'amount',
+        header: 'Amount',
+        sortValue: (r: InvoiceRow) => r.amount_cents,
+        render: (inv: InvoiceRow) => (
+          <span
+            className={cn(
+              'tabular-nums',
+              inv.status === 'pending'
+                ? 'text-[16px] font-bold text-[var(--warning)]'
+                : 'text-[var(--text-primary)]'
+            )}
+          >
+            {formatAmount(inv.amount_cents, inv.currency)}
+          </span>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        sortValue: (r: InvoiceRow) => r.status,
+        render: (inv: InvoiceRow) => (
+          <span className="inline-flex items-center gap-2 text-[13px]">
+            <StatusDot tone={inv.status === 'paid' ? 'active' : inv.status === 'pending' ? 'pending' : 'inactive'} />
+            {inv.status}
+          </span>
+        ),
+      },
+      {
+        key: 'method',
+        header: 'Method',
+        render: (inv: InvoiceRow) =>
+          inv.payment_method ? PAYMENT_METHOD_LABELS[inv.payment_method] ?? inv.payment_method : '—',
+      },
+      {
+        key: 'date',
+        header: 'Date',
+        sortValue: (r: InvoiceRow) => r.created_at,
+        render: (inv: InvoiceRow) => {
+          if (inv.status === 'pending' && pendingOverdueDays(inv.created_at) > 7) {
+            const n = pendingOverdueDays(inv.created_at)
+            return (
+              <span className="inline-flex rounded-full bg-[var(--error-bg)] px-2 py-0.5 text-[12px] font-semibold text-[var(--error)]">
+                ⚠ {n} days overdue
+              </span>
+            )
+          }
+          return formatDate(inv.created_at)
+        },
+      },
+      {
+        key: 'actions',
+        header: 'Actions',
+        render: (inv: InvoiceRow) => (
+          <div className="flex flex-wrap items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            <Button size="xs" variant="ghost" type="button" onClick={() => openInvoiceThread(inv)}>
+              Open
+            </Button>
+            {inv.status === 'pending' ? (
+              <>
+                <Button size="xs" variant="secondary" type="button" onClick={() => setMarkPaidInvoice(inv)}>
+                  Mark paid
+                </Button>
+                <Button
+                  size="xs"
+                  variant="secondary"
+                  type="button"
+                  disabled={resendBusyId === inv.id}
+                  onClick={() => void resendInvoice(inv)}
+                >
+                  {resendBusyId === inv.id ? 'Sending…' : 'Resend'}
+                </Button>
+              </>
+            ) : null}
+          </div>
+        ),
+      },
+    ],
+    [openInvoiceThread, resendBusyId, resendInvoice]
+  )
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Invoices" contextInfo={`${pending.length} pending · ${paid.length} paid`}>
+      <PageHeader title="Invoices" countLabel={`${pending.length} pending · ${paid.length} paid`}>
         <div className="flex flex-wrap gap-2">
           <Link href="/coach/packages">
             <Button variant="secondary" size="sm">Packages</Button>
@@ -149,36 +304,46 @@ export function InvoicesPageContent() {
       {!loading && !error && invoices.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2">
           <Card variant="raised" padding="lg">
-            <p className="text-sm font-medium text-[var(--color-muted)]">Total received</p>
-            <p className="mt-1 text-2xl font-medium text-[var(--color-ink)]">
+            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">Total received</p>
+            <p className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
               {formatAmount(totalReceived, 'usd')}
             </p>
           </Card>
           <Card variant="raised" padding="lg">
-            <p className="text-sm font-medium text-[var(--color-muted)]">Pending</p>
-            <p className="mt-1 text-2xl font-medium text-[var(--color-ink)]">
+            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">Pending</p>
+            <p className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
               {formatAmount(totalPending, 'usd')}
             </p>
           </Card>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] min-h-[44px]"
-        >
-          <option value="all">All statuses</option>
-          <option value="pending">Pending</option>
-          <option value="paid">Paid</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="refunded">Refunded</option>
-        </select>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-1" role="tablist" aria-label="Invoice status">
+          {statusTabs.map(({ key, label, count }) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={statusTab === key}
+              onClick={() => setStatusTab(key)}
+              className={cn(
+                'h-9 min-h-9 rounded-[var(--radius-md)] px-3 text-[12px] font-medium transition-colors duration-[80ms]',
+                statusTab === key
+                  ? 'bg-[var(--bg-app)] text-[var(--accent)] shadow-[var(--shadow-xs)]'
+                  : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
+              )}
+            >
+              {label}
+              <span className="ml-1 tabular-nums text-[var(--text-quaternary)]">({count})</span>
+            </button>
+          ))}
+        </div>
         <select
           value={clientFilter}
           onChange={(e) => setClientFilter(e.target.value)}
-          className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-[15px] min-h-[44px]"
+          className="h-9 min-h-9 w-full max-w-[280px] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)] sm:w-auto"
+          aria-label="Filter by client"
         >
           <option value="">All clients</option>
           {clients.map((c) => (
@@ -190,19 +355,19 @@ export function InvoicesPageContent() {
       </div>
 
       {loading && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-          <div className="h-6 w-1/3 rounded bg-[var(--color-border)] animate-pulse" />
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-6">
+          <div className="h-6 w-1/3 max-w-[200px] animate-pulse rounded bg-[var(--border-default)]" />
           <div className="mt-4 space-y-2">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-12 rounded bg-[var(--color-border)] animate-pulse" />
+              <div key={i} className="h-12 animate-pulse rounded bg-[var(--border-default)]" />
             ))}
           </div>
         </div>
       )}
 
       {!loading && error && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
-          <p className="text-[var(--color-muted)]">{error}</p>
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-6 text-center">
+          <p className="text-[14px] text-[var(--text-secondary)]">{error}</p>
           <Button variant="secondary" className="mt-4" onClick={fetchInvoices}>
             Try again
           </Button>
@@ -210,38 +375,74 @@ export function InvoicesPageContent() {
       )}
 
       {!loading && !error && invoices.length === 0 && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-12 text-center">
-          <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">💰</div>
-          <p className="mt-4 text-[18px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">No invoices yet</p>
-          <p className="mx-auto mt-2 max-w-[320px] text-[14px] leading-[1.6] text-[var(--text-tertiary)]">Send an invoice from a session package to see it here.</p>
-          <Link href="/coach/packages">
-            <Button className="mt-4">Go to packages</Button>
+        <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+          <div className="empty-state-coach__icon flex size-20 items-center justify-center text-[36px]">💰</div>
+          <p className="empty-state-coach__title mt-4">No invoices yet</p>
+          <p className="empty-state-coach__desc mx-auto mt-2 max-w-[320px]">
+            Send an invoice from a session package to see it here.
+          </p>
+          <Link href="/coach/packages" className="empty-state-coach__cta inline-block">
+            <Button>Go to packages</Button>
           </Link>
         </div>
       )}
 
-      {!loading && !error && invoices.length > 0 && (
+      {!loading && !error && invoices.length > 0 && displayedInvoices.length === 0 && (
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-6 py-10 text-center">
+          <p className="text-[15px] font-medium text-[var(--text-primary)]">No invoices in this view</p>
+          <p className="mx-auto mt-2 max-w-[360px] text-[14px] text-[var(--text-tertiary)]">
+            Try another status tab or clear the client filter.
+          </p>
+          <Button variant="secondary" size="sm" className="mt-4" onClick={() => { setStatusTab('all'); setClientFilter('') }}>
+            Show all
+          </Button>
+        </div>
+      )}
+
+      {!loading && !error && displayedInvoices.length > 0 && (
         <DataTable
-          rows={invoices}
+          rows={displayedInvoices}
           loading={loading}
           emptyTitle="No invoices yet"
           emptyDescription="Send an invoice from a session package to see it here."
-          columns={[
-            { key: 'client', header: 'Client', sortValue: (r) => clientName(r.clients), render: (inv) => clientName(inv.clients) },
-            { key: 'package', header: 'Package', render: (inv) => <span className="text-[var(--text-tertiary)]">{inv.session_packages?.title ?? '—'}</span> },
-            { key: 'amount', header: 'Amount', sortValue: (r) => r.amount_cents, render: (inv) => formatAmount(inv.amount_cents, inv.currency) },
-            {
-              key: 'status',
-              header: 'Status',
-              sortValue: (r) => r.status,
-              render: (inv) => <span className="inline-flex items-center gap-2 text-[13px]"><StatusDot tone={inv.status === 'paid' ? 'active' : inv.status === 'pending' ? 'pending' : 'inactive'} />{inv.status}</span>,
-            },
-            { key: 'method', header: 'Method', render: (inv) => inv.payment_method ? PAYMENT_METHOD_LABELS[inv.payment_method] ?? inv.payment_method : '—' },
-            { key: 'date', header: 'Date', sortValue: (r) => r.created_at, render: (inv) => formatDate(inv.created_at) },
-            { key: 'actions', header: 'Actions', render: () => <Button size="xs" variant="ghost">Open</Button> },
-          ]}
+          rowClassName={(inv) =>
+            inv.status === 'pending'
+              ? 'border-l-[3px] border-l-[var(--warning)] bg-[var(--warning-bg)] hover:bg-[var(--warning-bg)]'
+              : ''
+          }
+          columns={invoiceColumns}
         />
       )}
+
+      {markPaidInvoice ? (
+        <MarkPaidModal
+          isOpen
+          onClose={() => setMarkPaidInvoice(null)}
+          invoiceId={markPaidInvoice.id}
+          clientName={clientName(markPaidInvoice.clients)}
+          amountCents={markPaidInvoice.amount_cents}
+          currency={markPaidInvoice.currency}
+          onSuccess={() => {
+            setMarkPaidInvoice(null)
+            void fetchInvoices()
+          }}
+        />
+      ) : null}
+
+      {actionToast ? (
+        <div role="status" aria-live="polite" className="toast-coach flex items-center gap-2">
+          <span className="text-[var(--success)]" aria-hidden>
+            ✓
+          </span>
+          {actionToast}
+        </div>
+      ) : null}
+
+      {actionError ? (
+        <div role="alert" className="toast-coach flex items-center gap-2 border border-[var(--error)] bg-[var(--error-bg)] text-[var(--error)]">
+          {actionError}
+        </div>
+      ) : null}
     </div>
   )
 }

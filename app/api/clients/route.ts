@@ -109,20 +109,44 @@ export async function GET(request: Request) {
 
       const { data: programRows } = await supabase
         .from('client_programs')
-        .select('client_id, created_at, programs ( title )')
+        .select('id, client_id, created_at, programs ( title, total_modules )')
         .eq('workspace_id', workspaceId)
         .in('client_id', ids)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
 
-      const activeProgramTitleByClient = new Map<string, string>()
+      type ActiveProg = { clientProgramId: string; title: string; totalModules: number }
+      const activeProgramByClient = new Map<string, ActiveProg>()
       for (const row of programRows ?? []) {
         const cid = row.client_id as string
-        if (activeProgramTitleByClient.has(cid)) continue
-        const raw = row.programs as { title?: string | null } | { title?: string | null }[] | null
-        const title = Array.isArray(raw) ? raw[0]?.title : raw?.title
-        const t = title?.trim()
-        if (t) activeProgramTitleByClient.set(cid, t)
+        if (activeProgramByClient.has(cid)) continue
+        const raw = row.programs as
+          | { title?: string | null; total_modules?: number | null }
+          | { title?: string | null; total_modules?: number | null }[]
+          | null
+        const p = Array.isArray(raw) ? raw[0] : raw
+        const title = p?.title?.trim()
+        if (!title) continue
+        activeProgramByClient.set(cid, {
+          clientProgramId: row.id as string,
+          title,
+          totalModules: Math.max(0, p?.total_modules ?? 0),
+        })
+      }
+
+      const clientProgramIds = [...activeProgramByClient.values()].map((v) => v.clientProgramId)
+      const modulesCompletedByCp = new Map<string, number>()
+      if (clientProgramIds.length > 0) {
+        const { data: progressRows } = await supabase
+          .from('program_progress')
+          .select('client_program_id')
+          .eq('workspace_id', workspaceId)
+          .in('client_program_id', clientProgramIds)
+          .not('completed_at', 'is', null)
+        for (const pr of progressRows ?? []) {
+          const cpid = pr.client_program_id as string
+          modulesCompletedByCp.set(cpid, (modulesCompletedByCp.get(cpid) ?? 0) + 1)
+        }
       }
 
       merged = list.map((c) => {
@@ -134,11 +158,20 @@ export async function GET(request: Request) {
           assignments_total: rw?.assignments_total ?? 0,
           streak_days: rw?.current_streak_days ?? 0,
         })
+        const ap = activeProgramByClient.get(c.id)
+        const modulesCompleted = ap ? (modulesCompletedByCp.get(ap.clientProgramId) ?? 0) : 0
+        const totalModules = ap?.totalModules ?? 0
+        const programProgress =
+          ap && totalModules > 0 ? Math.round((modulesCompleted / totalModules) * 100) : 0
         return {
           ...c,
           rewards: rw ?? null,
+          lastActivityAt: rw?.last_activity_at ?? null,
           sessionsCompletedCount: n,
-          activeProgramTitle: activeProgramTitleByClient.get(c.id) ?? null,
+          activeProgramTitle: ap?.title ?? null,
+          modulesCompleted,
+          totalModules,
+          programProgress,
           engagement,
         }
       })

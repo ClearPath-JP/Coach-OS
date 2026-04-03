@@ -37,9 +37,9 @@ const COACH_LOGIN_FEATURES = [
   'Keep clients engaged between sessions',
 ]
 
-/** Deeper blue than signup — coach login left column + mobile bar. */
+/** Deeper blue than signup — coach login left column + mobile bar (brand tokens + fallbacks). */
 const COACH_LOGIN_BLUE_BG =
-  'linear-gradient(155deg, #041a33 0%, #082952 28%, #0B2D5E 55%, #0d47a1 88%, #115293 100%)'
+  'linear-gradient(155deg, color-mix(in srgb, var(--brand-primary, #1565C0) 18%, #000) 0%, color-mix(in srgb, var(--brand-primary, #1565C0) 35%, #000) 45%, color-mix(in srgb, var(--accent, #3B9EE8) 25%, #000) 100%)'
 
 /**
  * Marketing column for auth. `marketing-blue` (default): brighter gradient (signup). `coach-login-light`: darker blue
@@ -130,7 +130,8 @@ export function AuthBrandedLeftPanel({
       className="relative hidden min-h-screen w-full flex-col justify-between p-14 text-white lg:flex"
       style={{
         padding: '64px 56px',
-        background: 'linear-gradient(145deg, #1565C0 0%, #2196F3 40%, #64B5F6 100%)',
+        background:
+          'linear-gradient(145deg, var(--brand-primary, #1565C0) 0%, var(--accent, #3B9EE8) 50%, var(--accent-muted, #7EC8F0) 100%)',
       }}
     >
       <div className="flex items-center">

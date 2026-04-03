@@ -1,5 +1,9 @@
 import { AssignmentsPageContent } from './AssignmentsPageContent'
 
 export default function CoachAssignmentsPage() {
-  return <AssignmentsPageContent />
+  return (
+    <main className="flex min-h-0 min-h-screen flex-1 flex-col">
+      <AssignmentsPageContent />
+    </main>
+  )
 }

@@ -213,6 +213,7 @@ function StatCardGhost({
   footer,
   subtitle,
   href,
+  animateOnce,
 }: {
   label: string
   value: number
@@ -223,22 +224,26 @@ function StatCardGhost({
   footer?: React.ReactNode
   subtitle?: React.ReactNode
   href?: string
+  animateOnce?: boolean
 }) {
   const inner = (
     <Card
       variant="ghost"
       padding="default"
       className={cn(
-        'border border-[var(--border-default)] bg-[var(--bg-app)] p-5',
-        href && 'h-full transition-all duration-200 hover:-translate-y-px hover:shadow-[var(--shadow-lg)]'
+        'border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xs)]',
+        'p-5',
+        href && 'card-interactive h-full border-[var(--border-default)]'
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="text-[var(--accent)] [&_svg]:block">{icon}</span>
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[var(--text-tertiary)] [&_svg]:block">
+          {icon}
+        </span>
         {trendLabel ? (
           <span
             className={cn(
-              'inline-flex items-center gap-0.5 rounded-[var(--radius-full)] px-2 py-0.5 text-[11px] font-semibold',
+              'inline-flex items-center gap-0.5 rounded-[var(--radius-full)] px-2 py-[3px] text-[11px] font-semibold',
               trendUp === true && 'bg-[var(--success-bg)] text-[var(--success)]',
               trendUp === false && 'bg-[var(--error-bg)] text-[var(--error)]',
               trendUp === undefined && 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
@@ -259,10 +264,14 @@ function StatCardGhost({
         ) : null}
       </div>
       <p className="mt-3 text-[36px] font-bold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
-        {formatter ? <CountUpValue value={value} formatter={formatter} /> : <CountUpValue value={value} />}
+        {formatter ? (
+          <CountUpValue value={value} formatter={formatter} durationMs={600} animateOnce={animateOnce ?? false} />
+        ) : (
+          <CountUpValue value={value} durationMs={600} animateOnce={animateOnce ?? false} />
+        )}
       </p>
-      {subtitle ? <p className="mt-1 text-[12px] font-normal text-[var(--text-tertiary)]">{subtitle}</p> : null}
-      <p className="mt-1 text-[12px] font-normal text-[var(--text-tertiary)]">{label}</p>
+      <p className="mt-0.5 text-[13px] font-normal text-[var(--text-tertiary)]">{label}</p>
+      {subtitle ? <p className="mt-0.5 text-[11px] font-normal text-[var(--text-quaternary)]">{subtitle}</p> : null}
       {footer}
     </Card>
   )
@@ -278,7 +287,7 @@ function StatCardGhost({
 
 function PanelHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
-    <div className="flex h-11 shrink-0 items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4">
+    <div className="flex h-11 min-h-[44px] shrink-0 items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-4">
       <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">{title}</h2>
       {action}
     </div>
@@ -299,16 +308,16 @@ function QuickAction({
       type="button"
       onClick={onClick}
       className={cn(
-        'group flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-[var(--radius-lg)] border border-transparent',
-        'bg-[var(--accent-light)] px-3 py-3 text-center text-[12px] font-medium text-[var(--text-primary)]',
-        'transition-all duration-[var(--duration-fast)]',
-        'hover:-translate-y-px hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--text-on-accent)]'
+        'group flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)]',
+        'bg-[var(--bg-subtle)] px-3 text-center text-[12px] font-medium text-[var(--text-tertiary)]',
+        'transition-all duration-[150ms] ease-out',
+        'hover:border-[var(--accent-muted)] hover:bg-[var(--accent-light)]'
       )}
     >
-      <span className="text-[var(--accent)] transition-colors group-hover:text-[var(--text-on-accent)] [&_svg]:size-6">
+      <span className="text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--accent)] [&_svg]:size-5">
         {icon}
       </span>
-      <span>{label}</span>
+      <span className="transition-colors group-hover:text-[var(--accent)]">{label}</span>
     </button>
   )
 }
@@ -409,6 +418,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
       setLoading(false)
     }
   }, [])
+
+  const refreshAll = useCallback(async () => {
+    await loadDashboard()
+  }, [loadDashboard])
 
   useEffect(() => {
     void loadDashboard()
@@ -567,8 +580,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
     return n || fallback
   }
 
+  const statAnimateOnce = !loading && summary !== null
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-8 pb-8 pt-8 lg:min-h-0">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:min-h-0">
       <div
         style={{
           background: 'var(--warning-bg)',
@@ -593,20 +608,34 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           Try again
         </button>
       </div>
-      <div className="mb-8 grid min-h-0 shrink-0 grid-cols-1 gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
-        <div>
-          <h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] text-[var(--text-primary)]">
-            {greeting}, {coachFirst} <span aria-hidden>👋</span>
-          </h1>
-          <p className="mt-1 text-[14px] font-normal text-[var(--text-tertiary)]">{dateLine}</p>
-        </div>
-        <div className="flex flex-wrap items-start gap-2">
-          <Button variant="secondary" size="md" type="button" onClick={() => router.push('/coach/schedule')}>
-            Book session
-          </Button>
-          <Button variant="primary" size="md" type="button" onClick={() => router.push('/coach/clients')}>
-            Add client
-          </Button>
+      <div
+        className="mb-6 shrink-0 rounded-[12px] border border-[var(--border-subtle)] px-6 py-5 lg:mb-[var(--coach-header-content-gap)]"
+        style={{
+          background: 'linear-gradient(to right, var(--accent-light), transparent)',
+        }}
+      >
+        <div className="flex min-h-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-[24px] font-bold leading-tight tracking-[-0.03em] text-[var(--text-primary)]">
+              {greeting}, {coachFirst} <span aria-hidden>👋</span>
+            </h1>
+            <p className="mt-1 text-[14px] leading-normal text-[var(--text-tertiary)]">
+              {loading
+                ? 'One moment while we load your workspace…'
+                : attentionHasItems
+                  ? "Here's what needs your attention today."
+                  : 'Everything looks great today! 🎉'}
+            </p>
+            <p className="mt-0.5 text-[12px] text-[var(--text-quaternary)]">{dateLine}</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button variant="secondary" size="md" type="button" onClick={() => router.push('/coach/schedule')}>
+              Book session
+            </Button>
+            <Button variant="primary" size="md" type="button" onClick={() => router.push('/coach/clients')}>
+              + Add client
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -616,17 +645,20 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           padding="default"
           className={cn(
             'mb-4 shrink-0 border !p-0',
-            attentionHasItems ? 'border-[var(--warning-border)] bg-[var(--warning-bg)]/40' : 'border-[var(--success)]/25 bg-[var(--success-bg)]/50'
+            attentionHasItems
+              ? 'border-l-[3px] border-l-[var(--warning)] border-t-[var(--border-default)] border-r-[var(--border-default)] border-b-[var(--border-default)] bg-[var(--warning-bg)]/35'
+              : 'border-[var(--success-border)] bg-[var(--success-bg)]/60'
           )}
         >
-          <div className="border-b border-[var(--border-subtle)] px-4 py-3">
-            <h2 className="text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--text-primary)]">
-              Needs attention
-            </h2>
-          </div>
-          <div className="px-4 py-3">
+          <div className={cn('pl-3', attentionHasItems ? 'border-l-0' : '')}>
+            <div className="border-b border-[var(--border-subtle)] px-4 py-3">
+              <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
+                {attentionHasItems ? 'Needs attention' : 'All clear'}
+              </h2>
+            </div>
+            <div className="px-4 py-2">
             {attentionHasItems ? (
-              <ul className="space-y-2">
+              <ul className="divide-y divide-[var(--border-subtle)]">
                 {attention.inactive.map((row) => {
                   const name = personName(row.firstName, row.lastName)
                   const quietDays = row.lastMessageAt
@@ -637,33 +669,38 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   return (
                     <li
                       key={`i-${row.clientId}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2"
+                      className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0"
                     >
-                      <span className="text-[13px] text-[var(--text-primary)]">
-                        <span aria-hidden>⚠️</span> {name} — thread quiet for {quietLabel}
+                      <span className="min-w-0 flex-1 text-[14px] text-[var(--text-primary)]">
+                        <span aria-hidden className="mr-1.5 inline-block w-4 text-center">
+                          💬
+                        </span>
+                        <strong className="font-medium">{name}</strong> — thread quiet for {quietLabel}
                       </span>
                       <div className="flex flex-wrap gap-2">
                         <Button
-                          variant="secondary"
-                          size="sm"
+                          variant="ghost"
+                          size="xs"
                           type="button"
+                          className="h-7 min-h-[28px] px-2 text-[12px]"
                           onClick={() =>
                             router.push(`/coach/messages?clientId=${encodeURIComponent(row.clientId)}`)
                           }
                         >
-                          Message {name.split(' ')[0] || 'client'}
+                          Message
                         </Button>
                         <Button
-                          variant="secondary"
-                          size="sm"
+                          variant="ghost"
+                          size="xs"
                           type="button"
+                          className="h-7 min-h-[28px] px-2 text-[12px]"
                           onClick={() =>
                             router.push(
                               `/coach/messages?clientId=${encodeURIComponent(row.clientId)}&checkin=1`
                             )
                           }
                         >
-                          Send check-in
+                          Check-in
                         </Button>
                       </div>
                     </li>
@@ -674,20 +711,24 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   return (
                     <li
                       key={`cm-low-${row.clientId}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2"
+                      className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-2"
                     >
-                      <span className="text-[13px] text-[var(--text-primary)]">
-                        <span aria-hidden>😞</span> {name} rated themselves 1–2 for {row.consecutiveLowDays} days
+                      <span className="min-w-0 flex-1 text-[14px] text-[var(--text-primary)]">
+                        <span aria-hidden className="mr-1.5">
+                          😞
+                        </span>
+                        <strong className="font-medium">{name}</strong> rated low for {row.consecutiveLowDays} days
                       </span>
                       <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="ghost"
+                        size="xs"
                         type="button"
+                        className="h-7 min-h-[28px] px-2 text-[12px]"
                         onClick={() =>
                           router.push(`/coach/messages?clientId=${encodeURIComponent(row.clientId)}`)
                         }
                       >
-                        Send message
+                        Message
                       </Button>
                     </li>
                   )
@@ -697,20 +738,24 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   return (
                     <li
                       key={`cm-miss-${row.clientId}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2"
+                      className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-2"
                     >
-                      <span className="text-[13px] text-[var(--text-primary)]">
-                        <span aria-hidden>💤</span> {name} hasn&apos;t checked in in {row.daysSinceCheckin} days
+                      <span className="min-w-0 flex-1 text-[14px] text-[var(--text-primary)]">
+                        <span aria-hidden className="mr-1.5">
+                          📋
+                        </span>
+                        <strong className="font-medium">{name}</strong> — no check-in in {row.daysSinceCheckin} days
                       </span>
                       <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="ghost"
+                        size="xs"
                         type="button"
+                        className="h-7 min-h-[28px] px-2 text-[12px]"
                         onClick={() =>
                           router.push(`/coach/messages?clientId=${encodeURIComponent(row.clientId)}`)
                         }
                       >
-                        Check in with them
+                        Follow up
                       </Button>
                     </li>
                   )
@@ -721,15 +766,19 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   return (
                     <li
                       key={`o-${row.id}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2"
+                      className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-2"
                     >
-                      <span className="text-[13px] text-[var(--text-primary)]">
-                        <span aria-hidden>📋</span> {name} has an overdue assignment ({title})
+                      <span className="min-w-0 flex-1 text-[14px] text-[var(--text-primary)]">
+                        <span aria-hidden className="mr-1.5">
+                          📋
+                        </span>
+                        <strong className="font-medium">{name}</strong> — overdue: {title}
                       </span>
                       <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="ghost"
+                        size="xs"
                         type="button"
+                        className="h-7 min-h-[28px] px-2 text-[12px]"
                         onClick={() => router.push('/coach/assignments?tab=overdue')}
                       >
                         Review
@@ -743,15 +792,19 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   return (
                     <li
                       key={`u-${row.id}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2"
+                      className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-2"
                     >
-                      <span className="text-[13px] text-[var(--text-primary)]">
-                        <span aria-hidden>💰</span> {name}&apos;s invoice is unpaid ({daysOld} days)
+                      <span className="min-w-0 flex-1 text-[14px] text-[var(--text-primary)]">
+                        <span aria-hidden className="mr-1.5">
+                          💰
+                        </span>
+                        <strong className="font-medium">{name}</strong> — invoice unpaid ({daysOld}d)
                       </span>
                       <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="ghost"
+                        size="xs"
                         type="button"
+                        className="h-7 min-h-[28px] px-2 text-[12px]"
                         onClick={() =>
                           router.push(`/coach/messages?clientId=${encodeURIComponent(row.clientId)}`)
                         }
@@ -769,13 +822,16 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   return (
                     <li
                       key={`s-${row.id}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2"
+                      className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-2"
                     >
-                      <span className="text-[13px] text-[var(--text-primary)]">
-                        <span aria-hidden>📅</span> Session with {name} {timeLabel}
+                      <span className="min-w-0 flex-1 text-[14px] text-[var(--text-primary)]">
+                        <span aria-hidden className="mr-1.5">
+                          📅
+                        </span>
+                        Session with <strong className="font-medium">{name}</strong> {timeLabel}
                       </span>
-                      <Button variant="secondary" size="sm" type="button" onClick={() => router.push('/coach/schedule')}>
-                        View session
+                      <Button variant="ghost" size="xs" type="button" className="h-7 min-h-[28px] px-2 text-[12px]" onClick={() => router.push('/coach/schedule')}>
+                        View
                       </Button>
                     </li>
                   )
@@ -786,27 +842,34 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                   return (
                     <li
                       key={`n-${row.clientId}-${row.programTitle}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2"
+                      className="flex min-h-11 flex-wrap items-center justify-between gap-2 py-2"
                     >
-                      <span className="text-[13px] text-[var(--text-primary)]">
-                        <span aria-hidden>🎯</span> {name} is {pct}% done with {row.programTitle?.trim() || 'their program'}
+                      <span className="min-w-0 flex-1 text-[14px] text-[var(--text-primary)]">
+                        <span aria-hidden className="mr-1.5">
+                          🎯
+                        </span>
+                        <strong className="font-medium">{name}</strong> is {pct}% through {row.programTitle?.trim() || 'program'}
                       </span>
                       <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="ghost"
+                        size="xs"
                         type="button"
+                        className="h-7 min-h-[28px] px-2 text-[12px]"
                         onClick={() => router.push(`/coach/clients/${encodeURIComponent(row.clientId)}`)}
                       >
-                        Celebrate
+                        View
                       </Button>
                     </li>
                   )
                 })}
               </ul>
             ) : (
-              <p className="text-[14px] font-medium text-[var(--success)]">
-                <span aria-hidden>✅</span> All clients are on track. Great work today!
-              </p>
+              <div className="py-4 text-center">
+                <p className="text-[15px] font-semibold text-[var(--success)]">
+                  <span aria-hidden>✅</span> All clients are on track
+                </p>
+                <p className="mt-1 text-[14px] text-[var(--text-tertiary)]">Nothing needs your attention right now.</p>
+              </div>
             )}
             <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
               <Button
@@ -846,6 +909,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">
                 Checks quiet clients, sends optional auto check-ins, and milestone review requests (see Notifications).
               </p>
+            </div>
             </div>
           </div>
         </Card>
@@ -928,7 +992,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         </div>
       ) : null}
 
-      <div className="mb-6 grid shrink-0 grid-cols-2 gap-3 min-[1280px]:grid-cols-5">
+      <div className="mb-6 grid shrink-0 grid-cols-2 gap-4 min-[1280px]:grid-cols-5">
         {loading && !summary ? (
           <>
             {[1, 2, 3, 4, 5].map((i) => (
@@ -938,6 +1002,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         ) : (
           <>
             <StatCardGhost
+              animateOnce={statAnimateOnce}
               label="Active clients"
               value={summary?.activeClientsCount ?? 0}
               subtitle={
@@ -957,6 +1022,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               }
             />
             <StatCardGhost
+              animateOnce={statAnimateOnce}
               label="Sessions this week"
               value={summary?.sessionsThisWeek ?? 0}
               subtitle={
@@ -978,6 +1044,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               }
             />
             <StatCardGhost
+              animateOnce={statAnimateOnce}
               label="Revenue this month"
               value={summary?.revenueMonthCents ?? 0}
               formatter={(n) => formatCents(Math.round(n))}
@@ -1006,6 +1073,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               }
             />
             <StatCardGhost
+              animateOnce={statAnimateOnce}
               label="Unread messages"
               value={unreadMessagesTotal}
               subtitle={unreadMessagesTotal > 0 ? 'Tap to reply' : 'All caught up ✓'}
@@ -1020,19 +1088,23 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 </svg>
               }
             />
-            <Card variant="ghost" padding="default" className="p-5">
+            <Card
+              variant="ghost"
+              padding="default"
+              className="border border-[var(--border-default)] bg-[var(--bg-app)] p-5 shadow-[var(--shadow-xs)]"
+            >
               <div className="flex items-start justify-between gap-2">
-                <span className="text-[var(--accent)] [&_svg]:block">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[var(--text-tertiary)] [&_svg]:block">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                     <path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12" />
                   </svg>
                 </span>
               </div>
-              <p className="mt-3 text-[20px] font-bold leading-none tracking-[-0.03em] text-[var(--text-primary)] tabular-nums">
+              <p className="mt-3 text-[36px] font-bold leading-none tracking-[-0.04em] text-[var(--text-primary)] tabular-nums">
                 {storage ? `${storage.usedGb.toFixed(1)} / ${storage.maxGb}` : '—'}
               </p>
-              <p className="mt-1 text-[12px] font-normal text-[var(--text-tertiary)]">Storage (GB)</p>
+              <p className="mt-0.5 text-[13px] font-normal text-[var(--text-tertiary)]">Storage (GB)</p>
               {storage ? (
                 <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
                   <div
@@ -1054,42 +1126,43 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
       </div>
 
       <Card variant="default" padding="default" className="mb-4 shrink-0 !p-3">
-        <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)] md:hidden">Quick actions</p>
+        <p className="section-label-coach mb-3 md:hidden">Quick actions</p>
         <div className="grid grid-cols-2 gap-2 md:hidden">
           <button
             type="button"
             onClick={() => router.push('/coach/clients')}
-            className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-100 active:scale-[0.97] active:border-[var(--accent-muted)] active:bg-[var(--accent-light)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
           >
-            <Users className="size-6 text-[var(--accent)]" strokeWidth={2} aria-hidden />
-            <span className="text-[12px] font-medium text-[var(--text-primary)]">Add client</span>
+            <Users className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
+            <span>Add client</span>
           </button>
           <button
             type="button"
             onClick={() => router.push('/coach/schedule')}
-            className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-100 active:scale-[0.97] active:border-[var(--accent-muted)] active:bg-[var(--accent-light)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
           >
-            <Calendar className="size-6 text-[var(--accent)]" strokeWidth={2} aria-hidden />
-            <span className="text-[12px] font-medium text-[var(--text-primary)]">Book session</span>
+            <Calendar className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
+            <span>Book session</span>
           </button>
           <button
             type="button"
             onClick={() => setQuickInvoiceOpen(true)}
-            className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-100 active:scale-[0.97] active:border-[var(--accent-muted)] active:bg-[var(--accent-light)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
           >
-            <CreditCard className="size-6 text-[var(--accent)]" strokeWidth={2} aria-hidden />
-            <span className="text-[12px] font-medium text-[var(--text-primary)]">Quick invoice</span>
+            <CreditCard className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
+            <span>Quick invoice</span>
           </button>
           <button
             type="button"
             onClick={() => router.push('/coach/messages')}
-            className="flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-100 active:scale-[0.97] active:border-[var(--accent-muted)] active:bg-[var(--accent-light)]"
+            className="flex h-16 min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[12px] font-medium text-[var(--text-tertiary)] transition-all duration-[150ms] ease-out active:border-[var(--accent-muted)] active:bg-[var(--accent-light)] active:text-[var(--accent)]"
           >
-            <MessageSquare className="size-6 text-[var(--accent)]" strokeWidth={2} aria-hidden />
-            <span className="text-[12px] font-medium text-[var(--text-primary)]">Messages</span>
+            <MessageSquare className="size-5 text-[var(--text-tertiary)]" strokeWidth={2} aria-hidden />
+            <span>Messages</span>
           </button>
         </div>
-        <div className="hidden grid-cols-3 gap-2 md:grid xl:grid-cols-7">
+        <p className="section-label-coach mb-3 hidden md:block">Quick actions</p>
+        <div className="hidden grid-cols-2 gap-4 md:grid lg:grid-cols-4">
           <QuickAction label="Add client" onClick={() => router.push('/coach/clients')} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>} />
           <QuickAction label="Book session" onClick={() => router.push('/coach/schedule')} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>} />
           <QuickAction label="Quick invoice" onClick={() => setQuickInvoiceOpen(true)} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></svg>} />
@@ -1106,7 +1179,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             title="Today's sessions"
             action={
               <Link href="/coach/schedule" className="text-[12px] font-medium text-[var(--accent)] hover:underline">
-                View all →
+                View all
               </Link>
             }
           />
@@ -1114,7 +1187,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             {loading ? (
               <ul className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <li key={i} className="h-14 animate-pulse rounded-[var(--radius-md)] bg-[var(--bg-muted)]" />
+                  <li key={i} className="skeleton h-14 rounded-[var(--radius-md)]" />
                 ))}
               </ul>
             ) : todaySessions.length === 0 ? (
@@ -1205,7 +1278,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             title="Messages"
             action={
               <Link href="/coach/messages" className="text-[12px] font-medium text-[var(--accent)] hover:underline">
-                View all →
+                View all
               </Link>
             }
           />
@@ -1213,7 +1286,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             {loading ? (
               <ul className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <li key={i} className="h-14 animate-pulse rounded-[var(--radius-md)] bg-[var(--bg-muted)]" />
+                  <li key={i} className="skeleton h-14 rounded-[var(--radius-md)]" />
                 ))}
               </ul>
             ) : unreadThreads.length === 0 ? (
@@ -1274,7 +1347,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             title="Activity"
             action={
               <Link href="/coach/programs" className="text-[12px] font-medium text-[var(--accent)] hover:underline">
-                View all →
+                View all
               </Link>
             }
           />
@@ -1282,7 +1355,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             {loading ? (
               <ul className="space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <li key={i} className="h-14 animate-pulse rounded-[var(--radius-md)] bg-[var(--bg-muted)]" />
+                  <li key={i} className="skeleton h-14 rounded-[var(--radius-md)]" />
                 ))}
               </ul>
             ) : activityPreview.length === 0 ? (
@@ -1319,26 +1392,24 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         open={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         onRecorded={() => {
-          void fetch('/api/coach/dashboard-summary')
-            .then((r) => r.json())
-            .then((json) => {
-              if (json.data) setSummary(json.data)
-            })
+          void refreshAll()
         }}
       />
 
       <QuickInvoiceModal
         open={quickInvoiceOpen}
         onClose={() => setQuickInvoiceOpen(false)}
-        onSent={(name) => setInvoiceToast(`Invoice sent to ${name}`)}
+        onSent={(name) => {
+          setInvoiceToast(`Invoice sent to ${name}`)
+          void refreshAll()
+        }}
       />
 
       {invoiceToast ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-6 left-1/2 z-[100] max-w-[90vw] -translate-x-1/2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--text-primary)] px-4 py-3 text-[14px] font-medium text-white shadow-lg"
-        >
+        <div role="status" aria-live="polite" className="toast-coach flex items-center gap-2">
+          <span className="text-[var(--success)]" aria-hidden>
+            ✓
+          </span>
           {invoiceToast}
         </div>
       ) : null}

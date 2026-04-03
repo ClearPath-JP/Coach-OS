@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { addDays, differenceInCalendarDays, differenceInMinutes, format, formatDistanceToNow, isAfter, parseISO } from 'date-fns'
+import { headers } from 'next/headers'
+import { differenceInCalendarDays, differenceInMinutes, format, formatDistanceToNow, isAfter, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase-server'
-import { getClientWorkspaceBranding } from '@/lib/client-workspace-branding'
+import type { ClientWorkspaceBranding } from '@/lib/client-workspace-branding'
+import type { ClientPortalTodayCheckin } from '@/lib/client-portal-bundle'
 import { normalizeEmail } from '@/lib/utils'
 import { Card } from '@/components/ui/Card'
 import { ClientPortalDailyCheckIn } from '@/components/client/ClientPortalDailyCheckIn'
@@ -89,147 +91,89 @@ export default async function ClientPortalPage() {
     )
   }
 
-  const firstName = client.first_name?.trim() || 'there'
-  const now = new Date()
-  const nowIso = now.toISOString()
-  const thirtyDaysIso = addDays(now, 30).toISOString()
+  const hdrs = await headers()
+  const host = hdrs.get('x-forwarded-host') ?? hdrs.get('host')
+  const proto = hdrs.get('x-forwarded-proto') ?? (host?.includes('localhost') ? 'http' : 'https')
+  const origin = host
+    ? `${proto}://${host}`
+    : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
-  const [
-    brandingRes,
-    nextSessionRes,
-    pendingInvoiceRes,
-    rewardsRes,
-    assignmentsRes,
-    goalsRes,
-    lastMsgRes,
-    unreadRes,
-    coachRes,
-    activeProgramRes,
-  ] = await Promise.all([
-    getClientWorkspaceBranding(user.email),
-    supabase
-      .from('sessions')
-      .select('id, scheduled_time, end_time, duration_minutes, status, session_type, notes')
-      .eq('client_id', client.id)
-      .gte('scheduled_time', nowIso)
-      .lte('scheduled_time', thirtyDaysIso)
-      .in('status', ['pending', 'confirmed'])
-      .order('scheduled_time', { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from('session_invoices')
-      .select('id, amount_cents, currency, status, created_at, session_packages(title, description)')
-      .eq('client_id', client.id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('client_rewards')
-      .select('total_xp, level, current_streak_days, assignments_completed')
-      .eq('client_id', client.id)
-      .eq('workspace_id', client.workspace_id)
-      .maybeSingle(),
-    supabase
-      .from('client_assignments')
-      .select(
-        'id, status, due_at, points_awarded, assignment_templates(title, assignment_type, points)'
-      )
-      .eq('client_id', client.id)
-      .eq('workspace_id', client.workspace_id)
-      .in('status', ['pending', 'returned'])
-      .order('due_at', { ascending: true, nullsFirst: false })
-      .limit(8),
-    supabase
-      .from('client_goals')
-      .select(
-        'id, title, status, category, target_value, start_value, current_value, unit, achieved_at'
-      )
-      .eq('client_id', client.id)
-      .eq('workspace_id', client.workspace_id)
-      .order('created_at', { ascending: false })
-      .limit(12),
-    supabase
-      .from('messages')
-      .select('content, message_type, created_at')
-      .eq('client_id', client.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from('messages')
-      .select('id', { count: 'exact', head: true })
-      .eq('recipient_id', user.id)
-      .is('read_at', null),
-    supabase.from('profiles').select('display_name, full_name').eq('id', client.coach_id).maybeSingle(),
-    supabase
-      .from('client_programs')
-      .select('id, program_id, status, updated_at')
-      .eq('client_id', client.id)
-      .eq('status', 'active')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ])
+  const portalRes = await fetch(`${origin}/api/client/portal-data`, {
+    headers: { cookie: hdrs.get('cookie') ?? '' },
+    cache: 'no-store',
+  })
+  const portalJson = (await portalRes.json().catch(() => ({}))) as {
+    data?: Record<string, unknown>
+    error?: string
+  }
 
-  const branding = brandingRes
-  const nextSession = nextSessionRes.error ? null : nextSessionRes.data
-  const pendingInvoices = pendingInvoiceRes.error ? [] : (pendingInvoiceRes.data ?? [])
-  const rewardsRow = rewardsRes.error ? null : rewardsRes.data
-  const assignmentRows = assignmentsRes.error ? [] : (assignmentsRes.data ?? [])
-  const goalRows = goalsRes.error ? [] : (goalsRes.data ?? [])
-  const lastMessage = lastMsgRes.error ? null : lastMsgRes.data
-  const messageUnreadCount = unreadRes.error ? 0 : (unreadRes.count ?? 0)
-  const coachProfile = coachRes.error ? null : coachRes.data
+  if (!portalRes.ok || !portalJson.data) {
+    return (
+      <main className="client-page-content mx-auto w-full max-w-[680px] px-4 py-6 md:px-6">
+        <p className="text-[var(--text-tertiary)]">
+          {typeof portalJson.error === 'string'
+            ? portalJson.error
+            : 'Could not load your portal. Refresh the page to try again.'}
+        </p>
+      </main>
+    )
+  }
 
-  const coachDisplayName =
-    branding?.brandName?.trim() ||
-    coachProfile?.display_name?.trim() ||
-    coachProfile?.full_name?.trim() ||
-    'Your coach'
-
-  let programBlock: {
+  const pd = portalJson.data
+  const firstName = typeof pd.firstName === 'string' ? pd.firstName : client.first_name?.trim() || 'there'
+  const branding = pd.branding as ClientWorkspaceBranding | null
+  const nextSession = (pd.nextSession as {
+    scheduled_time?: string
+    duration_minutes?: number | null
+    session_type?: string | null
+    notes?: string | null
+  } | null) ?? null
+  const pendingInvoices = (pd.pendingInvoices ?? []) as Array<{
+    amount_cents?: number
+    currency?: string
+    session_packages?: { title?: string | null } | null
+  }>
+  const rewardsRow = pd.rewards as {
+    total_xp?: number
+    level?: number
+    current_streak_days?: number
+    assignments_completed?: number
+  } | null
+  const assignmentRows = (pd.assignmentRows ?? []) as Array<{
+    id: string
+    status: string
+    due_at: string | null
+    points_awarded: number | null
+    assignment_templates: unknown
+  }>
+  const goalRows = (pd.goalRows ?? []) as Array<{
+    id: string
+    title: string
+    status: string
+    category: string
+    target_value: number | null
+    start_value: number | null
+    current_value: number | null
+    unit: string | null
+    achieved_at: string | null
+  }>
+  const lastMessage = pd.lastMessage as {
+    content: string | null
+    message_type: string | null
+    created_at: string
+  } | null
+  const messageUnreadCount = typeof pd.messageUnreadCount === 'number' ? pd.messageUnreadCount : 0
+  const coachDisplayName = typeof pd.coachDisplayName === 'string' ? pd.coachDisplayName : 'Your coach'
+  const programBlock = pd.programBlock as {
     title: string
     programId: string
     completed: number
     total: number
     lastActivity: string | null
-  } | null = null
+  } | null
+  const todayCheckin = pd.todayCheckin as ClientPortalTodayCheckin
 
-  if (!activeProgramRes.error && activeProgramRes.data) {
-    const cp = activeProgramRes.data
-    const { data: programRow } = await supabase
-      .from('programs')
-      .select('id, title, total_modules')
-      .eq('id', cp.program_id)
-      .maybeSingle()
-    if (programRow) {
-      const { data: progressRows } = await supabase
-        .from('program_progress')
-        .select('completed_at')
-        .eq('client_program_id', cp.id)
-      const completed = (progressRows ?? []).filter((r) => r.completed_at != null).length
-      const total = programRow.total_modules ?? 0
-      const { data: lastDone } = await supabase
-        .from('program_progress')
-        .select('completed_at')
-        .eq('client_program_id', cp.id)
-        .not('completed_at', 'is', null)
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      let lastActivity: string | null = null
-      if (lastDone?.completed_at) {
-        lastActivity = formatDistanceToNow(parseISO(lastDone.completed_at), { addSuffix: true })
-      }
-      programBlock = {
-        title: programRow.title ?? 'Your program',
-        programId: programRow.id,
-        completed,
-        total,
-        lastActivity,
-      }
-    }
-  }
+  const now = new Date()
 
   const totalXp = rewardsRow?.total_xp ?? 0
   const levelInfo = getLevelFromXp(totalXp)
@@ -254,7 +198,10 @@ export default async function ClientPortalPage() {
       branding?.clientPortalHeading?.trim()
   )
 
-  const sessionStart = nextSession?.scheduled_time ? parseISO(nextSession.scheduled_time) : null
+  const sessionStart =
+    nextSession?.scheduled_time && typeof nextSession.scheduled_time === 'string'
+      ? parseISO(nextSession.scheduled_time)
+      : null
   const minutesUntilStart =
     sessionStart && isAfter(sessionStart, now) ? differenceInMinutes(sessionStart, now) : null
   const hoursUntil =
@@ -279,13 +226,7 @@ export default async function ClientPortalPage() {
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(260px,300px)] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)] xl:gap-10">
         <div className="client-portal-dash-stagger flex min-w-0 flex-col gap-6 md:gap-6">
-        {nextSessionRes.error ? (
-          <p className="text-[13px] text-[var(--text-tertiary)]">
-            Could not load upcoming session. Refresh the page to try again.
-          </p>
-        ) : null}
-
-        <ClientPortalDailyCheckIn firstName={firstName} />
+        <ClientPortalDailyCheckIn firstName={firstName} serverToday={todayCheckin} />
 
         {hasBrandingContent ? (
           <PortalBrandedHero>
@@ -427,17 +368,13 @@ export default async function ClientPortalPage() {
               </Link>
             </Card>
           </section>
-        ) : !activeProgramRes.error && !activeProgramRes.data ? (
+        ) : (
           <p className="text-[14px] leading-relaxed text-[var(--text-tertiary)]">
             Your coach will assign a program here soon. In the meantime, check your messages.
           </p>
-        ) : null}
+        )}
 
-        {rewardsRes.error ? (
-          <p className="text-[13px] text-[var(--text-tertiary)]">
-            Could not load rewards. Refresh the page to try again.
-          </p>
-        ) : rewardsRow ? (
+        {rewardsRow ? (
           <section className="flex items-center gap-4 rounded-[var(--radius-lg)] bg-[var(--bg-subtle)] px-4 py-4 lg:hidden">
             <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[20px] font-bold text-[var(--text-on-accent)]">
               {levelInfo.level}
@@ -461,11 +398,7 @@ export default async function ClientPortalPage() {
           </section>
         ) : null}
 
-        {assignmentsRes.error ? (
-          <p className="text-[13px] text-[var(--text-tertiary)]">
-            Could not load tasks. Refresh the page to try again.
-          </p>
-        ) : previewAssignments.length > 0 ? (
+        {previewAssignments.length > 0 ? (
           <section>
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
               Tasks due
@@ -671,7 +604,7 @@ export default async function ClientPortalPage() {
             </Card>
           </div>
 
-          {!rewardsRes.error && rewardsRow ? (
+          {rewardsRow ? (
             <Card variant="elevated" padding="lg">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
                 XP progress
@@ -696,11 +629,11 @@ export default async function ClientPortalPage() {
                 <span>✅ {doneHw} done</span>
               </div>
             </Card>
-          ) : !rewardsRes.error ? (
+          ) : (
             <Card variant="elevated" padding="lg" className="text-[13px] text-[var(--text-secondary)]">
               Complete tasks and check in to earn XP and level up.
             </Card>
-          ) : null}
+          )}
 
           <Card variant="elevated" padding="lg">
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">

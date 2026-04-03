@@ -5,7 +5,7 @@ import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { Nav } from '@/components/layout/Nav'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { MobileNav } from '@/components/layout/MobileNav'
+import { CoachMobileDock } from '@/components/layout/CoachMobileDock'
 import { CoachKeyboardShortcuts } from '@/components/coach/CoachKeyboardShortcuts'
 import { CommandPalette } from '@/components/CommandPalette'
 import { getCoachSidebarNav } from '@/components/layout/coach-sidebar-nav'
@@ -141,7 +141,7 @@ export default async function CoachLayout({
             <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
           </div>
         </div>
-        <MobileNav />
+        <CoachMobileDock />
         <CoachKeyboardShortcuts />
         <CommandPalette />
       </div>

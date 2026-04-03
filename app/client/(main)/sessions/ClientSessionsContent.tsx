@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { RequestSessionModal } from '@/components/client/RequestSessionModal'
+import { WeeklyUnavailabilityEditor } from '@/components/unavailability/WeeklyUnavailabilityEditor'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
@@ -157,6 +158,16 @@ export function ClientSessionsContent() {
             </ul>
           )
         ) : null}
+      </section>
+
+      <section>
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+          Times you&apos;re usually unavailable
+        </p>
+        <p className="mb-4 text-[13px] text-[var(--text-secondary)]">
+          Help your coach avoid proposing sessions when you typically can&apos;t make it. This is optional.
+        </p>
+        <WeeklyUnavailabilityEditor variant="client" />
       </section>
 
       <RequestSessionModal open={requestOpen} onClose={() => setRequestOpen(false)} onSent={() => void loadSessions()} />

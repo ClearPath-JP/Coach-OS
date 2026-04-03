@@ -18,6 +18,7 @@ import {
 } from '@/lib/coach-themes'
 import { cn } from '@/lib/utils'
 import { WorkspaceStorageSection } from '@/components/coach/WorkspaceStorageSection'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { DEFAULT_AUTO_CHECKIN_MESSAGE } from '@/lib/re-engagement-default-message'
 
 type TabKey = 'profile' | 'workspace' | 'payments' | 'appearance' | 'notifications'
@@ -615,50 +616,69 @@ export function SettingsPageContent() {
   }
 
   const tabButtonClass = (key: TabKey) =>
-    `min-h-[44px] px-4 text-sm font-medium transition-colors border-b-2 -mb-px ${
+    cn(
+      'min-h-10 shrink-0 rounded-[var(--radius-md)] px-3 py-2.5 text-left text-[13px] font-medium transition-colors duration-[80ms] max-lg:whitespace-nowrap lg:w-full',
       activeTab === key
-        ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
-        : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-    }`
+        ? 'bg-[var(--bg-app)] text-[var(--accent)] shadow-[var(--shadow-xs)]'
+        : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
+    )
 
   if (loading) {
     return (
-      <div className="space-y-4 animate-pulse">
-        <div className="h-8 w-48 rounded-lg bg-[var(--color-border)]" />
-        <div className="h-10 w-full max-w-xl rounded-lg bg-[var(--color-border)]" />
-        <div className="h-64 w-full rounded-lg bg-[var(--color-border)]" />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PageHeader title="Settings" />
+        <div className="space-y-4 animate-pulse">
+          <div className="h-10 w-full max-w-[200px] rounded-lg bg-[var(--border-default)]" />
+          <div className="h-64 w-full max-w-xl rounded-lg bg-[var(--border-default)]" />
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <Card className="max-w-2xl">
-        <p className="text-[var(--color-text-primary)]">{error}</p>
-        <Button className="mt-4" variant="secondary" onClick={() => window.location.reload()}>
-          Try again
-        </Button>
-      </Card>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PageHeader title="Settings" />
+        <Card className="max-w-2xl">
+          <p className="text-[var(--text-primary)]">{error}</p>
+          <Button className="mt-4" variant="secondary" onClick={() => window.location.reload()}>
+            Try again
+          </Button>
+        </Card>
+      </div>
     )
   }
 
   return (
     <>
-      <div className="space-y-6">
-        <h1 className="text-[22px] font-medium leading-[var(--leading-heading)] text-[var(--color-text-primary)]">
-          Settings
-        </h1>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PageHeader title="Settings" />
 
-        <div className="flex gap-1 border-b border-[var(--color-border)] overflow-x-auto">
-          <button type="button" className={tabButtonClass('profile')} onClick={() => setActiveTab('profile')}>Profile</button>
-          <button type="button" className={tabButtonClass('workspace')} onClick={() => setActiveTab('workspace')}>Workspace</button>
-          <button type="button" className={tabButtonClass('payments')} onClick={() => setActiveTab('payments')}>Payments</button>
-          <button type="button" className={tabButtonClass('appearance')} onClick={() => setActiveTab('appearance')}>Appearance</button>
-          <button type="button" className={tabButtonClass('notifications')} onClick={() => setActiveTab('notifications')}>Notifications</button>
-        </div>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+          <nav
+            className="flex gap-1 overflow-x-auto border-b border-[var(--border-subtle)] pb-2 lg:w-[200px] lg:shrink-0 lg:flex-col lg:overflow-visible lg:border-b-0 lg:pb-0"
+            aria-label="Settings sections"
+          >
+            <button type="button" className={tabButtonClass('profile')} onClick={() => setActiveTab('profile')}>
+              Profile
+            </button>
+            <button type="button" className={tabButtonClass('workspace')} onClick={() => setActiveTab('workspace')}>
+              Workspace
+            </button>
+            <button type="button" className={tabButtonClass('payments')} onClick={() => setActiveTab('payments')}>
+              Payments
+            </button>
+            <button type="button" className={tabButtonClass('appearance')} onClick={() => setActiveTab('appearance')}>
+              Appearance
+            </button>
+            <button type="button" className={tabButtonClass('notifications')} onClick={() => setActiveTab('notifications')}>
+              Notifications
+            </button>
+          </nav>
 
+          <div className="min-w-0 flex-1 lg:max-w-[600px]">
         {activeTab === 'profile' && (
-          <div className="space-y-8 max-w-3xl">
+          <div className="space-y-8">
             <Card className="space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-medium">Avatar</label>
@@ -1187,6 +1207,8 @@ export function SettingsPageContent() {
             </Card>
           </div>
         )}
+          </div>
+        </div>
       </div>
 
       <Modal
@@ -1218,11 +1240,7 @@ export function SettingsPageContent() {
         </div>
       </Modal>
 
-      {toast ? (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-[var(--color-text-primary)] px-4 py-3 text-sm text-white">
-          {toast}
-        </div>
-      ) : null}
+      {toast ? <div className="toast-coach">{toast}</div> : null}
     </>
   )
 }

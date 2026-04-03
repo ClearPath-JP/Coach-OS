@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { createProgramSchema } from '@/lib/validations'
 import { AssignProgramModal } from '@/components/coach/AssignProgramModal'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { cn } from '@/lib/utils'
 
 type Program = {
@@ -28,7 +29,8 @@ type ViewMode = 'grid' | 'list'
 
 function programGradient(title: string): string {
   const c = (title.trim()[0] ?? 'A').toUpperCase()
-  if (c >= 'A' && c <= 'E') return 'linear-gradient(135deg, #3B9EE8 0%, #1565C0 100%)'
+  if (c >= 'A' && c <= 'E')
+    return 'linear-gradient(135deg, var(--accent) 0%, var(--brand-primary, #1565C0) 100%)'
   if (c >= 'F' && c <= 'J') return 'linear-gradient(135deg, #10B981 0%, #065F46 100%)'
   if (c >= 'K' && c <= 'O') return 'linear-gradient(135deg, #8B5CF6 0%, #4C1D95 100%)'
   if (c >= 'P' && c <= 'T') return 'linear-gradient(135deg, #F59E0B 0%, #92400E 100%)'
@@ -44,7 +46,7 @@ function previewLetters(title: string): string {
 function ProgramCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)]">
-      <div className="h-[140px] animate-pulse bg-[var(--bg-muted)]" />
+      <div className="h-[160px] animate-pulse bg-[var(--bg-muted)]" />
       <div className="space-y-2 p-3">
         <div className="h-4 w-2/3 animate-pulse rounded bg-[var(--bg-muted)]" />
         <div className="h-3 w-full animate-pulse rounded bg-[var(--bg-muted)]" />
@@ -161,21 +163,15 @@ export function ProgramsPageContent() {
   ]
 
   return (
-    <div className="coach-route-enter px-6 pb-10 pt-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-4">
-          <h1 className="text-2xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Programs</h1>
-          <span className="rounded-full bg-[var(--bg-muted)] px-2.5 py-1 text-[13px] text-[var(--text-tertiary)]">
-            {programs.length} programs
-          </span>
-        </div>
+    <>
+      <PageHeader title="Programs" countLabel={`${programs.length} programs`}>
         <div className="flex flex-wrap items-center gap-2">
           <Input
             type="search"
-            placeholder="Search programs..."
+            placeholder="Search programs…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 w-[220px] max-w-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[14px]"
+            className="h-9 w-[min(100vw-8rem,220px)] max-w-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[14px]"
             aria-label="Search programs"
           />
           <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] p-0.5">
@@ -208,7 +204,9 @@ export function ProgramsPageContent() {
             Create program
           </Button>
         </div>
-      </div>
+      </PageHeader>
+
+      <div className="pb-10">
 
       <div className="mb-6 flex flex-wrap gap-0 border-b border-[var(--border-subtle)]">
         {tabs.map((t) => (
@@ -277,27 +275,30 @@ export function ProgramsPageContent() {
               tabIndex={0}
             >
               <div
-                className="relative h-[140px] shrink-0 overflow-hidden"
+                className="relative h-[160px] shrink-0 overflow-hidden"
                 style={{ background: programGradient(prog.title) }}
               >
                 <span
                   className={cn(
-                    'absolute left-2 top-2 rounded px-2 py-0.5 text-[11px] font-medium',
-                    prog.status === 'published' ? 'bg-white/90 text-[var(--accent)]' : 'bg-white/30 text-white'
+                    'absolute right-2 top-2 z-[1] rounded-[8px] px-2 py-0.5 text-[11px] font-semibold',
+                    prog.status === 'published'
+                      ? 'bg-[var(--bg-app)] text-[var(--accent)]'
+                      : 'bg-[var(--bg-app)]/60 text-white'
                   )}
                 >
                   {prog.status === 'published' ? 'Published' : 'Draft'}
                 </span>
-                <span className="absolute right-2 top-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium text-white">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.35)_0%,transparent_55%)]" />
+                <span className="absolute bottom-2 left-2 z-[1] text-[11px] font-semibold text-white drop-shadow-sm">
                   {prog.total_modules} modules
                 </span>
                 <div className="flex h-full items-center justify-center">
                   <span className="text-[32px] font-bold text-white drop-shadow-sm">{previewLetters(prog.title)}</span>
                 </div>
               </div>
-              <div className="p-3">
+              <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="line-clamp-2 min-w-0 flex-1 text-[14px] font-semibold text-[var(--text-primary)]">{prog.title}</p>
+                  <p className="line-clamp-2 min-w-0 flex-1 text-[15px] font-semibold leading-snug text-[var(--text-primary)]">{prog.title}</p>
                   <div className="relative shrink-0 opacity-0 transition-opacity group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                     <details open={menuId === prog.id} onToggle={(ev) => setMenuId((ev.target as HTMLDetailsElement).open ? prog.id : null)}>
                       <summary className="flex size-6 cursor-pointer list-none items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]">
@@ -340,8 +341,8 @@ export function ProgramsPageContent() {
                   <p className="mt-1 line-clamp-1 text-[12px] text-[var(--text-tertiary)]">{prog.description}</p>
                 ) : null}
               </div>
-              <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-2 text-[12px] text-[var(--text-tertiary)]">
-                <span>👤 {prog.assigned_count ?? 0} clients</span>
+              <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4 py-2.5 text-[13px] text-[var(--text-tertiary)]">
+                <span>{prog.assigned_count ?? 0} clients assigned</span>
                 <span className="text-[var(--text-quaternary)]">
                   {prog.updated_at ? formatDistanceToNow(new Date(prog.updated_at), { addSuffix: true }) : '—'}
                 </span>
@@ -426,6 +427,7 @@ export function ProgramsPageContent() {
           fetchPrograms()
         }}
       />
-    </div>
+      </div>
+    </>
   )
 }

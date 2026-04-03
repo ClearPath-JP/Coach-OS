@@ -7,14 +7,14 @@ const CoachScheduleWorkspace = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="min-h-[240px] animate-pulse rounded-xl bg-[var(--color-surface)]" aria-hidden />
+      <div className="min-h-[240px] animate-pulse rounded-xl bg-[var(--bg-subtle)]" aria-hidden />
     ),
   }
 )
 
 export function CoachSchedulePageClient() {
   return (
-    <main className="min-h-screen p-4 md:p-6 lg:p-8">
+    <main className="flex min-h-0 min-h-screen flex-1 flex-col">
       <CoachScheduleWorkspace />
     </main>
   )

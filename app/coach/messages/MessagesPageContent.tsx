@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { format, isToday, isYesterday } from 'date-fns'
+import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns'
 import { InvoiceCard } from '@/components/coach/InvoiceCard'
 import {
   SessionBookingMessageCard,
@@ -90,6 +90,25 @@ function statusBadgeVariant(status: string): 'active' | 'inactive' | 'pending' {
   return 'inactive'
 }
 
+function conversationTimeLabel(iso: string): string {
+  try {
+    const d = new Date(iso)
+    if (isToday(d)) return format(d, 'h:mm a')
+    if (isYesterday(d)) return 'Yesterday'
+    return formatDistanceToNow(d, { addSuffix: true })
+  } catch {
+    return '—'
+  }
+}
+
+function conversationTypeHint(preview: string | null | undefined): string | null {
+  const p = (preview ?? '').toLowerCase()
+  if (/\binvoice\b|\$\d|amount due/i.test(p)) return '📄 Invoice'
+  if (/session|booked|calendar|schedule/i.test(p)) return '📅 Session'
+  if (/assignment|task|submit/i.test(p)) return '📋 Assignment'
+  return null
+}
+
 function groupMessagesByDate(messages: Message[]): { dateLabel: string; msgs: Message[] }[] {
   const groups = new Map<string, Message[]>()
   for (const m of messages) {
@@ -119,13 +138,15 @@ function MessagesThreadMessagesList({
   onSuggestDifferentTime: () => void
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {groupMessagesByDate(messages).map(({ dateLabel, msgs }) => (
         <div key={dateLabel}>
-          <p className="mb-2 text-center text-[12px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
-            {dateLabel}
-          </p>
-          <div className="space-y-2">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="h-px flex-1 bg-[var(--border-subtle)]" aria-hidden />
+            <span className="shrink-0 text-[11px] text-[var(--text-quaternary)]">{dateLabel}</span>
+            <span className="h-px flex-1 bg-[var(--border-subtle)]" aria-hidden />
+          </div>
+          <div className="space-y-4">
             {msgs.map((msg) => {
               const isInvoice = msg.message_type === 'invoice'
               const isSession = msg.message_type === 'session'
@@ -231,7 +252,7 @@ function MessagesThreadMessagesList({
                   className={`flex ${msg.sender_id === userId ? 'justify-end' : 'justify-start'}`}
                 >
                   {invoiceData ? (
-                    <div className="max-w-[320px]">
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
                       <InvoiceCard
                         data={invoiceData}
                         clientName={selectedClientName || 'Client'}
@@ -242,14 +263,14 @@ function MessagesThreadMessagesList({
                       </p>
                     </div>
                   ) : sessionData ? (
-                    <div className="max-w-[320px]">
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
                       <SessionBookingMessageCard data={sessionData} />
                       <p className="mt-1 text-[12px] text-[var(--color-muted)]">
                         {format(new Date(msg.created_at), 'h:mm a')}
                       </p>
                     </div>
                   ) : isAssignment ? (
-                    <div className="max-w-[320px]">
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
                       <CoachAssignmentChatCard
                         content={msg.content}
                         createdAt={msg.created_at}
@@ -261,7 +282,7 @@ function MessagesThreadMessagesList({
                       />
                     </div>
                   ) : isAssignmentFeedback ? (
-                    <div className="max-w-[320px]">
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
                       <CoachAssignmentFeedbackCard
                         content={msg.content}
                         createdAt={msg.created_at}
@@ -269,35 +290,35 @@ function MessagesThreadMessagesList({
                       />
                     </div>
                   ) : isTestimonialRequest ? (
-                    <div className="max-w-[320px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-                      <p className="text-sm font-medium text-[var(--color-ink)]">🌟 Testimonial request</p>
-                      <p className="mt-1 text-xs text-[var(--color-muted)]">
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3.5">
+                      <p className="text-[14px] font-semibold text-[var(--text-primary)]">🌟 Testimonial request</p>
+                      <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
                         {testimonialProgram
                           ? `Asking how ${testimonialProgram} went.`
                           : 'Asking for a client review.'}
                       </p>
-                      <p className="mt-2 text-[12px] text-[var(--color-muted)]">
+                      <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
                         {format(new Date(msg.created_at), 'h:mm a')}
                       </p>
                     </div>
                   ) : sessionNotesPayload ? (
-                    <div className="max-w-[320px]">
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-1">
                       <CoachSessionNotesMessageCard
                         payload={sessionNotesPayload}
                         clientName={selectedClientName || 'Client'}
                         messageCreatedAt={msg.created_at}
                       />
-                      <p className="mt-1 text-[12px] text-[var(--color-muted)]">
+                      <p className="mt-1 text-[12px] text-[var(--text-quaternary)]">
                         {format(new Date(msg.created_at), 'h:mm a')}
                       </p>
                     </div>
                   ) : requestData ? (
-                    <div className="max-w-[360px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-                      <p className="text-sm font-medium text-[var(--color-ink)]">{selectedClientName} requested a session</p>
-                      <p className="mt-1 text-xs text-[var(--color-muted)]">
-                        {requestData.sessionTypePreference === 'in_person' ? '📍 In person' : '📹 Video (1:1 Zoom)'}
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3.5">
+                      <p className="text-[14px] font-semibold text-[var(--text-primary)]">{selectedClientName} requested a session</p>
+                      <p className="mt-1 text-[12px] text-[var(--accent)]">
+                        {requestData.sessionTypePreference === 'in_person' ? '📍 In person' : '📹 Video session'}
                       </p>
-                      <p className="mt-1 text-xs text-[var(--color-muted)]">
+                      <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
                         📅 {requestData.preferredDate ?? '—'}
                         {requestData.timeSlotLabel
                           ? ` · ${requestData.timeSlotLabel}`
@@ -305,7 +326,7 @@ function MessagesThreadMessagesList({
                             ? ` · ${requestData.preferredTime}`
                             : ''}
                       </p>
-                      {requestData.note ? <p className="mt-1 text-xs text-[var(--color-muted)]">💬 &quot;{requestData.note}&quot;</p> : null}
+                      {requestData.note ? <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">💬 &quot;{requestData.note}&quot;</p> : null}
                       <div className="mt-2 flex gap-2">
                         <Button
                           variant="secondary"
@@ -354,6 +375,7 @@ export function CoachMessagesPageContent() {
   const searchParams = useSearchParams()
   const clientIdFromUrl =
     searchParams.get('clientId')?.trim() || searchParams.get('client')?.trim() || null
+  const messageIdFromUrl = searchParams.get('messageId')?.trim() || null
 
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loadingConversations, setLoadingConversations] = useState(true)
@@ -376,6 +398,7 @@ export function CoachMessagesPageContent() {
   const [broadcastSending, setBroadcastSending] = useState(false)
   const checkinPrefillDone = useRef(false)
   const [convSearch, setConvSearch] = useState('')
+  const [convFilter, setConvFilter] = useState<'all' | 'unread' | 'invoices'>('all')
   const [bookModalOpen, setBookModalOpen] = useState(false)
   const [bookInitialDate, setBookInitialDate] = useState<string | null>(null)
   const [bookInitialTime, setBookInitialTime] = useState<string | null>(null)
@@ -527,6 +550,16 @@ export function CoachMessagesPageContent() {
   }, [selectedClientId, fetchMessages])
 
   useEffect(() => {
+    if (!messageIdFromUrl || loadingMessages) return
+    if (!messages.some((m) => m.id === messageIdFromUrl)) return
+    requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-message-id="${messageIdFromUrl}"]`)
+        ?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+  }, [messages, messageIdFromUrl, loadingMessages])
+
+  useEffect(() => {
     if (!selectedClientId) return
     fetch(`/api/messages/read`, {
       method: 'PATCH',
@@ -660,6 +693,14 @@ export function CoachMessagesPageContent() {
     )
   }, [conversations, convSearch])
 
+  const displayedConversations = useMemo(() => {
+    if (convFilter === 'unread') return filteredConversations.filter((c) => c.unreadCount > 0)
+    if (convFilter === 'invoices') {
+      return filteredConversations.filter((c) => conversationTypeHint(c.lastMessagePreview) === '📄 Invoice')
+    }
+    return filteredConversations
+  }, [filteredConversations, convFilter])
+
   const keyboardOverlapPx = useVisualViewportKeyboardOverlap(
     Boolean(isNarrowViewport && selectedClientId)
   )
@@ -671,18 +712,20 @@ export function CoachMessagesPageContent() {
           showListOnly ? 'w-full' : 'hidden lg:flex lg:w-[320px] lg:shrink-0'
         }`}
       >
-        <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-[var(--border-subtle)] px-4">
+        <div className="flex min-h-11 shrink-0 items-center justify-between border-b border-[var(--border-subtle)] px-4 py-2">
           <div className="flex items-center gap-2">
-            <h1 className="text-[15px] font-semibold text-[var(--text-primary)]">Messages</h1>
+            <h1 className="text-[20px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">Messages</h1>
             {totalUnread > 0 ? (
-              <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[11px] font-semibold text-white">{totalUnread > 99 ? '99+' : totalUnread}</span>
+              <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-on-accent)]">
+                {totalUnread > 99 ? '99+' : totalUnread}
+              </span>
             ) : null}
           </div>
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            className="min-h-8 shrink-0 text-[12px]"
+            className="h-8 min-h-8 shrink-0 text-[12px]"
             onClick={() => {
               setBroadcastText('')
               setBroadcastOpen(true)
@@ -691,13 +734,36 @@ export function CoachMessagesPageContent() {
             Broadcast
           </Button>
         </div>
+        <div className="flex shrink-0 gap-1 border-b border-[var(--border-subtle)] px-3 py-2">
+          {(
+            [
+              ['all', 'All'] as const,
+              ['unread', 'Unread'] as const,
+              ['invoices', 'Invoices'] as const,
+            ]
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setConvFilter(key)}
+              className={cn(
+                'h-8 min-h-8 rounded-[var(--radius-md)] px-3 text-[12px] font-medium transition-colors duration-[80ms]',
+                convFilter === key
+                  ? 'bg-[var(--bg-app)] text-[var(--accent)] shadow-[var(--shadow-xs)]'
+                  : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="shrink-0 px-3 py-2">
           <input
             type="search"
-            placeholder="Search conversations..."
+            placeholder="Search by name or last message…"
             value={convSearch}
             onChange={(e) => setConvSearch(e.target.value)}
-            className="h-8 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)]"
+            className="h-9 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] outline-none focus:border-[var(--accent)] focus:shadow-[var(--focus-ring)]"
             aria-label="Search conversations"
           />
         </div>
@@ -731,49 +797,72 @@ export function CoachMessagesPageContent() {
           )}
           {!loadingConversations && !conversationsError && conversations.length > 0 && (
             <ul>
-              {filteredConversations.map((c) => (
-                <li key={c.clientId}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedClientId(c.clientId)
-                      setSelectedClientName(c.fullName)
-                    }}
-                    className={cn(
-                      'relative flex w-full items-start gap-2.5 px-4 py-2.5 text-left transition-[background-color] duration-[80ms] hover:bg-[var(--bg-app)] focus:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--accent)]',
-                      selectedClientId === c.clientId && 'bg-[var(--bg-app)] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-[var(--accent)]'
-                    )}
-                  >
-                    {c.unreadCount > 0 ? (
-                      <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[var(--accent)]" aria-hidden />
-                    ) : (
-                      <span className="mt-2 size-1.5 shrink-0" aria-hidden />
-                    )}
-                    <div
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[12px] font-semibold text-[var(--accent)]"
-                      aria-hidden
-                    >
-                      {getInitials(c.fullName)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <p className="truncate text-[14px] font-medium text-[var(--text-primary)]">{c.fullName}</p>
-                        <span className="shrink-0 text-[11px] text-[var(--text-quaternary)]">
-                          {c.lastMessageAt ? format(new Date(c.lastMessageAt), 'h:mm a') : '—'}
-                        </span>
-                      </div>
-                      <p
-                        className={cn(
-                          'mt-0.5 truncate text-[12px]',
-                          c.unreadCount > 0 ? 'font-medium text-[var(--text-secondary)]' : 'text-[var(--text-tertiary)]'
-                        )}
-                      >
-                        {c.hasMessages ? c.lastMessagePreview || 'Message' : 'Start a conversation'}
-                      </p>
-                    </div>
-                  </button>
+              {displayedConversations.length === 0 ? (
+                <li className="px-4 py-8 text-center text-[13px] text-[var(--text-tertiary)]">
+                  {convFilter === 'unread'
+                    ? 'You’re all caught up — no unread threads.'
+                    : convFilter === 'invoices'
+                      ? 'No invoice threads match. They’ll show when clients get invoice messages.'
+                      : 'No conversations match your search.'}
                 </li>
-              ))}
+              ) : null}
+              {displayedConversations.map((c) => {
+                const unread = c.unreadCount > 0
+                const hint = conversationTypeHint(c.lastMessagePreview)
+                return (
+                  <li key={c.clientId}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedClientId(c.clientId)
+                        setSelectedClientName(c.fullName)
+                      }}
+                      className={cn(
+                        'relative flex min-h-[68px] w-full items-center gap-3 border-l-[3px] py-2.5 pl-3 pr-4 text-left transition-[background-color] duration-[80ms] hover:bg-[var(--bg-app)] focus:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--accent)]',
+                        unread ? 'border-l-[var(--accent)]' : 'border-l-transparent',
+                        selectedClientId === c.clientId && 'bg-[var(--bg-app)]'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[12px] font-semibold text-[var(--accent)]',
+                          unread &&
+                            'ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]'
+                        )}
+                        aria-hidden
+                      >
+                        {getInitials(c.fullName)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <p
+                            className={cn(
+                              'truncate text-[14px]',
+                              unread ? 'font-semibold text-[var(--text-primary)]' : 'font-normal text-[var(--text-primary)]'
+                            )}
+                          >
+                            {c.fullName}
+                          </p>
+                          <span className="shrink-0 text-[11px] text-[var(--text-quaternary)]">
+                            {c.lastMessageAt ? conversationTimeLabel(c.lastMessageAt) : '—'}
+                          </span>
+                        </div>
+                        <p
+                          className={cn(
+                            'mt-0.5 truncate text-[12px] leading-snug',
+                            unread ? 'font-medium text-[var(--text-secondary)]' : 'font-normal text-[var(--text-tertiary)]'
+                          )}
+                        >
+                          {c.hasMessages ? c.lastMessagePreview || 'Message' : 'Start a conversation'}
+                        </p>
+                        {hint ? (
+                          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">{hint}</p>
+                        ) : null}
+                      </div>
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>
@@ -968,10 +1057,7 @@ export function CoachMessagesPageContent() {
         )}
       </div>
       {toast ? (
-        <div
-          className="safe-bottom fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-lg border border-[var(--color-border)] bg-[var(--color-ink)] px-4 py-2 text-center text-[14px] text-white shadow-lg"
-          role="status"
-        >
+        <div className="toast-coach" role="status">
           {toast}
         </div>
       ) : null}

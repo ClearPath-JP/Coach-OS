@@ -16,6 +16,7 @@ import {
   type AssignmentSubmissionRow,
 } from '@/components/coach/AssignmentTemplateSubmissionsModal'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { cn } from '@/lib/utils'
 
 type Tab = 'review' | 'all' | 'templates' | 'analytics'
 
@@ -249,8 +250,14 @@ export function AssignmentsPageContent() {
     return () => window.clearTimeout(t)
   }, [notice])
 
+  function queueInitials(name: string) {
+    const p = name.trim().split(/\s+/)
+    if (p.length >= 2) return `${p[0]?.[0] ?? ''}${p[p.length - 1]?.[0] ?? ''}`.toUpperCase().slice(0, 2)
+    return name.slice(0, 2).toUpperCase() || '?'
+  }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 p-6 lg:p-8">
+    <div className="flex min-h-0 flex-1 flex-col gap-[var(--coach-section-gap)]">
       <PageHeader title="Assignments">
         <Button type="button" onClick={() => setCreateOpen(true)}>
           New template
@@ -260,61 +267,13 @@ export function AssignmentsPageContent() {
       {notice ? (
         <div
           role="status"
-          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+          className="rounded-[var(--radius-lg)] border border-[var(--success-border)] bg-[var(--success-bg)] px-4 py-3 text-[14px] text-[var(--success)]"
         >
           {notice}
         </div>
       ) : null}
 
-      <Card className="space-y-3 p-4">
-        <div>
-          <h2 className="text-sm font-semibold text-[var(--text-primary)]">Send to a client</h2>
-          <p className="mt-1 text-xs text-[var(--text-tertiary)]">
-            Delivers the assignment in <strong className="font-medium">Messages</strong> and lists it on the client&apos;s
-            Assignments page. The client needs a login (email on file).
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-          <select
-            className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-sm sm:max-w-xs"
-            value={quickTemplateId}
-            onChange={(e) => setQuickTemplateId(e.target.value)}
-            disabled={loading || templates.length === 0}
-            aria-label="Assignment template"
-          >
-            <option value="">{templates.length === 0 ? 'Create a template first' : 'Choose template'}</option>
-            {templates.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title}
-              </option>
-            ))}
-          </select>
-          <select
-            className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-sm sm:max-w-xs"
-            value={quickClientId}
-            onChange={(e) => setQuickClientId(e.target.value)}
-            disabled={loading || clients.length === 0}
-            aria-label="Client"
-          >
-            <option value="">{clients.length === 0 ? 'Add a client first' : 'Choose client'}</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {[c.first_name, c.last_name].filter(Boolean).join(' ') || 'Client'}
-              </option>
-            ))}
-          </select>
-          <Button
-            type="button"
-            disabled={quickBusy || !quickTemplateId || !quickClientId}
-            onClick={() => void quickAssign()}
-          >
-            {quickBusy ? 'Sending…' : 'Send'}
-          </Button>
-        </div>
-        {quickError ? <p className="text-sm text-red-600">{quickError}</p> : null}
-      </Card>
-
-      <div className="flex flex-wrap gap-2 border-b border-[var(--border-default)] pb-2">
+      <div className="flex flex-wrap gap-0 border-b border-[var(--border-subtle)]">
         {(
           [
             ['review', 'Review queue'],
@@ -327,9 +286,12 @@ export function AssignmentsPageContent() {
             key={k}
             type="button"
             onClick={() => setTab(k)}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${
-              tab === k ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)]'
-            }`}
+            className={cn(
+              'relative h-8 min-h-[32px] px-4 text-[14px] transition-colors duration-150',
+              tab === k
+                ? 'font-semibold text-[var(--accent)] after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+            )}
           >
             {label}
           </button>
@@ -337,21 +299,37 @@ export function AssignmentsPageContent() {
       </div>
 
       {loading ? (
-        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-40 w-full rounded-[var(--radius-lg)]" />
       ) : tab === 'review' ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">Review queue</h2>
+            <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
+              {queueRows.length} submission{queueRows.length === 1 ? '' : 's'} waiting
+            </p>
+          </div>
           {queueRows.length === 0 ? (
-            <Card className="p-8 text-center text-[var(--text-secondary)]">
-              All caught up! No assignments pending review.
+            <Card className="border border-[var(--border-default)] bg-[var(--bg-app)] p-10 text-center shadow-[var(--shadow-xs)]">
+              <p className="text-[20px]" aria-hidden>
+                🎉
+              </p>
+              <p className="mt-3 text-[15px] font-semibold text-[var(--text-primary)]">All caught up!</p>
+              <p className="mt-1 text-[14px] text-[var(--text-tertiary)]">No assignments waiting for review.</p>
             </Card>
           ) : (
             queueRows.map((r) => (
-              <Card key={r.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-                <div>
-                  <p className="font-medium text-[var(--text-primary)]">{fullName(r.clients)}</p>
+              <Card
+                key={r.id}
+                className="flex flex-wrap items-center gap-4 border border-[var(--border-default)] p-4 shadow-[var(--shadow-xs)]"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[13px] font-semibold text-[var(--accent)]">
+                  {queueInitials(fullName(r.clients))}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14px] font-semibold text-[var(--text-primary)]">{fullName(r.clients)}</p>
                   <button
                     type="button"
-                    className="text-left text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] hover:underline"
+                    className="text-left text-[13px] text-[var(--text-tertiary)] hover:text-[var(--accent)] hover:underline"
                     onClick={() =>
                       openTemplateSubmissions(
                         r.assignment_template_id,
@@ -361,18 +339,20 @@ export function AssignmentsPageContent() {
                   >
                     {r.assignment_templates?.title}
                   </button>
-                  <p className="text-xs text-[var(--text-tertiary)]">
+                  <p className="mt-0.5 text-[12px] text-[var(--text-quaternary)]">
                     {r.submitted_at
                       ? `Submitted ${formatDistanceToNow(new Date(r.submitted_at), { addSuffix: true })}`
                       : r.due_at && new Date(r.due_at) < new Date()
                         ? `Overdue ${formatDistanceToNow(new Date(r.due_at), { addSuffix: true })}`
                         : null}
                   </p>
+                  <Badge variant="pending" className="mt-2 text-[11px]">
+                    {r.assignment_templates?.assignment_type ?? '—'}
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="pending">{r.assignment_templates?.assignment_type}</Badge>
+                <div className="flex shrink-0 items-center gap-2">
                   {r.status === 'submitted' ? (
-                    <Button type="button" onClick={() => openReview(r)}>
+                    <Button type="button" size="sm" onClick={() => openReview(r)}>
                       Review
                     </Button>
                   ) : null}
@@ -381,6 +361,56 @@ export function AssignmentsPageContent() {
             ))
           )}
         </div>
+      ) : null}
+
+      {!loading ? (
+        <Card className="space-y-3 border border-[var(--border-default)] p-4 shadow-[var(--shadow-xs)]">
+          <div>
+            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Send to a client</h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-tertiary)]">
+              Delivers in <strong className="font-medium text-[var(--text-secondary)]">Messages</strong> and on their
+              Assignments page. They need an email on file to log in.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <select
+              className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] sm:max-w-xs"
+              value={quickTemplateId}
+              onChange={(e) => setQuickTemplateId(e.target.value)}
+              disabled={loading || templates.length === 0}
+              aria-label="Assignment template"
+            >
+              <option value="">{templates.length === 0 ? 'Create a template first' : 'Choose template'}</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+            <select
+              className="h-10 min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-[14px] sm:max-w-xs"
+              value={quickClientId}
+              onChange={(e) => setQuickClientId(e.target.value)}
+              disabled={loading || clients.length === 0}
+              aria-label="Client"
+            >
+              <option value="">{clients.length === 0 ? 'Add a client first' : 'Choose client'}</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {[c.first_name, c.last_name].filter(Boolean).join(' ') || 'Client'}
+                </option>
+              ))}
+            </select>
+            <Button
+              type="button"
+              disabled={quickBusy || !quickTemplateId || !quickClientId}
+              onClick={() => void quickAssign()}
+            >
+              {quickBusy ? 'Sending…' : 'Send assignment'}
+            </Button>
+          </div>
+          {quickError ? <p className="text-[13px] text-[var(--error)]">{quickError}</p> : null}
+        </Card>
       ) : null}
 
       {!loading && tab === 'all' ? (
@@ -427,8 +457,8 @@ export function AssignmentsPageContent() {
         <Card className="p-8 text-center">
           <p className="font-medium text-[var(--text-primary)]">No templates yet</p>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--text-secondary)]">
-            Templates are reusable assignment definitions. After you save one, it appears here and in the &quot;Send to a
-            client&quot; bar above. Open the <strong className="font-medium">Templates</strong> tab to assign or delete.
+            Templates are reusable assignment definitions. After you save one, it appears here and in{' '}
+            <strong className="font-medium">Send to a client</strong> below. Use the Templates tab to assign or delete.
           </p>
           <Button type="button" className="mt-4" onClick={() => setCreateOpen(true)}>
             Create your first template

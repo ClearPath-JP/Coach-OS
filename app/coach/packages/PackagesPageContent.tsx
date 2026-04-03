@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
@@ -346,26 +347,33 @@ export function PackagesPageContent() {
     }
   }
 
+  const activePackageCount = packages.filter((p) => p.is_active).length
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--color-ink)] sm:text-[var(--text-24)]">
-            Session packages
-          </h1>
-          <p className="mt-2 text-[var(--text-14)] font-normal leading-[1.6] text-[var(--color-muted)]">
-            Create packages and send invoices to clients from here or in messages.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/coach/invoices">
-            <Button variant="secondary">Invoice history</Button>
-          </Link>
-          <Button onClick={() => { setCreateOpen(true); setEditPkg(null); setSubmitError(null); }}>
-            Create package
+      <PageHeader
+        title="Session packages"
+        {...(activePackageCount > 0 ? { countLabel: `${activePackageCount} active` } : {})}
+      >
+        <Link href="/coach/invoices">
+          <Button variant="secondary" size="sm">
+            Invoice history
           </Button>
-        </div>
-      </div>
+        </Link>
+        <Button
+          size="sm"
+          onClick={() => {
+            setCreateOpen(true)
+            setEditPkg(null)
+            setSubmitError(null)
+          }}
+        >
+          Create package
+        </Button>
+      </PageHeader>
+      <p className="-mt-2 text-[14px] font-normal leading-[1.6] text-[var(--text-tertiary)]">
+        Create packages and send invoices to clients from here or in messages.
+      </p>
 
       {loading && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -376,8 +384,8 @@ export function PackagesPageContent() {
       )}
 
       {!loading && error && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
-          <p className="text-[var(--color-muted)]">{error}</p>
+        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-6 text-center">
+          <p className="text-[14px] text-[var(--text-secondary)]">{error}</p>
           <Button variant="secondary" className="mt-4" onClick={fetchPackages}>
             Try again
           </Button>
@@ -385,15 +393,13 @@ export function PackagesPageContent() {
       )}
 
       {!loading && !error && packages.length === 0 && (
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
+        <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+          <div className="empty-state-coach__icon mb-0 flex h-12 w-12 items-center justify-center bg-[var(--accent-light)] text-xl" aria-hidden>
             📦
           </div>
-          <p className="font-medium text-[var(--color-ink)]">No packages yet</p>
-          <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-            Create a session package to send invoices to clients.
-          </p>
-          <Button className="mt-4" onClick={() => setCreateOpen(true)}>
+          <p className="empty-state-coach__title">No packages yet</p>
+          <p className="empty-state-coach__desc mt-1">Create a session package to send invoices to clients.</p>
+          <Button className="empty-state-coach__cta mt-4" onClick={() => setCreateOpen(true)}>
             Create package
           </Button>
         </div>
@@ -402,18 +408,18 @@ export function PackagesPageContent() {
       {!loading && !error && packages.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {packages.filter((p) => p.is_active).map((pkg) => (
-            <Card key={pkg.id} variant="raised" padding="lg">
+            <Card key={pkg.id} variant="raised" padding="lg" className="shadow-[var(--shadow-xs)]">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-medium text-[var(--color-ink)]">{pkg.title}</h3>
+                <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">{pkg.title}</h3>
               </div>
               {pkg.description && (
-                <p className="mt-1 text-sm text-[var(--color-muted)] line-clamp-2">{pkg.description}</p>
+                <p className="mt-1 text-[13px] leading-snug text-[var(--text-tertiary)] line-clamp-2">{pkg.description}</p>
               )}
-              <p className="mt-4 text-lg font-medium text-[var(--color-ink)]">
+              <p className="mt-4 text-[22px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
                 {formatAmount(pkg.price_cents, pkg.currency)}
               </p>
               {pkg.duration_minutes > 0 && (
-                <p className="mt-1 text-xs text-[var(--color-muted)]">
+                <p className="mt-1 text-[12px] text-[var(--text-quaternary)]">
                   {pkg.duration_minutes} min
                   {pkg.session_type ? ` · ${pkg.session_type}` : ''}
                 </p>
@@ -422,8 +428,8 @@ export function PackagesPageContent() {
                 <span
                   className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
                     pkg.is_virtual !== false
-                      ? 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200'
-                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
+                      ? 'bg-[var(--accent-light)] text-[var(--accent)]'
+                      : 'bg-[var(--bg-muted)] text-[var(--text-secondary)]'
                   }`}
                 >
                   {pkg.is_virtual !== false ? 'Virtual' : 'In-person'}

@@ -191,11 +191,11 @@ export function CoachScheduleWorkspace() {
   const headerDatePill = format(new Date(), 'EEEE, MMMM d')
 
   return (
-    <div className="flex min-h-[calc(100dvh-var(--nav-height)-48px)] flex-col">
-      <header className="flex h-14 shrink-0 flex-wrap items-center gap-4 border-b border-[var(--border-subtle)] px-4 md:px-6">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <header className="sticky top-0 z-20 -mx-[var(--coach-content-px-mobile)] mb-[var(--coach-header-content-gap)] flex min-h-[var(--coach-header-height)] shrink-0 flex-wrap items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-[var(--coach-content-px-mobile)] py-2 lg:-mx-[var(--coach-content-px)] lg:px-[var(--coach-content-px)] lg:py-0">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <h1 className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">Schedule</h1>
-          <span className="rounded-full bg-[var(--accent-light)] px-3 py-1 text-[13px] font-medium text-[var(--accent)]">
+          <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">Schedule</h1>
+          <span className="rounded-full bg-[var(--accent-light)] px-2.5 py-0.5 text-[12px] font-medium text-[var(--accent)]">
             {headerDatePill}
           </span>
         </div>
@@ -250,7 +250,7 @@ export function CoachScheduleWorkspace() {
                   i === arr.length - 1 && 'rounded-r-lg border-l-0',
                   i > 0 && i < arr.length - 1 && 'border-r',
                   desktopView === v
-                    ? 'bg-[var(--accent)] text-white'
+                    ? 'bg-[var(--accent)] text-[var(--text-on-accent)]'
                     : 'bg-[var(--bg-app)] text-[var(--text-tertiary)] hover:bg-[var(--bg-subtle)]'
                 )}
               >
@@ -674,7 +674,7 @@ export function CoachScheduleWorkspace() {
 
       <button
         type="button"
-        className="fixed bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-white shadow-[var(--shadow-xl)] lg:bottom-8 lg:hidden"
+        className="fixed bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--text-on-accent)] shadow-[var(--shadow-xl)] lg:bottom-8 lg:hidden"
         aria-label="Book session"
         onClick={() => openBookModal(null, null)}
       >

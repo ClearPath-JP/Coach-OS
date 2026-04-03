@@ -13,7 +13,7 @@
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-sora: 'Sora', ui-sans-serif, system-ui, sans-serif;
 
-  /* SPACING SCALE (8px base, never deviate) */
+  /* SPACING SCALE — multiples of 4px only */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -118,6 +118,16 @@
 
   --sidebar-width: 232px;
   --nav-height: 48px;
+
+  /* Coach shell — page layout (desktop / mobile) */
+  --coach-content-max: 1200px;
+  --coach-header-height: 64px;
+  --coach-content-px: 32px;
+  --coach-content-px-mobile: 16px;
+  --coach-section-gap: 32px;
+  --coach-card-gap: 16px;
+  --coach-card-padding: 20px;
+  --coach-header-content-gap: 24px;
 
   /* Tailwind / legacy component aliases */
   --font-sans: var(--font);
@@ -327,7 +337,7 @@ html[data-theme='dark'] ::selection {
 
 .page-content,
 .page-enter {
-  animation: pageEnter var(--duration-slow) var(--ease-out);
+  animation: pageEnter 180ms ease-out both;
 }
 
 .coach-route-enter,
@@ -349,11 +359,85 @@ html[data-theme='dark'] ::selection {
 @keyframes pageEnter {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Section label — coach pages */
+.section-label-coach {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 12px;
+}
+
+/* Empty state — coach */
+.empty-state-coach {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+.empty-state-coach__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  border-radius: var(--radius-full);
+  background: var(--bg-muted);
+  font-size: 32px;
+}
+.empty-state-coach__title {
+  margin-top: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+.empty-state-coach__desc {
+  margin: 8px auto 0;
+  max-width: 360px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+.empty-state-coach__cta {
+  margin-top: 24px;
+}
+
+/* Toast — coach placement helper */
+.toast-coach {
+  position: fixed;
+  z-index: 100;
+  max-width: 320px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bg-app);
+  background: var(--text-primary);
+  box-shadow: var(--shadow-xl);
+}
+@media (min-width: 1024px) {
+  .toast-coach {
+    bottom: 24px;
+    right: 24px;
+  }
+}
+@media (max-width: 1023px) {
+  .toast-coach {
+    bottom: 80px;
+    right: 16px;
   }
 }
 
@@ -633,8 +717,8 @@ tr:hover td {
   animation: confetti-fall 3s ease-in forwards;
 }
 
-/* Client portal — page enter */
-@keyframes pageEnter {
+/* Client portal — page enter (separate from coach .page-content) */
+@keyframes clientPortalPageEnter {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -646,7 +730,7 @@ tr:hover td {
 }
 
 .client-page-content {
-  animation: pageEnter 200ms ease-out;
+  animation: clientPortalPageEnter 200ms ease-out;
 }
 
 @keyframes clientPortalDashLift {

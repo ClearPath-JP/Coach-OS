@@ -45,7 +45,7 @@ function Spinner({ className, sizePx }: { className?: string; sizePx: number }) 
 }
 
 const base = cn(
-  'relative inline-flex items-center justify-center border-[1.5px] border-transparent font-medium tracking-[-0.01em]',
+  'relative inline-flex items-center justify-center border border-transparent font-medium tracking-[-0.01em]',
   'rounded-[var(--radius-md)] cursor-pointer select-none whitespace-nowrap gap-[6px]',
   'transition-all duration-[var(--duration-normal)] [transition-timing-function:var(--ease-out)]',
   'focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]',
@@ -55,8 +55,8 @@ const base = cn(
 const sizeClasses: Record<ButtonSize, string> = {
   xs: 'h-7 min-h-7 gap-1 px-2.5 text-[12px]',
   sm: 'h-8 min-h-8 gap-1 px-3 text-[13px]',
-  md: 'h-9 min-h-9 px-3.5 text-[14px]',
-  lg: 'h-10 min-h-10 px-[18px] text-[15px]',
+  md: 'h-9 min-h-9 px-4 text-[14px]',
+  lg: 'h-11 min-h-[44px] px-4 text-[14px]',
   xl: 'h-12 min-h-12 px-6 text-[15px]',
 }
 

@@ -56,12 +56,21 @@ type TodayDto = {
 
 type ViewState = 'loading' | 'form' | 'submitting' | 'celebrate' | 'done'
 
-export function ClientPortalDailyCheckIn({ firstName = 'there' }: { firstName?: string }) {
-  const [view, setView] = useState<ViewState>('loading')
-  const [streakDays, setStreakDays] = useState(0)
+/** When set, skips the initial GET /api/client/checkin/today (portal loads this via /api/client/portal-data). */
+export function ClientPortalDailyCheckIn({
+  firstName = 'there',
+  serverToday,
+}: {
+  firstName?: string
+  serverToday?: TodayDto | null
+}) {
+  const [view, setView] = useState<ViewState>(() =>
+    serverToday !== undefined ? (serverToday?.checkin ? 'done' : 'form') : 'loading'
+  )
+  const [streakDays, setStreakDays] = useState(() => serverToday?.streakDays ?? 0)
   const [mood, setMood] = useState<number | null>(null)
   const [note, setNote] = useState('')
-  const [todayCheckin, setTodayCheckin] = useState<TodayDto['checkin']>(null)
+  const [todayCheckin, setTodayCheckin] = useState<TodayDto['checkin']>(() => serverToday?.checkin ?? null)
   const [error, setError] = useState<string | null>(null)
   const [celebrateMeta, setCelebrateMeta] = useState<{ xp: number; streak: number; record: boolean } | null>(null)
   const loadToday = useCallback(async () => {
@@ -94,8 +103,9 @@ export function ClientPortalDailyCheckIn({ firstName = 'there' }: { firstName?: 
   }, [])
 
   useEffect(() => {
+    if (serverToday !== undefined) return
     queueMicrotask(() => void loadToday())
-  }, [loadToday])
+  }, [loadToday, serverToday])
 
   useEffect(() => {
     const onVis = () => {

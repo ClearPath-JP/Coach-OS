@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Input } from '@/components/ui/Input'
 
 function EyeIcon({ off }: { off?: boolean }) {
   if (off) {
@@ -55,14 +56,14 @@ export function ClientLoginForm() {
         <label htmlFor="client-email" className="mb-1 block text-[13px] font-medium text-[var(--color-text-primary)]">
           Email
         </label>
-        <input
+        <Input
           id="client-email"
           type="email"
           autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 text-[15px] leading-[var(--leading-body)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] min-h-[44px]"
+          className="min-h-[44px] w-full"
         />
       </div>
       <div>
@@ -70,14 +71,14 @@ export function ClientLoginForm() {
           Password
         </label>
         <div className="relative">
-          <input
+          <Input
             id="client-password"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] py-3 pl-4 pr-12 text-[15px] leading-[var(--leading-body)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] min-h-[44px]"
+            className="min-h-[44px] w-full py-3 pl-4 pr-12"
           />
           <button
             type="button"
