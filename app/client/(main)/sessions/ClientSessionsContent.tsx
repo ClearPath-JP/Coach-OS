@@ -2,76 +2,33 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
-import {
-  ClientSessionsMonthCalendar,
-  type ClientCalendarSession,
-} from '@/components/client/ClientSessionsMonthCalendar'
 import { RequestSessionModal } from '@/components/client/RequestSessionModal'
-import { ClientUnavailabilitySummary } from '@/components/unavailability/ClientUnavailabilitySummary'
 import { Button } from '@/components/ui/Button'
-import { Modal } from '@/components/ui/Modal'
+import { cn } from '@/lib/utils'
 
-type ApiSession = ClientCalendarSession & {
+type ApiSession = {
+  id: string
+  scheduled_time: string
   end_time?: string | null
+  duration_minutes?: number | null
+  status: string
   session_type?: string | null
-  date?: string
+  type?: string | null
+  notes?: string | null
 }
 
-function SessionDetailReadOnly({ session, onClose }: { session: ApiSession | null; onClose: () => void }) {
-  if (!session) return null
-  const start = parseISO(session.scheduled_time)
-  const end = session.end_time
-    ? parseISO(session.end_time)
-    : session.duration_minutes
-      ? new Date(start.getTime() + session.duration_minutes * 60 * 1000)
-      : new Date(start.getTime() + 60 * 60 * 1000)
-  const statusVariant =
-    session.status === 'confirmed'
-      ? 'confirmed'
-      : session.status === 'completed'
-        ? 'completed'
-        : session.status === 'cancelled'
-          ? 'cancelled'
-          : 'pending'
-
-  return (
-    <Modal isOpen onClose={onClose} title="Session">
-      <div className="space-y-2 text-sm">
-        <p className="font-medium text-[var(--color-ink)]">{format(start, 'EEEE, MMM d, yyyy')}</p>
-        <p className="text-[var(--color-muted)]">
-          {format(start, 'h:mm a')} – {format(end, 'h:mm a')}
-        </p>
-        {session.type ? <p className="text-[var(--color-muted)]">Type: {session.type}</p> : null}
-        {session.notes ? <p className="text-[var(--color-muted)]">{session.notes}</p> : null}
-        <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            statusVariant === 'confirmed'
-              ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
-              : statusVariant === 'completed'
-                ? 'bg-[var(--color-border)] text-[var(--color-muted)]'
-                : statusVariant === 'cancelled'
-                  ? 'bg-[var(--color-error-light)] text-[var(--color-error)]'
-                  : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
-          }`}
-        >
-          {session.status}
-        </span>
-        <div className="flex justify-end pt-2">
-          <Button variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  )
+function typeLabel(t: string | null | undefined): string {
+  if (t === 'in_person') return 'In person'
+  if (t === 'video' || t === 'phone') return 'Video'
+  return 'Session'
 }
 
 export function ClientSessionsContent() {
-  const [sessions, setSessions] = useState<ApiSession[]>([])
+  const [upcoming, setUpcoming] = useState<ApiSession[]>([])
+  const [past, setPast] = useState<ApiSession[]>([])
   const [loading, setLoading] = useState(true)
   const [requestOpen, setRequestOpen] = useState(false)
-  const [requestInitialDate, setRequestInitialDate] = useState<string | null>(null)
-  const [detailSession, setDetailSession] = useState<ApiSession | null>(null)
+  const [pastOpen, setPastOpen] = useState(true)
 
   const loadSessions = useCallback(async () => {
     setLoading(true)
@@ -79,9 +36,8 @@ export function ClientSessionsContent() {
       const res = await fetch('/api/client/sessions')
       const json = await res.json()
       if (json.data) {
-        const up = (json.data.upcoming ?? []) as ApiSession[]
-        const past = (json.data.past ?? []) as ApiSession[]
-        setSessions([...up, ...past])
+        setUpcoming((json.data.upcoming ?? []) as ApiSession[])
+        setPast((json.data.past ?? []) as ApiSession[])
       }
     } finally {
       setLoading(false)
@@ -92,64 +48,118 @@ export function ClientSessionsContent() {
     void loadSessions()
   }, [loadSessions])
 
-  const calendarSessions = useMemo(() => sessions as ClientCalendarSession[], [sessions])
-
-  const openRequest = (dateKey: string | null) => {
-    setRequestInitialDate(dateKey)
-    setRequestOpen(true)
-  }
-
-  const closeRequest = () => {
-    setRequestOpen(false)
-    setRequestInitialDate(null)
-  }
-
-  const calendarUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}/api/calendar/feed/client` : '/api/calendar/feed/client'
+  const pastTen = useMemo(() => past.slice(0, 10), [past])
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-lg font-medium text-[var(--color-ink)]">Sessions</h1>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">
-            Your sessions on the calendar below. Request opens a quick picker — day, time slot, video or in person — and your coach confirms in Messages.
-          </p>
-        </div>
-        <Button type="button" variant="primary" className="shrink-0 self-start" onClick={() => openRequest(null)}>
+    <div className="client-page-content mx-auto max-w-[640px] space-y-8">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-[22px] font-bold text-[var(--text-primary)]">Sessions</h1>
+        <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={() => setRequestOpen(true)}>
           Request a session
         </Button>
       </div>
 
-      <ClientUnavailabilitySummary />
+      <section>
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Upcoming</p>
+        {loading ? (
+          <div className="space-y-3">
+            <div className="h-24 animate-pulse rounded-[var(--radius-lg)] bg-[var(--bg-muted)]" />
+          </div>
+        ) : upcoming.length === 0 ? (
+          <div className="space-y-3">
+            <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions</p>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setRequestOpen(true)}>
+              Request a session
+            </Button>
+          </div>
+        ) : (
+          <ul className="space-y-4">
+            {upcoming.map((s) => {
+              const start = parseISO(s.scheduled_time)
+              const dur = s.duration_minutes ?? 60
+              const stype = typeLabel(s.session_type ?? s.type)
+              const minsUntil = (start.getTime() - Date.now()) / (1000 * 60)
+              const within24h = minsUntil > 0 && minsUntil < 24 * 60
+              const isTomorrow = within24h && minsUntil > 12 * 60
+              const isToday = within24h && minsUntil <= 12 * 60
+              return (
+                <li
+                  key={s.id}
+                  className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[var(--shadow-xs)]"
+                >
+                  <div className="p-4">
+                    <p className="text-[18px] font-bold text-[var(--text-primary)]">{format(start, 'EEEE, MMMM d')}</p>
+                    <p className="mt-1 text-[14px] text-[var(--text-secondary)]">
+                      {format(start, 'h:mm a')} · {dur} minutes
+                    </p>
+                    <span className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--accent)]">
+                      {stype}
+                    </span>
+                    {within24h ? (
+                      <div className="mt-3 rounded-[var(--radius-md)] bg-[var(--accent-light)] px-3 py-2 text-[13px] font-medium text-[var(--accent)]">
+                        {isToday ? 'Today!' : isTomorrow ? 'Tomorrow!' : 'Coming up soon'}
+                        {minsUntil > 0 && minsUntil < 24 * 60 ? (
+                          <span className="ml-1 text-[var(--text-secondary)]">
+                            · {Math.max(0, Math.floor(minsUntil / 60))}h {Math.max(0, Math.floor(minsUntil % 60))}m
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    {s.notes?.trim() ? (
+                      <p className="mt-3 text-[14px] italic text-[var(--text-tertiary)]">{s.notes.trim()}</p>
+                    ) : null}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
 
-      <ClientSessionsMonthCalendar
-        sessions={calendarSessions}
-        loading={loading}
-        onSelectDayForRequest={(d) => openRequest(format(d, 'yyyy-MM-dd'))}
-        onSelectSession={(s) => setDetailSession(s as ApiSession)}
-      />
-
-      <p className="text-center text-[12px] text-[var(--color-muted)]">
-        <a
-          href={calendarUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          download="my-sessions.ics"
-          className="link-nav font-medium"
+      <section>
+        <button
+          type="button"
+          onClick={() => setPastOpen((v) => !v)}
+          className="mb-3 flex w-full items-center justify-between text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
         >
-          Add booked sessions to Google Calendar (ICS)
-        </a>
-      </p>
+          Past sessions
+          <span aria-hidden>{pastOpen ? '▾' : '▸'}</span>
+        </button>
+        {pastOpen ? (
+          loading ? (
+            <div className="h-16 animate-pulse rounded-lg bg-[var(--bg-muted)]" />
+          ) : pastTen.length === 0 ? (
+            <p className="text-[14px] text-[var(--text-tertiary)]">No past sessions yet.</p>
+          ) : (
+            <ul className="divide-y divide-[var(--border-subtle)]">
+              {pastTen.map((s) => {
+                const start = parseISO(s.scheduled_time)
+                const dur = s.duration_minutes ?? 60
+                const stype = typeLabel(s.session_type ?? s.type)
+                const done = s.status === 'completed'
+                return (
+                  <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-[13px]">
+                    <span className="font-medium text-[var(--text-primary)]">{format(start, 'MMM d, yyyy')}</span>
+                    <span className="text-[var(--text-tertiary)]">
+                      {dur} min · {stype}
+                    </span>
+                    <span
+                      className={cn(
+                        'rounded-full px-2 py-0.5 text-[11px] font-medium',
+                        done ? 'bg-[var(--success-bg)] text-[var(--success)]' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+                      )}
+                    >
+                      {done ? 'Completed' : s.status === 'cancelled' ? 'Cancelled' : s.status}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          )
+        ) : null}
+      </section>
 
-      <RequestSessionModal
-        open={requestOpen}
-        onClose={closeRequest}
-        initialPreferredDate={requestInitialDate}
-        onSent={() => void loadSessions()}
-      />
-
-      <SessionDetailReadOnly session={detailSession} onClose={() => setDetailSession(null)} />
+      <RequestSessionModal open={requestOpen} onClose={() => setRequestOpen(false)} onSent={() => void loadSessions()} />
     </div>
   )
 }

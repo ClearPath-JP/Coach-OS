@@ -1,47 +1,95 @@
 'use client'
 
-import { Sidebar } from '@/components/layout/Sidebar'
-import { clientPortalTabs } from '@/components/layout/MobileNav'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import type { LucideIcon } from 'lucide-react'
+import {
+  LayoutDashboard,
+  BookOpen,
+  ClipboardList,
+  Target,
+  Calendar,
+  MessageSquare,
+  Receipt,
+  User,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { ClientPortalSidebarFooter } from '@/components/layout/ClientPortalSidebarFooter'
 
-const settingsIcon = (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden
-  >
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 5 15.4a1.65 1.65 0 0 0-1.51-1H3.4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 5 8.89a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9.11 5c.7 0 1.33-.4 1.62-1.03V3.9a2 2 0 1 1 4 0v.07c.29.63.92 1.03 1.62 1.03a1.65 1.65 0 0 0 1.17-.48l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06c-.46.46-.6 1.16-.33 1.82.27.66.91 1.1 1.62 1.1h.09a2 2 0 1 1 0 4h-.09c-.71 0-1.35.44-1.62 1.1z" />
-  </svg>
-)
+const PRIMARY: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: '/client/portal', label: 'Home', Icon: LayoutDashboard },
+  { href: '/client/programs', label: 'Programs', Icon: BookOpen },
+  { href: '/client/assignments', label: 'Tasks', Icon: ClipboardList },
+  { href: '/client/goals', label: 'Goals', Icon: Target },
+  { href: '/client/sessions', label: 'Sessions', Icon: Calendar },
+  { href: '/client/messages', label: 'Messages', Icon: MessageSquare },
+  { href: '/client/invoices', label: 'Invoices', Icon: Receipt },
+]
 
-/** Desktop (lg+) left rail: same destinations as bottom tabs, Settings → profile, Log out in footer. */
-export function ClientPortalDesktopSidebar({ className }: { className?: string }) {
-  const primary = clientPortalTabs.slice(0, -1)
-  const items = primary.map(({ href, label, icon: Icon }) => ({
-    href,
-    label,
-    icon: <Icon className="size-[18px] shrink-0" aria-hidden />,
-  }))
-  const bottomItems = [
-    {
-      href: '/client/profile',
-      label: 'Settings',
-      icon: settingsIcon,
-    },
-  ]
+function NavRows({
+  items,
+  pathname,
+}: {
+  items: { href: string; label: string; Icon: LucideIcon }[]
+  pathname: string | null
+}) {
   return (
-    <Sidebar
-      items={items}
-      bottomItems={bottomItems}
-      footer={<ClientPortalSidebarFooter />}
-      {...(className ? { className } : {})}
-    />
+    <>
+      {items.map(({ href, label, Icon }) => {
+        const isActive =
+          href === '/client/portal'
+            ? pathname === href
+            : pathname === href || (pathname != null && pathname.startsWith(`${href}/`))
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              'relative mb-px flex h-9 items-center gap-2 rounded-[var(--radius-md)] px-2 text-[14px] no-underline transition-[color,background-color] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]',
+              isActive
+                ? 'bg-[var(--accent-light)] font-medium text-[var(--accent)] [&_svg]:text-[var(--accent)]'
+                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-primary)]'
+            )}
+          >
+            <Icon className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
+            {label}
+          </Link>
+        )
+      })}
+    </>
+  )
+}
+
+/** Desktop left rail: full client destinations + Profile; footer = Powered by ClearPath. */
+export function ClientPortalDesktopSidebar({ className }: { className?: string }) {
+  const pathname = usePathname()
+  const profileActive = pathname === '/client/profile' || pathname?.startsWith('/client/profile/')
+
+  return (
+    <aside
+      className={cn(
+        'flex h-full min-h-0 w-[var(--sidebar-width)] shrink-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-subtle)]',
+        className
+      )}
+    >
+      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2">
+        <NavRows items={PRIMARY} pathname={pathname} />
+        <div className="mt-2 border-t border-[var(--border-subtle)] pt-2">
+          <Link
+            href="/client/profile"
+            className={cn(
+              'relative mb-px flex h-9 items-center gap-2 rounded-[var(--radius-md)] px-2 text-[14px] no-underline transition-[color,background-color] duration-[var(--duration-fast)]',
+              profileActive
+                ? 'bg-[var(--accent-light)] font-medium text-[var(--accent)] [&_svg]:text-[var(--accent)]'
+                : 'font-normal text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
+            )}
+          >
+            <User className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
+            Profile
+          </Link>
+        </div>
+      </nav>
+      <ClientPortalSidebarFooter />
+    </aside>
   )
 }

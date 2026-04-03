@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState, useLayoutEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { portalGreetingLine } from '@/lib/portal-time-greeting'
 
 const MOOD_EMOJI = ['😞', '😕', '😐', '😊', '🤩'] as const
-const ENERGY_EMOJI = ['🪫', '😴', '⚡', '🔋', '🚀'] as const
 
 function CelebrateCard({ meta }: { meta: { xp: number; streak: number; record: boolean } }) {
   const [show, setShow] = useState(false)
@@ -15,25 +15,29 @@ function CelebrateCard({ meta }: { meta: { xp: number; streak: number; record: b
   }, [])
   return (
     <div
-      className="shrink-0 rounded-[var(--radius-xl)] border border-[var(--success-border)] bg-[var(--success-bg)] p-6 text-center shadow-[var(--shadow-md)]"
+      className="shrink-0 rounded-[var(--radius-xl)] border border-[var(--success-border)] bg-[var(--success-bg)] p-5 text-center shadow-[var(--shadow-md)] transition-[background-color,border-color] duration-300"
       role="status"
     >
       <div
         className={cn(
-          'mx-auto mb-3 flex size-14 origin-center items-center justify-center rounded-full bg-[var(--success)] text-white transition-transform duration-300 ease-out',
+          'mx-auto mb-2 flex size-12 origin-center items-center justify-center rounded-full bg-[var(--success)] text-white transition-transform duration-300 ease-out',
           show ? 'scale-100' : 'scale-0'
         )}
       >
-        <span className="text-2xl" aria-hidden>
+        <span className="text-xl" aria-hidden>
           ✓
         </span>
       </div>
-      <p className="text-[20px] font-semibold text-[var(--success)]">Checked in! ✓</p>
-      <p className="mt-2 text-[15px] font-medium text-[var(--text-primary)]">+{meta.xp} XP earned</p>
-      <p className="mt-2 text-[15px] text-[var(--text-primary)]">🔥 {meta.streak} day streak!</p>
+      <p className="text-[18px] font-semibold text-[var(--success)]">Checked in! +5 XP earned 🎉</p>
       {meta.record ? (
-        <p className="mt-1 text-[14px] font-medium text-[var(--accent)]">🏆 New streak record!</p>
-      ) : null}
+        <p className={cn('mt-2 text-[14px] font-semibold text-[var(--accent)]', 'animate-streak-pulse')}>
+          🏆 New streak record! {meta.streak} days
+        </p>
+      ) : (
+        <p className="mt-1 text-[13px] text-[var(--text-secondary)]">
+          🔥 {meta.streak} day streak
+        </p>
+      )}
     </div>
   )
 }
@@ -52,23 +56,21 @@ type TodayDto = {
 
 type ViewState = 'loading' | 'form' | 'submitting' | 'celebrate' | 'done'
 
-export function ClientPortalDailyCheckIn() {
+export function ClientPortalDailyCheckIn({ firstName = 'there' }: { firstName?: string }) {
   const [view, setView] = useState<ViewState>('loading')
   const [streakDays, setStreakDays] = useState(0)
   const [mood, setMood] = useState<number | null>(null)
-  const [energy, setEnergy] = useState<number | null>(null)
   const [note, setNote] = useState('')
   const [todayCheckin, setTodayCheckin] = useState<TodayDto['checkin']>(null)
   const [error, setError] = useState<string | null>(null)
   const [celebrateMeta, setCelebrateMeta] = useState<{ xp: number; streak: number; record: boolean } | null>(null)
-
   const loadToday = useCallback(async () => {
     setError(null)
     try {
       const res = await fetch('/api/client/checkin/today', { credentials: 'include' })
       const json = (await res.json()) as { data?: TodayDto; error?: string }
       if (!res.ok) {
-        setError(json.error ?? 'Could not load check-in')
+        setError(json.error ?? 'Could not load daily check-in. Refresh the page to try again.')
         setView('form')
         return
       }
@@ -86,7 +88,7 @@ export function ClientPortalDailyCheckIn() {
         setView((v) => (v === 'celebrate' || v === 'submitting' ? v : 'form'))
       }
     } catch {
-      setError('Something went wrong — try again')
+      setError('Could not load daily check-in. Refresh the page to try again.')
       setView('form')
     }
   }, [])
@@ -114,7 +116,6 @@ export function ClientPortalDailyCheckIn() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           moodScore: mood,
-          energyScore: energy ?? undefined,
           note: note.trim() || undefined,
         }),
       })
@@ -152,10 +153,10 @@ export function ClientPortalDailyCheckIn() {
         window.setTimeout(() => {
           setView('done')
           setCelebrateMeta(null)
-        }, 2000)
+        }, 1500)
       }
     } catch {
-      setError('Something went wrong — try again')
+      setError('Could not save check-in — try again.')
       setView('form')
     }
   }
@@ -163,12 +164,12 @@ export function ClientPortalDailyCheckIn() {
   if (view === 'loading') {
     return (
       <div
-        className="shrink-0 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-md)]"
+        className="shrink-0 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] p-5 shadow-[var(--shadow-sm)]"
         aria-busy
       >
         <div className="h-5 w-3/4 max-w-xs animate-pulse rounded bg-[var(--bg-muted)]" />
         <div className="mt-3 h-4 w-1/2 animate-pulse rounded bg-[var(--bg-muted)]" />
-        <div className="mt-6 flex gap-2">
+        <div className="mt-6 flex justify-between gap-2">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="size-[52px] shrink-0 animate-pulse rounded-full bg-[var(--bg-muted)]" />
           ))}
@@ -182,21 +183,17 @@ export function ClientPortalDailyCheckIn() {
     const preview = todayCheckin.note?.trim()
     return (
       <div
-        className="flex h-[72px] shrink-0 items-center gap-3 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-app)] px-4 shadow-[var(--shadow-md)]"
+        className="flex h-16 shrink-0 items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--success-border)] bg-[var(--success-bg)] px-4"
         role="status"
       >
-        <span className="text-[32px] leading-none" aria-hidden>
+        <span className="text-[28px] leading-none" aria-hidden>
           {emoji}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[14px] font-medium text-[var(--text-primary)]">Checked in today ✓</p>
-          {preview ? (
-            <p className="truncate text-[12px] text-[var(--text-tertiary)]">{preview}</p>
-          ) : null}
+          <p className="text-[14px] font-medium text-[var(--success)]">Checked in today ✓</p>
+          {preview ? <p className="truncate text-[12px] text-[var(--text-tertiary)]">{preview}</p> : null}
         </div>
-        <p className="shrink-0 text-[13px] font-medium text-[var(--accent)]">
-          🔥 {streakDays} day streak
-        </p>
+        <p className="shrink-0 text-[13px] font-medium text-[var(--accent)]">🔥 {streakDays} day streak</p>
       </div>
     )
   }
@@ -208,16 +205,21 @@ export function ClientPortalDailyCheckIn() {
   return (
     <div
       className={cn(
-        'shrink-0 rounded-[var(--radius-xl)] border-2 border-[var(--accent)] bg-[var(--bg-app)] p-6 shadow-[var(--shadow-md)]',
+        'shrink-0 rounded-[var(--radius-xl)] border-[1.5px] border-[var(--accent-muted)] bg-[var(--accent-light)] p-5 shadow-[var(--shadow-sm)]',
         error && 'border-[var(--warning-border)]'
       )}
     >
-      <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">
-        How are you feeling today? <span aria-hidden>👋</span>
-      </h2>
-      <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">
-        Daily check-in · Takes 10 seconds · Earns 5 XP
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h2 className="text-[18px] font-semibold leading-snug text-[var(--text-primary)]">
+          {portalGreetingLine(firstName)}
+        </h2>
+        {streakDays > 0 ? (
+          <span className="inline-flex shrink-0 items-center rounded-full bg-[var(--warning-bg)] px-2.5 py-1 text-[12px] font-medium text-[var(--warning)]">
+            🔥 {streakDays} days
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-2 text-[14px] text-[var(--text-tertiary)]">How are you feeling today?</p>
       {error ? <p className="mt-2 text-[13px] text-[var(--warning)]">{error}</p> : null}
 
       <div className="mt-4 flex flex-wrap justify-between gap-2 sm:justify-start sm:gap-3" role="group" aria-label="Mood">
@@ -232,8 +234,8 @@ export function ClientPortalDailyCheckIn() {
               aria-label={`Mood ${v} of 5`}
               onClick={() => setMood(v)}
               className={cn(
-                'flex size-[52px] items-center justify-center rounded-full border-2 border-[var(--border-default)] bg-[var(--bg-subtle)] text-[24px] transition-all duration-150',
-                'hover:border-[var(--accent)] hover:scale-110',
+                'flex size-[52px] items-center justify-center rounded-full border-2 border-[var(--border-default)] bg-[var(--bg-app)] text-[24px] transition-all duration-150 ease-out',
+                'hover:border-[var(--accent)] hover:scale-110 hover:shadow-[var(--shadow-sm)]',
                 selected &&
                   'scale-[1.15] border-[var(--accent)] bg-[var(--accent)] shadow-[var(--shadow-md)]'
               )}
@@ -244,53 +246,30 @@ export function ClientPortalDailyCheckIn() {
         })}
       </div>
 
-      {mood != null ? (
-        <>
-          <p className="mt-4 text-[13px] font-medium text-[var(--text-primary)]">Energy level today?</p>
-          <div className="mt-2 flex flex-wrap justify-between gap-2 sm:justify-start sm:gap-3" role="group" aria-label="Energy">
-            {ENERGY_EMOJI.map((em, i) => {
-              const v = i + 1
-              const selected = energy === v
-              return (
-                <button
-                  key={v}
-                  type="button"
-                  aria-pressed={selected}
-                  aria-label={`Energy ${v} of 5`}
-                  onClick={() => setEnergy(selected ? null : v)}
-                  className={cn(
-                    'flex size-[52px] items-center justify-center rounded-full border-2 border-[var(--border-default)] bg-[var(--bg-subtle)] text-[24px] transition-all duration-150',
-                    'hover:border-[var(--accent)] hover:scale-110',
-                    selected &&
-                      'scale-[1.15] border-[var(--accent)] bg-[var(--accent)] shadow-[var(--shadow-md)]'
-                  )}
-                >
-                  <span aria-hidden>{em}</span>
-                </button>
-              )
-            })}
-          </div>
-
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-200 ease-out',
+          mood != null ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
           <label className="mt-4 block">
             <span className="sr-only">Optional note</span>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value.slice(0, 300))}
-              placeholder="Anything on your mind? A win, a struggle, a question…"
+              placeholder="Anything on your mind? A win, a challenge, a question..."
               rows={3}
-              className="min-h-[80px] w-full resize-y rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:shadow-[var(--focus-ring)]"
+              className="min-h-[72px] w-full resize-y rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:shadow-[var(--focus-ring)]"
             />
-            <span className="mt-1 block text-right text-[12px] text-[var(--text-tertiary)]">
-              {note.length}/300
-            </span>
           </label>
-        </>
-      ) : null}
+        </div>
+      </div>
 
       <Button
         type="button"
         variant="primary"
-        className="mt-4 h-12 w-full text-[15px] font-medium"
+        className="mt-4 h-11 w-full text-[14px] font-medium"
         disabled={mood == null || view === 'submitting'}
         onClick={() => void submitCheckin()}
       >

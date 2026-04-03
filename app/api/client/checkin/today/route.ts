@@ -46,6 +46,8 @@ export async function GET() {
     ])
 
     if (cErr || rErr) {
+      if (cErr) console.error('[api/client/checkin/today] daily_checkins', cErr.message, cErr.code)
+      if (rErr) console.error('[api/client/checkin/today] client_rewards', rErr.message, rErr.code)
       return NextResponse.json({ error: 'Could not load check-in' }, { status: 500 })
     }
 

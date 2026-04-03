@@ -56,8 +56,10 @@ export default async function ClientLayout({
     <ClientBrandingProvider
       value={{
         brandName: branding?.brandName ?? null,
+        brandTagline: branding?.brandTagline?.trim() ? branding.brandTagline.trim() : null,
         workspaceId: branding?.workspaceId ?? null,
         userDisplayName: clientDisplayName,
+        logoUrl: branding?.logoUrl?.trim() ? branding.logoUrl.trim() : null,
       }}
     >
       <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>

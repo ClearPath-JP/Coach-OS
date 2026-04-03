@@ -2,21 +2,23 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { format, formatDistanceToNow, isBefore, parseISO, startOfDay } from 'date-fns'
+import { format, isBefore, parseISO, startOfDay } from 'date-fns'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import type { CoachGoalDto } from '@/components/coach/ClientGoalsTab'
+import { cn } from '@/lib/utils'
+import { AnimatedBar } from '@/components/client/AnimatedBar'
 
 const CATEGORY_CLASS: Record<string, string> = {
-  fitness: 'border-sky-200 bg-sky-50 text-sky-900',
-  nutrition: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-  mindset: 'border-violet-200 bg-violet-50 text-violet-900',
-  business: 'border-green-200 bg-green-50 text-green-900',
-  relationship: 'border-rose-200 bg-rose-50 text-rose-900',
-  health: 'border-teal-200 bg-teal-50 text-teal-900',
-  performance: 'border-amber-200 bg-amber-50 text-amber-900',
-  general: 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-ink)]',
+  fitness: 'border-[var(--info-border)] bg-[var(--info-bg)] text-[var(--info)]',
+  nutrition: 'border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success)]',
+  mindset: 'border-[var(--accent-muted)] bg-[var(--accent-light)] text-[var(--accent)]',
+  business: 'border-[var(--warning-border)] bg-[var(--warning-bg)] text-[var(--warning)]',
+  relationship: 'border-[var(--error-border)] bg-[var(--error-bg)] text-[var(--error)]',
+  health: 'border-[var(--error-border)] bg-[var(--error-bg)] text-[var(--error)]',
+  performance: 'border-[var(--info-border)] bg-[var(--info-bg)] text-[var(--info)]',
+  general: 'border-[var(--border-default)] bg-[var(--bg-muted)] text-[var(--text-secondary)]',
 }
 
 function formatValue(n: number | null | undefined, unit: string | null | undefined): string {
@@ -29,6 +31,8 @@ export default function ClientGoalsPage() {
   const [goals, setGoals] = useState<CoachGoalDto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
   const load = useCallback(async () => {
     setError(null)
     setLoading(true)
@@ -55,10 +59,10 @@ export default function ClientGoalsPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-[720px] px-4 py-8">
+      <main className="client-page-content mx-auto max-w-[720px] px-4 py-8 md:px-6">
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 animate-pulse rounded-xl bg-[var(--border-default)]/50" />
+            <div key={i} className="h-32 animate-pulse rounded-xl bg-[var(--bg-muted)]" />
           ))}
         </div>
       </main>
@@ -67,7 +71,7 @@ export default function ClientGoalsPage() {
 
   if (error) {
     return (
-      <main className="mx-auto max-w-[720px] px-4 py-8">
+      <main className="client-page-content mx-auto max-w-[720px] px-4 py-8 md:px-6">
         <Card padding="lg" className="text-center">
           <p className="text-[var(--text-secondary)]">{error}</p>
           <Button type="button" variant="secondary" className="mt-4" onClick={() => void load()}>
@@ -78,122 +82,159 @@ export default function ClientGoalsPage() {
     )
   }
 
+  const activeList = goals.filter((g) => g.status === 'active' || g.status === 'paused')
+  const achievedList = goals.filter((g) => g.status === 'achieved')
+
   return (
-    <main className="mx-auto max-w-[720px] px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">My goals</h1>
-        <Link href="/client/portal" className="link-nav text-[14px] font-medium">
-          Back to home
-        </Link>
-      </div>
+    <main className="client-page-content mx-auto max-w-[720px] px-4 py-8 md:px-6">
+      <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">My Goals</h1>
 
       {goals.length === 0 ? (
-        <Card padding="lg" className="text-center">
-          <p className="text-2xl" aria-hidden>
+        <div className="mt-10 flex flex-col items-center text-center">
+          <div className="flex size-16 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[2rem]" aria-hidden>
             🎯
+          </div>
+          <p className="mt-4 text-[18px] font-semibold text-[var(--text-primary)]">No goals set yet</p>
+          <p className="mt-2 max-w-sm text-[14px] leading-relaxed text-[var(--text-tertiary)]">
+            Your coach will set goals here to track your progress together.
           </p>
-          <p className="mt-2 text-[var(--text-15)] font-semibold text-[var(--text-primary)]">No goals yet</p>
-          <p className="mt-2 text-[var(--text-14)] text-[var(--text-tertiary)]">
-            When your coach sets goals, you&apos;ll see progress here.
-          </p>
-        </Card>
+        </div>
       ) : (
-        <ul className="space-y-6">
-          {goals.map((g) => {
-            const catClass = CATEGORY_CLASS[g.category] ?? CATEGORY_CLASS.general
-            const showBar = g.targetValue != null && g.startValue != null
-            const overdue =
-              g.status === 'active' &&
-              g.targetDate &&
-              isBefore(startOfDay(parseISO(g.targetDate)), startOfDay(new Date()))
-
-            return (
-              <li key={g.id}>
-                <Card
-                  padding="lg"
-                  className={
-                    g.status === 'achieved'
-                      ? 'border border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20'
-                      : ''
-                  }
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide ${catClass}`}
-                    >
-                      {g.category}
-                    </span>
-                    {g.status === 'achieved' ? (
-                      <span className="text-[13px] font-semibold text-emerald-800 dark:text-emerald-200">
-                        Achieved! 🏆
-                      </span>
-                    ) : (
-                      <Badge variant="active">Active</Badge>
-                    )}
-                  </div>
-                  <h2 className="mt-3 text-[18px] font-semibold text-[var(--text-primary)]">{g.title}</h2>
-                  {g.description ? (
-                    <p className="mt-2 text-[14px] text-[var(--text-tertiary)]">{g.description}</p>
-                  ) : null}
-
-                  {showBar ? (
-                    <div className="mt-4">
-                      <p className="text-[13px] text-[var(--text-tertiary)]">
-                        {formatValue(g.startValue, g.unit)} → {formatValue(g.currentValue, g.unit)} →{' '}
-                        {formatValue(g.targetValue, g.unit)}
-                      </p>
-                      <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                        <div
-                          className="h-full rounded-full bg-[var(--accent)] transition-all duration-700"
-                          style={{ width: `${g.progressPercent ?? 0}%` }}
-                        />
-                      </div>
-                      <p className="mt-2 text-[14px] font-medium text-[var(--accent)]">
-                        {g.progressPercent != null ? `${g.progressPercent}% complete` : '—'}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {g.targetDate ? (
-                    <p
-                      className={`mt-2 text-[13px] ${overdue ? 'font-medium text-red-600' : 'text-[var(--text-tertiary)]'}`}
-                    >
-                      Target: {format(parseISO(g.targetDate), 'MMMM d, yyyy')}
-                    </p>
-                  ) : null}
-
-                  {g.updates && g.updates.length > 0 ? (
-                    <div className="mt-6 border-t border-[var(--border-default)] pt-4">
-                      <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-                        History
-                      </h3>
-                      <ul className="mt-3 space-y-3">
-                        {g.updates.map((u) => (
-                          <li
-                            key={u.id}
-                            className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2 text-[13px]"
-                          >
-                            <p className="tabular-nums text-[var(--text-primary)]">
-                              {u.previousValue != null ? `${u.previousValue} → ` : ''}
-                              {u.newValue}
-                            </p>
-                            {u.note ? (
-                              <p className="mt-1 text-[var(--text-tertiary)] whitespace-pre-wrap">{u.note}</p>
-                            ) : null}
-                            <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">
-                              {formatDistanceToNow(parseISO(u.createdAt), { addSuffix: true })}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                </Card>
+        <ul className="mt-8 space-y-6">
+          {activeList.map((g) => (
+            <GoalCard
+              key={g.id}
+              g={g}
+              expanded={expandedId === g.id}
+              onToggleHistory={() => setExpandedId((id) => (id === g.id ? null : g.id))}
+            />
+          ))}
+          {achievedList.length > 0 ? (
+            <>
+              <li className="pt-4">
+                <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+                  Achieved
+                </h2>
               </li>
-            )
-          })}
+              {achievedList.map((g) => (
+                <GoalCard
+                  key={g.id}
+                  g={g}
+                  expanded={expandedId === g.id}
+                  onToggleHistory={() => setExpandedId((id) => (id === g.id ? null : g.id))}
+                />
+              ))}
+            </>
+          ) : null}
         </ul>
       )}
+
+      <div className="mt-8">
+        <Link href="/client/portal" className="text-[14px] font-medium text-[var(--accent)]">
+          ← Back to home
+        </Link>
+      </div>
     </main>
+  )
+}
+
+function GoalCard({
+  g,
+  expanded,
+  onToggleHistory,
+}: {
+  g: CoachGoalDto
+  expanded: boolean
+  onToggleHistory: () => void
+}) {
+  const catClass = CATEGORY_CLASS[g.category] ?? CATEGORY_CLASS.general
+  const showBar = g.targetValue != null && g.startValue != null
+  const overdue =
+    g.status === 'active' && g.targetDate && isBefore(startOfDay(parseISO(g.targetDate)), startOfDay(new Date()))
+  const updates = g.updates ?? []
+  const nUpdates = updates.length
+
+  return (
+    <li>
+      <Card padding="lg" variant="default" className={g.status === 'achieved' ? 'border-[var(--success-border)] bg-[var(--success-bg)]' : ''}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className={cn('inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize', catClass)}>
+            {g.category}
+          </span>
+          {g.status === 'achieved' ? (
+            <span className="text-[12px] font-semibold text-[var(--success)]">🏆 Achieved</span>
+          ) : g.status === 'paused' ? (
+            <Badge variant="warning">Paused</Badge>
+          ) : (
+            <Badge variant="active">Active</Badge>
+          )}
+        </div>
+        <h2 className="mt-2 text-[16px] font-semibold text-[var(--text-primary)]">{g.title}</h2>
+        {g.description ? <p className="mt-1 text-[14px] text-[var(--text-secondary)]">{g.description}</p> : null}
+
+        {showBar ? (
+          <div className="mt-4">
+            <p className="text-[13px] text-[var(--text-tertiary)]">
+              {formatValue(g.startValue, g.unit)} → {formatValue(g.currentValue, g.unit)} → {formatValue(g.targetValue, g.unit)}
+            </p>
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
+              <AnimatedBar
+                percent={g.progressPercent ?? 0}
+                className="h-2 w-full"
+                fillClassName={g.status === 'achieved' ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}
+              />
+            </div>
+            <p className="mt-2 text-right text-[13px] text-[var(--text-tertiary)]">
+              {g.progressPercent != null ? `${g.progressPercent}% complete` : '—'}
+            </p>
+          </div>
+        ) : null}
+
+        {g.status === 'achieved' && g.achievedAt ? (
+          <p className="mt-2 text-[12px] text-[var(--success)]">
+            Achieved on {format(parseISO(g.achievedAt), 'MMMM d, yyyy')}
+          </p>
+        ) : null}
+
+        {g.targetDate ? (
+          <p className={cn('mt-1 text-[12px]', overdue ? 'font-medium text-[var(--error)]' : 'text-[var(--text-tertiary)]')}>
+            Target: {format(parseISO(g.targetDate), 'MMMM d, yyyy')}
+          </p>
+        ) : null}
+
+        {nUpdates > 0 ? (
+          <div className="mt-4 border-t border-[var(--border-subtle)] pt-3">
+            <button
+              type="button"
+              onClick={onToggleHistory}
+              className="flex w-full items-center justify-between text-left text-[13px] font-medium text-[var(--accent)]"
+            >
+              Show history ({nUpdates} updates)
+              <span className="text-[var(--text-tertiary)]" aria-hidden>
+                {expanded ? '▾' : '▸'}
+              </span>
+            </button>
+            {expanded ? (
+              <ul className="mt-3 space-y-3 border-l border-[var(--border-subtle)] pl-3">
+                {updates.map((u) => (
+                  <li key={u.id} className="relative text-[13px]">
+                    <span className="absolute -left-[17px] top-1.5 size-2 rounded-full bg-[var(--border-strong)]" aria-hidden />
+                    <p className="text-[11px] text-[var(--text-quaternary)]">
+                      {format(parseISO(u.createdAt), 'MMM d, yyyy')}
+                    </p>
+                    <p className="text-[var(--text-secondary)]">
+                      {u.previousValue != null ? `${u.previousValue} → ` : ''}
+                      {u.newValue}
+                      {g.unit ? ` ${g.unit}` : ''}
+                    </p>
+                    {u.note ? <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">{u.note}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ) : null}
+      </Card>
+    </li>
   )
 }

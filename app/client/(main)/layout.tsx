@@ -11,21 +11,44 @@ import { ClientLayoutWithUnread } from '@/components/layout/ClientLayoutWithUnre
  * Re-fetches workspace branding on navigation, focus, and interval so coach setting changes show up without a full reload.
  */
 export default function ClientMainLayout({ children }: { children: React.ReactNode }) {
-  const { brandName: serverBrandName, userDisplayName } = useClientBranding()
+  const {
+    brandName: serverBrandName,
+    brandTagline: serverBrandTagline,
+    userDisplayName,
+    logoUrl: serverLogoUrl,
+  } = useClientBranding()
   const pathname = usePathname()
   const [brandName, setBrandName] = useState(serverBrandName)
+  const [brandTagline, setBrandTagline] = useState(serverBrandTagline)
+  const [logoUrl, setLogoUrl] = useState(serverLogoUrl)
 
   useEffect(() => {
     setBrandName(serverBrandName)
   }, [serverBrandName])
 
+  useEffect(() => {
+    setBrandTagline(serverBrandTagline)
+  }, [serverBrandTagline])
+
+  useEffect(() => {
+    setLogoUrl(serverLogoUrl)
+  }, [serverLogoUrl])
+
   const refetchBrand = useCallback(() => {
     void fetch('/api/client/workspace-branding', { credentials: 'include', cache: 'no-store' })
       .then(async (res) => {
-        const json = (await res.json().catch(() => null)) as { data?: { brandName?: string | null } } | null
+        const json = (await res.json().catch(() => null)) as {
+          data?: { brandName?: string | null; brandTagline?: string | null; logoUrl?: string | null }
+        } | null
         if (!res.ok || !json?.data || typeof json.data !== 'object') return
         if ('brandName' in json.data) {
           setBrandName(json.data.brandName ?? null)
+        }
+        if ('brandTagline' in json.data) {
+          setBrandTagline(json.data.brandTagline?.trim() ? json.data.brandTagline.trim() : null)
+        }
+        if ('logoUrl' in json.data) {
+          setLogoUrl(json.data.logoUrl?.trim() ? json.data.logoUrl.trim() : null)
         }
       })
       .catch(() => null)
@@ -46,7 +69,12 @@ export default function ClientMainLayout({ children }: { children: React.ReactNo
   }, [refetchBrand])
 
   return (
-    <ClientLayoutWithUnread userDisplayName={userDisplayName} brandName={brandName}>
+    <ClientLayoutWithUnread
+      userDisplayName={userDisplayName}
+      brandName={brandName}
+      brandTagline={brandTagline}
+      logoUrl={logoUrl}
+    >
       {children}
     </ClientLayoutWithUnread>
   )

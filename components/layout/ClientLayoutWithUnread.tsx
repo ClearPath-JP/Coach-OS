@@ -8,20 +8,24 @@ import { ClientPortalDesktopSidebar } from '@/components/layout/ClientPortalSide
 import { MobileNav, clientPortalTabs } from '@/components/layout/MobileNav'
 
 const UNREAD_POLL_MS = 30_000
-const CHECKIN_POLL_MS = 60_000
+const ASSIGNMENTS_POLL_MS = 60_000
 
 export function ClientLayoutWithUnread({
   children,
   userDisplayName,
   brandName,
+  brandTagline,
+  logoUrl,
 }: {
   children: React.ReactNode
   userDisplayName: string | null
-  /** Coach white-label name for nav logo */
+  /** Coach white-label name for nav (fallback if no logo) */
   brandName?: string | null
+  brandTagline?: string | null
+  logoUrl?: string | null
 }) {
   const [unreadCount, setUnreadCount] = useState(0)
-  const [checkInReminderDot, setCheckInReminderDot] = useState(false)
+  const [pendingAssignmentsCount, setPendingAssignmentsCount] = useState(0)
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const supabase = useMemo(() => createClient(), [])
 
@@ -37,13 +41,13 @@ export function ClientLayoutWithUnread({
     }
   }, [])
 
-  const fetchCheckinToday = useCallback(async () => {
+  const fetchPendingAssignments = useCallback(async () => {
     try {
-      const res = await fetch('/api/client/checkin/today', { credentials: 'include' })
-      const json = (await res.json()) as { data?: { checkin: unknown | null } }
-      if (res.ok && json.data) {
-        setCheckInReminderDot(!json.data.checkin)
-      }
+      const res = await fetch('/api/client/assignments', { credentials: 'include' })
+      const json = (await res.json()) as { data?: { status?: string }[] }
+      if (!res.ok || !Array.isArray(json.data)) return
+      const n = json.data.filter((a) => a.status === 'pending' || a.status === 'returned').length
+      setPendingAssignmentsCount(n)
     } catch {
       // ignore
     }
@@ -56,10 +60,10 @@ export function ClientLayoutWithUnread({
   }, [fetchUnread])
 
   useEffect(() => {
-    const interval = setInterval(() => void fetchCheckinToday(), CHECKIN_POLL_MS)
-    queueMicrotask(() => void fetchCheckinToday())
+    const interval = setInterval(() => void fetchPendingAssignments(), ASSIGNMENTS_POLL_MS)
+    queueMicrotask(() => void fetchPendingAssignments())
     return () => clearInterval(interval)
-  }, [fetchCheckinToday])
+  }, [fetchPendingAssignments])
 
   useEffect(() => {
     let cancelled = false
@@ -100,29 +104,30 @@ export function ClientLayoutWithUnread({
   }, [fetchUnread])
 
   useEffect(() => {
-    const handler = () => void fetchCheckinToday()
-    window.addEventListener('clearpath:checkin-updated', handler)
-    return () => window.removeEventListener('clearpath:checkin-updated', handler)
-  }, [fetchCheckinToday])
+    const handler = () => void fetchPendingAssignments()
+    window.addEventListener('clearpath:assignments-updated', handler)
+    return () => window.removeEventListener('clearpath:assignments-updated', handler)
+  }, [fetchPendingAssignments])
 
   return (
-    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
+    <div className="flex min-h-screen min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
       <Nav
         userDisplayName={userDisplayName}
         logoHref="/client/portal"
         brandName={brandName}
-        showThemeToggle
+        clientPortalLogoUrl={logoUrl ?? null}
+        clientPortalBrandTagline={brandTagline ?? null}
         clientPortal
         clientPortalTrailing={<ClientNotificationsBell />}
         className="w-full shrink-0"
       />
       <div className="flex min-h-0 flex-1 flex-row lg:min-h-0 lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)]">
-        <aside className="hidden min-h-0 lg:flex lg:w-[var(--sidebar-width)] lg:shrink-0 lg:flex-col lg:border-r lg:border-[var(--border-default)] lg:bg-[var(--bg-subtle)]">
-          <ClientPortalDesktopSidebar className="h-full min-h-0 flex-1 border-0" />
-        </aside>
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-20 lg:min-h-0 lg:overflow-y-auto lg:pb-0">
+        <div className="hidden min-h-0 lg:block">
+          <ClientPortalDesktopSidebar className="h-full min-h-0" />
+        </div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-[88px] lg:min-h-0 lg:overflow-y-auto lg:pb-0">
           {children}
-          <div className="mt-auto flex shrink-0 justify-center px-4 pb-2 pt-4 text-center text-[11px] text-[var(--text-quaternary)] lg:pb-4">
+          <div className="mt-auto flex shrink-0 justify-center px-4 pb-2 pt-4 text-center text-[11px] text-[var(--text-quaternary)] lg:hidden">
             Powered by <span className="font-medium text-[var(--accent)]">ClearPath</span>
           </div>
         </div>
@@ -130,7 +135,7 @@ export function ClientLayoutWithUnread({
       <MobileNav
         tabs={clientPortalTabs}
         messageUnreadCount={unreadCount}
-        checkInReminderDot={checkInReminderDot}
+        pendingAssignmentsCount={pendingAssignmentsCount}
       />
     </div>
   )

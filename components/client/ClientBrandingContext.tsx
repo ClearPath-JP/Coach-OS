@@ -4,15 +4,19 @@ import { createContext, useContext } from 'react'
 
 export type ClientBrandingContextValue = {
   brandName: string | null
+  brandTagline: string | null
   workspaceId: string | null
   /** Resolved from clients row for top nav */
   userDisplayName: string | null
+  logoUrl: string | null
 }
 
 const ClientBrandingContext = createContext<ClientBrandingContextValue>({
   brandName: null,
+  brandTagline: null,
   workspaceId: null,
   userDisplayName: null,
+  logoUrl: null,
 })
 
 export function ClientBrandingProvider({

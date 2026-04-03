@@ -49,12 +49,9 @@ export default async function ClientInvoicesPage() {
   const list = (invoices ?? []) as unknown as ClientInvoiceRow[]
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="client-page-content min-h-screen px-4 py-6 md:px-6">
       <ClientInvoicesBackLink />
-      <h1 className="text-xl font-medium text-[var(--color-ink)]">My invoices</h1>
-      <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-        View your session invoices and payment status.
-      </p>
+      <h1 className="text-[22px] font-bold text-[var(--text-primary)]">Invoices</h1>
 
       <ClientInvoicesList clientId={client.id} invoices={list} />
     </main>

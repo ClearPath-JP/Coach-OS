@@ -1,12 +1,12 @@
 'use client'
 
-import { SignOutButton } from '@/components/layout/SignOutButton'
-
-/** Bottom of client desktop sidebar: sign out (client theme is in top Nav). */
+/** Desktop client sidebar: white-label attribution only (sign out lives on Profile). */
 export function ClientPortalSidebarFooter() {
   return (
-    <div className="border-t border-[var(--color-border)] px-2 pt-2">
-      <SignOutButton variant="sidebar" />
+    <div className="shrink-0 border-t border-[var(--border-subtle)] px-3 py-3">
+      <p className="text-center text-[12px] leading-snug text-[var(--text-quaternary)]">
+        Powered by <span className="font-medium text-[var(--accent)]">ClearPath</span>
+      </p>
     </div>
   )
 }

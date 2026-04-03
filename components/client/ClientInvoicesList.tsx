@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 
 type PackageRow = { id: string; title: string | null; description: string | null }
 export type ClientInvoiceRow = {
@@ -73,22 +74,22 @@ function PaymentMethodRow({
   iconBgClass: string
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5">
+    <div className="flex h-11 items-center gap-3 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3">
       <span
-        className={`flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white ${iconBgClass}`}
+        className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${iconBgClass}`}
         aria-hidden
       >
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] text-[var(--color-ink)]">
-          {label}: <span className="font-medium">{value}</span>
-        </p>
+        <p className="text-[13px] font-medium text-[var(--text-primary)]">{label}</p>
+        <p className="truncate text-[14px] font-semibold text-[var(--text-primary)]">{value}</p>
       </div>
       <Button
         type="button"
-        variant="secondary"
-        className="shrink-0 text-[13px]"
+        variant="ghost"
+        size="sm"
+        className="h-8 shrink-0 px-2 text-[12px]"
         onClick={() => onCopy(copyKey, value)}
       >
         {copiedKey === copyKey ? 'Copied!' : 'Copy'}
@@ -131,12 +132,12 @@ function StripeInvoicePayButton({ invoiceId, amountLabel }: { invoiceId: string;
   }
 
   return (
-    <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
-      <Button type="button" className="w-full bg-indigo-600 text-white hover:bg-indigo-700" disabled={loading} onClick={() => void pay()}>
+    <div className="rounded-[var(--radius-md)] border border-[var(--accent-muted)] bg-[var(--accent-light)] p-3">
+      <Button type="button" variant="primary" className="w-full" disabled={loading} onClick={() => void pay()}>
         {loading ? 'Opening secure checkout…' : `Pay ${amountLabel} by card`}
       </Button>
-      <p className="mt-2 text-[12px] text-indigo-800">Secure checkout with Stripe.</p>
-      {error ? <p className="mt-2 text-[12px] text-red-700">{error}</p> : null}
+      <p className="mt-2 text-[12px] text-[var(--text-secondary)]">Secure checkout with Stripe.</p>
+      {error ? <p className="mt-2 text-[12px] text-[var(--error)]">{error}</p> : null}
     </div>
   )
 }
@@ -155,6 +156,7 @@ function HowToPayBlock({
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const onCopy = (key: string, text: string) => {
     void navigator.clipboard.writeText(text).then(() => {
@@ -177,10 +179,10 @@ function HowToPayBlock({
     branding.stripeCard ||
     branding.stripe
 
-  const handleSentPayment = async () => {
+  const sendPaymentNotice = async () => {
     setSending(true)
     try {
-      const body = `I've sent payment for invoice ${invoiceId}`
+      const body = `I've sent payment for invoice #${invoiceId}`
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -192,20 +194,21 @@ function HowToPayBlock({
         setToast(typeof json.error === 'string' ? json.error : 'Could not notify your coach — try Messages.')
         return
       }
-      setToast('Your coach has been notified.')
+      setToast("Message sent to your coach. They'll confirm once received.")
     } catch {
       setToast('Could not notify your coach — try again.')
     } finally {
       setSending(false)
+      setConfirmOpen(false)
     }
   }
 
   return (
-    <div className="mt-4 border-t border-[var(--color-border)] pt-4">
-      <p className="text-[15px] font-medium text-[var(--color-ink)]">How to pay {amountLabel}:</p>
+    <div className="mt-4 border-t border-[var(--border-default)] pt-4">
+      <p className="text-[13px] font-semibold text-[var(--text-primary)]">Send payment to:</p>
 
       {!hasAny && !branding.instructions ? (
-        <p className="mt-3 text-[14px] text-[var(--color-muted)]">Contact your coach for payment details.</p>
+        <p className="mt-3 text-[14px] text-[var(--text-tertiary)]">Contact your coach for payment details.</p>
       ) : (
         <div className="mt-3 space-y-2">
           {branding.cashapp ? (
@@ -254,7 +257,7 @@ function HowToPayBlock({
           ) : null}
           {branding.stripeCard ? <StripeInvoicePayButton invoiceId={invoiceId} amountLabel={amountLabel} /> : null}
           {!branding.stripeCard && branding.stripe ? (
-            <p className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[13px] text-[var(--color-muted)]">
+            <p className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2 text-[13px] text-[var(--text-tertiary)]">
               Your coach is still finishing Stripe card payments. Use another method above or check Messages.
             </p>
           ) : null}
@@ -262,23 +265,38 @@ function HowToPayBlock({
       )}
 
       {branding.instructions ? (
-        <p
-          className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 italic text-[var(--color-muted)]"
-          style={{ fontSize: '12px' }}
-        >
+        <div className="mt-3 rounded-[var(--radius-md)] bg-[var(--bg-subtle)] px-3 py-3 text-[14px] italic text-[var(--text-secondary)]">
           📝 {branding.instructions}
-        </p>
+        </div>
       ) : null}
 
       <div className="mt-4">
-        <Button type="button" className="w-full sm:w-auto" disabled={sending} onClick={() => void handleSentPayment()}>
-          {sending ? 'Sending…' : "I've sent payment"}
+        <Button
+          type="button"
+          variant="secondary"
+          className="h-11 w-full"
+          disabled={sending}
+          onClick={() => setConfirmOpen(true)}
+        >
+          I&apos;ve sent payment
         </Button>
       </div>
 
+      <Modal isOpen={confirmOpen} onClose={() => !sending && setConfirmOpen(false)} title="Confirm payment">
+        <p className="text-[14px] text-[var(--text-secondary)]">Have you already sent {amountLabel}?</p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" disabled={sending} onClick={() => setConfirmOpen(false)}>
+            Not yet
+          </Button>
+          <Button type="button" variant="primary" disabled={sending} onClick={() => void sendPaymentNotice()}>
+            Yes, I sent it
+          </Button>
+        </div>
+      </Modal>
+
       {toast ? (
         <div
-          className="fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-lg border border-[var(--color-border)] bg-[var(--color-ink)] px-4 py-2 text-center text-[14px] text-white shadow-lg"
+          className="fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--text-primary)] px-4 py-2 text-center text-[14px] text-[var(--bg-app)] shadow-[var(--shadow-lg)]"
           role="status"
         >
           {toast}
@@ -301,6 +319,7 @@ const EMPTY_BRANDING = {
 export function ClientInvoicesList({ clientId, invoices }: { clientId: string; invoices: ClientInvoiceRow[] }) {
   const [brandingRaw, setBrandingRaw] = useState<BrandingData | null>(null)
   const [brandingLoaded, setBrandingLoaded] = useState(false)
+  const [paidOpen, setPaidOpen] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -324,77 +343,101 @@ export function ClientInvoicesList({ clientId, invoices }: { clientId: string; i
 
   if (invoices.length === 0) {
     return (
-      <Card variant="raised" padding="lg" className="mt-6 text-center">
-        <p className="font-medium text-[var(--color-ink)]">No invoices yet</p>
-        <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-          When your coach sends you an invoice, it will appear here and in Messages.
+      <div className="mt-10 text-center">
+        <p className="text-[2rem]" aria-hidden>
+          💳
         </p>
+        <p className="mt-4 text-[18px] font-semibold text-[var(--text-primary)]">No invoices yet</p>
+        <p className="mt-2 text-[14px] text-[var(--text-tertiary)]">Invoices from your coach will appear here.</p>
+      </div>
+    )
+  }
+
+  const pending = invoices.filter((i) => i.status === 'pending')
+  const paid = invoices.filter((i) => i.status !== 'pending')
+
+  function InvoicePendingCard({ inv }: { inv: ClientInvoiceRow }) {
+    return (
+      <Card variant="default" padding="lg" className="border-l-4 border-l-[var(--warning)]">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <p className="text-[24px] font-bold text-[var(--text-primary)]">{formatAmount(inv.amount_cents, inv.currency)}</p>
+            <span className="mt-1 inline-flex rounded-full bg-[var(--warning-bg)] px-2 py-0.5 text-[12px] font-medium text-[var(--warning)]">
+              Pending
+            </span>
+            <h2 className="mt-2 text-[14px] text-[var(--text-secondary)]">{inv.session_packages?.title ?? 'Invoice'}</h2>
+            <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+              Sent {format(new Date(inv.created_at), 'MMMM d, yyyy')}
+            </p>
+          </div>
+        </div>
+        {brandingLoaded ? (
+          <HowToPayBlock
+            clientId={clientId}
+            invoiceId={inv.id}
+            amountLabel={formatAmount(inv.amount_cents, inv.currency)}
+            branding={branding}
+          />
+        ) : (
+          <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">Loading payment options…</p>
+        )}
       </Card>
     )
   }
 
   return (
-    <ul className="mt-6 space-y-4">
-      {invoices.map((inv) => (
-        <li key={inv.id}>
-          <Card variant="raised" padding="lg">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h2 className="font-medium text-[var(--color-ink)]">
-                  {inv.session_packages?.title ?? 'Invoice'}
-                </h2>
-                <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-                  {formatAmount(inv.amount_cents, inv.currency)}
-                </p>
-                {inv.due_date && inv.status === 'pending' && (
-                  <p className="mt-1 text-xs text-[var(--color-muted)]">
-                    Due {format(new Date(inv.due_date), 'MMM d, yyyy')}
-                  </p>
-                )}
-                {inv.paid_at && (
-                  <p className="mt-1 text-xs text-[var(--color-muted)]">
-                    Paid {format(new Date(inv.paid_at), 'MMM d, yyyy')}
-                  </p>
-                )}
-              </div>
-              <span
-                className={`inline-flex rounded-full px-2.5 py-0.5 text-[13px] font-medium ${
-                  inv.status === 'paid'
-                    ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
-                    : inv.status === 'cancelled' || inv.status === 'refunded'
-                      ? 'bg-[var(--color-border)]/80 text-[var(--color-muted)]'
-                      : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
-                }`}
-              >
-                {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
-              </span>
-            </div>
-            {inv.status === 'pending' && brandingLoaded ? (
-              <HowToPayBlock
-                clientId={clientId}
-                invoiceId={inv.id}
-                amountLabel={formatAmount(inv.amount_cents, inv.currency)}
-                branding={branding}
-              />
-            ) : null}
-            {inv.status === 'pending' && !brandingLoaded ? (
-              <p className="mt-3 text-[13px] text-[var(--color-muted)]">Loading payment options…</p>
-            ) : null}
-          </Card>
-        </li>
-      ))}
-    </ul>
+    <div className="mt-6 space-y-8">
+      {pending.length > 0 ? (
+        <section>
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+            Awaiting payment
+          </p>
+          <ul className="space-y-4">
+            {pending.map((inv) => (
+              <li key={inv.id}>
+                <InvoicePendingCard inv={inv} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {paid.length > 0 ? (
+        <section>
+          <button
+            type="button"
+            onClick={() => setPaidOpen((v) => !v)}
+            className="mb-3 flex w-full items-center justify-between text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
+          >
+            Paid
+            <span aria-hidden>{paidOpen ? '▾' : '▸'}</span>
+          </button>
+          {paidOpen ? (
+            <ul className="divide-y divide-[var(--border-subtle)]">
+              {paid.map((inv) => (
+                <li key={inv.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-[13px]">
+                  <span className="font-medium text-[var(--text-primary)]">
+                    {inv.paid_at ? format(new Date(inv.paid_at), 'MMM d, yyyy') : format(new Date(inv.created_at), 'MMM d, yyyy')}
+                  </span>
+                  <span className="text-[var(--text-secondary)]">{formatAmount(inv.amount_cents, inv.currency)}</span>
+                  <span className="rounded-full bg-[var(--success-bg)] px-2 py-0.5 text-[11px] font-medium text-[var(--success)]">
+                    Paid
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+    </div>
   )
 }
 
 export function ClientInvoicesBackLink() {
   return (
     <div className="mb-4">
-      <Link
-        href="/client/portal"
-        className="text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)]"
-      >
-        ← Back to portal
+      <Link href="/client/portal" className="text-[14px] font-medium text-[var(--accent)]">
+        ← Back to home
       </Link>
     </div>
   )

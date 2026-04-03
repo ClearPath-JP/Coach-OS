@@ -2,28 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { LucideIcon } from 'lucide-react'
+import { LayoutDashboard, BookOpen, MessageSquare, ClipboardList, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-function ProfileIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 14a4 4 0 0 0 4-4 2 2 0 0 0-4 0" />
-      <path d="M8 20h8" />
-    </svg>
-  )
-}
 
 function BillingIcon({ className }: { className?: string }) {
   return (
@@ -208,36 +189,13 @@ export const coachTabs = [
   { href: '/billing', label: 'Billing', icon: BillingIcon },
 ] as const
 
-function GoalsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-export const clientPortalTabs = [
-  { href: '/client/portal', label: 'Home', icon: HomeIcon },
-  { href: '/client/goals', label: 'Goals', icon: GoalsIcon },
-  { href: '/client/messages', label: 'Messages', icon: MessagesIcon },
-  { href: '/client/programs', label: 'Programs', icon: ProgramsIcon },
-  { href: '/client/assignments', label: 'Tasks', icon: AssignmentsIcon },
-  { href: '/client/sessions', label: 'Sessions', icon: CalendarIcon },
-  { href: '/client/invoices', label: 'Invoices', icon: InvoicesIcon },
-  { href: '/client/profile', label: 'Profile', icon: ProfileIcon },
+/** Mobile bottom bar — five primary destinations (Goals/Sessions/Invoices live on Home + desktop sidebar). */
+export const clientPortalTabs: readonly { href: string; label: string; icon: LucideIcon }[] = [
+  { href: '/client/portal', label: 'Home', icon: LayoutDashboard },
+  { href: '/client/programs', label: 'Programs', icon: BookOpen },
+  { href: '/client/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/client/assignments', label: 'Tasks', icon: ClipboardList },
+  { href: '/client/profile', label: 'Profile', icon: User },
 ] as const
 
 function HomeIcon({ className }: { className?: string }) {
@@ -326,15 +284,15 @@ function MessagesIcon({ className }: { className?: string }) {
 export interface MobileNavTab {
   href: string
   label: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string }> | LucideIcon
 }
 
 export interface MobileNavProps {
   className?: string
   tabs?: readonly MobileNavTab[]
   messageUnreadCount?: number
-  /** Client portal: gentle reminder when today's daily check-in is still open */
-  checkInReminderDot?: boolean
+  /** Client portal: pending + returned assignments */
+  pendingAssignmentsCount?: number
 }
 
 /** Bottom tab bar — visible only below lg. Matches ClearPath design system (blur, accent active state). */
@@ -342,57 +300,83 @@ export function MobileNav({
   className,
   tabs = coachTabs,
   messageUnreadCount = 0,
-  checkInReminderDot = false,
+  pendingAssignmentsCount = 0,
 }: MobileNavProps) {
   const pathname = usePathname()
+  const isClientPortalTabs = tabs === clientPortalTabs || tabs.length === 5
 
   return (
     <nav
       className={cn(
         'safe-bottom fixed bottom-0 left-0 right-0 z-40 lg:hidden',
-        'border-t border-[var(--border-default)] bg-[var(--bg-app)]/92 backdrop-blur-[12px]',
+        'border-t border-[var(--border-subtle)] bg-[var(--bg-app)]/92 backdrop-blur-[12px]',
         className
       )}
       role="navigation"
       aria-label="Main"
     >
-      <div className="flex max-h-[72px] items-stretch justify-start gap-0.5 overflow-x-auto overscroll-x-contain px-1 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        className={cn(
+          'flex items-stretch justify-between gap-0 px-1 py-1',
+          isClientPortalTabs ? 'min-h-[56px]' : 'max-h-[72px] justify-start gap-0.5 overflow-x-auto overscroll-x-contain py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+        )}
+      >
         {tabs.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href || (href !== '/' && pathname.startsWith(href))
           const isMessagesTab = href.includes('messages')
-          const showBadge = isMessagesTab && messageUnreadCount > 0
-          const isClientHome = href === '/client/portal'
-          const showCheckInDot = isClientHome && checkInReminderDot
+          const isTasksTab = href.includes('assignments')
+          const showMsgBadge = isMessagesTab && messageUnreadCount > 0
+          const showTasksBadge = isTasksTab && pendingAssignmentsCount > 0
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                'relative flex min-h-[44px] min-w-[52px] max-w-[76px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-md)] px-1.5 py-1',
-                'text-[10px] font-medium tracking-[var(--tracking-normal)] transition-[background-color,color] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]',
+                'relative flex flex-col items-center justify-center gap-0.5 rounded-[var(--radius-md)] px-1 py-1',
+                'text-[10px] font-medium tracking-[var(--tracking-normal)] transition-[color,transform] duration-150 [transition-timing-function:var(--ease-out)]',
                 'focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]',
+                isClientPortalTabs
+                  ? 'min-h-[56px] min-w-0 flex-1'
+                  : 'min-h-[44px] min-w-[52px] max-w-[76px] shrink-0',
                 isActive
-                  ? 'bg-[var(--accent-light)] text-[var(--accent)]'
+                  ? isClientPortalTabs
+                    ? 'text-[var(--accent)]'
+                    : 'bg-[var(--accent-light)] text-[var(--accent)]'
                   : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
               )}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className={cn('size-[22px] shrink-0', isActive && 'text-[var(--accent)]')} />
-              <span className="line-clamp-1 w-full text-center">{label}</span>
-              {showBadge ? (
+              <Icon
+                className={cn(
+                  'size-[22px] shrink-0',
+                  isClientPortalTabs && 'stroke-[2]',
+                  isActive ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'
+                )}
+              />
+              <span
+                className={cn(
+                  'line-clamp-1 w-full text-center',
+                  isActive && isClientPortalTabs && 'text-[var(--accent)]'
+                )}
+              >
+                {label}
+              </span>
+              {showMsgBadge ? (
                 <span
-                  className="absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--success)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
+                  className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
                   aria-label={`${messageUnreadCount} unread messages`}
                 >
                   {messageUnreadCount > 99 ? '99+' : messageUnreadCount}
                 </span>
               ) : null}
-              {showCheckInDot ? (
+              {showTasksBadge ? (
                 <span
-                  className="pointer-events-none absolute right-0.5 top-0.5 size-2 rounded-full bg-amber-500 shadow-sm ring-2 ring-[var(--bg-app)]"
-                  aria-label="Daily check-in available on Home"
-                />
+                  className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"
+                  aria-label={`${pendingAssignmentsCount} tasks due`}
+                >
+                  {pendingAssignmentsCount > 99 ? '99+' : pendingAssignmentsCount}
+                </span>
               ) : null}
             </Link>
           )

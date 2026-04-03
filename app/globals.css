@@ -54,6 +54,8 @@
 
   /* LIGHT MODE COLORS */
   --bg-app: #ffffff;
+  /* For translucent sticky chrome: rgba(var(--bg-app-rgb), 0.9) */
+  --bg-app-rgb: 255, 255, 255;
   --bg-subtle: #f8fafc;
   --bg-muted: #f1f5f9;
   --bg-emphasis: #e2e8f0;
@@ -98,7 +100,7 @@
   --focus-ring: 0 0 0 3px rgba(59, 158, 232, 0.25);
 
   --radius-xs: 4px;
-  --radius-sm: 6px;
+  --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
@@ -113,7 +115,7 @@
   --duration-slow: 200ms;
   --duration-slower: 300ms;
 
-  --sidebar-width: 232px;
+  --sidebar-width: 240px;
   --nav-height: 52px;
 
   /* Tailwind / legacy component aliases */
@@ -186,6 +188,7 @@
 
 html[data-theme='dark'] {
   --bg-app: #191919;
+  --bg-app-rgb: 25, 25, 25;
   --bg-subtle: #202020;
   --bg-muted: #2a2a2a;
   --bg-emphasis: #333333;
@@ -584,4 +587,94 @@ tr:hover td {
   z-index: 200;
   pointer-events: none;
   animation: confetti-fall 3s ease-in forwards;
+}
+
+/* Client portal — page enter */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.client-page-content {
+  animation: pageEnter 200ms ease-out;
+}
+
+@keyframes clientPortalDashLift {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.client-portal-dash-stagger > * {
+  animation: clientPortalDashLift 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.client-portal-dash-stagger > *:nth-child(1) {
+  animation-delay: 0.02s;
+}
+.client-portal-dash-stagger > *:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.client-portal-dash-stagger > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.client-portal-dash-stagger > *:nth-child(4) {
+  animation-delay: 0.14s;
+}
+.client-portal-dash-stagger > *:nth-child(5) {
+  animation-delay: 0.18s;
+}
+.client-portal-dash-stagger > *:nth-child(6) {
+  animation-delay: 0.22s;
+}
+.client-portal-dash-stagger > *:nth-child(7) {
+  animation-delay: 0.26s;
+}
+.client-portal-dash-stagger > *:nth-child(8) {
+  animation-delay: 0.3s;
+}
+.client-portal-dash-stagger > *:nth-child(9) {
+  animation-delay: 0.34s;
+}
+.client-portal-dash-stagger > *:nth-child(10) {
+  animation-delay: 0.38s;
+}
+.client-portal-dash-stagger > *:nth-child(11) {
+  animation-delay: 0.42s;
+}
+.client-portal-dash-stagger > *:nth-child(12) {
+  animation-delay: 0.46s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .client-portal-dash-stagger > * {
+    animation: none;
+  }
+}
+
+@keyframes streakPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-streak-pulse {
+  animation: streakPulse 0.6s ease-out 1;
 }

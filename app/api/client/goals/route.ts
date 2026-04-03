@@ -54,6 +54,7 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (gErr) {
+      console.error('[api/client/goals] client_goals', gErr.message, gErr.code)
       return NextResponse.json({ error: 'Could not load goals' }, { status: 500 })
     }
 
@@ -70,6 +71,7 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (uErr) {
+      console.error('[api/client/goals] client_goal_updates', uErr.message, uErr.code)
       return NextResponse.json({ error: 'Could not load goal updates' }, { status: 500 })
     }
 

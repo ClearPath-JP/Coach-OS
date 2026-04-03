@@ -15,14 +15,60 @@ export interface NavProps {
   userDisplayName?: string | null
   logoHref?: string
   brandName?: string | null | undefined
+  /** Coach workspace logo for client portal top nav */
+  clientPortalLogoUrl?: string | null
   showThemeToggle?: boolean
   showSignOut?: boolean
   coachApp?: boolean
   coachAvatarUrl?: string | null
   notificationCount?: number
   clientPortal?: boolean
+  /** Optional coach tagline under the brand name (desktop client portal) */
+  clientPortalBrandTagline?: string | null
   /** Extra controls in the client portal header (e.g. notifications bell) */
   clientPortalTrailing?: ReactNode
+}
+
+const CLIENT_PORTAL_TOP_LINKS: { href: string; label: string }[] = [
+  { href: '/client/portal', label: 'Home' },
+  { href: '/client/programs', label: 'Programs' },
+  { href: '/client/assignments', label: 'Tasks' },
+  { href: '/client/goals', label: 'Goals' },
+  { href: '/client/sessions', label: 'Sessions' },
+  { href: '/client/messages', label: 'Messages' },
+  { href: '/client/invoices', label: 'Invoices' },
+]
+
+function clientPortalTopLinkActive(pathname: string, href: string): boolean {
+  if (href === '/client/portal') return pathname === href
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+function ClientPortalQuickLinks({ pathname }: { pathname: string }) {
+  return (
+    <nav
+      className="hidden min-w-0 flex-1 flex-wrap items-center justify-center gap-x-0.5 gap-y-1 lg:flex"
+      aria-label="Quick links"
+    >
+      {CLIENT_PORTAL_TOP_LINKS.map(({ href, label }) => {
+        const active = clientPortalTopLinkActive(pathname, href)
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              'whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12px] font-medium transition-[background-color,color,transform] duration-150',
+              active
+                ? 'bg-[var(--accent-light)] text-[var(--accent)]'
+                : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] active:scale-[0.98]'
+            )}
+          >
+            {label}
+          </Link>
+        )
+      })}
+    </nav>
+  )
 }
 
 function initials(name: string): string {
@@ -179,18 +225,25 @@ export function Nav({
   userDisplayName,
   logoHref = '/',
   brandName,
+  clientPortalLogoUrl,
   showThemeToggle,
   showSignOut,
   coachApp,
   coachAvatarUrl,
   notificationCount = 0,
   clientPortal,
+  clientPortalBrandTagline,
   clientPortalTrailing,
 }: NavProps) {
   const pathname = usePathname() ?? ''
   const logoLabel = brandName?.trim() || 'ClearPath'
   const { theme } = useTheme()
   const [scrolled, setScrolled] = useState(false)
+  const [clientLogoFailed, setClientLogoFailed] = useState(false)
+
+  useEffect(() => {
+    setClientLogoFailed(false)
+  }, [clientPortalLogoUrl])
   const [notifOpen, setNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(Math.max(notificationCount, 2))
   const [notifications, setNotifications] = useState([
@@ -200,18 +253,22 @@ export function Nav({
   ])
 
   useEffect(() => {
+    if (clientPortal) return
     const onScroll = () => setScrolled(window.scrollY > 4)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [clientPortal])
 
-  const headerBg =
-    scrolled && theme === 'light'
+  const headerBg = clientPortal
+    ? undefined
+    : scrolled && theme === 'light'
       ? 'rgba(255,255,255,0.85)'
       : scrolled && theme === 'dark'
         ? 'rgba(25,25,25,0.85)'
         : undefined
+
+  const clientNavSurface = 'rgba(var(--bg-app-rgb), 0.9)'
 
   function CoachAppTitle({ pathname }: { pathname: string }) {
     const { settings } = useWorkspace()
@@ -227,10 +284,13 @@ export function Nav({
     <header className={cn('z-30', className)} role="banner">
       <nav
         className={cn(
-          'sticky top-0 z-30 flex h-[var(--nav-height)] items-center justify-between border-b border-[var(--border-subtle)] px-6 backdrop-blur-[12px] transition-[background-color] duration-[var(--duration-normal)]'
+          'sticky top-0 z-30 flex h-[var(--nav-height)] items-center border-b border-[var(--border-subtle)] backdrop-blur-[12px] transition-[background-color,box-shadow] duration-[var(--duration-normal)]',
+          clientPortal
+            ? 'justify-center px-0 sm:px-0 lg:h-auto lg:min-h-[68px] lg:shadow-[var(--shadow-sm)]'
+            : 'justify-between px-4 sm:px-6'
         )}
         style={{
-          backgroundColor: headerBg ?? 'var(--bg-app)',
+          backgroundColor: clientPortal ? clientNavSurface : headerBg ?? 'var(--bg-app)',
         }}
       >
         {coachApp ? (
@@ -241,12 +301,51 @@ export function Nav({
             <CoachAppTitle pathname={pathname} />
           </div>
         ) : clientPortal ? (
-          <Link
-            href={logoHref}
-            className="truncate text-[17px] font-semibold tracking-[var(--tracking-heading)] text-[var(--text-primary)] transition-colors duration-150 hover:text-[var(--accent)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            {logoLabel}
-          </Link>
+          <div className="mx-auto flex h-full min-h-[var(--nav-height)] w-full max-w-[1600px] items-center justify-between gap-2 px-4 sm:px-6 lg:min-h-0 lg:gap-4 lg:px-8">
+            <Link
+              href={logoHref}
+              className="flex min-w-0 max-w-[min(100%,240px)] shrink-0 items-center gap-2 sm:max-w-[min(100%,280px)] sm:gap-2.5 lg:max-w-[min(100%,320px)] lg:gap-3 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            >
+              {clientPortalLogoUrl && !clientLogoFailed ? (
+                <span className="relative size-8 shrink-0 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] lg:size-10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={clientPortalLogoUrl}
+                    alt=""
+                    className="size-full object-contain p-0.5"
+                    onError={() => setClientLogoFailed(true)}
+                  />
+                </span>
+              ) : null}
+              <span className="flex min-w-0 flex-col justify-center gap-0.5">
+                <span className="truncate text-[15px] font-semibold tracking-[var(--tracking-heading)] text-[var(--text-primary)] transition-colors duration-150 hover:text-[var(--accent)] lg:text-[17px]">
+                  {logoLabel}
+                </span>
+                {clientPortalBrandTagline?.trim() ? (
+                  <span className="hidden max-w-[240px] truncate text-[11px] leading-tight text-[var(--text-tertiary)] lg:block">
+                    {clientPortalBrandTagline.trim()}
+                  </span>
+                ) : null}
+              </span>
+            </Link>
+            <ClientPortalQuickLinks pathname={pathname} />
+            <div className="flex shrink-0 items-center gap-2 sm:gap-2.5 lg:border-l lg:border-[var(--border-subtle)] lg:pl-4">
+              {clientPortalTrailing}
+              {userDisplayName ? (
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="hidden max-w-[180px] truncate text-[13px] font-medium text-[var(--text-primary)] xl:inline">
+                    {userDisplayName}
+                  </span>
+                  <div
+                    className="avatar-hover flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-xs font-medium text-[var(--text-primary)] lg:size-9"
+                    aria-hidden
+                  >
+                    {initials(userDisplayName)}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
         ) : (
           <Link
             href={logoHref}
@@ -256,31 +355,11 @@ export function Nav({
           </Link>
         )}
 
-        <div className="flex min-w-0 flex-1 justify-center" aria-hidden={!coachApp} />
+        {!clientPortal ? (
+          <>
+            <div className="flex min-w-0 flex-1 justify-center" aria-hidden={!coachApp} />
 
-        <div className={cn('flex items-center', coachApp ? 'gap-1' : 'gap-2')}>
-          {clientPortal && !coachApp ? (
-            <>
-              {clientPortalTrailing}
-              {showThemeToggle ? <NavThemeIconButton /> : null}
-              <div className="shrink-0 lg:hidden">
-                <SignOutButton variant="nav" />
-              </div>
-              {userDisplayName ? (
-                <div className="flex items-center gap-2">
-                  <span className="hidden max-w-[200px] truncate text-sm text-[var(--text-primary)] sm:inline">
-                    {userDisplayName}
-                  </span>
-                  <div
-                    className="avatar-hover flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-xs font-medium text-[var(--text-primary)]"
-                    aria-hidden
-                  >
-                    {initials(userDisplayName)}
-                  </div>
-                </div>
-              ) : null}
-            </>
-          ) : null}
+            <div className={cn('flex items-center', coachApp ? 'gap-1' : 'gap-2')}>
           {coachApp ? (
             <>
               <Tooltip content="Notifications">
@@ -345,7 +424,7 @@ export function Nav({
                 <CoachUserMenu displayName="Coach" avatarUrl={null} />
               )}
             </>
-          ) : clientPortal ? null : (
+          ) : (
             <>
               {showSignOut ? (
                 <div className="lg:hidden">
@@ -395,7 +474,9 @@ export function Nav({
               ) : null}
             </>
           )}
-        </div>
+            </div>
+          </>
+        ) : null}
       </nav>
     </header>
   )

@@ -53,6 +53,7 @@ export async function POST(request: Request) {
       .maybeSingle()
 
     if (exErr) {
+      console.error('[api/client/checkin] existing row', exErr.message, exErr.code)
       return NextResponse.json({ error: 'Could not verify check-in' }, { status: 500 })
     }
 
