@@ -10,28 +10,32 @@ async function sha256Hex16(input: string): Promise<string> {
   return arr.map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
 }
 
+/**
+ * User-agent only. Including IP caused false sign-outs: X-Forwarded-For is often missing on one hop
+ * and present on the next (dev server, RSC, prefetch), so UA|"" vs UA|1.2.3.4 mismatched every time.
+ */
 async function fingerprintFromRequest(request: NextRequest): Promise<string> {
   const ua = request.headers.get('user-agent') ?? ''
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    ''
-  return sha256Hex16(`${ua}|${ip}`)
+  return sha256Hex16(ua)
 }
 
 /**
- * Coach routes: bind first-seen UA+IP hash in Redis (24h). Mismatch → audit, sign out, redirect to login.
- * Skips when Redis is not configured (local dev).
+ * Coach routes: bind first-seen UA hash in Redis (24h). Mismatch → audit, sign out, redirect to login.
+ * Skips when Redis is not configured, in development, or when CLEARPATH_DISABLE_SESSION_FINGERPRINT=1.
  */
 export async function enforceCoachSessionFingerprint(
   request: NextRequest,
   userId: string
 ): Promise<NextResponse | null> {
+  if (process.env.NODE_ENV === 'development') return null
+  if (process.env.CLEARPATH_DISABLE_SESSION_FINGERPRINT === '1') return null
+
   const redis = await getUpstashRedis()
   if (!redis) return null
 
   const fp = await fingerprintFromRequest(request)
-  const key = `session:fp:${userId}`
+  // v2: UA-only fingerprint (v1 mixed IP and caused false mismatches). New key avoids one-time mass sign-out.
+  const key = `session:fp:v2:${userId}`
   try {
     const existing = await redis.get<string>(key)
     if (existing == null || existing === '') {

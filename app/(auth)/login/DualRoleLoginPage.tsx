@@ -133,6 +133,10 @@ export function DualRoleLoginPage() {
     searchParams.get('message') === 'password_reset'
       ? 'Your password has been updated. Sign in with your new password.'
       : null
+  const sessionInvalidatedMessage =
+    searchParams.get('reason') === 'session'
+      ? 'You were signed out because your session did not match the usual browser fingerprint (often a proxy or network change). Sign in again — this should be rare after an app update.'
+      : null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -408,6 +412,25 @@ export function DualRoleLoginPage() {
               }}
             >
               {passwordResetMessage}
+            </p>
+          ) : null}
+
+          {sessionInvalidatedMessage && !rateLimitMessage ? (
+            <p
+              role="status"
+              aria-live="polite"
+              style={{
+                marginBottom: 16,
+                borderRadius: 8,
+                border: `1px solid color-mix(in srgb, var(--cp-sapphire) 35%, var(--cp-border))`,
+                background: 'var(--info-bg)',
+                padding: '10px 14px',
+                fontSize: 13,
+                lineHeight: 1.45,
+                color: 'var(--cp-sapphire)',
+              }}
+            >
+              {sessionInvalidatedMessage}
             </p>
           ) : null}
 
