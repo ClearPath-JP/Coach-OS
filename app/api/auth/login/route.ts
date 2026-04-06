@@ -9,6 +9,8 @@ import {
 } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { logAuditEvent } from '@/lib/audit-log'
+import { getPostLoginRedirectPath } from '@/lib/post-login-redirect'
+import { isPlatformAdmin } from '@/lib/platform-admin'
 import { normalizeEmail } from '@/lib/utils'
 import { loginSchema } from '@/lib/validations'
 
@@ -83,7 +85,8 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle()
   const role = profile?.role
 
-  if (intent === 'coach' && role !== 'coach') {
+  const adminBypassCoachTab = await isPlatformAdmin(supabase, data.user)
+  if (intent === 'coach' && role !== 'coach' && !adminBypassCoachTab) {
     await supabase.auth.signOut()
     void logAuditEvent('login_failed', data.user.id, null, { intent, reason: 'wrong_role' }, request)
     return wrap(
@@ -130,9 +133,11 @@ export async function POST(request: Request) {
 
   void logAuditEvent('login', data.user.id, workspaceId, { intent, role }, request)
 
+  const redirect = await getPostLoginRedirectPath(supabase, data.user, role)
+
   return wrap(
     NextResponse.json({
-      data: { ok: true, role },
+      data: { ok: true, role, redirect },
     })
   )
 }

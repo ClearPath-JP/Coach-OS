@@ -4,25 +4,9 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { DevAuthToolbar } from '@/components/auth/DevAuthToolbar'
+import { isSafeAuthRedirectPath, safeRedirectFromNextQuery } from '@/lib/safe-auth-redirect'
 
 type LoginRole = 'coach' | 'student'
-
-function isSafeNext(next: string | null): next is string {
-  if (!next || typeof next !== 'string') return false
-  try {
-    const path = new URL(next, 'http://localhost').pathname
-    if (path === '/' || path === '/client/portal') return true
-    return (
-      path.startsWith('/coach/') ||
-      path.startsWith('/client/') ||
-      path.startsWith('/onboarding') ||
-      path === '/billing' ||
-      path.startsWith('/admin/')
-    )
-  } catch {
-    return false
-  }
-}
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
@@ -165,7 +149,10 @@ export function DualRoleLoginPage() {
       credentials: 'include',
       body: JSON.stringify({ email, password, intent }),
     })
-    const json = (await res.json().catch(() => ({}))) as { error?: string }
+    const json = (await res.json().catch(() => ({}))) as {
+      error?: string
+      data?: { redirect?: string }
+    }
     setLoading(false)
     if (!res.ok) {
       if (res.status === 429) {
@@ -180,7 +167,12 @@ export function DualRoleLoginPage() {
       return
     }
     const defaultPath = role === 'coach' ? ROLE_CONTENT.coach.redirectTo : ROLE_CONTENT.student.redirectTo
-    const dest = isSafeNext(nextParam) ? nextParam : defaultPath
+    const serverRedirect =
+      typeof json.data?.redirect === 'string' && isSafeAuthRedirectPath(json.data.redirect)
+        ? json.data.redirect
+        : null
+    const fromNext = safeRedirectFromNextQuery(nextParam)
+    const dest = serverRedirect ?? fromNext ?? defaultPath
     // Full navigation so the next document request includes Set-Cookie from login; client-side
     // router transitions can miss the new session and bounce back to /login from middleware.
     window.location.assign(dest)

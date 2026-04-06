@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { isSafeAuthRedirectPath } from '@/lib/safe-auth-redirect'
 import { cn } from '@/lib/utils'
 
 function EyeIcon({ off }: { off?: boolean }) {
@@ -51,13 +52,20 @@ export function ClientLoginForm() {
       credentials: 'include',
       body: JSON.stringify({ email, password, intent: 'client' }),
     })
-    const json = await res.json().catch(() => ({}))
+    const json = (await res.json().catch(() => ({}))) as {
+      error?: string
+      data?: { redirect?: string }
+    }
     setLoading(false)
     if (!res.ok) {
       setError(typeof json.error === 'string' ? json.error : 'Invalid email or password. Please try again.')
       return
     }
-    window.location.assign('/client/portal')
+    const serverRedirect =
+      typeof json.data?.redirect === 'string' && isSafeAuthRedirectPath(json.data.redirect)
+        ? json.data.redirect
+        : null
+    window.location.assign(serverRedirect ?? '/client/portal')
   }
 
   return (
