@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { DevAuthToolbar } from '@/components/auth/DevAuthToolbar'
 
 type LoginRole = 'coach' | 'student'
@@ -114,7 +114,6 @@ function EyeIcon({ off }: { off?: boolean }) {
  * Coach + student dual-role login (design system Phase 2). API maps student → client intent.
  */
 export function DualRoleLoginPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const nextParam = searchParams.get('next')
 
@@ -182,8 +181,9 @@ export function DualRoleLoginPage() {
     }
     const defaultPath = role === 'coach' ? ROLE_CONTENT.coach.redirectTo : ROLE_CONTENT.student.redirectTo
     const dest = isSafeNext(nextParam) ? nextParam : defaultPath
-    router.push(dest)
-    router.refresh()
+    // Full navigation so the next document request includes Set-Cookie from login; client-side
+    // router transitions can miss the new session and bounce back to /login from middleware.
+    window.location.assign(dest)
   }
 
   async function handleGoogleClick() {

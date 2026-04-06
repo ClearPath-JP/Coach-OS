@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { applyAuthNoStoreHeaders } from '@/lib/auth-response'
-import { createClient } from '@/lib/supabase-server'
+import {
+  createRouteHandlerSupabase,
+  flushSupabaseAuthCookies,
+  syncProfileTenantForSessionUser,
+  type SupabaseAuthCookieRow,
+} from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { logAuditEvent } from '@/lib/audit-log'
 import { normalizeEmail } from '@/lib/utils'
@@ -50,15 +55,30 @@ export async function POST(request: Request) {
   }
 
   const { email, password, intent } = parsed.data
-  const supabase = await createClient()
+  const authCookieQueue: SupabaseAuthCookieRow[] = []
+  let supabase
+  try {
+    supabase = await createRouteHandlerSupabase(authCookieQueue)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : ''
+    if (message.includes('Supabase is not configured')) {
+      return applyAuthNoStoreHeaders(
+        NextResponse.json({ error: 'Server configuration error — Supabase is not configured.' }, { status: 503 })
+      )
+    }
+    throw err
+  }
+
+  const wrap = (res: NextResponse) => flushSupabaseAuthCookies(applyAuthNoStoreHeaders(res), authCookieQueue)
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error || !data.user) {
     void logAuditEvent('login_failed', null, null, { intent, email: normalizeEmail(email) }, request)
-    return applyAuthNoStoreHeaders(
-      NextResponse.json({ error: 'Invalid email or password. Please try again.' }, { status: 401 })
-    )
+    return wrap(NextResponse.json({ error: 'Invalid email or password. Please try again.' }, { status: 401 }))
   }
+
+  await syncProfileTenantForSessionUser(supabase)
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle()
   const role = profile?.role
@@ -66,7 +86,7 @@ export async function POST(request: Request) {
   if (intent === 'coach' && role !== 'coach') {
     await supabase.auth.signOut()
     void logAuditEvent('login_failed', data.user.id, null, { intent, reason: 'wrong_role' }, request)
-    return applyAuthNoStoreHeaders(
+    return wrap(
       NextResponse.json(
         {
           error:
@@ -80,7 +100,7 @@ export async function POST(request: Request) {
   if (intent === 'client' && role !== 'client') {
     await supabase.auth.signOut()
     void logAuditEvent('login_failed', data.user.id, null, { intent, reason: 'wrong_role' }, request)
-    return applyAuthNoStoreHeaders(
+    return wrap(
       NextResponse.json(
         {
           error:
@@ -110,7 +130,7 @@ export async function POST(request: Request) {
 
   void logAuditEvent('login', data.user.id, workspaceId, { intent, role }, request)
 
-  return applyAuthNoStoreHeaders(
+  return wrap(
     NextResponse.json({
       data: { ok: true, role },
     })

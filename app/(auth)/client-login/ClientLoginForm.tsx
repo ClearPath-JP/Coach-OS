@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 function EyeIcon({ off }: { off?: boolean }) {
@@ -36,7 +35,6 @@ function Spinner() {
 }
 
 export function ClientLoginForm() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -59,8 +57,7 @@ export function ClientLoginForm() {
       setError(typeof json.error === 'string' ? json.error : 'Invalid email or password. Please try again.')
       return
     }
-    router.push('/client/portal')
-    router.refresh()
+    window.location.assign('/client/portal')
   }
 
   return (
