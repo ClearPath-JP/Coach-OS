@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { isSafeAuthRedirectPath } from '@/lib/safe-auth-redirect'
 import { cn } from '@/lib/utils'
 
@@ -36,11 +37,21 @@ function Spinner() {
 }
 
 export function ClientLoginForm() {
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const rateLimitMessage =
+    searchParams.get('error') === 'rate_limit'
+      ? 'Too many failed sign-in attempts. Please try again in 15 minutes.'
+      : null
+  const sessionInvalidatedMessage =
+    searchParams.get('reason') === 'session'
+      ? 'You were signed out because your session did not match the usual browser fingerprint (often a proxy or network change). Sign in again — this should be rare after an app update.'
+      : null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -70,6 +81,29 @@ export function ClientLoginForm() {
 
   return (
     <div>
+      {rateLimitMessage ? (
+        <div className="login-premium-error-card mb-4" role="alert" aria-live="polite">
+          <span className="login-premium-error-card__icon" aria-hidden>
+            ⚠
+          </span>
+          <p className="login-premium-error-card__text">{rateLimitMessage}</p>
+        </div>
+      ) : null}
+      {sessionInvalidatedMessage && !rateLimitMessage ? (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mb-4 rounded-[8px] border px-3.5 py-2.5 text-[13px] leading-snug"
+          style={{
+            borderColor: 'color-mix(in srgb, #3B9EE8 35%, #E8F1F9)',
+            background: 'color-mix(in srgb, #3B9EE8 8%, #fff)',
+            color: '#0A4A7A',
+          }}
+        >
+          {sessionInvalidatedMessage}
+        </p>
+      ) : null}
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="client-email" className="login-premium-label">

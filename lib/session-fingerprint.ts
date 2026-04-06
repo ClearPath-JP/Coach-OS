@@ -19,13 +19,13 @@ async function fingerprintFromRequest(request: NextRequest): Promise<string> {
   return sha256Hex16(ua)
 }
 
-/**
- * Coach routes: bind first-seen UA hash in Redis (24h). Mismatch → audit, sign out, redirect to login.
- * Skips when Redis is not configured, in development, or when CLEARPATH_DISABLE_SESSION_FINGERPRINT=1.
- */
-export async function enforceCoachSessionFingerprint(
+type FingerprintPortal = 'coach' | 'client'
+
+async function enforcePortalSessionFingerprint(
   request: NextRequest,
-  userId: string
+  userId: string,
+  portal: FingerprintPortal,
+  signInPath: '/login' | '/client-login'
 ): Promise<NextResponse | null> {
   if (process.env.NODE_ENV === 'development') return null
   if (process.env.CLEARPATH_DISABLE_SESSION_FINGERPRINT === '1') return null
@@ -34,8 +34,7 @@ export async function enforceCoachSessionFingerprint(
   if (!redis) return null
 
   const fp = await fingerprintFromRequest(request)
-  // v2: UA-only fingerprint (v1 mixed IP and caused false mismatches). New key avoids one-time mass sign-out.
-  const key = `session:fp:v2:${userId}`
+  const key = `session:fp:v3:${portal}:${userId}`
   try {
     const existing = await redis.get<string>(key)
     if (existing == null || existing === '') {
@@ -48,15 +47,38 @@ export async function enforceCoachSessionFingerprint(
       'suspicious_request',
       userId,
       null,
-      { reason: 'session_fingerprint_mismatch' },
+      { reason: 'session_fingerprint_mismatch', portal },
       request
     )
 
-    const redirectRes = NextResponse.redirect(new URL('/login?reason=session', request.url))
+    const url = new URL(signInPath, request.url)
+    url.searchParams.set('reason', 'session')
+    const redirectRes = NextResponse.redirect(url)
     const supabase = createServerClientForMiddleware(request, redirectRes)
     await supabase.auth.signOut()
     return redirectRes
   } catch {
     return null
   }
+}
+
+/**
+ * Coach /coach/* routes: bind first-seen UA hash in Redis (24h). Mismatch → sign out → /login?reason=session.
+ * Skips when Redis is not configured, in development, or when CLEARPATH_DISABLE_SESSION_FINGERPRINT=1.
+ */
+export async function enforceCoachSessionFingerprint(
+  request: NextRequest,
+  userId: string
+): Promise<NextResponse | null> {
+  return enforcePortalSessionFingerprint(request, userId, 'coach', '/login')
+}
+
+/**
+ * Client /client/* routes: same behavior as coach; sign out → /client-login?reason=session.
+ */
+export async function enforceClientSessionFingerprint(
+  request: NextRequest,
+  userId: string
+): Promise<NextResponse | null> {
+  return enforcePortalSessionFingerprint(request, userId, 'client', '/client-login')
 }

@@ -5,7 +5,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { isPlatformAdmin } from '@/lib/platform-admin'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
-import { enforceCoachSessionFingerprint } from '@/lib/session-fingerprint'
+import { enforceClientSessionFingerprint, enforceCoachSessionFingerprint } from '@/lib/session-fingerprint'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createServerClientForMiddleware } from '@/lib/supabase-server'
 
@@ -345,6 +345,10 @@ export async function proxy(request: NextRequest) {
     }
     if (pathname.startsWith('/coach') && profile?.role === 'coach' && user) {
       const fpRes = await enforceCoachSessionFingerprint(request, user.id)
+      if (fpRes) return fpRes
+    }
+    if (pathname.startsWith('/client') && profile?.role === 'client' && user) {
+      const fpRes = await enforceClientSessionFingerprint(request, user.id)
       if (fpRes) return fpRes
     }
     return response
