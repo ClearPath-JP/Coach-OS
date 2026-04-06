@@ -133,7 +133,12 @@ export async function POST(request: Request) {
 
   void logAuditEvent('login', data.user.id, workspaceId, { intent, role }, request)
 
-  const redirect = await getPostLoginRedirectPath(supabase, data.user, role)
+  let redirect: string
+  try {
+    redirect = await getPostLoginRedirectPath(supabase, data.user, role)
+  } catch {
+    redirect = '/'
+  }
 
   return wrap(
     NextResponse.json({

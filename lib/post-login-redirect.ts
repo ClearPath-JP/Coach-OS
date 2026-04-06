@@ -1,6 +1,7 @@
 import 'server-only'
 
 import type { SupabaseClient, User } from '@supabase/supabase-js'
+import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { isPlatformAdmin } from '@/lib/platform-admin'
 
 /**
@@ -25,16 +26,12 @@ export async function getPostLoginRedirectPath(
   }
 
   if (role === 'coach') {
-    const { data: coach } = await supabase
-      .from('coaches')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (coach?.workspace_id) {
+    const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (workspaceId) {
       const { data: workspace } = await supabase
         .from('workspaces')
         .select('completed_onboarding')
-        .eq('id', coach.workspace_id)
+        .eq('id', workspaceId)
         .maybeSingle()
       if (workspace?.completed_onboarding) {
         return '/coach/dashboard'

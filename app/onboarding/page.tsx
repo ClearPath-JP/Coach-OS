@@ -20,7 +20,23 @@ export default function OnboardingStep1Page() {
   useEffect(() => {
     let cancelled = false
     void (async () => {
-      const res = await fetch('/api/auth/signup-complete', { method: 'POST', credentials: 'include' })
+      const controller = new AbortController()
+      const timeoutId = window.setTimeout(() => controller.abort(), 30_000)
+      let res: Response
+      try {
+        res = await fetch('/api/auth/signup-complete', {
+          method: 'POST',
+          credentials: 'include',
+          signal: controller.signal,
+        })
+      } catch {
+        if (cancelled) return
+        setBootstrapError('Request timed out. Check your connection, refresh the page, or sign in again.')
+        setEnsuringSignup(false)
+        return
+      } finally {
+        window.clearTimeout(timeoutId)
+      }
       if (cancelled) return
       if (res.status === 401) {
         router.push('/login?next=/onboarding')
