@@ -232,7 +232,7 @@ export default function AdminAuditPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-medium text-slate-900">Audit log</h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-600">
+          <p className="mt-1 max-w-2xl text-sm text-[var(--text-tertiary)]">
             Security events and important actions across all workspaces. Filter by time and workspace, export CSV for
             records. High-risk rows are highlighted when the table marks them.
           </p>
@@ -248,7 +248,7 @@ export default function AdminAuditPage() {
         </Button>
       </div>
 
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="space-y-3 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <div className="flex flex-wrap gap-2">
           {(
             [
@@ -263,7 +263,7 @@ export default function AdminAuditPage() {
               type="button"
               onClick={() => applyPreset(key)}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
-                rangePreset === key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
+                rangePreset === key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-[var(--text-secondary)]'
               }`}
             >
               {label}
@@ -278,7 +278,7 @@ export default function AdminAuditPage() {
           <div>
             <label className="block text-xs text-slate-500">Event type</label>
             <select
-              className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
+              className="mt-1 h-9 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-sm"
               value={draftCategory}
               onChange={(e) => setDraftCategory(e.target.value)}
             >
@@ -292,7 +292,7 @@ export default function AdminAuditPage() {
           <div>
             <label className="block text-xs text-slate-500">Workspace</label>
             <select
-              className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
+              className="mt-1 h-9 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-sm"
               value={draftWorkspaceId}
               onChange={(e) => setDraftWorkspaceId(e.target.value)}
             >
@@ -335,7 +335,7 @@ export default function AdminAuditPage() {
           <div className="min-w-[200px] flex-1">
             <label className="block text-xs text-slate-500">Saved views (this browser)</label>
             <select
-              className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm"
+              className="mt-1 h-9 w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-sm"
               value=""
               onChange={(e) => {
                 const name = e.target.value
@@ -372,7 +372,7 @@ export default function AdminAuditPage() {
           </div>
         </div>
         {savedPresets.length > 0 ? (
-          <ul className="flex flex-wrap gap-2 text-xs text-slate-600">
+          <ul className="flex flex-wrap gap-2 text-xs text-[var(--text-tertiary)]">
             {savedPresets.map((p) => (
               <li
                 key={p.name}
@@ -395,10 +395,10 @@ export default function AdminAuditPage() {
         ) : null}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] shadow-sm">
         <table className="w-full min-w-[880px] text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <tr className="border-b border-[var(--border-default)] text-xs uppercase text-slate-500">
               <th className="px-4 py-3">What happened</th>
               <th className="px-4 py-3">Who</th>
               <th className="px-4 py-3">Where</th>
@@ -436,14 +436,14 @@ export default function AdminAuditPage() {
                     ? 'bg-red-50/80'
                     : risk === 'medium'
                       ? 'bg-amber-50/50'
-                      : 'bg-white'
+                      : 'bg-[var(--bg-app)]'
                 const riskLabel =
                   risk === 'high' ? 'High' : risk === 'medium' ? 'Medium' : 'Low'
                 const riskColor =
                   risk === 'high' ? 'text-red-600' : risk === 'medium' ? 'text-amber-700' : 'text-slate-500'
                 return (
                   <tr key={r.id} className={`border-b border-slate-100 ${rowBg}`}>
-                    <td className="max-w-md px-4 py-3 text-slate-800">
+                    <td className="max-w-md px-4 py-3 text-[var(--text-primary)]">
                       <p className="leading-snug">
                         {segments.map((s, i) =>
                           s.bold ? (
@@ -458,7 +458,7 @@ export default function AdminAuditPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-[10px] font-medium text-slate-600">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-[10px] font-medium text-[var(--text-tertiary)]">
                           {(r.userName || r.userEmail || 'A').slice(0, 2).toUpperCase()}
                         </div>
                         <div>
@@ -469,10 +469,10 @@ export default function AdminAuditPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="px-4 py-3 text-[var(--text-secondary)]">
                       {r.workspaceName || <span className="text-slate-500">Platform</span>}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-4 py-3 text-[var(--text-tertiary)]">
                       <WhenCell time={r.time} />
                     </td>
                     <td className="px-4 py-3">
@@ -486,7 +486,7 @@ export default function AdminAuditPage() {
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[var(--text-tertiary)]">
         <p>
           Showing {startIdx}-{endIdx} of {total} events
         </p>

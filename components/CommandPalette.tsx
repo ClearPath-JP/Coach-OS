@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTheme } from '@/components/ThemeProvider'
 import { OPEN_COMMAND_PALETTE_EVENT } from '@/lib/command-palette'
 
 type CommandItem = {
@@ -22,7 +21,6 @@ function isTypingTarget(t: EventTarget | null): boolean {
 
 export function CommandPalette() {
   const router = useRouter()
-  const { toggleTheme } = useTheme()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(0)
@@ -40,12 +38,11 @@ export function CommandPalette() {
       { id: 'ai', section: 'Actions', label: 'Send invoice', shortcut: 'I', run: () => router.push('/coach/invoices') },
       { id: 'ap', section: 'Actions', label: 'Record payment', shortcut: 'P', run: () => router.push('/coach/payments') },
       { id: 'ar', section: 'Actions', label: 'Create program', shortcut: 'R', run: () => router.push('/coach/programs') },
-      { id: 'sd', section: 'Settings', label: 'Toggle dark mode', run: () => toggleTheme() },
       { id: 'sc', section: 'Settings', label: 'Change color theme', run: () => router.push('/coach/settings') },
       { id: 'ss', section: 'Settings', label: 'Go to settings', run: () => router.push('/coach/settings') },
       { id: 'so', section: 'Settings', label: 'Sign out', run: () => router.push('/login') },
     ],
-    [router, toggleTheme]
+    [router]
   )
 
   const filtered = useMemo(

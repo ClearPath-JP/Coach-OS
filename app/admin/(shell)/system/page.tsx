@@ -150,7 +150,7 @@ export default function AdminSystemPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-medium text-slate-900">System health</h1>
-        <p className="mt-1 max-w-2xl text-sm text-slate-600">
+        <p className="mt-1 max-w-2xl text-sm text-[var(--text-tertiary)]">
           Live checks for database, auth, storage, rate limits, Stripe, and email. Use this when users report widespread
           issues. Last checked: {new Date(data.checkedAt).toLocaleString()}
         </p>
@@ -173,27 +173,27 @@ export default function AdminSystemPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {Object.entries(data.health).map(([key, h]) => (
-          <div key={key} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div key={key} className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <StatusIcon entry={h} />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-slate-900">{SERVICE_LABELS[key] ?? key}</p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-[var(--text-tertiary)]">
                   {h.status === 'healthy' && 'Healthy'}
                   {h.status === 'slow' && 'Slow response'}
                   {h.status === 'error' && 'Error'}
                 </p>
                 <p className="text-xs text-slate-500">{h.ms}ms</p>
-                {h.message ? <p className="mt-2 text-xs leading-relaxed text-slate-700">{h.message}</p> : null}
+                {h.message ? <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{h.message}</p> : null}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <h2 className="text-sm font-medium text-slate-900">Integrations</h2>
-        <ul className="mt-3 space-y-2 text-sm text-slate-700">
+        <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
           <li className="flex justify-between gap-2">
             <span>Google OAuth (Drive)</span>
             <span className={data.integrations.googleOAuth ? 'text-emerald-600' : 'text-amber-700'}>
@@ -213,11 +213,11 @@ export default function AdminSystemPage() {
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <h2 className="text-sm font-medium text-slate-900">Storage across the platform</h2>
         <p className="mt-1 text-2xl font-semibold text-slate-900">{bytes(data.stats.totalPlatformBytes)}</p>
         <p className="text-xs text-slate-500">Videos + assignment files (approximate from file metadata)</p>
-        <ul className="mt-3 space-y-2 text-sm text-slate-700">
+        <ul className="mt-3 space-y-2 text-sm text-[var(--text-secondary)]">
           <li className="flex justify-between">
             <span>Videos</span>
             <span>{bytes(data.stats.videoStorageBytes)}</span>
@@ -233,12 +233,12 @@ export default function AdminSystemPage() {
         </ul>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <h2 className="text-sm font-medium text-slate-900">Database row counts</h2>
         <ul className="mt-4 space-y-3">
           {rowEntries.map(([k, v]) => (
             <li key={k}>
-              <div className="flex justify-between text-xs text-slate-600">
+              <div className="flex justify-between text-xs text-[var(--text-tertiary)]">
                 <span className="capitalize">{k}</span>
                 <span className="font-medium text-slate-900">{v.toLocaleString()}</span>
               </div>
@@ -257,12 +257,12 @@ export default function AdminSystemPage() {
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <h2 className="text-sm font-medium text-slate-900">Manual controls</h2>
         <ul className="mt-4 space-y-4">
           <li className="rounded-lg border border-slate-100 p-3">
             <p className="text-sm font-medium text-slate-900">Send test email to myself</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
               Sends a test message to the address in ADMIN_EMAIL to confirm Resend delivery.
             </p>
             <Button className="mt-2" size="sm" onClick={sendTest} disabled={sending}>
@@ -271,7 +271,7 @@ export default function AdminSystemPage() {
           </li>
           <li className="rounded-lg border border-slate-100 p-3">
             <p className="text-sm font-medium text-slate-900">Clear application cache</p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
               Clears cached API responses if coaches see stale data after you change configuration.
             </p>
             <Button className="mt-2" size="sm" variant="secondary" onClick={clearCache} disabled={cacheBusy}>
@@ -280,14 +280,14 @@ export default function AdminSystemPage() {
           </li>
           <li className="rounded-lg border border-slate-100 p-3">
             <p className="text-sm font-medium text-slate-900">Check all health endpoints</p>
-            <p className="mt-1 text-xs text-slate-600">Re-runs database, auth, storage, Redis, Stripe, and email checks.</p>
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">Re-runs database, auth, storage, Redis, Stripe, and email checks.</p>
             <Button className="mt-2" size="sm" variant="secondary" onClick={() => void runChecks()} disabled={checksBusy}>
               {checksBusy ? 'Running…' : 'Run checks'}
             </Button>
           </li>
           <li className="rounded-lg border border-slate-100 p-3">
             <p className="text-sm font-medium text-slate-900">Force refresh workspace settings</p>
-            <p className="mt-1 text-xs text-slate-600">Triggers the existing admin refresh job for cached settings.</p>
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">Triggers the existing admin refresh job for cached settings.</p>
             <Button
               className="mt-2"
               size="sm"
@@ -305,12 +305,12 @@ export default function AdminSystemPage() {
         >
           View audit log →
         </Link>
-        {msg ? <p className="mt-3 text-sm text-slate-700">{msg}</p> : null}
+        {msg ? <p className="mt-3 text-sm text-[var(--text-secondary)]">{msg}</p> : null}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="rounded-xl border border-[var(--border-default)] bg-slate-50 p-4">
         <h2 className="text-sm font-medium text-slate-900">Recent audit (raw)</h2>
-        <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto font-mono text-[11px] text-slate-600">
+        <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto font-mono text-[11px] text-[var(--text-tertiary)]">
           {data.auditLogs.map((a) => (
             <li key={`${a.action}-${a.created_at}`}>
               {a.action} · {a.user_id ?? '—'} · {a.ip_address ?? '—'} · {new Date(a.created_at).toLocaleString()}

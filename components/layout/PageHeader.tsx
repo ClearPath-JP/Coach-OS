@@ -13,7 +13,7 @@ export interface PageHeaderProps {
 export function PageHeader({ title, breadcrumb, contextInfo, countLabel, children }: PageHeaderProps) {
   const pill = countLabel ?? contextInfo
   return (
-    <header className="sticky top-0 z-20 -mx-[var(--coach-content-px-mobile)] mb-[var(--coach-header-content-gap)] flex h-[var(--coach-header-height)] shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite)] px-[var(--coach-content-px-mobile)] lg:-mx-[var(--coach-content-px)] lg:px-[var(--coach-content-px)]">
+    <header className="sticky top-0 z-20 -mx-[var(--coach-content-px-mobile)] mb-[var(--coach-header-content-gap)] flex h-[var(--coach-header-height)] shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-[var(--coach-content-px-mobile)] lg:-mx-[var(--coach-content-px)] lg:px-[var(--coach-content-px)]">
       <div className="flex min-w-0 flex-1 items-center">
         <h1 className="truncate text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
           {breadcrumb ?? title}

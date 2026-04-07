@@ -6,8 +6,8 @@ export function DashboardTableShell({ children }: { children: React.ReactNode })
   return (
     <div
       style={{
-        background: 'var(--cp-white)',
-        border: '1px solid var(--cp-border)',
+        background: 'var(--bg-app)',
+        border: '1px solid var(--border-default)',
         borderRadius: 12,
         overflow: 'hidden',
       }}
@@ -33,9 +33,21 @@ export function DashboardTable({ children }: { children: React.ReactNode }) {
 
 export const StatusBadge = React.memo(function StatusBadge({ status }: { status: 'active' | 'pending' | 'inactive' }) {
   const styles = {
-    active: { bg: '#DCFCE7', text: '#15803D' },
-    pending: { bg: '#FEF9C3', text: '#854D0E' },
-    inactive: { bg: 'var(--cp-offwhite)', text: 'var(--cp-gray)' },
+    active: {
+      background: 'var(--success-bg)',
+      color: 'var(--success)',
+      border: '1px solid var(--success-border)',
+    },
+    pending: {
+      background: 'var(--warning-bg)',
+      color: 'var(--warning)',
+      border: '1px solid var(--warning-border)',
+    },
+    inactive: {
+      background: 'var(--bg-muted)',
+      color: 'var(--text-tertiary)',
+      border: '1px solid var(--border-default)',
+    },
   }
   const s = styles[status]
   return (
@@ -46,8 +58,7 @@ export const StatusBadge = React.memo(function StatusBadge({ status }: { status:
         borderRadius: 20,
         fontSize: 11,
         fontWeight: 700,
-        background: s.bg,
-        color: s.text,
+        ...s,
       }}
     >
       {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -69,8 +80,8 @@ export const AvatarCell = React.memo(function AvatarCell({ name, sub }: { name: 
           width: 34,
           height: 34,
           borderRadius: '50%',
-          background: 'var(--cp-lavender)',
-          color: 'var(--cp-royal)',
+          background: 'var(--accent-light)',
+          color: 'var(--accent)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -82,8 +93,8 @@ export const AvatarCell = React.memo(function AvatarCell({ name, sub }: { name: 
         {initials}
       </div>
       <div>
-        <div style={{ fontWeight: 600, color: 'var(--cp-navy)', fontSize: 14 }}>{name}</div>
-        {sub ? <div style={{ fontSize: 12, color: 'var(--cp-gray)' }}>{sub}</div> : null}
+        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>{name}</div>
+        {sub ? <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{sub}</div> : null}
       </div>
     </div>
   )

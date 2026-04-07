@@ -309,7 +309,7 @@ export function MobileNav({
     <nav
       className={cn(
         'safe-bottom fixed bottom-0 left-0 right-0 z-40 lg:hidden',
-        'border-t border-[var(--border-subtle)] bg-[var(--cp-offwhite)]/92 backdrop-blur-[12px]',
+        'border-t border-[var(--border-subtle)] bg-[var(--cp-offwhite)]/95 backdrop-blur-[12px]',
         className
       )}
       role="navigation"
@@ -318,7 +318,7 @@ export function MobileNav({
       <div
         className={cn(
           'flex items-stretch justify-between gap-0 px-1 py-1',
-          isClientPortalTabs ? 'min-h-[56px]' : 'max-h-[72px] justify-start gap-0.5 overflow-x-auto overscroll-x-contain py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          isClientPortalTabs ? 'min-h-[58px]' : 'max-h-[72px] justify-start gap-0.5 overflow-x-auto overscroll-x-contain py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
         )}
       >
         {tabs.map(({ href, label, icon: Icon }) => {
@@ -337,7 +337,7 @@ export function MobileNav({
                 'text-[10px] font-medium tracking-[var(--tracking-normal)] transition-[color,transform] duration-150 [transition-timing-function:var(--ease-out)]',
                 'focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]',
                 isClientPortalTabs
-                  ? 'min-h-[56px] min-w-0 flex-1'
+                  ? 'min-h-[58px] min-w-0 flex-1'
                   : 'min-h-[44px] min-w-[52px] max-w-[76px] shrink-0',
                 isActive
                   ? isClientPortalTabs
@@ -349,9 +349,10 @@ export function MobileNav({
             >
               <Icon
                 className={cn(
-                  'size-[22px] shrink-0',
+                  'size-[22px] shrink-0 transition-transform duration-150',
                   isClientPortalTabs && 'stroke-[2]',
-                  isActive ? 'text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]'
+                  isActive ? 'text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]',
+                  isActive && isClientPortalTabs ? 'scale-110' : ''
                 )}
               />
               <span
@@ -362,6 +363,9 @@ export function MobileNav({
               >
                 {label}
               </span>
+              {isActive && isClientPortalTabs ? (
+                <span className="absolute bottom-1 h-1 w-4 rounded-full bg-[var(--cp-accent)]" aria-hidden />
+              ) : null}
               {showMsgBadge ? (
                 <span
                   className="absolute right-1 top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--cp-accent)] px-1 text-[10px] font-semibold text-[var(--text-on-accent)]"

@@ -91,7 +91,7 @@ export function Modal({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-[rgba(0,0,0,0.4)] backdrop-blur-[4px] md:bg-[rgba(0,0,0,0.4)]"
+        className="absolute inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-[4px]"
         onClick={onClose}
         aria-label="Close modal"
         tabIndex={-1}
@@ -99,8 +99,8 @@ export function Modal({
       <div
         ref={cardRef}
         className={cn(
-          'relative z-10 flex max-h-[90vh] w-full flex-col overflow-y-auto border border-[var(--color-border)] bg-[var(--color-bg)] shadow-[var(--shadow-card-raised)]',
-          'rounded-t-xl max-md:max-w-none md:mx-auto md:max-w-md md:rounded-xl',
+          'relative z-10 flex max-h-[90vh] w-full flex-col overflow-y-auto border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[0_8px_24px_rgba(0,0,0,0.4)]',
+          'rounded-t-[14px] max-md:max-w-none md:mx-auto md:max-w-md md:rounded-[14px]',
           'p-5 max-md:pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]',
           className
         )}
@@ -108,14 +108,14 @@ export function Modal({
         <div className="flex items-start justify-between gap-4">
           <h2
             id="modal-title"
-            className="text-[var(--color-text-primary)] text-[18px] font-medium leading-[var(--leading-heading)]"
+            className="text-[var(--text-primary)] text-[18px] font-medium leading-[var(--leading-heading)]"
           >
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg p-1 text-[var(--color-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:ring-offset-2"
+            className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg p-1 text-[var(--text-tertiary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)] focus:outline-none focus-visible:shadow-[var(--focus-ring)]"
             aria-label="Close"
           >
             <svg

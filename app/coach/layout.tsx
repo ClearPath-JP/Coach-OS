@@ -121,12 +121,11 @@ export default async function CoachLayout({
       key={workspaceProviderKey(initialWorkspaceSettings)}
       initialSettings={initialWorkspaceSettings}
     >
-      <div className="flex min-h-screen min-h-0 flex-col bg-[var(--cp-offwhite)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
+      <div className="flex min-h-screen min-h-0 flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
         <style>{cpAccentStyle}</style>
         <AccentInjector accentColor={resolvedCpAccent} />
         <Nav
           coachApp
-          showThemeToggle
           userDisplayName={displayName}
           coachAvatarUrl={coachAvatarUrl}
         />

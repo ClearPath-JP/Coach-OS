@@ -38,7 +38,7 @@ export function AdminRevenueCharts({ monthlyLast6, methodBreakdown }: Props) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-900">Monthly revenue</h2>
         <p className="text-xs text-slate-500">Last 6 months (recorded payments)</p>
         <div className="mt-4 h-[280px] w-full min-w-0">
@@ -59,16 +59,16 @@ export function AdminRevenueCharts({ monthlyLast6, methodBreakdown }: Props) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <ul className="mt-2 flex flex-wrap gap-3 text-xs text-slate-600">
+        <ul className="mt-2 flex flex-wrap gap-3 text-xs text-[var(--text-tertiary)]">
           {barData.map((m) => (
             <li key={m.month}>
-              <span className="font-medium text-slate-800">{m.label}:</span> {money(m.totalCents)}
+              <span className="font-medium text-[var(--text-primary)]">{m.label}:</span> {money(m.totalCents)}
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-900">Payment methods</h2>
         <p className="text-xs text-slate-500">Share by recorded amount</p>
         <div className="mt-4 h-[280px] w-full min-w-0">
@@ -92,7 +92,7 @@ export function AdminRevenueCharts({ monthlyLast6, methodBreakdown }: Props) {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <ul className="mt-2 space-y-1 text-xs text-slate-600">
+        <ul className="mt-2 space-y-1 text-xs text-[var(--text-tertiary)]">
           {methodBreakdown.map((m) => (
             <li key={m.method} className="flex justify-between gap-2">
               <span className="capitalize">{m.method.replace('_', ' ')}</span>

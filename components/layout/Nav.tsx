@@ -4,7 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
-import { useTheme } from '@/components/ThemeProvider'
 import { SignOutButton } from '@/components/layout/SignOutButton'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { ClearPathLogo } from '@/components/layout/ClearPathLogo'
@@ -20,7 +19,6 @@ export interface NavProps {
   brandName?: string | null | undefined
   /** Coach workspace logo for client portal top nav */
   clientPortalLogoUrl?: string | null
-  showThemeToggle?: boolean
   showSignOut?: boolean
   coachApp?: boolean
   coachAvatarUrl?: string | null
@@ -116,30 +114,6 @@ function CoachNavLeadingMark() {
   )
 }
 
-function NavThemeIconButton() {
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
-  return (
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-primary)] transition-[background-color,box-shadow] duration-[80ms] hover:bg-[var(--bg-muted)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        {isDark ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-        </svg>
-      ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-      )}
-    </button>
-  )
-}
-
 function CoachUserMenu({
   displayName,
   avatarUrl,
@@ -184,7 +158,7 @@ function CoachUserMenu({
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-52 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] py-1 shadow-[var(--shadow-lg)]"
+          className="absolute right-0 top-full z-50 mt-2 w-52 animate-in fade-in-0 slide-in-from-top-1 duration-100 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] py-1 shadow-[var(--shadow-lg)]"
         >
           <Link
             role="menuitem"
@@ -214,7 +188,6 @@ export function Nav({
   logoHref = '/',
   brandName,
   clientPortalLogoUrl,
-  showThemeToggle,
   showSignOut,
   coachApp,
   coachAvatarUrl,
@@ -225,7 +198,6 @@ export function Nav({
 }: NavProps) {
   const pathname = usePathname() ?? ''
   const logoLabel = brandName?.trim() || 'ClearPath'
-  const { theme } = useTheme()
   const [scrolled, setScrolled] = useState(false)
   const clientPortalLogoTrimmed = clientPortalLogoUrl?.trim() ?? ''
   const [portalLogoFailedForUrl, setPortalLogoFailedForUrl] = useState<string | null>(null)
@@ -266,11 +238,9 @@ export function Nav({
     ? undefined
     : coachApp
       ? undefined
-      : scrolled && theme === 'light'
-        ? 'rgba(255,255,255,0.85)'
-        : scrolled && theme === 'dark'
-          ? 'rgba(25,25,25,0.85)'
-          : undefined
+      : scrolled
+        ? 'rgba(25,25,25,0.85)'
+        : undefined
 
   const clientNavSurface = 'rgba(var(--bg-app-rgb), 0.9)'
   const coachNavSurface = 'rgba(var(--bg-app-rgb), 0.9)'
@@ -279,7 +249,8 @@ export function Nav({
     <header className={cn('z-30', className)} role="banner">
       <nav
         className={cn(
-          'sticky top-0 z-30 flex h-[var(--nav-height)] items-center border-b border-[var(--border-subtle)] transition-[background-color,box-shadow] duration-[var(--duration-normal)]',
+          'sticky top-0 z-30 flex h-[var(--nav-height)] items-center border-b transition-[background-color,box-shadow] duration-[var(--duration-normal)]',
+          coachApp ? 'border-[var(--border-default)]' : 'border-[var(--border-subtle)]',
           clientPortal
             ? 'justify-center px-0 sm:px-0 lg:h-auto lg:min-h-[68px] lg:shadow-[var(--shadow-sm)]'
             : coachApp
@@ -372,7 +343,7 @@ export function Nav({
                 <button
                   type="button"
                   onClick={() => openCommandPalette()}
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-tertiary)] transition-[background-color,color] duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-secondary)] transition-[background-color,color] duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   aria-label="Open command palette"
                 >
                   <svg
@@ -394,7 +365,7 @@ export function Nav({
                 <button
                   type="button"
                   onClick={() => setNotifOpen((v) => !v)}
-                  className="relative flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-tertiary)] transition-[background-color,color] duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="relative flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-[var(--text-secondary)] transition-[background-color,color] duration-[80ms] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   aria-label="Notifications"
                 >
                 <svg
@@ -415,7 +386,7 @@ export function Nav({
                 </button>
               </Tooltip>
               {notifOpen ? (
-                <div className="absolute right-2 top-11 z-[110] w-[320px] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)]">
+                <div className="absolute right-2 top-11 z-[110] w-[320px] animate-in fade-in-0 slide-in-from-top-2 duration-150 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)]">
                   <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-3">
                     <p className="text-[14px] font-semibold text-[var(--text-primary)]">Notifications</p>
                     <button type="button" className="text-[12px] text-[var(--cp-accent)]" onClick={() => { setNotifications((prev) => prev.map((n) => ({ ...n, unread: false }))); setUnreadCount(0) }}>Mark all read</button>
@@ -442,7 +413,6 @@ export function Nav({
                   <button type="button" className="w-full border-t border-[var(--border-subtle)] px-3 py-3 text-[13px] text-[var(--cp-accent)]">View all notifications</button>
                 </div>
               ) : null}
-              {showThemeToggle ? <Tooltip content="Toggle theme"><span><NavThemeIconButton /></span></Tooltip> : null}
               <div className="shrink-0 lg:hidden">
                 <SignOutButton variant="nav" />
               </div>
@@ -459,7 +429,6 @@ export function Nav({
                   <SignOutButton variant="nav" />
                 </div>
               ) : null}
-              {showThemeToggle ? <NavThemeIconButton /> : null}
               {userDisplayName ? (
                 <span className="flex items-center gap-2 text-[15px] text-[var(--text-primary)]">
                   <span className="flex size-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-sm font-medium text-[var(--text-primary)] lg:size-9 lg:min-h-9 lg:min-w-9">

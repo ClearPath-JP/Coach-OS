@@ -50,7 +50,7 @@ export function AdminPlatformHealthCard({
   return (
     <Link
       href="/admin/system"
-      className={`block rounded-xl border border-slate-200 border-l-4 bg-white p-4 shadow-sm transition-colors hover:bg-slate-50 ${
+      className={`block rounded-xl border border-[var(--border-default)] border-l-4 bg-[var(--bg-app)] p-4 shadow-sm transition-colors hover:bg-[var(--bg-subtle)] ${
         live.platformHealthOk ? 'border-l-emerald-500' : 'border-l-red-500'
       }`}
     >

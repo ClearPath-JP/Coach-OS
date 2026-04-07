@@ -8,13 +8,13 @@ export function StatCardsSkeleton() {
         marginBottom: 28,
       }}
     >
-      {[1, 2, 3, 4].map((i) => (
+      {[1, 2, 3, 4, 5].map((i) => (
         <div
           key={i}
           style={{
             height: 100,
-            background: 'var(--cp-white)',
-            border: '1px solid var(--cp-border)',
+            background: 'var(--bg-subtle)',
+            border: '1px solid var(--border-default)',
             borderRadius: 12,
             animation: 'cp-pulse 1.5s ease-in-out infinite',
           }}
@@ -34,8 +34,8 @@ export function TableSkeleton() {
   return (
     <div
       style={{
-        background: 'var(--cp-white)',
-        border: '1px solid var(--cp-border)',
+        background: 'var(--bg-app)',
+        border: '1px solid var(--border-default)',
         borderRadius: 12,
         overflow: 'hidden',
       }}
@@ -43,8 +43,8 @@ export function TableSkeleton() {
       <div
         style={{
           height: 44,
-          borderBottom: '1px solid var(--cp-border)',
-          background: 'var(--cp-offwhite)',
+          borderBottom: '1px solid var(--border-subtle)',
+          background: 'var(--bg-subtle)',
         }}
       />
       {[1, 2, 3, 4, 5].map((i) => (
@@ -52,7 +52,7 @@ export function TableSkeleton() {
           key={i}
           style={{
             height: 48,
-            borderBottom: i < 5 ? '1px solid var(--cp-border)' : undefined,
+            borderBottom: i < 5 ? '1px solid var(--border-subtle)' : undefined,
             padding: '12px 16px',
             display: 'flex',
             alignItems: 'center',
@@ -64,7 +64,7 @@ export function TableSkeleton() {
               flex: 1,
               height: 12,
               borderRadius: 4,
-              background: 'var(--cp-offwhite)',
+              background: 'var(--bg-muted)',
               animation: 'cp-pulse 1.5s ease-in-out infinite',
             }}
           />
@@ -90,7 +90,7 @@ export function MessagesSkeleton() {
             display: 'flex',
             gap: 12,
             padding: '10px 0',
-            borderBottom: '1px solid var(--cp-border)',
+            borderBottom: '1px solid var(--border-subtle)',
           }}
         >
           <div
@@ -98,7 +98,7 @@ export function MessagesSkeleton() {
               width: 42,
               height: 42,
               borderRadius: '50%',
-              background: 'var(--cp-offwhite)',
+              background: 'var(--bg-muted)',
               flexShrink: 0,
               animation: 'cp-pulse 1.5s ease-in-out infinite',
             }}
@@ -109,7 +109,7 @@ export function MessagesSkeleton() {
                 height: 12,
                 width: '60%',
                 borderRadius: 4,
-                background: 'var(--cp-offwhite)',
+                background: 'var(--bg-muted)',
                 marginBottom: 8,
                 animation: 'cp-pulse 1.5s ease-in-out infinite',
               }}
@@ -119,7 +119,7 @@ export function MessagesSkeleton() {
                 height: 10,
                 width: '90%',
                 borderRadius: 4,
-                background: 'var(--cp-offwhite)',
+                background: 'var(--bg-muted)',
                 animation: 'cp-pulse 1.5s ease-in-out infinite',
               }}
             />
@@ -144,7 +144,7 @@ export function DashboardHeaderSkeleton() {
           height: 28,
           width: 200,
           borderRadius: 6,
-          background: 'var(--cp-offwhite)',
+          background: 'var(--bg-muted)',
           marginBottom: 12,
           animation: 'cp-pulse 1.5s ease-in-out infinite',
         }}
@@ -154,7 +154,7 @@ export function DashboardHeaderSkeleton() {
           height: 14,
           width: 280,
           borderRadius: 4,
-          background: 'var(--cp-offwhite)',
+          background: 'var(--bg-muted)',
           animation: 'cp-pulse 1.5s ease-in-out infinite',
         }}
       />

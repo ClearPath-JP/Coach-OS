@@ -114,6 +114,23 @@ export function AccentColorPicker({ currentAccent, onSave }: AccentColorPickerPr
         })}
       </div>
 
+      <div className="mb-4 flex items-center gap-3">
+        <button
+          type="button"
+          disabled
+          style={{ background: selected, color: 'white' }}
+          className="rounded-[8px] px-4 py-2 text-[13px] font-semibold opacity-100 cursor-default"
+        >
+          Button preview
+        </button>
+        <div
+          className="rounded-[6px] px-3 py-1.5 text-[13px] font-medium"
+          style={{ background: selected + '22', color: selected }}
+        >
+          Active state
+        </div>
+      </div>
+
       <div
         style={{
           display: 'flex',

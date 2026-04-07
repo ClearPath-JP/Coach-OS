@@ -86,8 +86,9 @@ export function ScheduleWeekGrid({
   }
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)]">
       <div className="relative min-h-0 min-w-0 flex-1 overflow-auto">
+        {/* Day header row */}
         <div className="flex min-w-[640px]">
           <div className="shrink-0" style={{ width: TIME_COL_W }} />
           {weekDays.map((day) => {
@@ -97,12 +98,12 @@ export function ScheduleWeekGrid({
               <div
                 key={day.toISOString()}
                 className={cn(
-                  'min-w-0 flex-1 border-b border-l border-[var(--border-subtle)] px-1 py-2 text-center first:border-l-0',
-                  today ? 'bg-[var(--accent-light)]/40' : 'bg-[var(--cp-offwhite)]'
+                  'min-w-0 flex-1 border-b border-l border-[var(--border-default)]/60 px-1 py-2 text-center first:border-l-0',
+                  today ? 'bg-[rgba(90,180,240,0.06)]' : 'bg-[var(--bg-subtle)]'
                 )}
                 style={{ height: HEADER_PX }}
               >
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">
+                <span className="block text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--text-quaternary)]">
                   {format(day, 'EEE').toUpperCase()}
                 </span>
                 <span
@@ -132,16 +133,20 @@ export function ScheduleWeekGrid({
           })}
         </div>
 
+        {/* Time gutter + day columns */}
         <div className="flex min-w-[640px]">
-          <div className="sticky left-0 z-[2] shrink-0 border-r border-[var(--border-subtle)] bg-[var(--bg-subtle)]" style={{ width: TIME_COL_W }}>
+          {/* Time column */}
+          <div className="sticky left-0 z-[2] shrink-0 border-r border-[var(--border-default)] bg-[var(--bg-subtle)]" style={{ width: TIME_COL_W }}>
             {halfHourStarts.map((absMins) => {
               const isMainHour = absMins % 60 === 0
               return (
                 <div
                   key={absMins}
                   className={cn(
-                    'flex items-start justify-end pr-1 pt-0.5 text-[11px] tabular-nums text-[var(--text-quaternary)]',
-                    isMainHour ? 'border-b border-[var(--border-subtle)]' : 'border-b border-dashed border-[var(--border-subtle)]'
+                    'flex items-start justify-end pr-1 pt-0.5 text-[11px] tabular-nums font-medium text-[var(--text-quaternary)]',
+                    isMainHour
+                      ? 'border-b border-[var(--border-default)]'
+                      : 'border-b border-dashed border-[var(--border-subtle)]/50'
                   )}
                   style={{ height: 30 }}
                 >
@@ -151,6 +156,7 @@ export function ScheduleWeekGrid({
             })}
           </div>
 
+          {/* Day columns */}
           {weekDays.map((day) => {
             const dayStr = format(day, 'yyyy-MM-dd')
             const daySessions = sessionsForDay(day)
@@ -173,19 +179,21 @@ export function ScheduleWeekGrid({
               <div
                 key={`col-${dayStr}`}
                 className={cn(
-                  'relative min-w-0 flex-1 border-l border-[var(--border-subtle)] first:border-l-0',
-                  todayCol ? 'bg-[rgba(59,158,232,0.03)]' : 'bg-[var(--bg-subtle)]'
+                  'relative min-w-0 flex-1 border-l border-[var(--border-default)]/60 first:border-l-0',
+                  todayCol ? 'bg-[rgba(90,180,240,0.04)]' : 'bg-[var(--bg-subtle)]'
                 )}
                 style={{ height: gridHeightPx }}
               >
+                {/* Availability tint segments */}
                 {ruleSegments.map((seg, i) => (
                   <div
                     key={i}
-                    className="pointer-events-none absolute right-0 left-0 bg-[rgba(16,185,129,0.06)]"
+                    className="pointer-events-none absolute right-0 left-0 bg-[rgba(52,211,153,0.05)]"
                     style={{ top: seg.top, height: seg.h }}
                   />
                 ))}
 
+                {/* Slot buttons */}
                 {halfHourStarts.map((absMins) => {
                   const slotStart = absMins
                   const slotEnd = absMins + 30
@@ -221,8 +229,8 @@ export function ScheduleWeekGrid({
                       className={cn(
                         'group absolute right-0 left-0 z-[1] flex items-center justify-center border-b border-dashed border-[var(--border-subtle)] transition-colors',
                         inAvail
-                          ? 'hover:bg-[var(--accent-light)]/80'
-                          : 'cursor-default bg-[var(--bg-muted)]/40 hover:bg-[var(--bg-muted)]/40'
+                          ? 'hover:bg-[rgba(90,180,240,0.08)]'
+                          : 'cursor-default bg-[rgba(255,255,255,0.015)] hover:bg-[rgba(255,255,255,0.015)]'
                       )}
                       style={{ top, height: 30 }}
                       disabled={!inAvail}
@@ -240,6 +248,7 @@ export function ScheduleWeekGrid({
                   )
                 })}
 
+                {/* Session blocks */}
                 {daySessions.map((s) => {
                   const start = parseISO(s.scheduled_time)
                   const end = s.end_time ? parseISO(s.end_time) : addMinutes(start, s.duration_minutes ?? 60)
@@ -255,24 +264,26 @@ export function ScheduleWeekGrid({
                     <button
                       key={s.id}
                       type="button"
-                      className="absolute z-[3] flex flex-col overflow-hidden rounded-[var(--radius-md)] px-2 py-1.5 text-left shadow-sm transition-[box-shadow] hover:z-[4] hover:shadow-md"
+                      className="absolute z-[3] flex flex-col justify-center overflow-hidden rounded-[8px] px-2.5 py-1.5 text-left transition-all duration-100 hover:z-[4] hover:brightness-110 hover:shadow-lg"
                       style={{
                         top,
-                        left: 4,
-                        width: 'calc(100% - 8px)',
+                        left: 3,
+                        width: 'calc(100% - 6px)',
                         height: heightPx,
+                        background: `linear-gradient(135deg, ${color}28 0%, ${color}18 100%)`,
                         borderLeft: `3px solid ${color}`,
-                        backgroundColor: `${color}1a`,
+                        borderTop: `1px solid ${color}40`,
+                        boxShadow: `0 1px 4px rgba(0,0,0,0.3), inset 0 1px 0 ${color}20`,
                       }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onOpenSession(s)
-                      }}
+                      onClick={(e) => { e.stopPropagation(); onOpenSession(s) }}
                     >
-                      <span className="text-[10px] font-semibold tabular-nums" style={{ color }}>
-                        {format(start, 'h:mm')}
+                      <span className="block text-[10px] font-semibold tabular-nums leading-tight" style={{ color }}>
+                        {format(start, 'h:mm')}{'–'}{format(end, 'h:mm a')}
                       </span>
-                      <span className="truncate text-[12px] font-medium text-[var(--text-primary)]">{name}</span>
+                      <span className="block truncate text-[12px] font-semibold leading-tight text-white/90">{name}</span>
+                      {heightPx >= 48 ? (
+                        <span className="block text-[10px] leading-tight text-white/50">{s.session_type ?? 'Session'}</span>
+                      ) : null}
                     </button>
                   )
                 })}
@@ -281,18 +292,20 @@ export function ScheduleWeekGrid({
           })}
         </div>
 
+        {/* Current time indicator */}
         {timeLine ? (
-          <div className="pointer-events-none absolute right-0 left-0 z-[5]" style={{ top: timeLine.top }}>
-            <div
-              className="absolute flex items-center"
-              style={{
-                left: `calc(${TIME_COL_W}px + ((100% - ${TIME_COL_W}px) * ${timeLine.dayIndex}) / ${weekDays.length})`,
-                width: `calc((100% - ${TIME_COL_W}px) / ${weekDays.length})`,
-              }}
-            >
-              <span className="absolute -left-1 h-2 w-2 rounded-full bg-[var(--error)]" />
-              <div className="h-0.5 flex-1 bg-[var(--error)]" />
-            </div>
+          <div
+            className="pointer-events-none absolute z-[10]"
+            style={{
+              top: timeLine.top - 1,
+              left: `calc(${TIME_COL_W}px + ((100% - ${TIME_COL_W}px) * ${timeLine.dayIndex}) / ${weekDays.length})`,
+              width: `calc((100% - ${TIME_COL_W}px) / ${weekDays.length})`,
+              height: 2,
+              background: 'var(--error)',
+              boxShadow: '0 0 6px rgba(252,129,129,0.5)',
+            }}
+          >
+            <div className="absolute -left-1 -top-1 size-2 rounded-full bg-[var(--error)]" />
           </div>
         ) : null}
       </div>

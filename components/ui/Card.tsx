@@ -18,11 +18,11 @@ function resolveVariant(v: CardVariant): 'default' | 'elevated' | 'ghost' {
 
 const variantClasses: Record<'default' | 'elevated' | 'ghost', string> = {
   default: cn(
-    'rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]',
+    'rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)]',
     'shadow-[var(--shadow-xs)] text-[var(--text-primary)]'
   ),
   elevated: cn(
-    'rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--cp-offwhite)]',
+    'rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)]',
     'shadow-[var(--shadow-sm)] text-[var(--text-primary)]',
     'transition-[box-shadow,transform,border-color] duration-[var(--duration-slow)] [transition-timing-function:var(--ease-out)]',
     'hover:shadow-[var(--shadow-lg)] hover:border-[var(--border-default)] hover:-translate-y-0.5'

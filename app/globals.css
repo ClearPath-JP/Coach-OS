@@ -115,7 +115,7 @@
   --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.06), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 
-  --focus-ring: 0 0 0 3px rgba(59, 158, 232, 0.25);
+  --focus-ring: 0 0 0 3px rgba(59, 158, 232, 0.3);
 
   --radius-xs: 4px;
   --radius-sm: 4px;
@@ -249,49 +249,55 @@
 }
 
 html[data-theme='dark'] {
-  --bg-app: #191919;
-  --bg-app-rgb: 25, 25, 25;
-  --bg-subtle: #202020;
-  --bg-muted: #2a2a2a;
-  --bg-emphasis: #333333;
+  /* Deeper, richer navy base — more depth */
+  --bg-app: #09111d;
+  --bg-app-rgb: 9, 17, 29;
+  --bg-subtle: #0f1c2e;
+  --bg-muted: #172335;
+  --bg-emphasis: #1f2d40;
 
-  --accent: #4faae8;
-  --accent-rgb: 79, 170, 232;
+  /* Brighter, more vibrant accent */
+  --accent: #5ab4f0;
+  --accent-rgb: 90, 180, 240;
   --accent-dark: #3b9ee8;
-  --accent-light: #162030;
-  --accent-muted: #1e3a52;
-  --accent-hover: #5db5f0;
+  --accent-light: #0d1e30;
+  --accent-muted: #152a3f;
+  --accent-hover: #6dc0f5;
 
-  --text-primary: #ededed;
-  --text-secondary: #c2c2c2;
-  --text-tertiary: #888888;
-  --text-quaternary: #555555;
+  /* Slightly warmer text for readability */
+  --text-primary: #f0f0f0;
+  --text-secondary: #c8c8c8;
+  --text-tertiary: #8a8a8a;
+  --text-quaternary: #505050;
   --text-placeholder: #444444;
   --text-on-accent: #ffffff;
 
-  --border-subtle: #252525;
-  --border-default: #2e2e2e;
-  --border-strong: #3a3a3a;
-  --border-accent: #4faae8;
+  /* More visible borders */
+  --border-subtle: #1a2535;
+  --border-default: #1f3045;
+  --border-strong: #2a3f55;
+  --border-accent: #5ab4f0;
 
-  --success: #22c55e;
-  --success-bg: #052e16;
+  /* Richer semantic colors */
+  --success: #34d399;
+  --success-bg: #021f12;
   --success-border: #14532d;
-  --warning: #f59e0b;
-  --warning-bg: #1c1500;
+  --warning: #fbbf24;
+  --warning-bg: #1a1000;
   --warning-border: #451a00;
-  --error: #f87171;
-  --error-bg: #1c0000;
+  --error: #fc8181;
+  --error-bg: #1a0505;
   --error-border: #450a0a;
-  --info: #4faae8;
+  --info: #5ab4f0;
   --info-bg: #0a1929;
   --info-border: #162d44;
 
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.35);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+  /* Deeper shadows for real depth */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.55), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
 
   --color-bg: var(--bg-app);
   --color-surface: var(--bg-subtle);
@@ -326,6 +332,24 @@ html[data-theme='dark'] {
   --color-accent-bg: color-mix(in srgb, var(--accent) 22%, var(--bg-subtle));
   --shadow-card: var(--shadow-xs);
   --shadow-card-raised: var(--shadow-sm);
+
+  /* Legacy ClearPath tokens — map to semantic dark surfaces (fixes cp-offwhite/cp-white in components) */
+  --cp-offwhite: var(--bg-app);
+  --cp-white: var(--bg-subtle);
+  --cp-border: var(--border-default);
+  --cp-navy: var(--text-primary);
+  --cp-gray: var(--text-tertiary);
+  --cp-text: var(--text-secondary);
+  --cp-card-bg: var(--bg-subtle);
+  --cp-input-border: var(--border-default);
+  --cp-input-focus: var(--accent);
+  --cp-sapphire: var(--accent);
+  --cp-accent: var(--accent);
+  --cp-accent-hover: var(--accent-hover);
+  --cp-lavender: color-mix(in srgb, var(--accent) 16%, var(--bg-muted));
+  --cp-btn-bg: var(--accent);
+  --cp-btn-hover: var(--accent-hover);
+  --cp-focus-ring: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 *,
@@ -420,11 +444,11 @@ html[data-theme='dark'] ::selection {
 
 /* Section label — coach pages */
 .section-label-coach {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-tertiary);
+  color: var(--text-quaternary);
   margin-bottom: 12px;
 }
 
@@ -645,7 +669,7 @@ tr:hover td {
 }
 
 .modal-backdrop {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
 }
 
@@ -664,14 +688,14 @@ tr:hover td {
 
 /* Coach shell — dark sidebar chrome (fixed below nav) */
 .coach-sidebar-dark {
-  --coach-sidebar-bg: #111111;
-  --coach-sidebar-border: #222222;
-  --coach-sidebar-hover: #1e1e1e;
-  --coach-sidebar-muted: #444444;
-  --coach-sidebar-icon: #555555;
-  --coach-sidebar-label: #888888;
-  --coach-sidebar-input-bg: #1e1e1e;
-  --coach-sidebar-input-border: #2a2a2a;
+  --coach-sidebar-bg: #060e18;
+  --coach-sidebar-border: #0f1e2e;
+  --coach-sidebar-hover: rgba(255, 255, 255, 0.045);
+  --coach-sidebar-muted: #3d4f63;
+  --coach-sidebar-icon: #5c6d80;
+  --coach-sidebar-label: #3d5269;
+  --coach-sidebar-input-bg: #0a1520;
+  --coach-sidebar-input-border: #152030;
 }
 
 .panel-body-scroll {
@@ -1432,4 +1456,49 @@ tr:hover td {
     flex: 1 1 auto !important;
     padding: 32px 24px !important;
   }
+}
+
+/* ── Visual depth utilities ──────────────────────── */
+
+/* Subtle gradient card surface */
+.card-gradient {
+  background: linear-gradient(160deg, var(--bg-subtle) 0%, var(--bg-muted) 100%);
+}
+
+/* Accent glow — use on important cards or hero sections */
+.accent-glow {
+  box-shadow: 0 0 0 1px var(--border-default), 0 0 24px rgba(var(--accent-rgb), 0.08);
+}
+
+/* Inset highlight — top edge shimmer on cards */
+.card-shimmer {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Stat card — used on dashboard */
+.stat-card-dark {
+  background: linear-gradient(145deg, var(--bg-subtle) 0%, #0f1a28 100%);
+  border: 1px solid var(--border-default);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Hero gradient — dashboard greeting card */
+.hero-gradient-dark {
+  background: linear-gradient(135deg, #0f1e30 0%, #0a1520 50%, #0d1b2a 100%);
+  border: 1px solid var(--border-default);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Accent border top — puts a colored top border on any card */
+.accent-top-border {
+  border-top: 2px solid var(--accent);
+}
+
+/* Pulse dot — for live/active indicators */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }

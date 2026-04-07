@@ -21,9 +21,9 @@ function Section({
   children: ReactNode
 }) {
   return (
-    <section id={id} className="scroll-mt-8 border-b border-slate-200 pb-10 last:border-0">
+    <section id={id} className="scroll-mt-8 border-b border-[var(--border-default)] pb-10 last:border-0">
       <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-      <div className="mt-4 max-w-none space-y-3 text-sm leading-relaxed text-slate-700 [&_p]:my-3 [&_ul]:my-3 [&_li]:my-1">
+      <div className="mt-4 max-w-none space-y-3 text-sm leading-relaxed text-[var(--text-secondary)] [&_p]:my-3 [&_ul]:my-3 [&_li]:my-1">
         {children}
       </div>
     </section>
@@ -39,7 +39,7 @@ export default function AdminGuidePage() {
       <header className="space-y-3">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">ClearPath · Platform admin</p>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Admin guide</h1>
-        <p className="text-base text-slate-600">
+        <p className="text-base text-[var(--text-tertiary)]">
           This area is for <strong>you</strong> as the product owner — not for coaches. Use it to watch business health,
           help a stuck coach, check billing, and confirm integrations. You do not need to memorize everything; use this
           page as a map.
@@ -48,7 +48,7 @@ export default function AdminGuidePage() {
 
       <nav
         aria-label="On this page"
-        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm"
       >
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Jump to</p>
         <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
@@ -86,70 +86,70 @@ export default function AdminGuidePage() {
           <dl className="space-y-6 not-prose">
             <div>
               <dt className="font-semibold text-slate-900">Dashboard</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 High-level KPIs: how many coaches and clients, revenue this month, platform health, and recent
                 activity. Start here for a pulse check.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">All coaches</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Searchable list of every coaching business (workspace). Filter by subscription status, see storage usage,
                 and open a workspace for deeper actions (suspend, change plan, magic link sign-in for support).
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">Subscriptions</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 MRR/ARR-style rollups by plan (Free, Starter, Pro, Scale) and a table of subscription rows synced from
                 your database. Helps you reconcile who pays what tier.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">All clients</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Every end-client across all coaches. Useful for support (&ldquo;find this email&rdquo;) — not for day-to-day
                 coach work.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">Revenue</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Charts and tables: payments over time, methods (card, etc.), recent payments and subscription events.
                 Complements Subscriptions with a money lens.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">Stripe catalog</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Shows the <strong>price IDs</strong> from your server environment and (when configured) live amounts from
                 Stripe. Use it to confirm production matches what coaches see on the billing page.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">Audit log</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Timestamped record of important actions (logins, admin changes, payments-related events). Filter by
                 date, workspace, or category. Export CSV if you need a record.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">System health</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Pings database, auth, storage, Redis (rate limits), Stripe, email. Also shows rough storage totals and
                 maintenance actions (test email, clear cache). Use when diagnosing outages.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">Error logs</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Client-side errors reported from coach and client browsers. Helps catch UI bugs you cannot see from the
                 server alone.
               </dd>
             </div>
             <div>
               <dt className="font-semibold text-slate-900">Settings</dt>
-              <dd className="mt-1 text-slate-700">
+              <dd className="mt-1 text-[var(--text-secondary)]">
                 Short notes on how admin access works and links to related tools. Not a full control panel — most
                 toggles live in Vercel, Stripe, and Supabase.
               </dd>
@@ -243,7 +243,7 @@ export default function AdminGuidePage() {
         </Section>
       </div>
 
-      <footer className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+      <footer className="rounded-xl border border-[var(--border-default)] bg-slate-50 p-4 text-sm text-[var(--text-tertiary)]">
         Tip: bookmark <AdminGuideLink /> and the{' '}
         <Link href="/admin/overview" className="font-medium text-blue-700 hover:underline">Dashboard</Link>. For code
         changes, use your normal editor and git workflow — this site only surfaces data.

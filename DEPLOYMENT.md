@@ -39,9 +39,10 @@ Complete [README.md](./README.md) setup first.
    - URL: `https://app.clearpath.com/api/webhooks/stripe`
    - Events to listen for:
      - `checkout.session.completed`
+     - `invoice.payment_succeeded`
+     - `invoice.payment_failed`
      - `customer.subscription.updated`
      - `customer.subscription.deleted`
-     - `invoice.payment_failed`
 4. Copy webhook signing secret to `STRIPE_WEBHOOK_SECRET`
 
 ## Step 3 — Google Cloud production setup
@@ -149,7 +150,7 @@ Run through this after every deployment:
    - **Interval:** 5 minutes
 4. Add your email for alerts.
 
-You will be notified if the app stops returning a healthy response. The health endpoint returns JSON `{ status, version, timestamp }` and requires no authentication.
+You will be notified if the app stops returning a healthy response. The health endpoint returns JSON `{ status, timestamp }` and requires no authentication.
 
 ---
 

@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import { assertAdminApi, logAdminAudit } from '@/lib/admin'
 import { effectiveClientLimit } from '@/lib/plan-limits'
 import { createServiceClient } from '@/lib/supabase/service'
+
+const patchBodySchema = z.object({
+  plan: z.enum(['free', 'starter', 'pro', 'scale']).optional(),
+  status: z.enum(['active', 'trialing', 'past_due', 'cancelled', 'paused']).optional(),
+  workspaceStatus: z.enum(['active', 'suspended']).optional(),
+  resetToFree: z.boolean().optional(),
+  adminNotes: z.string().max(10000).optional(),
+})
 
 function monthStartIso(): string {
   const d = new Date()
@@ -190,13 +199,16 @@ export async function PATCH(request: Request, context: Ctx) {
     const auth = await assertAdminApi(request)
     if (auth instanceof NextResponse) return auth
     const { workspaceId } = await context.params
-    const body = (await request.json().catch(() => ({}))) as {
-      plan?: 'free' | 'starter' | 'pro' | 'scale'
-      status?: 'active' | 'trialing' | 'past_due' | 'cancelled' | 'paused'
-      workspaceStatus?: 'active' | 'suspended'
-      resetToFree?: boolean
-      adminNotes?: string
+
+    const rawBody = await request.json().catch(() => ({}))
+    const parsed = patchBodySchema.safeParse(rawBody)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Invalid request body' },
+        { status: 400 }
+      )
     }
+    const body = parsed.data
 
     const service = createServiceClient()
 

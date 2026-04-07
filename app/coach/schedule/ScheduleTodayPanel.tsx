@@ -71,29 +71,34 @@ export function ScheduleTodayPanel({
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-[var(--bg-subtle)] p-4">
+      {/* Header */}
       <div className="mb-4">
-        <p className="text-[13px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">{format(focusDay, 'EEEE')}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">{format(focusDay, 'EEEE')}</p>
         <p className="text-[28px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{format(focusDay, 'MMMM d')}</p>
         <p className={cn('mt-1 text-[13px]', daySessions.length ? 'font-medium text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]')}>
-          {daySessions.length ? `${daySessions.length} session${daySessions.length === 1 ? '' : 's'}${isFocusToday ? ' today' : ` on ${format(focusDay, 'MMM d')}`}` : 'No sessions today'}
+          {daySessions.length
+            ? `${daySessions.length} session${daySessions.length === 1 ? '' : 's'}${isFocusToday ? ' today' : ` on ${format(focusDay, 'MMM d')}`}`
+            : 'No sessions today'}
         </p>
       </div>
 
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
         {isFocusToday ? 'Today' : format(focusDay, 'MMM d')}
       </p>
+
+      {/* Sessions list or empty state */}
       {daySessions.length === 0 ? (
-        <div className="flex flex-col items-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 py-8 text-center">
+        <div className="flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] px-4 py-8 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-muted)] text-2xl" aria-hidden>
             📅
           </span>
-          <p className="mt-3 text-[14px] text-[var(--text-tertiary)]">No sessions today</p>
+          <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">No sessions today</p>
           <Button type="button" variant="secondary" className="mt-3" onClick={onBookSession}>
             Book a session
           </Button>
         </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="divide-y divide-[var(--border-subtle)]">
           {daySessions.map((s) => {
             const start = parseISO(s.scheduled_time)
             const name = fullName(s.clients ?? { first_name: null, last_name: null })
@@ -102,7 +107,7 @@ export function ScheduleTodayPanel({
             const accent = sessionTypeAccentClass(s.session_type)
 
             return (
-              <li key={s.id}>
+              <li key={s.id} className="py-1 first:pt-0 last:pb-0">
                 {isNext && isFocusToday ? (
                   <span className="mb-1 inline-block rounded-full bg-[var(--cp-accent)] px-2 py-0.5 text-[11px] font-medium text-white">
                     Next up
@@ -117,7 +122,7 @@ export function ScheduleTodayPanel({
                   type="button"
                   onClick={() => onSessionClick(s)}
                   className={cn(
-                    'relative w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-3 text-left transition-shadow hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-sm)]',
+                    'relative w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3 text-left transition-colors hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)]',
                     isNext && isFocusToday && 'ring-2 ring-[var(--cp-accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]',
                     inProgress && isFocusToday && 'border-[var(--success)]'
                   )}
@@ -125,7 +130,7 @@ export function ScheduleTodayPanel({
                   <span className={cn('absolute top-2 bottom-2 left-0 w-1 rounded-l-[var(--radius-lg)]', accent)} />
                   <div className="pl-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">{format(start, 'h:mm a')}</span>
+                      <span className="text-[11px] font-medium tabular-nums text-[var(--text-tertiary)]">{format(start, 'h:mm a')}</span>
                       <span className="text-[11px] text-[var(--text-tertiary)]">{s.duration_minutes ?? 60} min</span>
                     </div>
                     <div className="mt-2 flex items-center gap-2">
@@ -148,7 +153,8 @@ export function ScheduleTodayPanel({
         </ul>
       )}
 
-      <p className="mb-2 mt-6 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">My availability</p>
+      {/* Availability section */}
+      <p className="mb-2 mt-6 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">My availability</p>
       {dayRules.length === 0 ? (
         <div className="rounded-lg border border-[var(--warning-border)] bg-[var(--warning-bg)] p-3 text-[13px] text-[var(--text-secondary)]">
           <p className="font-medium text-[var(--warning)]">No availability set</p>
@@ -174,7 +180,8 @@ export function ScheduleTodayPanel({
         Edit availability
       </Button>
 
-      <p className="mb-2 mt-6 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Coming up</p>
+      {/* Coming up section */}
+      <p className="mb-2 mt-6 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">Coming up</p>
       {comingUp.length === 0 ? (
         <p className="text-[13px] text-[var(--text-tertiary)]">Nothing scheduled in the next week.</p>
       ) : (
@@ -187,12 +194,12 @@ export function ScheduleTodayPanel({
                 <button type="button" className="w-full text-left" onClick={() => onSessionClick(s)}>
                   <div className="flex gap-3">
                     <div className="w-14 shrink-0">
-                      <p className="text-[12px] text-[var(--text-tertiary)]">{format(st, 'EEE')}</p>
+                      <p className="text-[11px] font-medium tabular-nums text-[var(--text-tertiary)]">{format(st, 'EEE')}</p>
                       <p className="text-[12px] font-medium text-[var(--text-primary)]">{format(st, 'MMM d')}</p>
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">{name}</p>
-                      <p className="text-[11px] text-[var(--text-tertiary)]">{format(st, 'h:mm a')}</p>
+                      <p className="text-[11px] font-medium tabular-nums text-[var(--text-tertiary)]">{format(st, 'h:mm a')}</p>
                     </div>
                   </div>
                 </button>

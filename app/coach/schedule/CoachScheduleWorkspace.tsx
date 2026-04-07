@@ -188,11 +188,13 @@ export function CoachScheduleWorkspace() {
     setMobileAnchor(startOfDay(t))
   }
 
+  const isCurrentWeek = isSameDay(weekStart, startOfWeek(new Date(), { weekStartsOn: 1 }))
+
   const headerDatePill = format(new Date(), 'EEEE, MMMM d')
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="sticky top-0 z-20 -mx-[var(--coach-content-px-mobile)] mb-[var(--coach-header-content-gap)] flex min-h-[var(--coach-header-height)] shrink-0 flex-wrap items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite)] px-[var(--coach-content-px-mobile)] py-2 lg:-mx-[var(--coach-content-px)] lg:px-[var(--coach-content-px)] lg:py-0">
+    <div className="flex min-h-0 flex-1 flex-col bg-[var(--bg-app)]">
+      <header className="sticky top-0 z-20 -mx-[var(--coach-content-px-mobile)] mb-[var(--coach-header-content-gap)] flex min-h-[var(--coach-header-height)] shrink-0 flex-wrap items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-[var(--coach-content-px-mobile)] py-2 lg:-mx-[var(--coach-content-px)] lg:px-[var(--coach-content-px)] lg:py-0">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
           <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">Schedule</h1>
           <span className="rounded-full bg-[var(--accent-light)] px-2.5 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
@@ -201,11 +203,10 @@ export function CoachScheduleWorkspace() {
         </div>
 
         <div className="flex flex-1 flex-wrap items-center justify-center gap-2">
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            className="h-8 w-8 shrink-0 p-0"
             aria-label="Previous"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-transparent text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
             onClick={() => {
               if (desktopView === 'week') setWeekStart((d) => addDays(d, -7))
               else if (desktopView === 'month') setMonthDate((d) => addMonths(d, -1))
@@ -213,15 +214,23 @@ export function CoachScheduleWorkspace() {
             }}
           >
             <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button type="button" variant="secondary" className="h-8 px-3 text-[13px]" onClick={goToday}>
-            Today
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            variant="ghost"
-            className="h-8 w-8 shrink-0 p-0"
+            className={cn(
+              'h-8 rounded-[8px] px-3 text-[13px] font-semibold transition-colors',
+              isCurrentWeek
+                ? 'border border-[var(--border-default)] bg-[var(--bg-muted)] text-[var(--text-primary)]'
+                : 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]'
+            )}
+            onClick={goToday}
+          >
+            Today
+          </button>
+          <button
+            type="button"
             aria-label="Next"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-transparent text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
             onClick={() => {
               if (desktopView === 'week') setWeekStart((d) => addDays(d, 7))
               else if (desktopView === 'month') setMonthDate((d) => addMonths(d, 1))
@@ -229,8 +238,8 @@ export function CoachScheduleWorkspace() {
             }}
           >
             <ChevronRight className="h-5 w-5" />
-          </Button>
-          <span className="text-[14px] font-medium tabular-nums text-[var(--text-tertiary)]">
+          </button>
+          <span className="text-[16px] font-semibold tabular-nums text-[var(--text-primary)]">
             {desktopView === 'month'
               ? format(monthDate, 'MMMM yyyy')
               : `${format(weekStart, 'MMM d')} — ${format(addDays(weekStart, 6), 'MMM d, yyyy')}`}
@@ -251,7 +260,7 @@ export function CoachScheduleWorkspace() {
                   i > 0 && i < arr.length - 1 && 'border-r',
                   desktopView === v
                     ? 'bg-[var(--cp-accent)] text-[var(--text-on-accent)]'
-                    : 'bg-[var(--cp-offwhite)] text-[var(--text-tertiary)] hover:bg-[var(--bg-subtle)]'
+                    : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)] hover:bg-[var(--bg-subtle)]'
                 )}
               >
                 {v}
@@ -259,13 +268,17 @@ export function CoachScheduleWorkspace() {
             ))}
           </div>
           <div className="hidden h-6 w-px bg-[var(--border-default)] lg:block" aria-hidden />
-          <Button type="button" className="h-9 px-4 text-[14px]" onClick={() => openBookModal(null, null)}>
+          <button
+            type="button"
+            className="h-9 rounded-[8px] bg-[var(--accent)] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
+            onClick={() => openBookModal(null, null)}
+          >
             Book session
-          </Button>
+          </button>
         </div>
       </header>
 
-      <div className="sticky top-0 z-10 flex border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite)] lg:hidden">
+      <div className="sticky top-0 z-10 flex border-b border-[var(--border-subtle)] bg-[var(--bg-app)] lg:hidden">
         {(['today', 'week', 'agenda'] as const).map((tab) => (
           <button
             key={tab}
@@ -283,7 +296,7 @@ export function CoachScheduleWorkspace() {
         ))}
       </div>
 
-      <details className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-sm open:shadow-sm">
+      <details className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-sm open:shadow-sm">
         <summary className="cursor-pointer select-none list-none px-4 py-3 font-medium text-[var(--text-primary)] [&::-webkit-details-marker]:hidden">
           <span className="inline-flex items-center gap-2">
             <span>Subscribe in Google Calendar or Apple Calendar</span>
@@ -423,7 +436,7 @@ export function CoachScheduleWorkspace() {
                             key={day.toISOString()}
                             type="button"
                             className={cn(
-                              'flex min-h-[88px] flex-col bg-[var(--cp-offwhite)] p-1.5 text-left transition-colors hover:bg-[var(--bg-subtle)]',
+                              'flex min-h-[88px] flex-col bg-[var(--bg-subtle)] p-1.5 text-left transition-colors hover:bg-[var(--bg-muted)]',
                               !inMonth && 'opacity-40',
                               today && 'ring-1 ring-inset ring-[var(--cp-accent)]'
                             )}
@@ -465,7 +478,7 @@ export function CoachScheduleWorkspace() {
                     </div>
                   ) : null}
                   {desktopView === 'agenda' ? (
-                    <div className="space-y-6 overflow-y-auto rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-4">
+                    <div className="space-y-6 overflow-y-auto rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
                       {agendaGroups.length === 0 ? (
                         <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions in this range.</p>
                       ) : (
@@ -485,7 +498,7 @@ export function CoachScheduleWorkspace() {
                                     <li key={s.id}>
                                       <button
                                         type="button"
-                                        className="flex w-full items-start gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-3 text-left hover:bg-[var(--bg-subtle)]"
+                                        className="flex w-full items-start gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3 text-left hover:bg-[var(--bg-muted)]"
                                         onClick={() => setDetailSession(s)}
                                       >
                                         <span className="w-[72px] shrink-0 text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">
@@ -575,7 +588,7 @@ export function CoachScheduleWorkspace() {
             </div>
 
             <div className={cn('min-h-0 flex-1 lg:hidden', mobileTab === 'agenda' ? 'block' : 'hidden')}>
-              <div className="max-h-[70vh] space-y-6 overflow-y-auto rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-4">
+              <div className="max-h-[70vh] space-y-6 overflow-y-auto rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
                 {agendaGroups.length === 0 ? (
                   <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions.</p>
                 ) : (
@@ -585,7 +598,7 @@ export function CoachScheduleWorkspace() {
                       isSameDay(d0, new Date()) ? `Today — ${format(d0, 'EEEE, MMMM d')}` : format(d0, 'EEEE, MMMM d')
                     return (
                       <div key={date}>
-                        <h3 className="mb-2 text-[14px] font-semibold">{label}</h3>
+                        <h3 className="mb-2 text-[14px] font-semibold text-[var(--text-primary)]">{label}</h3>
                         <ul className="space-y-2">
                           {list.map((s) => {
                             const st = parseISO(s.scheduled_time)
@@ -594,11 +607,11 @@ export function CoachScheduleWorkspace() {
                               <li key={s.id}>
                                 <button
                                   type="button"
-                                  className="flex w-full flex-col rounded-lg border border-[var(--border-default)] p-3 text-left"
+                                  className="flex w-full flex-col rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3 text-left hover:bg-[var(--bg-muted)]"
                                   onClick={() => setDetailSession(s)}
                                 >
-                                  <span className="text-[13px] font-semibold">{format(st, 'h:mm a')}</span>
-                                  <span className="text-[14px] font-medium">{name}</span>
+                                  <span className="text-[13px] font-semibold text-[var(--text-primary)]">{format(st, 'h:mm a')}</span>
+                                  <span className="text-[14px] font-medium text-[var(--text-primary)]">{name}</span>
                                 </button>
                               </li>
                             )
@@ -623,7 +636,7 @@ export function CoachScheduleWorkspace() {
             />
             <div
               className={cn(
-                'z-50 flex flex-col border-[var(--border-subtle)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
+                'z-50 flex flex-col border-[var(--border-subtle)] bg-[var(--bg-subtle)] shadow-[var(--shadow-xl)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
                 'fixed inset-x-0 bottom-0 max-h-[90vh] rounded-t-[var(--radius-xl)] border-t lg:absolute lg:inset-x-auto lg:top-0 lg:right-0 lg:bottom-0 lg:h-full lg:max-h-none lg:w-[320px] lg:rounded-none lg:border-t-0 lg:border-l'
               )}
               style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}

@@ -12,9 +12,22 @@ import { useWorkspace } from '@/lib/workspace-context'
 export default function CoachAppearancePage() {
   const router = useRouter()
   const { updateSettings, refetchSettings } = useWorkspace()
-  const [accentColor, setAccentColor] = useState<AccentColor>(PHASE4_DEFAULT_COACH_ACCENT)
-  const [loading, setLoading] = useState(true)
 
+  // Accent color state
+  const [accentColor, setAccentColor] = useState<AccentColor>(PHASE4_DEFAULT_COACH_ACCENT)
+  const [accentLoading, setAccentLoading] = useState(true)
+
+  // Brand identity state
+  const [workspaceDisplayName, setWorkspaceDisplayName] = useState('')
+  const [brandTagline, setBrandTagline] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [brandLoading, setBrandLoading] = useState(true)
+  const [brandSaving, setBrandSaving] = useState(false)
+  const [brandSaved, setBrandSaved] = useState(false)
+  const [brandError, setBrandError] = useState<string | null>(null)
+  const [logoImgError, setLogoImgError] = useState(false)
+
+  // Fetch accent color
   useEffect(() => {
     let cancelled = false
     void fetch('/api/coach/settings', { credentials: 'include', cache: 'no-store' })
@@ -29,14 +42,47 @@ export default function CoachAppearancePage() {
       })
       .catch(() => null)
       .finally(() => {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setAccentLoading(false)
       })
     return () => {
       cancelled = true
     }
   }, [])
 
-  const handleSave = async (hex: AccentColor) => {
+  // Fetch brand identity fields
+  useEffect(() => {
+    let cancelled = false
+    void fetch('/api/settings', { credentials: 'include', cache: 'no-store' })
+      .then(async (r) => {
+        const json = (await r.json().catch(() => null)) as {
+          data?: {
+            workspace?: {
+              displayName?: string | null
+              brandTagline?: string | null
+              logoUrl?: string | null
+            }
+          }
+        } | null
+        if (cancelled) return
+        if (json?.data?.workspace?.displayName) setWorkspaceDisplayName(json.data.workspace.displayName)
+        if (json?.data?.workspace?.brandTagline) setBrandTagline(json.data.workspace.brandTagline)
+        if (json?.data?.workspace?.logoUrl) setLogoUrl(json.data.workspace.logoUrl)
+      })
+      .catch(() => null)
+      .finally(() => {
+        if (!cancelled) setBrandLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Reset logo image error when URL changes
+  useEffect(() => {
+    setLogoImgError(false)
+  }, [logoUrl])
+
+  const handleAccentSave = async (hex: AccentColor) => {
     const res = await fetch('/api/coach/settings', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -52,70 +98,324 @@ export default function CoachAppearancePage() {
     router.refresh()
   }
 
+  const handleBrandSave = async () => {
+    setBrandSaving(true)
+    setBrandError(null)
+    try {
+      const res = await fetch('/api/settings/workspace', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          displayName: workspaceDisplayName || null,
+          brandTagline: brandTagline || null,
+          logoUrl: logoUrl || null,
+        }),
+      })
+      if (!res.ok) {
+        const errJson = (await res.json().catch(() => null)) as { error?: string } | null
+        throw new Error(errJson?.error ?? 'Save failed')
+      }
+      updateSettings({
+        workspaceDisplayName: workspaceDisplayName || null,
+        brandName: workspaceDisplayName || null,
+        logoUrl: logoUrl || null,
+      })
+      setBrandSaved(true)
+      setTimeout(() => setBrandSaved(false), 2500)
+      router.refresh()
+    } catch (err) {
+      setBrandError(err instanceof Error ? err.message : 'Could not save. Please try again.')
+    } finally {
+      setBrandSaving(false)
+    }
+  }
+
   return (
-    <main className="flex min-h-0 min-h-screen flex-1 flex-col">
-      <div style={{ maxWidth: 560, padding: '32px 24px' }}>
-        <p className="mb-4 text-[13px]">
-          <Link href="/coach/settings" className="text-[var(--cp-accent)] underline-offset-2 hover:underline">
-            ← Back to settings
+    <main className="min-h-screen bg-[var(--bg-app)] px-4 py-8 md:px-8">
+      <div className="mx-auto max-w-[640px]">
+        <nav className="mb-6">
+          <Link
+            href="/coach/settings"
+            className="text-[13px] text-[var(--cp-accent)] hover:underline underline-offset-2"
+          >
+            ← Settings
           </Link>
-        </p>
-        <h1
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: 'var(--cp-navy)',
-            marginBottom: 6,
-          }}
-        >
+        </nav>
+
+        <h1 className="mb-1 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">
           Appearance
         </h1>
-        <p
-          style={{
-            fontSize: 14,
-            color: 'var(--cp-gray)',
-            marginBottom: 32,
-            lineHeight: 1.5,
-          }}
-        >
-          Customize how your workspace looks. Changes are visible to you and your students.
+        <p className="mb-8 text-[14px] text-[var(--text-tertiary)]">
+          Make your workspace feel like yours. Changes are visible to you and your clients.
         </p>
 
-        <div
-          style={{
-            background: 'var(--cp-white)',
-            border: '1px solid var(--cp-border)',
-            borderRadius: 12,
-            padding: '24px',
-          }}
-        >
-          {loading ? (
-            <div
-              style={{
-                height: 80,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <div
-                style={{
-                  width: 20,
-                  height: 20,
-                  border: '2px solid var(--cp-border)',
-                  borderTopColor: 'var(--cp-sapphire)',
-                  borderRadius: '50%',
-                  animation: 'cp-spin 0.7s linear infinite',
-                }}
-              />
-            </div>
-          ) : (
-            <AccentColorPicker currentAccent={accentColor} onSave={handleSave} />
-          )}
+        {/* ─── Section A: Brand Identity ─── */}
+        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Brand Identity</h2>
+            <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
+              Your workspace name, tagline, and logo — shown in the client portal navigation header.
+            </p>
+          </div>
+
+          <div className="px-5 py-5">
+            {brandLoading ? (
+              <div className="flex h-20 items-center justify-center">
+                <div
+                  style={{
+                    width: 20,
+                    height: 20,
+                    border: '2px solid var(--border-default)',
+                    borderTopColor: 'var(--cp-accent)',
+                    borderRadius: '50%',
+                    animation: 'cp-spin 0.7s linear infinite',
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                {/* Workspace display name */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="workspace-display-name"
+                    className="mb-1.5 block text-[13px] font-medium text-[var(--text-primary)]"
+                  >
+                    Workspace display name
+                    <span className="ml-1.5 text-[12px] font-normal text-[var(--text-quaternary)]">
+                      {workspaceDisplayName.length}/40
+                    </span>
+                  </label>
+                  <input
+                    id="workspace-display-name"
+                    type="text"
+                    value={workspaceDisplayName}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 40) setWorkspaceDisplayName(e.target.value)
+                    }}
+                    maxLength={40}
+                    placeholder="e.g. Apex Coaching"
+                    className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-quaternary)] outline-none focus:border-[var(--cp-accent)] focus:ring-1 focus:ring-[var(--cp-accent)]"
+                  />
+                </div>
+
+                {/* Brand tagline */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="brand-tagline"
+                    className="mb-1.5 block text-[13px] font-medium text-[var(--text-primary)]"
+                  >
+                    Brand tagline
+                    <span className="ml-1.5 text-[12px] font-normal text-[var(--text-quaternary)]">
+                      {brandTagline.length}/80
+                    </span>
+                  </label>
+                  <input
+                    id="brand-tagline"
+                    type="text"
+                    value={brandTagline}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 80) setBrandTagline(e.target.value)
+                    }}
+                    maxLength={80}
+                    placeholder="e.g. Elite performance coaching"
+                    className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-quaternary)] outline-none focus:border-[var(--cp-accent)] focus:ring-1 focus:ring-[var(--cp-accent)]"
+                  />
+                  <p className="mt-1 text-[12px] text-[var(--text-quaternary)]">
+                    Shown under your brand name in the client portal nav.
+                  </p>
+                </div>
+
+                {/* Logo URL */}
+                <div className="mb-5">
+                  <label
+                    htmlFor="logo-url"
+                    className="mb-1.5 block text-[13px] font-medium text-[var(--text-primary)]"
+                  >
+                    Logo URL
+                  </label>
+                  <input
+                    id="logo-url"
+                    type="url"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://example.com/logo.png"
+                    className="w-full rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-quaternary)] outline-none focus:border-[var(--cp-accent)] focus:ring-1 focus:ring-[var(--cp-accent)]"
+                  />
+                  <p className="mt-1 text-[12px] text-[var(--text-quaternary)]">
+                    Paste a public image URL, or upload from{' '}
+                    <Link
+                      href="/coach/settings/profile"
+                      className="text-[var(--cp-accent)] hover:underline underline-offset-2"
+                    >
+                      Settings &rsaquo; Profile
+                    </Link>
+                    .
+                  </p>
+                </div>
+
+                {/* Live preview */}
+                <div className="mb-5 overflow-hidden rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-muted)]">
+                  <div className="flex h-12 items-center gap-2.5 border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite,#F8F8F8)] px-4">
+                    {logoUrl && !logoImgError ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={logoUrl}
+                        alt=""
+                        className="size-7 rounded-[6px] object-contain border border-[var(--border-subtle)]"
+                        onError={() => setLogoImgError(true)}
+                      />
+                    ) : (
+                      <div
+                        className="size-7 rounded-[6px] border border-[var(--border-default)]"
+                        style={{ backgroundColor: accentColor + '22' }}
+                      />
+                    )}
+                    <div>
+                      <div className="text-[13px] font-semibold text-[var(--text-primary)] leading-tight">
+                        {workspaceDisplayName || 'Your Brand'}
+                      </div>
+                      {brandTagline && (
+                        <div className="text-[10px] text-[var(--text-tertiary)] leading-tight">
+                          {brandTagline}
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-auto flex items-center gap-2">
+                      <div className="h-5 w-16 rounded-full bg-[var(--bg-muted)]" />
+                      <div className="size-7 rounded-full border border-[var(--border-default)] bg-[var(--bg-muted)]" />
+                    </div>
+                  </div>
+                  <div className="px-3 py-2">
+                    <p className="text-[11px] text-[var(--text-quaternary)]">Client portal preview</p>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {brandError && (
+                  <div
+                    role="alert"
+                    className="mb-3 rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] px-3 py-2 text-[13px] text-[#B91C1C]"
+                  >
+                    {brandError}
+                  </div>
+                )}
+
+                {/* Save button */}
+                <button
+                  type="button"
+                  onClick={() => void handleBrandSave()}
+                  disabled={brandSaving}
+                  style={{
+                    height: 38,
+                    padding: '0 20px',
+                    borderRadius: 8,
+                    border: 'none',
+                    background: brandSaved
+                      ? '#15803D'
+                      : brandSaving
+                        ? 'var(--border-default)'
+                        : 'var(--cp-accent)',
+                    color: brandSaving && !brandSaved ? 'var(--text-tertiary)' : '#FFFFFF',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: brandSaving ? 'not-allowed' : 'pointer',
+                    transition: 'background 0.15s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    minWidth: 120,
+                    justifyContent: 'center',
+                  }}
+                >
+                  {brandSaving ? (
+                    <>
+                      <div
+                        style={{
+                          width: 13,
+                          height: 13,
+                          border: '2px solid rgba(255,255,255,0.35)',
+                          borderTopColor: '#fff',
+                          borderRadius: '50%',
+                          animation: 'cp-spin 0.7s linear infinite',
+                        }}
+                      />
+                      Saving...
+                    </>
+                  ) : brandSaved ? (
+                    '✓ Saved'
+                  ) : (
+                    'Save brand'
+                  )}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
-        <style>{`@keyframes cp-spin { to { transform: rotate(360deg); } }`}</style>
+        {/* ─── Section B: Accent Color ─── */}
+        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Accent Color</h2>
+            <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
+              This color appears on buttons, active nav items, and highlights throughout your workspace and your clients&rsquo; portal.
+            </p>
+          </div>
+
+          <div className="px-5 py-5">
+            {accentLoading ? (
+              <div className="flex h-20 items-center justify-center">
+                <div
+                  style={{
+                    width: 20,
+                    height: 20,
+                    border: '2px solid var(--border-default)',
+                    borderTopColor: 'var(--cp-accent)',
+                    borderRadius: '50%',
+                    animation: 'cp-spin 0.7s linear infinite',
+                  }}
+                />
+              </div>
+            ) : (
+              <AccentColorPicker currentAccent={accentColor} onSave={handleAccentSave} />
+            )}
+          </div>
+        </div>
+
+        {/* ─── Section C: Theme ─── */}
+        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Theme</h2>
+            <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
+              Your coach workspace uses a dark theme optimized for focus. Client portals adapt to your accent color and support both light and dark mode.
+            </p>
+          </div>
+
+          <div className="px-5 py-5">
+            {/* Mini dark sidebar preview */}
+            <div className="flex overflow-hidden rounded-[10px] border border-[var(--border-default)]" style={{ height: 88 }}>
+              {/* Sidebar */}
+              <div className="flex w-14 flex-col items-center gap-2 bg-[#0F1117] py-3">
+                <div className="size-6 rounded-[5px] bg-[#1E2130]" />
+                <div className="size-6 rounded-[5px]" style={{ backgroundColor: accentColor }} />
+                <div className="size-6 rounded-[5px] bg-[#1E2130]" />
+                <div className="size-6 rounded-[5px] bg-[#1E2130]" />
+              </div>
+              {/* Content area */}
+              <div className="flex flex-1 flex-col gap-2 bg-[#181B27] px-4 py-3">
+                <div className="h-3 w-24 rounded-full bg-[#252938]" />
+                <div className="h-2.5 w-32 rounded-full bg-[#252938]" />
+                <div className="mt-1 h-2.5 w-20 rounded-full" style={{ backgroundColor: accentColor + '44' }} />
+              </div>
+            </div>
+            <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
+              Coach workspace dark theme — always on.
+            </p>
+          </div>
+        </div>
       </div>
+
+      <style>{`@keyframes cp-spin { to { transform: rotate(360deg); } }`}</style>
     </main>
   )
 }

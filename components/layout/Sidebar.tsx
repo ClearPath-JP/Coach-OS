@@ -4,7 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTheme } from '@/components/ThemeProvider'
 import { ClearPathLogo } from '@/components/layout/ClearPathLogo'
 import { SignOutButton } from '@/components/layout/SignOutButton'
 import { cn } from '@/lib/utils'
@@ -67,23 +66,6 @@ function SettingsGearIcon({ className }: { className?: string }) {
     >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 5 15.4a1.65 1.65 0 0 0-1.51-1H3.4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 5 8.89a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9.11 5c.7 0 1.33-.4 1.62-1.03V3.9a2 2 0 1 1 4 0v.07c.29.63.92 1.03 1.62 1.03a1.65 1.65 0 0 0 1.17-.48l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06c-.46.46-.6 1.16-.33 1.82.27.66.91 1.1 1.62 1.1h.09a2 2 0 1 1 0 4h-.09c-.71 0-1.35.44-1.62 1.1z" />
-    </svg>
-  )
-}
-
-function SunIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-    </svg>
-  )
-}
-
-function MoonIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   )
 }
@@ -212,7 +194,7 @@ function CoachSidebarHeader() {
     <>
       <div
         className="flex h-14 shrink-0 items-center gap-2.5 border-b px-4"
-        style={{ borderColor: '#222222' }}
+        style={{ borderColor: 'var(--coach-sidebar-border)' }}
       >
         <SidebarBrandMark invertLogo />
         <div className="min-w-0 flex-1 leading-tight">
@@ -229,17 +211,17 @@ function CoachSidebarHeader() {
       <div className="px-3 pb-2 pt-3">
         <button
           type="button"
-          className="flex w-full cursor-pointer items-center gap-2 rounded-[6px] py-1.5 pl-2 pr-2 transition-colors duration-[80ms] hover:bg-[#1e1e1e]"
+          className="flex w-full cursor-pointer items-center gap-2.5 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-muted)] py-2 pl-2 pr-2 transition-all duration-[80ms] hover:bg-[var(--bg-emphasis)]"
           aria-label="Workspace"
         >
           <span
-            className="flex size-6 shrink-0 items-center justify-center rounded-[6px] text-[11px] font-bold text-white"
+            className="flex size-7 shrink-0 items-center justify-center rounded-[6px] text-[12px] font-bold text-white"
             style={{ background: 'var(--cp-accent)' }}
           >
             {initial}
           </span>
-          <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#e5e5e5]">{displayName}</span>
-          <span className="shrink-0 text-[#555555]">
+          <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--text-primary)]">{displayName}</span>
+          <span className="shrink-0 text-[var(--text-quaternary)]">
             <ChevronDownIcon />
           </span>
         </button>
@@ -257,7 +239,7 @@ function CoachSidebarSearch({
 }) {
   return (
     <div className="relative mx-3 mb-2">
-      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[#666666]" aria-hidden>
+      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-quaternary)]" aria-hidden>
         <SearchIcon />
       </span>
       <input
@@ -266,52 +248,16 @@ function CoachSidebarSearch({
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search..."
         aria-label="Search navigation"
-        className="h-8 w-full rounded-[6px] border bg-[#1e1e1e] py-0 pl-8 pr-2.5 text-[13px] text-[#cccccc] outline-none transition-[border-color,box-shadow] duration-[80ms] placeholder:text-[#666666] focus:border-[var(--cp-accent)]"
-        style={{
-          borderColor: '#2a2a2a',
-          boxShadow: undefined,
-        }}
+        className="h-8 w-full rounded-[6px] border border-[var(--coach-sidebar-input-border)] bg-[var(--coach-sidebar-input-bg)] py-0 pl-8 pr-2.5 text-[13px] text-[var(--text-primary)] outline-none transition-[border-color,box-shadow] duration-[80ms] placeholder:text-[var(--text-quaternary)] focus:border-[var(--accent)]"
         onFocus={(e) => {
-          e.target.style.borderColor = 'var(--cp-accent)'
-          e.target.style.boxShadow = '0 0 0 2px rgba(var(--accent-rgb), 0.2)'
+          e.target.style.borderColor = 'var(--accent)'
+          e.target.style.boxShadow = '0 0 0 3px rgba(var(--accent-rgb), 0.15)'
         }}
         onBlur={(e) => {
-          e.target.style.borderColor = '#2a2a2a'
+          e.target.style.borderColor = 'var(--coach-sidebar-input-border)'
           e.target.style.boxShadow = 'none'
         }}
       />
-    </div>
-  )
-}
-
-function CoachThemeToggleRow() {
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
-  return (
-    <div className="flex h-[30px] items-center gap-2 px-2">
-      <span className="text-[#666666]" aria-hidden>
-        <SunIcon size={14} />
-      </span>
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className={cn(
-          'relative h-[22px] w-[38px] shrink-0 rounded-full border transition-colors duration-[80ms]',
-          isDark ? 'border-transparent bg-[var(--cp-accent)]' : 'border-[#2a2a2a] bg-[#1e1e1e]'
-        )}
-        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        <span
-          className={cn(
-            'absolute top-[2px] h-[16px] w-[16px] rounded-full bg-white shadow-sm transition-transform duration-[80ms]',
-            isDark ? 'left-[18px]' : 'left-[2px]'
-          )}
-        />
-      </button>
-      <span className="text-[#666666]" aria-hidden>
-        <MoonIcon size={14} />
-      </span>
-      <span className="text-[13px] text-[#666666]">Dark mode</span>
     </div>
   )
 }
@@ -351,37 +297,6 @@ function NavRowsDefault({
   )
 }
 
-function SidebarThemeToggleFooter() {
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
-  return (
-    <div className="mt-2 flex items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--bg-muted)] px-2 py-1.5">
-      <span className="text-[var(--text-tertiary)]" aria-hidden>
-        <SunIcon />
-      </span>
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className={cn(
-          'relative h-[22px] w-[38px] shrink-0 rounded-full border border-[var(--border-default)] transition-colors duration-[var(--duration-fast)]',
-          isDark ? 'bg-[var(--cp-accent)]' : 'bg-[var(--cp-offwhite)]'
-        )}
-        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        <span
-          className={cn(
-            'absolute top-[2px] h-[16px] w-[16px] rounded-full bg-[var(--cp-offwhite)] shadow-[var(--shadow-xs)] transition-transform duration-[var(--duration-fast)]',
-            isDark ? 'left-[18px]' : 'left-[2px]'
-          )}
-        />
-      </button>
-      <span className="text-[var(--text-tertiary)]" aria-hidden>
-        <MoonIcon />
-      </span>
-    </div>
-  )
-}
-
 function NavRowsCoach({
   items,
   pathname,
@@ -412,21 +327,21 @@ function NavRowsCoach({
             key={item.href}
             href={item.href}
             className={cn(
-              'relative mb-px flex h-[30px] items-center gap-2 rounded-[5px] px-2 text-[13px] no-underline transition-[color,background-color] duration-[80ms] ease-out',
+              'relative mb-px flex h-[32px] items-center gap-2 rounded-[8px] px-2 text-[13px] no-underline transition-[color,background-color] duration-[80ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[#1e1e1e] font-medium text-white [&_svg]:text-[var(--cp-accent)]'
-                : 'font-normal text-[#888888] [&_svg]:text-[#555555] hover:bg-[#1e1e1e] hover:text-[#cccccc] [&:hover_svg]:text-[#bbbbbb]'
+                ? 'nav-item-active-coach bg-[var(--accent-light)] font-medium text-[var(--accent)] shadow-[inset_0_0_0_1px_var(--accent-muted)] [&_svg]:text-[var(--accent)]'
+                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--text-quaternary)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-secondary)]'
             )}
           >
             {item.icon ? (
-              <span className="flex size-[15px] shrink-0 items-center justify-center [&>svg]:size-[15px]">{item.icon}</span>
+              <span className="flex size-4 shrink-0 items-center justify-center [&>svg]:size-4">{item.icon}</span>
             ) : null}
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
             {badge > 0 ? (
               <span
                 className="badge shrink-0 rounded-full px-1.5 py-px text-center text-[10px] font-semibold text-white transition-[filter] duration-[80ms] hover:brightness-[0.9]"
                 style={{
-                  background: 'var(--cp-accent)',
+                  background: 'var(--accent)',
                   minWidth: '16px',
                 }}
               >
@@ -474,13 +389,13 @@ export function Sidebar({
     return (
       <aside
         className={cn(
-          'coach-sidebar-dark flex h-[calc(100dvh-var(--nav-height))] w-[var(--sidebar-width)] shrink-0 flex-col overflow-hidden border-r bg-[#111111]',
+          'coach-sidebar-dark flex h-[calc(100dvh-var(--nav-height))] w-[var(--sidebar-width)] shrink-0 flex-col overflow-hidden border-r bg-[var(--coach-sidebar-bg)]',
           className
         )}
-        style={{ borderColor: '#222222', zIndex: 40 }}
+        style={{ borderColor: 'var(--coach-sidebar-border)', zIndex: 40 }}
       >
         {wordmark ? <CoachSidebarHeader /> : null}
-        {header ? <div className="border-b px-2 py-2" style={{ borderColor: '#222222' }}>{header}</div> : null}
+        {header ? <div className="border-b px-2 py-2" style={{ borderColor: 'var(--coach-sidebar-border)' }}>{header}</div> : null}
 
         <CoachSidebarSearch value={navFilter} onChange={setNavFilter} />
 
@@ -495,7 +410,7 @@ export function Sidebar({
             <div key={section.title}>
               <p
                 className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em]"
-                style={{ color: '#444444' }}
+                style={{ color: 'var(--coach-sidebar-label)' }}
               >
                 {section.title}
               </p>
@@ -508,46 +423,45 @@ export function Sidebar({
           ) : null}
 
           {bottomItems.length > 0 ? (
-            <div className="mt-auto flex flex-col border-t pt-2" style={{ borderColor: '#1e1e1e' }}>
+            <div className="mt-auto flex flex-col border-t pt-2" style={{ borderColor: 'var(--coach-sidebar-border)' }}>
               <NavRowsCoach items={bottomItems} pathname={pathname} badges={coachBadges} navFilter={navFilter} />
             </div>
           ) : null}
         </nav>
 
         {userBar ? (
-          <div className="shrink-0 border-t px-3 py-2" style={{ borderColor: '#1e1e1e' }}>
-            <CoachThemeToggleRow />
+          <div className="shrink-0 border-t px-3 py-2" style={{ borderColor: 'var(--coach-sidebar-border)' }}>
             <Link
               href={settingsHref}
-              className="mt-2 flex h-9 cursor-pointer items-center gap-2 rounded-[5px] px-2 transition-colors duration-[80ms] hover:bg-[#1e1e1e]"
+              className="mt-2 flex h-10 cursor-pointer items-center gap-2.5 rounded-[8px] px-2 transition-colors duration-[80ms] hover:bg-[var(--coach-sidebar-hover)]"
             >
-              <div className="avatar-hover flex size-[22px] shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold text-white" style={{ background: 'var(--cp-accent)' }}>
+              <div className="avatar-hover flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold text-[var(--text-on-accent)]" style={{ background: 'var(--accent)' }}>
                 {userBar.avatarUrl ? (
                   <Image
                     src={userBar.avatarUrl}
                     alt={`${userBar.displayName} avatar`}
-                    width={22}
-                    height={22}
+                    width={24}
+                    height={24}
                     className="size-full object-cover"
                   />
                 ) : (
                   initials(userBar.displayName)
                 )}
               </div>
-              <span className="min-w-0 flex-1 truncate text-[13px] text-[#888888]">{userBar.displayName}</span>
-              <SettingsGearIcon className="shrink-0 text-[#444444]" />
+              <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-tertiary)]">{userBar.displayName}</span>
+              <SettingsGearIcon className="shrink-0 text-[var(--text-quaternary)]" />
             </Link>
             <div className="mt-2 px-0">
               <SignOutButton
                 variant="sidebar"
-                className="h-9 w-full rounded-[5px] px-2 text-[12px] text-[#666666] transition-colors duration-[80ms] hover:bg-[#1e1e1e] hover:text-[#cccccc]"
+                className="h-9 w-full rounded-[8px] px-2 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[80ms] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)]"
               />
             </div>
-            <p className="mt-1 px-1 text-[10px] text-[#444444]">⌘K Quick actions</p>
+            <p className="mt-1 px-1 text-[10px] text-[var(--text-quaternary)]">⌘K Quick actions</p>
           </div>
         ) : null}
 
-        {footer && !userBar ? <div className="border-t p-2" style={{ borderColor: '#1e1e1e' }}>{footer}</div> : null}
+        {footer && !userBar ? <div className="border-t p-2" style={{ borderColor: 'var(--coach-sidebar-border)' }}>{footer}</div> : null}
       </aside>
     )
   }
@@ -615,7 +529,6 @@ export function Sidebar({
             </span>
             <SettingsGearIcon className="shrink-0 text-[var(--text-tertiary)]" />
           </Link>
-          <SidebarThemeToggleFooter />
           <div className="mt-2 px-1">
             <SignOutButton
               variant="sidebar"

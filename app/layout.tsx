@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={dmSans.variable}>
+    <html lang="en" suppressHydrationWarning data-theme="dark" className={dmSans.variable}>
       <body className="antialiased">
         <ThemeProvider>
           <AppLoadingScreen />

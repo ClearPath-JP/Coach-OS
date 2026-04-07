@@ -42,7 +42,7 @@ export default async function AdminShellLayout({ children }: { children: React.R
           <AdminNav />
           <AdminSidebarFooter email={email} />
         </aside>
-        <main className="min-w-0 flex-1 overflow-y-auto bg-[var(--cp-offwhite)] p-8 text-slate-900">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-[var(--bg-app)] p-8 text-[var(--text-primary)]">
           <AdminWarningBanner />
           {children}
         </main>

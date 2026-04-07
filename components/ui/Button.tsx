@@ -45,11 +45,11 @@ function Spinner({ className, sizePx }: { className?: string; sizePx: number }) 
 }
 
 const base = cn(
-  'relative inline-flex items-center justify-center border border-transparent font-medium tracking-[-0.01em]',
+  'relative inline-flex items-center justify-center border font-medium tracking-[-0.01em]',
   'rounded-[var(--radius-md)] cursor-pointer select-none whitespace-nowrap gap-[6px]',
   'transition-all duration-[var(--duration-normal)] [transition-timing-function:var(--ease-out)]',
   'focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]',
-  'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-none'
+  'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none'
 )
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -65,36 +65,36 @@ const variantClasses: Record<
   string
 > = {
   primary: cn(
-    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-semibold',
-    'bg-[var(--cp-btn-bg)] text-white border-transparent shadow-none',
-    'hover:bg-[var(--cp-btn-hover)] transition-[background,transform] duration-150',
+    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-medium',
+    'bg-[var(--accent)] text-[var(--text-on-accent)] border border-[var(--accent)] shadow-none',
+    'hover:bg-[var(--accent-hover)] hover:-translate-y-px',
     'active:translate-y-0',
-    'disabled:hover:bg-[var(--cp-btn-bg)]'
+    'disabled:hover:bg-[var(--accent)] disabled:hover:translate-y-0'
   ),
   secondary: cn(
-    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-semibold',
-    'bg-transparent text-[var(--cp-accent)] border-[1.5px] border-[var(--cp-border)] shadow-none',
-    'hover:border-[var(--cp-accent)] hover:bg-[var(--cp-offwhite)] transition-[border-color,background] duration-150',
+    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-medium',
+    'bg-transparent text-[var(--text-secondary)] border border-[var(--border-default)] shadow-none',
+    'hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
     'active:translate-y-0',
     'disabled:hover:bg-transparent'
   ),
   ghost: cn(
     'bg-transparent text-[var(--text-tertiary)] border-transparent shadow-none',
-    'hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]',
+    'hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]',
     'active:translate-y-0'
   ),
   accentGhost: cn(
-    'bg-[var(--accent-light)] text-[var(--cp-accent)] border-transparent shadow-none',
+    'bg-[var(--accent-light)] text-[var(--accent)] border-transparent shadow-none',
     'hover:bg-[var(--accent-muted)]',
     'active:translate-y-0'
   ),
   danger: cn(
-    'bg-[var(--error-bg)] text-[var(--error)] border-[var(--error-border)] shadow-none',
+    'bg-[var(--error-bg)] text-[var(--error)] border border-[var(--error-border)] shadow-none',
     'hover:bg-[var(--error)] hover:text-white hover:border-[var(--error)]',
     'active:translate-y-0'
   ),
   'destructive-secondary': cn(
-    'bg-transparent text-[var(--error)] border-[var(--error)] shadow-none',
+    'bg-transparent text-[var(--error)] border border-[var(--error)] shadow-none',
     'hover:bg-[var(--error-bg)]',
     'active:translate-y-0'
   ),

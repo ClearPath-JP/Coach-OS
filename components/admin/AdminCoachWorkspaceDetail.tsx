@@ -278,13 +278,13 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
   return (
     <div className="space-y-8">
       {banner ? (
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700">{banner}</div>
+        <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-2 text-sm text-[var(--text-secondary)]">{banner}</div>
       ) : null}
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="text-[28px] font-medium leading-tight text-slate-900">{w.name}</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-[var(--text-tertiary)]">
             {coachDisplay} · {coachEmail}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -293,7 +293,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 Suspended
               </span>
             ) : null}
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize text-slate-800">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize text-[var(--text-primary)]">
               {subStatus.replace('_', ' ')}
             </span>
             <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium capitalize text-blue-800">
@@ -315,11 +315,11 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
               Change plan ▾
             </Button>
             {headerPlanOpen ? (
-              <div className="absolute right-0 z-10 mt-1 w-52 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+              <div className="absolute right-0 z-10 mt-1 w-52 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] p-2 shadow-lg">
                 <select
                   value={plan}
                   onChange={(e) => setPlan(e.target.value)}
-                  className="h-9 w-full rounded-lg border border-slate-200 px-2 text-sm"
+                  className="h-9 w-full rounded-lg border border-[var(--border-default)] px-2 text-sm"
                 >
                   <option value="free">Free</option>
                   <option value="starter">Starter ($49/mo)</option>
@@ -374,15 +374,15 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <h2 className="text-sm font-medium text-slate-900">Subscription</h2>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-medium capitalize text-blue-800">
                 {data.subscription?.plan ?? 'free'}
               </span>
-              <span className="text-xs text-slate-600 capitalize">{subStatus.replace('_', ' ')}</span>
+              <span className="text-xs text-[var(--text-tertiary)] capitalize">{subStatus.replace('_', ' ')}</span>
             </div>
-            <p className="mt-2 text-sm text-slate-700">
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
               Period ends:{' '}
               {data.subscription?.current_period_end
                 ? new Date(data.subscription.current_period_end).toLocaleDateString('en-US', {
@@ -393,7 +393,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 : '—'}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <code className="rounded bg-slate-100 px-2 py-1 font-mono text-xs text-slate-800">
+              <code className="rounded bg-slate-100 px-2 py-1 font-mono text-xs text-[var(--text-primary)]">
                 {stripeId ?? '—'}
               </code>
               {stripeId ? (
@@ -418,7 +418,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 <select
                   value={plan}
                   onChange={(e) => setPlan(e.target.value)}
-                  className="h-9 rounded-lg border border-slate-200 px-3 text-sm"
+                  className="h-9 rounded-lg border border-[var(--border-default)] px-3 text-sm"
                 >
                   <option value="free">Free</option>
                   <option value="starter">Starter ($49/mo)</option>
@@ -435,7 +435,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <h2 className="text-sm font-medium text-slate-900">Usage</h2>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               <div>
@@ -453,7 +453,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 <Progress value={storagePct} danger={storagePct > 0.8} />
               </div>
             </div>
-            <ul className="mt-4 space-y-1 text-sm text-slate-600">
+            <ul className="mt-4 space-y-1 text-sm text-[var(--text-tertiary)]">
               <li>Sessions this month: {data.usage.sessionsThisMonth}</li>
               <li>Messages sent: {data.usage.messages}</li>
               <li>Programs created: {data.usage.programs}</li>
@@ -463,10 +463,10 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
 
           <div id="clients">
             <h2 className="mb-2 text-sm font-medium text-slate-900">Clients</h2>
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] shadow-sm">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-xs uppercase text-slate-500">
+                  <tr className="border-b border-[var(--border-default)] text-xs uppercase text-slate-500">
                     <th className="px-4 py-2">Name</th>
                     <th className="px-4 py-2">Email</th>
                     <th className="px-4 py-2">Status</th>
@@ -495,14 +495,14 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                             />
                             {name}
                           </td>
-                          <td className="px-4 py-2 text-slate-600">{c.email ?? '—'}</td>
-                          <td className="px-4 py-2 capitalize text-slate-700">{c.status}</td>
+                          <td className="px-4 py-2 text-[var(--text-tertiary)]">{c.email ?? '—'}</td>
+                          <td className="px-4 py-2 capitalize text-[var(--text-secondary)]">{c.status}</td>
                           <td className="px-4 py-2">{c.sessions}</td>
-                          <td className="px-4 py-2 text-slate-600">{c.programName ?? 'None'}</td>
-                          <td className="px-4 py-2 text-slate-600">
+                          <td className="px-4 py-2 text-[var(--text-tertiary)]">{c.programName ?? 'None'}</td>
+                          <td className="px-4 py-2 text-[var(--text-tertiary)]">
                             {new Date(c.created_at).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-2 text-slate-600">
+                          <td className="px-4 py-2 text-[var(--text-tertiary)]">
                             {c.updated_at
                               ? formatDistanceToNow(new Date(c.updated_at), { addSuffix: true })
                               : '—'}
@@ -518,11 +518,11 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <h2 className="text-sm font-medium text-slate-900">Coach</h2>
             <div className="mt-3 flex gap-3">
               <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-medium text-slate-700"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-medium text-[var(--text-secondary)]"
                 aria-hidden
               >
                 {initials(coachDisplay)}
@@ -550,7 +550,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <h2 className="text-sm font-medium text-slate-900">Recent activity</h2>
             <p className="text-xs text-slate-500">Last 15 events for this workspace</p>
             <ul className="mt-3 space-y-3 text-sm">
@@ -567,7 +567,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 const { segments } = formatAuditDescription(a.action, meta, ctx)
                 return (
                   <li key={`${a.action}-${a.created_at}-${idx}`} className="border-b border-slate-100 pb-3 last:border-0">
-                    <p className="leading-snug text-slate-800">
+                    <p className="leading-snug text-[var(--text-primary)]">
                       {segments.map((s, i) =>
                         s.bold ? (
                           <strong key={i} className="font-semibold text-slate-900">
@@ -590,11 +590,11 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
             </Link>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <h2 className="text-sm font-medium text-slate-900">Admin notes</h2>
             <p className="mt-1 text-xs text-slate-500">Internal only — coaches never see this.</p>
             <textarea
-              className="mt-2 min-h-[120px] w-full rounded-lg border border-slate-200 p-3 text-sm"
+              className="mt-2 min-h-[120px] w-full rounded-lg border border-[var(--border-default)] p-3 text-sm"
               value={notes}
               onChange={(e) => {
                 notesDirtyRef.current = true
@@ -608,7 +608,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
             {saving ? <p className="mt-1 text-xs text-slate-500">Saving…</p> : null}
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <h2 className="text-sm font-medium text-slate-900">Quick actions</h2>
             <ul className="mt-2 space-y-2 text-sm">
               <li>
@@ -616,7 +616,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 <span className="text-xs text-slate-400">(coming soon)</span>
               </li>
               <li className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-slate-700">View their dashboard</span>
+                <span className="text-[var(--text-secondary)]">View their dashboard</span>
                 <Button
                   type="button"
                   size="sm"
@@ -628,7 +628,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 </Button>
               </li>
               <li className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-slate-700">Export their data (CSV)</span>
+                <span className="text-[var(--text-secondary)]">Export their data (CSV)</span>
                 <Button
                   type="button"
                   size="sm"
@@ -646,7 +646,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
             <h2 className="text-sm font-medium text-amber-950">Suspend workspace</h2>
             <p className="mt-1 text-xs text-amber-900">Blocks coach access until reactivated.</p>
             <input
-              className="mt-2 h-9 w-full rounded-lg border border-slate-200 px-3 text-sm"
+              className="mt-2 h-9 w-full rounded-lg border border-[var(--border-default)] px-3 text-sm"
               placeholder={`Type workspace name: ${w.name}`}
               value={suspendName}
               onChange={(e) => setSuspendName(e.target.value)}
@@ -666,7 +666,7 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
             ) : (
               <div className="mt-2 space-y-2">
                 <input
-                  className="h-9 w-full rounded-lg border border-slate-200 px-3 text-sm"
+                  className="h-9 w-full rounded-lg border border-[var(--border-default)] px-3 text-sm"
                   value={deletePhrase}
                   onChange={(e) => setDeletePhrase(e.target.value)}
                 />

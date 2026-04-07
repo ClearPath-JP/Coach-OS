@@ -155,8 +155,9 @@ export async function POST(request: Request) {
       default:
         break
     }
-  } catch {
-    // Log internally; still return 200
+  } catch (err) {
+    console.error('[POST /api/webhooks/stripe] Unhandled error processing event', event.type, err)
+    // Still return 200 so Stripe does not retry; error is logged for investigation.
   }
   return NextResponse.json({ received: true })
 }

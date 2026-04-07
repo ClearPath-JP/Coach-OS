@@ -4,10 +4,8 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { useTheme } from '@/components/ThemeProvider'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { cn } from '@/lib/utils'
 
 function initials(first: string, last: string): string {
   const a = first.trim()[0] ?? ''
@@ -28,7 +26,6 @@ export function ClientProfileContent({
 }) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
-  const { theme, toggleTheme } = useTheme()
   const [firstName, setFirstName] = useState(initialFirstName)
   const [lastName, setLastName] = useState(initialLastName)
   const [saving, setSaving] = useState(false)
@@ -114,31 +111,6 @@ export function ClientProfileContent({
         >
           Change password
         </Link>
-      </section>
-
-      <section>
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Preferences</h2>
-        <p className="mt-2 text-[14px] text-[var(--text-secondary)]">Theme</p>
-        <div className="mt-2 flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2">
-          <span className="text-[13px] text-[var(--text-tertiary)]">Light</span>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className={cn(
-              'relative h-7 w-12 rounded-full border border-[var(--border-default)] transition-colors',
-              theme === 'dark' ? 'bg-[var(--cp-accent)]' : 'bg-[var(--cp-offwhite)]'
-            )}
-            aria-label="Toggle theme"
-          >
-            <span
-              className={cn(
-                'absolute top-0.5 size-6 rounded-full bg-[var(--cp-offwhite)] shadow-sm transition-transform',
-                theme === 'dark' ? 'left-6' : 'left-0.5'
-              )}
-            />
-          </button>
-          <span className="text-[13px] text-[var(--text-tertiary)]">Dark</span>
-        </div>
       </section>
 
       <div className="border-t border-[var(--border-subtle)] pt-8">

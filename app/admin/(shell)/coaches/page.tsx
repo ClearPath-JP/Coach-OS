@@ -47,7 +47,7 @@ function planBadge(plan: string): string {
   if (p === 'scale') return 'bg-violet-100 text-violet-800'
   if (p === 'pro') return 'bg-blue-100 text-blue-800'
   if (p === 'starter') return 'bg-sky-100 text-sky-800'
-  return 'bg-slate-100 text-slate-700'
+  return 'bg-slate-100 text-[var(--text-secondary)]'
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -57,7 +57,7 @@ function StatusBadge({ status }: { status: string }) {
       : status === 'trial'
         ? 'bg-amber-100 text-amber-900'
         : status === 'cancelled'
-          ? 'bg-slate-200 text-slate-700'
+          ? 'bg-slate-200 text-[var(--text-secondary)]'
           : 'bg-emerald-100 text-emerald-800'
   return (
     <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${color}`}>
@@ -140,7 +140,7 @@ export default function AdminCoachesPage() {
           <h1 className="text-2xl font-medium text-slate-900">
             {rows ? `${rows.length} coaches` : 'Coaches'}
           </h1>
-          <p className="mt-1 max-w-xl text-sm text-slate-600">
+          <p className="mt-1 max-w-xl text-sm text-[var(--text-tertiary)]">
             Every coaching business on the platform. Search by name or email, filter by billing status, then open a
             card for details, trial extension, plan changes, or suspend.
           </p>
@@ -153,14 +153,14 @@ export default function AdminCoachesPage() {
         />
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-[var(--border-default)] pb-2">
         {tabs.map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
             className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              tab === t.id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              tab === t.id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-[var(--text-secondary)] hover:bg-slate-200'
             }`}
           >
             {t.label}
@@ -171,9 +171,9 @@ export default function AdminCoachesPage() {
       {rows == null ? (
         <p className="text-sm text-slate-500">Loading coaches…</p>
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-8 text-center shadow-sm">
           <p className="font-medium text-slate-900">No coaches match</p>
-          <p className="mt-1 text-sm text-slate-600">Try another search or tab.</p>
+          <p className="mt-1 text-sm text-[var(--text-tertiary)]">Try another search or tab.</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -184,7 +184,7 @@ export default function AdminCoachesPage() {
             return (
               <article
                 key={r.workspaceId}
-                className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                className="flex flex-col rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -200,7 +200,7 @@ export default function AdminCoachesPage() {
 
                 <div className="mt-4 flex gap-3">
                   <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-medium text-slate-700"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-medium text-[var(--text-secondary)]"
                     aria-hidden
                   >
                     {initials(r.coachName)}
@@ -226,14 +226,14 @@ export default function AdminCoachesPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-700">
+                <div className="mt-4 flex flex-wrap gap-3 text-sm text-[var(--text-secondary)]">
                   <span title="Clients">👥 {r.clients}</span>
                   <span title="Sessions">📅 {r.sessionsCount}</span>
                   <span title="Revenue this month">💰 {money(r.revenueThisMonthCents)}</span>
                 </div>
 
                 <div className="mt-4">
-                  <div className="flex justify-between text-xs text-slate-600">
+                  <div className="flex justify-between text-xs text-[var(--text-tertiary)]">
                     <span>
                       Storage: {storageGb} GB / {r.maxVideoStorageGb} GB
                     </span>
@@ -249,13 +249,13 @@ export default function AdminCoachesPage() {
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
                   <Link
                     href={`/admin/coaches/${r.workspaceId}#clients`}
-                    className="inline-flex h-8 items-center rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                    className="inline-flex h-8 items-center rounded-lg px-3 text-sm font-medium text-[var(--text-tertiary)] hover:bg-slate-100"
                   >
                     View clients
                   </Link>
                   <Link
                     href={`/admin/coaches/${r.workspaceId}`}
-                    className="inline-flex h-8 items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50"
+                    className="inline-flex h-8 items-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 text-sm font-medium text-[var(--text-primary)] shadow-sm hover:bg-[var(--bg-subtle)]"
                   >
                     Manage
                   </Link>
@@ -266,25 +266,25 @@ export default function AdminCoachesPage() {
                         e.stopPropagation()
                         setOpenMenu((id) => (id === r.workspaceId ? null : r.workspaceId))
                       }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
                       aria-label="More actions"
                     >
                       ⋯
                     </button>
                     {openMenu === r.workspaceId ? (
                       <div
-                        className="absolute right-0 z-20 mt-1 w-52 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                        className="absolute right-0 z-20 mt-1 w-52 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] py-1 shadow-lg"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <a
                           href={`mailto:${encodeURIComponent(r.email)}`}
-                          className="block px-3 py-2 text-sm text-slate-800 hover:bg-slate-50"
+                          className="block px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                         >
                           Send email
                         </a>
                         <button
                           type="button"
-                          className="block w-full px-3 py-2 text-left text-sm text-slate-800 hover:bg-slate-50"
+                          className="block w-full px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                           onClick={() => {
                             setOpenMenu(null)
                             void extendTrial(r.workspaceId)
@@ -299,7 +299,7 @@ export default function AdminCoachesPage() {
                           <button
                             key={p}
                             type="button"
-                            className="block w-full px-3 py-1.5 text-left text-sm capitalize text-slate-800 hover:bg-slate-50"
+                            className="block w-full px-3 py-1.5 text-left text-sm capitalize text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                             onClick={() => {
                               setOpenMenu(null)
                               void changePlan(r.workspaceId, p)

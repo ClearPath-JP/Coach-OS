@@ -9,7 +9,6 @@ export interface StatCardProps {
   value: string | number
   subtext?: string
   subtextPositive?: boolean
-  icon?: ReactNode
   onClick?: () => void
   href?: string
   /** When value is numeric, animate count-up */
@@ -25,7 +24,6 @@ export const StatCard = React.memo(function StatCard({
   value,
   subtext,
   subtextPositive,
-  icon,
   onClick,
   href,
   animateValue,
@@ -37,49 +35,26 @@ export const StatCard = React.memo(function StatCard({
 
   const cardInner = (
     <>
-      <div
+      <span
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 6,
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: '0.07em',
+          textTransform: 'uppercase',
+          color: 'var(--text-tertiary)',
+          marginBottom: 8,
+          display: 'block',
         }}
       >
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: 'var(--cp-gray)',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-          }}
-        >
-          {label}
-        </span>
-        {icon ? (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: 'var(--cp-lavender)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--cp-accent)',
-              flexShrink: 0,
-            }}
-          >
-            {icon}
-          </div>
-        ) : null}
-      </div>
+        {label}
+      </span>
       <div
         style={{
-          fontSize: 28,
-          fontWeight: 800,
-          color: 'var(--cp-navy)',
-          lineHeight: 1.1,
+          fontSize: 24,
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          letterSpacing: '-0.03em',
+          lineHeight: 1,
         }}
       >
         {animateValue && typeof value === 'number' ? (
@@ -98,9 +73,13 @@ export const StatCard = React.memo(function StatCard({
           style={{
             fontSize: 12,
             fontWeight: 500,
+            marginTop: 6,
             color:
-              subtextPositive === true ? '#15803D' : subtextPositive === false ? '#B91C1C' : 'var(--cp-gray)',
-            marginTop: 2,
+              subtextPositive === true
+                ? 'var(--success)'
+                : subtextPositive === false
+                  ? 'var(--error)'
+                  : 'var(--text-tertiary)',
           }}
         >
           {subtext}
@@ -116,22 +95,29 @@ export const StatCard = React.memo(function StatCard({
     onMouseLeave: (e: MouseEvent<HTMLDivElement>) => void
   } = {
     style: {
-      background: 'var(--cp-white)',
-      border: '1px solid var(--cp-border)',
-      borderRadius: 12,
-      padding: '20px 22px',
+      background: 'var(--bg-subtle)',
+      border: '1px solid var(--border-default)',
+      borderRadius: 10,
+      padding: '14px 16px',
       cursor: interactive ? ('pointer' as const) : ('default' as const),
-      transition: 'border-color 0.15s',
+      transition: 'border-color 0.12s ease, background-color 0.12s ease',
       display: 'flex' as const,
       flexDirection: 'column' as const,
-      gap: 4,
       minWidth: 0,
     },
     onMouseEnter: (e: MouseEvent<HTMLDivElement>) => {
-      if (interactive) (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--cp-accent)'
+      if (interactive) {
+        const el = e.currentTarget as HTMLDivElement
+        el.style.borderColor = 'var(--border-strong)'
+        el.style.background = 'var(--bg-muted)'
+      }
     },
     onMouseLeave: (e: MouseEvent<HTMLDivElement>) => {
-      if (interactive) (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--cp-border)'
+      if (interactive) {
+        const el = e.currentTarget as HTMLDivElement
+        el.style.borderColor = 'var(--border-default)'
+        el.style.background = 'var(--bg-subtle)'
+      }
     },
   }
 

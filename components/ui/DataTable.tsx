@@ -62,10 +62,10 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
+    <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-app)]">
       <div className="max-h-[65vh] overflow-auto">
         <table className="w-full text-left">
-          <thead className="sticky top-0 z-10 bg-[var(--cp-offwhite)]">
+          <thead className="sticky top-0 z-10 bg-[var(--bg-subtle)]">
             <tr className="h-10 border-b border-[var(--border-subtle)]">
               {selectable ? <th className="w-10 px-3"><input type="checkbox" aria-label="Select all" /></th> : null}
               {columns.map((col) => {

@@ -34,7 +34,7 @@ function planBadgeClass(plan: string): string {
   if (p === 'scale') return 'bg-violet-100 text-violet-800'
   if (p === 'pro') return 'bg-blue-100 text-blue-800'
   if (p === 'starter') return 'bg-sky-100 text-sky-800'
-  return 'bg-slate-100 text-slate-700'
+  return 'bg-slate-100 text-[var(--text-secondary)]'
 }
 
 function statusDotClass(label: WorkspaceRow['statusLabel']): string {
@@ -74,12 +74,12 @@ export function AdminOverviewCoachAccordion({
         return (
           <div
             key={w.workspaceId}
-            className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+            className="overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] shadow-sm"
           >
             <button
               type="button"
               onClick={() => toggle(w.workspaceId)}
-              className="flex w-full flex-col gap-3 p-4 text-left transition-colors hover:bg-slate-50/80 md:flex-row md:items-center md:justify-between"
+              className="flex w-full flex-col gap-3 p-4 text-left transition-colors hover:bg-[var(--bg-subtle)]/80 md:flex-row md:items-center md:justify-between"
             >
               <div className="min-w-0 flex-1">
                 <p className="text-base font-medium text-slate-900">{w.workspaceName}</p>
@@ -91,10 +91,10 @@ export function AdminOverviewCoachAccordion({
                 >
                   {w.plan}
                 </span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-[var(--text-secondary)]">
                   {w.clientsCount} clients
                 </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-0.5 text-[11px] text-[var(--text-secondary)]">
                   <span className={`h-1.5 w-1.5 rounded-full ${statusDotClass(w.statusLabel)}`} />
                   {w.statusLabel}
                 </span>
@@ -114,7 +114,7 @@ export function AdminOverviewCoachAccordion({
                 <Link
                   href={`/admin/coaches/${w.workspaceId}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex h-7 shrink-0 items-center rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-800 hover:bg-slate-50"
+                  className="inline-flex h-7 shrink-0 items-center rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-2.5 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                 >
                   Manage →
                 </Link>
@@ -133,7 +133,7 @@ export function AdminOverviewCoachAccordion({
                       {clients.map((c) => (
                         <li
                           key={c.id}
-                          className="flex flex-wrap items-start gap-3 border-b border-slate-200/80 pb-3 last:border-0 last:pb-0"
+                          className="flex flex-wrap items-start gap-3 border-b border-[var(--border-default)]/80 pb-3 last:border-0 last:pb-0"
                         >
                           <div
                             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-medium text-blue-800"
@@ -144,8 +144,8 @@ export function AdminOverviewCoachAccordion({
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-slate-900">{c.displayName}</p>
                             <p className="text-xs text-slate-500">{c.email ?? '—'}</p>
-                            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-600">
-                              <span className="rounded-full bg-white px-2 py-0.5 capitalize">{c.status}</span>
+                            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-[var(--text-tertiary)]">
+                              <span className="rounded-full bg-[var(--bg-app)] px-2 py-0.5 capitalize">{c.status}</span>
                               <span>{c.sessionsCount} sessions</span>
                               <span>{c.programName ?? 'None'}</span>
                               <span>Joined {new Date(c.joinedAt).toLocaleDateString()}</span>

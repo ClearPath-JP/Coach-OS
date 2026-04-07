@@ -20,7 +20,7 @@ export function AdminOverviewActivityFeed({ events }: { events: AdminOverviewAct
   }, [])
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
       <h2 className="text-sm font-medium text-slate-900">Recent activity</h2>
       <ul className="mt-3 max-h-[min(70vh,640px)] space-y-2 overflow-y-auto pr-1">
         {events.length === 0 ? (
@@ -41,7 +41,7 @@ export function AdminOverviewActivityFeed({ events }: { events: AdminOverviewAct
                 key={ev.id}
                 className={`border-l-[3px] ${borderClass(border)} rounded-r-lg bg-slate-50/80 py-2 pl-3 pr-2`}
               >
-                <p className="text-[13px] leading-snug text-slate-800">
+                <p className="text-[13px] leading-snug text-[var(--text-primary)]">
                   {segments.map((s, i) =>
                     s.bold ? (
                       <strong key={i} className="font-semibold text-slate-900">

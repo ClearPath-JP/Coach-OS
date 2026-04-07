@@ -69,7 +69,7 @@ function PriceCell({ row }: { row: PriceRow }) {
   if (row.live === null) {
     return (
       <div className="space-y-1">
-        <code className="block break-all text-[11px] text-slate-700">{row.priceId}</code>
+        <code className="block break-all text-[11px] text-[var(--text-secondary)]">{row.priceId}</code>
         <p className="text-xs text-amber-700">{row.error}</p>
       </div>
     )
@@ -87,13 +87,13 @@ function PriceCell({ row }: { row: PriceRow }) {
         </span>
         <span
           className={`rounded px-1.5 py-0.5 text-[10px] font-medium uppercase ${
-            live.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+            live.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-[var(--text-tertiary)]'
           }`}
         >
           {live.active ? 'Active' : 'Inactive'}
         </span>
       </div>
-      {live.productName ? <p className="text-xs text-slate-600">{live.productName}</p> : null}
+      {live.productName ? <p className="text-xs text-[var(--text-tertiary)]">{live.productName}</p> : null}
       {live.nickname ? <p className="text-xs text-slate-500">Nickname: {live.nickname}</p> : null}
       <code className="block break-all text-[11px] text-slate-500">{row.priceId}</code>
     </div>
@@ -134,7 +134,7 @@ export default function AdminStripePage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Stripe catalog</h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-600">
+          <p className="mt-1 max-w-2xl text-sm text-[var(--text-tertiary)]">
             Price IDs from environment variables and live amounts from Stripe. Coaches see the billing page; this view is
             for verifying production configuration.
           </p>
@@ -151,7 +151,7 @@ export default function AdminStripePage() {
             href="https://dashboard.stripe.com/prices"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 items-center rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+            className="inline-flex h-9 items-center rounded-md border border-[var(--border-strong)] bg-[var(--bg-app)] px-3 text-sm font-medium text-[var(--text-secondary)] shadow-sm hover:bg-[var(--bg-subtle)]"
           >
             Open Stripe Dashboard →
           </Link>
@@ -166,24 +166,24 @@ export default function AdminStripePage() {
 
       {data ? (
         <>
-          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-slate-900">Environment</h2>
             <p className="mt-1 text-xs text-slate-500">
               These flags reflect <strong>this server&apos;s</strong> process env (the deployment that handled the request
               above) — not your laptop unless you are on localhost.
             </p>
             {data.envContext ? (
-              <p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-700">
-                <span className="font-medium text-slate-800">Context: </span>
+              <p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs text-[var(--text-secondary)]">
+                <span className="font-medium text-[var(--text-primary)]">Context: </span>
                 {data.envContext.vercelEnv ? (
                   <code className="rounded bg-slate-200 px-1">VERCEL_ENV={data.envContext.vercelEnv}</code>
                 ) : (
                   <span>not on Vercel (e.g. local)</span>
                 )}
-                <span className="mt-1 block text-slate-600">{data.envContext.deploymentHint}</span>
+                <span className="mt-1 block text-[var(--text-tertiary)]">{data.envContext.deploymentHint}</span>
               </p>
             ) : null}
-            <ul className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
+            <ul className="mt-3 grid gap-2 text-sm text-[var(--text-secondary)] sm:grid-cols-2">
               <li>
                 <span className="text-slate-500">STRIPE_SECRET_KEY:</span>{' '}
                 {data.stripeSecretConfigured ? (
@@ -206,9 +206,9 @@ export default function AdminStripePage() {
               </li>
             </ul>
             {data.stripeEnvDiagnostics ? (
-              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
+              <div className="mt-4 rounded-lg border border-[var(--border-default)] bg-slate-50 p-3 text-xs text-[var(--text-primary)]">
                 <p className="font-semibold text-slate-900">What the server sees (safe — not your keys)</p>
-                <ul className="mt-2 list-disc space-y-1 pl-4 text-slate-700">
+                <ul className="mt-2 list-disc space-y-1 pl-4 text-[var(--text-secondary)]">
                   <li>
                     Secret key length: <strong>{data.stripeEnvDiagnostics.secretKeyCharLength}</strong> characters
                     {data.stripeEnvDiagnostics.secretKeyCharLength === 0
@@ -222,7 +222,7 @@ export default function AdminStripePage() {
                       </span>
                     ) : null}
                     {data.stripeEnvDiagnostics.usedStripeApiKeyAlias ? (
-                      <span className="block text-slate-600">
+                      <span className="block text-[var(--text-tertiary)]">
                         Using <code className="rounded bg-slate-200 px-1">STRIPE_API_KEY</code> because{' '}
                         <code className="rounded bg-slate-200 px-1">STRIPE_SECRET_KEY</code> was empty.
                       </span>
@@ -270,12 +270,12 @@ export default function AdminStripePage() {
             ) : null}
           </section>
 
-          <section className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+          <section className="rounded-xl border border-[var(--border-default)] bg-slate-50 p-5">
             <h2 className="text-sm font-semibold text-slate-900">Billing page copy (marketing)</h2>
-            <p className="mt-1 text-xs text-slate-600">{data.billingUiCopy.note}</p>
-            <div className="mt-4 overflow-x-auto rounded-lg border border-slate-200 bg-white">
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">{data.billingUiCopy.note}</p>
+            <div className="mt-4 overflow-x-auto rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)]">
               <table className="w-full min-w-[480px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="border-b border-[var(--border-default)] bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-4 py-2 font-medium">Plan</th>
                     <th className="px-4 py-2 font-medium">Shown monthly</th>
@@ -286,10 +286,10 @@ export default function AdminStripePage() {
                   {data.plans.map((p) => (
                     <tr key={p.tier} className="border-b border-slate-100 last:border-0">
                       <td className="px-4 py-3 font-medium text-slate-900">{p.label}</td>
-                      <td className="px-4 py-3 text-slate-700">
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">
                         {data.billingUiCopy.monthlyDisplay[p.tier] ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-slate-700">
+                      <td className="px-4 py-3 text-[var(--text-secondary)]">
                         {data.billingUiCopy.setupFeeDisplay[p.tier] ?? '—'}
                       </td>
                     </tr>
@@ -299,8 +299,8 @@ export default function AdminStripePage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 px-5 py-4">
+          <section className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] shadow-sm">
+            <div className="border-b border-[var(--border-default)] px-5 py-4">
               <h2 className="text-sm font-semibold text-slate-900">Configured prices (Stripe API)</h2>
               <p className="mt-0.5 text-xs text-slate-500">
                 Monthly subscription IDs and optional one-time setup fee IDs from Vercel / .env.
@@ -308,7 +308,7 @@ export default function AdminStripePage() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
+                <thead className="border-b border-[var(--border-default)] bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="px-4 py-3 font-medium">Plan</th>
                     <th className="px-4 py-3 font-medium">Monthly</th>

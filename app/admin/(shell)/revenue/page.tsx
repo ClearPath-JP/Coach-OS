@@ -11,7 +11,7 @@ const AdminRevenueCharts = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="flex h-[200px] items-center justify-center rounded-[10px] border border-slate-200 bg-slate-50 text-sm text-slate-500"
+        className="flex h-[200px] items-center justify-center rounded-[10px] border border-[var(--border-default)] bg-slate-50 text-sm text-slate-500"
         aria-busy
       >
         Loading charts…
@@ -51,7 +51,7 @@ export default function AdminRevenuePage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Revenue</h1>
-        <p className="mt-1 max-w-2xl text-sm text-slate-600">
+        <p className="mt-1 max-w-2xl text-sm text-[var(--text-tertiary)]">
           Payments and subscription activity over time. <strong>MRR</strong> here is a rollup from stored subscription
           data — compare with{' '}
           <Link href="/admin/subscriptions" className="font-medium text-blue-700 hover:underline">
@@ -63,16 +63,16 @@ export default function AdminRevenuePage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {(['free', 'starter', 'pro', 'scale'] as const).map((plan) => (
-          <div key={plan} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div key={plan} className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
             <p className="text-xs uppercase tracking-wide text-slate-500">{plan}</p>
-            <p className="mt-1 text-sm text-slate-700">{data.byPlan[plan]?.coaches ?? 0} coaches</p>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">{data.byPlan[plan]?.coaches ?? 0} coaches</p>
             <p className="text-lg font-semibold text-slate-900">{money(data.byPlan[plan]?.mrrCents ?? 0)}</p>
           </div>
         ))}
       </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
         <p className="text-lg font-semibold text-slate-900">Total MRR: {money(data.totalMrrCents)}</p>
-        <p className="text-sm text-slate-600">Total ARR: {money(data.totalArrCents)}</p>
+        <p className="text-sm text-[var(--text-tertiary)]">Total ARR: {money(data.totalArrCents)}</p>
       </div>
 
       <AdminRevenueCharts monthlyLast6={data.monthlyLast6} methodBreakdown={data.methodBreakdown} />

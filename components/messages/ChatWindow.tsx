@@ -164,7 +164,7 @@ export function ChatWindow({
           style={{
             padding: '14px 20px',
             borderBottom: '1px solid var(--cp-border)',
-            background: 'var(--cp-white)',
+            background: 'var(--bg-subtle)',
             display: 'flex',
             alignItems: 'center',
             gap: 12,
@@ -184,7 +184,7 @@ export function ChatWindow({
                 justifyContent: 'center',
                 borderRadius: 8,
                 border: '1px solid var(--cp-border)',
-                background: 'var(--cp-white)',
+                background: 'var(--bg-subtle)',
                 cursor: 'pointer',
                 flexShrink: 0,
               }}
@@ -321,11 +321,11 @@ export function ChatWindow({
                         maxWidth: '68%',
                         padding: '12px 14px',
                         borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                        background: isMe ? 'var(--cp-sapphire)' : 'var(--cp-white)',
-                        color: isMe ? '#FFFFFF' : 'var(--cp-navy)',
+                        background: isMe ? 'var(--accent)' : 'var(--bg-muted)',
+                        color: isMe ? 'var(--text-on-accent)' : 'var(--text-primary)',
                         fontSize: 14,
                         lineHeight: 1.45,
-                        border: 'none',
+                        border: isMe ? 'none' : '1px solid var(--border-default)',
                         wordBreak: 'break-word',
                       }}
                     >
@@ -356,7 +356,7 @@ export function ChatWindow({
             style={{
               padding: '12px 16px',
               borderTop: '1px solid var(--cp-border)',
-              background: 'var(--cp-white)',
+              background: 'var(--bg-subtle)',
               display: 'flex',
               alignItems: 'flex-end',
               gap: 10,

@@ -84,7 +84,6 @@ export default async function BillingLayout({
         <AccentInjector accentColor={resolvedCpAccent} />
         <Nav
           coachApp
-          showThemeToggle
           userDisplayName={displayName}
           coachAvatarUrl={profile?.logo_url ?? null}
         />

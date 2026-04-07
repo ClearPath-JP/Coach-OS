@@ -36,7 +36,7 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 border-l-4 border-l-blue-500 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-[var(--border-default)] border-l-4 border-l-blue-500 bg-[var(--bg-app)] p-4 shadow-sm">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Coaches</p>
@@ -52,7 +52,7 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 border-l-4 border-l-emerald-500 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-[var(--border-default)] border-l-4 border-l-emerald-500 bg-[var(--bg-app)] p-4 shadow-sm">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Clients</p>
@@ -68,7 +68,7 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 border-l-4 border-l-teal-500 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-[var(--border-default)] border-l-4 border-l-teal-500 bg-[var(--bg-app)] p-4 shadow-sm">
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Monthly revenue</p>
@@ -100,9 +100,9 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
                 return (
                   <li
                     key={`pd-${item.workspaceId}`}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200/80 bg-white/90 px-3 py-2"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200/80 bg-[var(--bg-app)]/90 px-3 py-2"
                   >
-                    <p className="text-sm text-slate-800">
+                    <p className="text-sm text-[var(--text-primary)]">
                       ⚠️ <strong>{item.workspaceName}</strong> subscription is past due
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -112,14 +112,14 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
                             coachEmail: item.coachEmail,
                             workspaceName: item.workspaceName,
                           })}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 hover:bg-slate-50"
+                          className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                         >
                           Email coach
                         </a>
                       ) : null}
                       <Link
                         href={`/admin/coaches/${item.workspaceId}`}
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 hover:bg-slate-50"
+                        className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                       >
                         Resolve
                       </Link>
@@ -131,9 +131,9 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
                 return (
                   <li
                     key={`in-${item.workspaceId}-${idx}`}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200/80 bg-white/90 px-3 py-2"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200/80 bg-[var(--bg-app)]/90 px-3 py-2"
                   >
-                    <p className="text-sm text-slate-800">
+                    <p className="text-sm text-[var(--text-primary)]">
                       💤 <strong>{item.workspaceName}</strong> hasn&apos;t been active in {item.daysInactive} days
                     </p>
                     <a
@@ -146,7 +146,7 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
                             })
                           : 'mailto:'
                       }
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 hover:bg-slate-50"
+                      className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                     >
                       Email coach
                     </a>
@@ -156,9 +156,9 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
               return (
                 <li
                   key={`fl-${item.label}-${idx}`}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200/80 bg-white/90 px-3 py-2"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-200/80 bg-[var(--bg-app)]/90 px-3 py-2"
                 >
-                  <p className="text-sm text-slate-800">
+                  <p className="text-sm text-[var(--text-primary)]">
                     🚨 Multiple failed logins for <strong>{item.label}</strong> ({item.count} today)
                   </p>
                   <Link
@@ -166,7 +166,7 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
                       q: item.label,
                       category: 'security',
                     }).toString()}`}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 hover:bg-slate-50"
+                    className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-1 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
                   >
                     View audit log
                   </Link>
@@ -196,7 +196,7 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
           <h2 className="text-sm font-medium text-slate-900">Recent signups</h2>
           <ul className="mt-3 space-y-2">
             {data.recentSignups.map((r) => (
@@ -220,7 +220,7 @@ export async function AdminOverviewBody({ userId }: { userId: string }) {
           </ul>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-4 shadow-sm">
           <h2 className="text-sm font-medium text-slate-900">Recent payments</h2>
           <ul className="mt-3 divide-y divide-slate-100">
             {data.recentPayments.map((p, i) => (
