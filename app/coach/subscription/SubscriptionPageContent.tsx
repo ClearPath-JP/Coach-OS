@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import { Check, Sparkles, Users, HardDrive, Zap } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -61,8 +62,13 @@ const PRICING_TIERS = [
     features: [
       'Up to 15 clients',
       '10 GB video storage',
+      'Client portal access',
       'Programs & assignments',
       'Invoicing & packages',
+      'Messaging (real-time)',
+      'Schedule & calendar',
+      'Goal tracking',
+      'Daily check-ins',
       'Email support',
     ],
   },
@@ -78,6 +84,10 @@ const PRICING_TIERS = [
       'Everything in Starter',
       'Analytics dashboard',
       'White-label branding',
+      'Google Drive integration',
+      'Testimonial collection',
+      'Broadcast messaging',
+      'Coach iCal feed',
       'Priority support',
     ],
   },
@@ -91,7 +101,8 @@ const PRICING_TIERS = [
       'Unlimited clients',
       '200 GB video storage',
       'Everything in Pro',
-      'Dedicated support',
+      'Stripe Connect payouts',
+      'Dedicated account support',
       'API access (coming soon)',
     ],
   },
@@ -102,6 +113,10 @@ export function SubscriptionPageContent({
   hasStripeCustomer,
   clientCount,
 }: SubscriptionPageContentProps) {
+  const searchParams = useSearchParams()
+  const success = searchParams.get('success') === 'true'
+  const cancelled = searchParams.get('cancelled') === 'true'
+
   const [loadingPlan, setLoadingPlan] = useState<Plan | null>(null)
   const [portalLoading, setPortalLoading] = useState(false)
 
@@ -160,6 +175,20 @@ export function SubscriptionPageContent({
   return (
     <main className="min-h-screen p-4 md:p-6 max-w-5xl mx-auto space-y-6">
       <PageHeader title="Subscription" />
+
+      {success && (
+        <div className="rounded-xl border border-[var(--color-success)] bg-[var(--color-success-light)] px-4 py-3 text-[15px] text-[var(--color-success)]">
+          Your subscription is active.{' '}
+          {subscription && subscription.plan !== 'free'
+            ? `Welcome to ClearPath ${PLAN_LABELS[subscription.plan]}!`
+            : 'Welcome to ClearPath!'}
+        </div>
+      )}
+      {cancelled && (
+        <div className="rounded-xl border border-[var(--color-warning)] bg-[var(--color-warning-light)] px-4 py-3 text-[15px] text-[var(--color-warning)]">
+          Checkout cancelled. Your plan was not changed.
+        </div>
+      )}
 
       {/* ── Current plan hero ── */}
       <Card variant="raised" padding="lg" className="relative overflow-hidden border-2 border-[var(--cp-accent)]">

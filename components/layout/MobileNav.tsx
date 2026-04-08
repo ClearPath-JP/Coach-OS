@@ -186,7 +186,7 @@ export const coachTabs = [
   { href: '/coach/packages', label: 'Packages', icon: PackagesIcon },
   { href: '/coach/invoices', label: 'Invoices', icon: InvoicesIcon },
   { href: '/coach/payments', label: 'Payments', icon: PaymentsIcon },
-  { href: '/billing', label: 'Billing', icon: BillingIcon },
+  { href: '/coach/subscription', label: 'Subscription', icon: BillingIcon },
 ] as const
 
 /** Mobile bottom bar — five primary destinations (Goals/Sessions/Invoices live on Home + desktop sidebar). */

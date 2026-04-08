@@ -309,7 +309,6 @@ const MORE_LINKS = [
   { href: '/coach/subscription', label: 'Subscription' },
   { href: '/coach/analytics', label: 'Analytics' },
   { href: '/coach/settings', label: 'Settings' },
-  { href: '/billing', label: 'Billing' },
 ] as const
 
 function SparklesIcon({ className }: { className?: string }) {
@@ -341,7 +340,6 @@ const MORE_GRID = [
   { href: '/coach/subscription', label: 'Subscription', Icon: SparklesIcon },
   { href: '/coach/analytics', label: 'Analytics', Icon: AnalyticsIcon },
   { href: '/coach/settings', label: 'Settings', Icon: SettingsIcon },
-  { href: '/billing', label: 'Billing', Icon: BillingIcon },
 ] as const
 
 /**
@@ -370,10 +368,7 @@ export function CoachMobileDock() {
     return () => window.clearInterval(id)
   }, [refreshUnread])
 
-  const moreActive = MORE_LINKS.some((l) => {
-    if (l.href === '/billing') return pathname.startsWith('/billing')
-    return pathname === l.href || pathname.startsWith(`${l.href}/`)
-  })
+  const moreActive = MORE_LINKS.some((l) => pathname === l.href || pathname.startsWith(`${l.href}/`))
 
   return (
     <>

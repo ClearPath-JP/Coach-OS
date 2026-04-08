@@ -106,8 +106,8 @@ export async function POST(request: Request) {
       mode: 'subscription',
       customer: stripeCustomerId,
       line_items: lineItems,
-      success_url: `${baseUrl}/billing?success=true`,
-      cancel_url: `${baseUrl}/billing?cancelled=true`,
+      success_url: `${baseUrl}/coach/subscription?success=true`,
+      cancel_url: `${baseUrl}/coach/subscription?cancelled=true`,
       metadata: { workspace_id: coach.workspace_id },
     })
 

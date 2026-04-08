@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin') ?? 'https://app.clearpath.com'
     const session = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${baseUrl}/billing`,
+      return_url: `${baseUrl}/coach/subscription`,
     })
     const url = session.url
     if (!url) {

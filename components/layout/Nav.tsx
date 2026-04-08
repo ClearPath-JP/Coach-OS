@@ -170,11 +170,11 @@ function CoachUserMenu({
           </Link>
           <Link
             role="menuitem"
-            href="/billing"
+            href="/coach/subscription"
             className="block px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
             onClick={() => setOpen(false)}
           >
-            Billing
+            Subscription
           </Link>
         </div>
       ) : null}

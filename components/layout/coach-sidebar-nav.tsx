@@ -2,7 +2,6 @@ import type { SidebarNavItem, SidebarNavSection } from '@/components/layout/Side
 import {
   AnalyticsIcon,
   AssignmentsIcon,
-  BillingNavIcon,
   ClientsIcon,
   DashboardIcon,
   InvoicesIcon,
@@ -53,7 +52,6 @@ export function getCoachSidebarNav(): {
           { href: '/coach/invoices', label: 'Invoices', icon: <InvoicesIcon /> },
           { href: '/coach/payments', label: 'Payments', icon: <PaymentsIcon /> },
           { href: '/coach/subscription', label: 'Subscription', icon: <SubscriptionIcon /> },
-          { href: '/billing', label: 'Billing', icon: <BillingNavIcon /> },
         ],
       },
     ],

@@ -9,19 +9,19 @@ export const PLAN_LIMITS = {
     maxAssignmentsPerClient: 5,
   },
   starter: {
-    maxClients: 10,
+    maxClients: 15,
     maxVideoStorageGb: 10,
     maxAssignmentStorageGb: 5,
     maxAssignmentsPerClient: 50,
   },
   pro: {
-    maxClients: 30,
+    maxClients: null as number | null, // unlimited
     maxVideoStorageGb: 50,
     maxAssignmentStorageGb: 20,
     maxAssignmentsPerClient: 999,
   },
   scale: {
-    maxClients: null as number | null,
+    maxClients: null as number | null, // unlimited
     maxVideoStorageGb: 200,
     maxAssignmentStorageGb: 100,
     maxAssignmentsPerClient: 999,
@@ -30,31 +30,32 @@ export const PLAN_LIMITS = {
 
 export type StorageKind = 'video' | 'assignment_file'
 
-/** Default client caps by plan when workspace.max_clients is unset (T2 billing doc). */
+/** Default client caps by plan when workspace.max_clients is unset. */
 export const DEFAULT_MAX_CLIENTS_BY_PLAN = {
   free: PLAN_LIMITS.free.maxClients,
   starter: PLAN_LIMITS.starter.maxClients,
-  pro: PLAN_LIMITS.pro.maxClients,
-  scale: 999999,
+  pro: 999999,  // unlimited
+  scale: 999999, // unlimited
 } as const
 
 export function effectiveClientLimit(plan: string, workspaceMaxClients: number | null | undefined): number {
-  if (plan === 'scale') {
+  if (plan === 'pro' || plan === 'scale') {
+    // Both pro and scale are unlimited — workspace override still respected for admin overrides
     return workspaceMaxClients != null && workspaceMaxClients > 0
       ? workspaceMaxClients
-      : DEFAULT_MAX_CLIENTS_BY_PLAN.scale
+      : DEFAULT_MAX_CLIENTS_BY_PLAN[plan as keyof typeof DEFAULT_MAX_CLIENTS_BY_PLAN]
   }
   if (workspaceMaxClients != null && workspaceMaxClients > 0) return workspaceMaxClients
   const fallback = DEFAULT_MAX_CLIENTS_BY_PLAN[plan as keyof typeof DEFAULT_MAX_CLIENTS_BY_PLAN]
   return fallback ?? DEFAULT_MAX_CLIENTS_BY_PLAN.free
 }
 
-/** Implied monthly SaaS MRR per plan for admin rollups — keep aligned with Stripe Prices + BillingPageContent. */
+/** Implied monthly SaaS MRR per plan for admin rollups — keep aligned with Stripe Prices + SubscriptionPageContent. */
 export const PLAN_MRR_CENTS: Record<string, number> = {
   free: 0,
-  starter: 4900,
-  pro: 9900,
-  scale: 14900,
+  starter: 6900,
+  pro: 12900,
+  scale: 19900,
 }
 
 /**
@@ -71,7 +72,7 @@ export async function checkClientLimit(
     .maybeSingle()
   const plan = sub?.plan ?? 'free'
 
-  if (plan === 'scale') {
+  if (plan === 'pro' || plan === 'scale') {
     return { allowed: true, max: null }
   }
 

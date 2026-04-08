@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { Check, Zap } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -36,51 +37,49 @@ const STATUS_LABELS: Record<Status, string> = {
   paused: 'Paused',
 }
 
-/** Display only — keep in sync with Stripe one-time setup Price amounts */
-const SETUP_FEE_LABEL = {
-  starter: '$197',
-  pro: '$297',
-  scale: '$397',
-} as const
-
 const PRICING_TIERS = [
   {
     plan: 'starter' as const,
-    price: '$49',
+    price: '$69',
     period: '/month',
-    setupFee: SETUP_FEE_LABEL.starter,
     popular: false,
     features: [
-      'Up to 10 clients',
-      '10GB video storage',
-      'All core features',
+      'Up to 15 clients',
+      '10 GB video storage',
+      'Programs & assignments',
+      'Invoicing & packages',
+      'Client portal',
+      'Messaging',
+      'Schedule & calendar',
       'Email support',
     ],
   },
   {
     plan: 'pro' as const,
-    price: '$99',
+    price: '$129',
     period: '/month',
-    setupFee: SETUP_FEE_LABEL.pro,
     popular: true,
     features: [
-      'Up to 30 clients',
-      '50GB video storage',
+      'Unlimited clients',
+      '50 GB video storage',
+      'Everything in Starter',
       'Analytics dashboard',
-      'White label branding',
+      'White-label branding',
+      'Google Drive integration',
+      'Goal & testimonial tracking',
       'Priority support',
     ],
   },
   {
     plan: 'scale' as const,
-    price: '$149',
+    price: '$199',
     period: '/month',
-    setupFee: SETUP_FEE_LABEL.scale,
     popular: false,
     features: [
       'Unlimited clients',
-      '200GB video storage',
-      'All features',
+      '200 GB video storage',
+      'Everything in Pro',
+      'Stripe Connect payouts',
       'Dedicated support',
       'API access (coming soon)',
     ],
@@ -99,6 +98,8 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
   const [portalLoading, setPortalLoading] = useState(false)
 
   const currentPlan = subscription?.plan ?? 'free'
+  const planOrder: Plan[] = ['starter', 'pro', 'scale']
+  const currentIndex = planOrder.indexOf(currentPlan)
 
   const handleCheckout = async (plan: 'starter' | 'pro' | 'scale') => {
     setLoadingPlan(plan)
@@ -137,9 +138,6 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
       setPortalLoading(false)
     }
   }
-
-  const planOrder: Plan[] = ['starter', 'pro', 'scale']
-  const currentIndex = planOrder.indexOf(currentPlan)
 
   return (
     <main className="min-h-screen p-4 md:p-6 max-w-4xl mx-auto space-y-6">
@@ -198,13 +196,6 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
             Next billing date {format(new Date(subscription.current_period_end), 'MMMM d, yyyy')}.
           </p>
         )}
-        {(currentPlan === 'starter' || currentPlan === 'pro' || currentPlan === 'scale') && (
-          <p className="mt-2 text-[13px] text-[var(--color-text-secondary)]">
-            <span className="font-medium text-[var(--color-text-primary)]">One-time setup</span> for{' '}
-            {PLAN_LABELS[currentPlan]} is {SETUP_FEE_LABEL[currentPlan]} — charged once at signup in Stripe with your first
-            invoice. All tiers: Starter {SETUP_FEE_LABEL.starter}, Pro {SETUP_FEE_LABEL.pro}, Scale {SETUP_FEE_LABEL.scale}.
-          </p>
-        )}
         {subscription?.status === 'past_due' && (
           <p className="mt-2 text-[15px] text-[var(--color-error)]">
             Payment failed — update your payment method to keep access.
@@ -217,65 +208,89 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
         )}
       </Card>
 
-      <p className="text-[14px] text-[var(--color-text-secondary)]">
-        <span className="font-medium text-[var(--color-text-primary)]">One-time setup</span> is added at checkout with
-        your first subscription invoice. Monthly price recurs each billing period.
-      </p>
-
       {/* Pricing cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        {PRICING_TIERS.map(({ plan, price, period, setupFee, popular, features }) => {
+        {PRICING_TIERS.map(({ plan, price, period, popular, features }) => {
           const isCurrent = currentPlan === plan
           const planIndex = planOrder.indexOf(plan)
           const isUpgrade = planIndex > currentIndex
           const isDowngrade = planIndex < currentIndex && currentPlan !== 'free'
-          const buttonLabel = isCurrent ? 'Current plan' : isUpgrade ? 'Upgrade' : isDowngrade ? 'Downgrade' : 'Upgrade'
+          const buttonLabel = isCurrent ? 'Current plan' : isUpgrade ? 'Upgrade' : isDowngrade ? 'Downgrade' : 'Get started'
           return (
             <Card
               key={plan}
               variant="raised"
               padding="lg"
-              className={
+              className={[
+                'relative flex flex-col',
                 isCurrent
                   ? 'border-2 border-[var(--color-accent)]'
                   : popular
-                    ? 'border-2 border-[var(--color-accent)]/40 ring-1 ring-[var(--color-accent)]/20'
-                    : ''
-              }
+                    ? 'border-2 border-[var(--color-accent)]/40'
+                    : 'border border-[var(--border-default)]',
+              ].join(' ')}
             >
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-[var(--color-text-primary)]">{PLAN_LABELS[plan]}</span>
-                {popular ? (
-                  <Badge variant="active" className="text-[11px]">
+              {popular && !isCurrent && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-[var(--color-accent)] px-3 py-0.5 text-[11px] font-semibold text-white shadow">
                     Most popular
-                  </Badge>
-                ) : null}
+                  </span>
+                </div>
+              )}
+              {isCurrent && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="rounded-full bg-[var(--color-accent)] px-3 py-0.5 text-[11px] font-semibold text-white shadow">
+                    Your plan
+                  </span>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
+                  {PLAN_LABELS[plan]}
+                </p>
+                <div className="mt-1 flex items-end gap-1">
+                  <span className="text-[30px] font-bold leading-none text-[var(--color-text-primary)]">
+                    {price}
+                  </span>
+                  <span className="mb-1 text-[14px] text-[var(--color-text-secondary)]">{period}</span>
+                </div>
               </div>
-              <div className="mt-1 text-2xl font-medium text-[var(--color-text-primary)]">
-                {price}<span className="text-base font-normal text-[var(--color-text-secondary)]">{period}</span>
-              </div>
-              <p className="mt-1 text-[14px] text-[var(--color-text-secondary)]">
-                <span className="font-medium text-[var(--color-text-primary)]">{setupFee}</span> one-time setup
-              </p>
-              <ul className="mt-3 list-inside list-disc space-y-1 text-[15px] text-[var(--color-text-secondary)]">
-                {features.map((line) => (
-                  <li key={line}>{line}</li>
+
+              <ul className="flex-1 space-y-2">
+                {features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-[14px] text-[var(--color-text-secondary)]">
+                    <Check className="mt-0.5 size-4 shrink-0 text-[var(--color-accent)]" strokeWidth={2.5} aria-hidden />
+                    {f}
+                  </li>
                 ))}
               </ul>
-              <div className="mt-4">
+
+              <div className="mt-5">
                 <Button
                   variant={isCurrent ? 'secondary' : 'primary'}
                   fullWidth
                   disabled={isCurrent || loadingPlan !== null}
                   onClick={() => !isCurrent && (plan === 'starter' || plan === 'pro' || plan === 'scale') && handleCheckout(plan)}
                 >
-                  {loadingPlan === plan ? 'Redirecting…' : buttonLabel}
+                  {loadingPlan === plan ? (
+                    <span className="flex items-center gap-2">
+                      <Zap className="size-4 animate-pulse" aria-hidden />
+                      Redirecting…
+                    </span>
+                  ) : (
+                    buttonLabel
+                  )}
                 </Button>
               </div>
             </Card>
           )
         })}
       </div>
+
+      <p className="text-center text-[12px] text-[var(--color-text-secondary)]">
+        Cancel anytime. Monthly price recurs each billing period.
+      </p>
 
       {hasStripeCustomer && (
         <Card variant="flat" padding="default">
