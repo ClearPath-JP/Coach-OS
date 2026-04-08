@@ -716,7 +716,7 @@ export function BookSessionModal({
               {error}
             </p>
           ) : null}
-          <div className="flex flex-wrap gap-3 justify-end">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-3">
             {step === 1 ? (
               <>
                 <Button type="button" variant="secondary" onClick={onClose}>

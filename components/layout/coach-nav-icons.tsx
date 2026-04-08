@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Package,
   Settings,
+  Sparkles,
   Users,
   Video,
   Wallet,
@@ -65,6 +66,10 @@ export function BillingNavIcon({ className, ...props }: LucideProps) {
 
 export function AssignmentsIcon({ className, ...props }: LucideProps) {
   return <ClipboardList className={cn(sz, className)} strokeWidth={2} aria-hidden {...props} />
+}
+
+export function SubscriptionIcon({ className, ...props }: LucideProps) {
+  return <Sparkles className={cn(sz, className)} strokeWidth={2} aria-hidden {...props} />
 }
 
 export function SettingsNavIcon({ className, ...props }: LucideProps) {

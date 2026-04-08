@@ -11,6 +11,7 @@ import {
   PaymentsIcon,
   ProgramsIcon,
   ScheduleIcon,
+  SubscriptionIcon,
   VideosIcon,
 } from '@/components/layout/coach-nav-icons'
 
@@ -51,6 +52,7 @@ export function getCoachSidebarNav(): {
           { href: '/coach/packages', label: 'Packages', icon: <PackagesIcon /> },
           { href: '/coach/invoices', label: 'Invoices', icon: <InvoicesIcon /> },
           { href: '/coach/payments', label: 'Payments', icon: <PaymentsIcon /> },
+          { href: '/coach/subscription', label: 'Subscription', icon: <SubscriptionIcon /> },
           { href: '/billing', label: 'Billing', icon: <BillingNavIcon /> },
         ],
       },

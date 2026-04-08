@@ -306,10 +306,30 @@ const MORE_LINKS = [
   { href: '/coach/packages', label: 'Packages' },
   { href: '/coach/invoices', label: 'Invoices' },
   { href: '/coach/payments', label: 'Payments' },
+  { href: '/coach/subscription', label: 'Subscription' },
   { href: '/coach/analytics', label: 'Analytics' },
   { href: '/coach/settings', label: 'Settings' },
   { href: '/billing', label: 'Billing' },
 ] as const
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    </svg>
+  )
+}
 
 const MORE_GRID = [
   { href: '/coach/programs', label: 'Programs', Icon: ProgramsIcon },
@@ -318,6 +338,7 @@ const MORE_GRID = [
   { href: '/coach/packages', label: 'Packages', Icon: PackagesIcon },
   { href: '/coach/invoices', label: 'Invoices', Icon: InvoicesIcon },
   { href: '/coach/payments', label: 'Payments', Icon: PaymentsIcon },
+  { href: '/coach/subscription', label: 'Subscription', Icon: SparklesIcon },
   { href: '/coach/analytics', label: 'Analytics', Icon: AnalyticsIcon },
   { href: '/coach/settings', label: 'Settings', Icon: SettingsIcon },
   { href: '/billing', label: 'Billing', Icon: BillingIcon },
