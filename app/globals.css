@@ -69,31 +69,31 @@
   --tracking-wider: 0.06em;
   --tracking-widest: 0.12em;
 
-  /* LIGHT MODE COLORS */
-  --bg-app: #ffffff;
+  /* LIGHT MODE COLORS — clean neutral gray/white palette */
+  --bg-app: #f7f7f7;
   /* For translucent sticky chrome: rgba(var(--bg-app-rgb), 0.9) */
-  --bg-app-rgb: 255, 255, 255;
-  --bg-subtle: #f8fafc;
-  --bg-muted: #f1f5f9;
-  --bg-emphasis: #e2e8f0;
+  --bg-app-rgb: 247, 247, 247;
+  --bg-subtle: #f0f0f0;
+  --bg-muted: #e6e6e6;
+  --bg-emphasis: #d8d8d8;
 
   --accent: #3b9ee8;
   --accent-rgb: 59, 158, 232;
   --accent-dark: #2980cc;
-  --accent-light: #ebf5ff;
-  --accent-muted: #bfdbf7;
+  --accent-light: #e8f3fd;
+  --accent-muted: #c0ddf7;
   --accent-hover: #2d8fd4;
 
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-tertiary: #64748b;
-  --text-quaternary: #94a3b8;
-  --text-placeholder: #cbd5e1;
+  --text-primary: #111111;
+  --text-secondary: #333333;
+  --text-tertiary: #666666;
+  --text-quaternary: #999999;
+  --text-placeholder: #bbbbbb;
   --text-on-accent: #ffffff;
 
-  --border-subtle: #f1f5f9;
-  --border-default: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border-subtle: #ebebeb;
+  --border-default: #dcdcdc;
+  --border-strong: #c4c4c4;
   --border-accent: #3b9ee8;
 
   --success: #16a34a;
@@ -106,14 +106,14 @@
   --error-bg: #fef2f2;
   --error-border: #fecaca;
   --info: #3b9ee8;
-  --info-bg: #ebf5ff;
-  --info-border: #bfdbf7;
+  --info-bg: #e8f3fd;
+  --info-border: #c0ddf7;
 
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.06), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
 
   --focus-ring: 0 0 0 3px rgba(59, 158, 232, 0.3);
 
@@ -243,61 +243,62 @@
   --cp-input-focus: var(--cp-accent);
 
   /* ── Legacy bridges (Phase 3 cleanup) ──────────────────── */
-  --bg-app: var(--cp-offwhite);
+  --cp-offwhite: #f7f7f7;
+  --cp-white: #ffffff;
   --accent: var(--cp-accent);
   --accent-hover: var(--cp-accent-hover);
 }
 
 html[data-theme='dark'] {
-  /* Deeper, richer navy base — more depth */
-  --bg-app: #09111d;
-  --bg-app-rgb: 9, 17, 29;
-  --bg-subtle: #0f1c2e;
-  --bg-muted: #172335;
-  --bg-emphasis: #1f2d40;
+  /* True dark gray/black base — no blue tint */
+  --bg-app: #111111;
+  --bg-app-rgb: 17, 17, 17;
+  --bg-subtle: #1c1c1c;
+  --bg-muted: #262626;
+  --bg-emphasis: #303030;
 
-  /* Brighter, more vibrant accent */
+  /* Accent stays vibrant against dark gray */
   --accent: #5ab4f0;
   --accent-rgb: 90, 180, 240;
   --accent-dark: #3b9ee8;
-  --accent-light: #0d1e30;
-  --accent-muted: #152a3f;
+  --accent-light: #0f1e2e;
+  --accent-muted: #172840;
   --accent-hover: #6dc0f5;
 
-  /* Slightly warmer text for readability */
-  --text-primary: #f0f0f0;
-  --text-secondary: #c8c8c8;
-  --text-tertiary: #8a8a8a;
-  --text-quaternary: #505050;
-  --text-placeholder: #444444;
+  /* High-contrast readable text */
+  --text-primary: #f2f2f2;
+  --text-secondary: #c0c0c0;
+  --text-tertiary: #7a7a7a;
+  --text-quaternary: #4a4a4a;
+  --text-placeholder: #3a3a3a;
   --text-on-accent: #ffffff;
 
-  /* More visible borders */
-  --border-subtle: #1a2535;
-  --border-default: #1f3045;
-  --border-strong: #2a3f55;
+  /* Visible but subtle borders */
+  --border-subtle: #202020;
+  --border-default: #2c2c2c;
+  --border-strong: #3c3c3c;
   --border-accent: #5ab4f0;
 
-  /* Richer semantic colors */
+  /* Semantic colors adjusted for dark gray context */
   --success: #34d399;
-  --success-bg: #021f12;
-  --success-border: #14532d;
+  --success-bg: #0a1f14;
+  --success-border: #1a3d2a;
   --warning: #fbbf24;
-  --warning-bg: #1a1000;
-  --warning-border: #451a00;
+  --warning-bg: #1a1200;
+  --warning-border: #3d2a00;
   --error: #fc8181;
-  --error-bg: #1a0505;
-  --error-border: #450a0a;
+  --error-bg: #1a0808;
+  --error-border: #3d1010;
   --info: #5ab4f0;
   --info-bg: #0a1929;
   --info-border: #162d44;
 
-  /* Deeper shadows for real depth */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.55), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  /* Strong shadows for depth on dark */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.55), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.65), 0 4px 6px -4px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
 
   --color-bg: var(--bg-app);
   --color-surface: var(--bg-subtle);
@@ -329,11 +330,11 @@ html[data-theme='dark'] {
   --color-error-light: var(--error-bg);
   --color-info-light: var(--info-bg);
   --color-error-hover: color-mix(in srgb, var(--error) 88%, #ffffff);
-  --color-accent-bg: color-mix(in srgb, var(--accent) 22%, var(--bg-subtle));
+  --color-accent-bg: color-mix(in srgb, var(--accent) 18%, var(--bg-subtle));
   --shadow-card: var(--shadow-xs);
   --shadow-card-raised: var(--shadow-sm);
 
-  /* Legacy ClearPath tokens — map to semantic dark surfaces (fixes cp-offwhite/cp-white in components) */
+  /* Legacy ClearPath tokens — map to semantic dark surfaces */
   --cp-offwhite: var(--bg-app);
   --cp-white: var(--bg-subtle);
   --cp-border: var(--border-default);
@@ -346,10 +347,10 @@ html[data-theme='dark'] {
   --cp-sapphire: var(--accent);
   --cp-accent: var(--accent);
   --cp-accent-hover: var(--accent-hover);
-  --cp-lavender: color-mix(in srgb, var(--accent) 16%, var(--bg-muted));
+  --cp-lavender: color-mix(in srgb, var(--accent) 14%, var(--bg-muted));
   --cp-btn-bg: var(--accent);
   --cp-btn-hover: var(--accent-hover);
-  --cp-focus-ring: color-mix(in srgb, var(--accent) 35%, transparent);
+  --cp-focus-ring: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 *,

@@ -152,7 +152,95 @@ export default function CoachAppearancePage() {
           Make your workspace feel like yours. Changes are visible to you and your clients.
         </p>
 
-        {/* ─── Section A: Brand Identity ─── */}
+        {/* ─── Section A: Theme ─── */}
+        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Theme</h2>
+            <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
+              Switch between light and dark mode. Your preference is saved to this device.
+            </p>
+          </div>
+
+          <div className="px-5 py-5">
+            <div className="grid grid-cols-2 gap-3">
+              {/* Light option */}
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                className={[
+                  'flex flex-col overflow-hidden rounded-[10px] border-2 transition-colors duration-150',
+                  theme === 'light' ? 'border-[var(--cp-accent)]' : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
+                ].join(' ')}
+              >
+                <div className="flex h-[80px] overflow-hidden">
+                  <div className="flex w-10 flex-col gap-1.5 bg-[#ebebeb] px-2 py-2.5">
+                    <div className="h-2 w-full rounded-sm bg-[#c4c4c4]" />
+                    <div className="h-2 w-full rounded-sm" style={{ backgroundColor: accentColor }} />
+                    <div className="h-2 w-full rounded-sm bg-[#c4c4c4]" />
+                    <div className="h-2 w-full rounded-sm bg-[#c4c4c4]" />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1.5 bg-[#f7f7f7] px-3 py-2.5">
+                    <div className="h-2.5 w-20 rounded-full bg-[#dcdcdc]" />
+                    <div className="h-2 w-16 rounded-full bg-[#e6e6e6]" />
+                    <div className="mt-0.5 h-6 w-full rounded-[6px] bg-[#f0f0f0] border border-[#dcdcdc]" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2">
+                  <span className="text-[13px] font-medium text-[var(--text-primary)]">Light</span>
+                  <span
+                    className="flex size-[18px] items-center justify-center rounded-full text-[10px]"
+                    style={{
+                      background: theme === 'light' ? accentColor : 'var(--bg-muted)',
+                      color: theme === 'light' ? '#fff' : 'transparent',
+                      border: theme === 'light' ? 'none' : '1.5px solid var(--border-strong)',
+                    }}
+                  >
+                    {theme === 'light' && '✓'}
+                  </span>
+                </div>
+              </button>
+
+              {/* Dark option */}
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                className={[
+                  'flex flex-col overflow-hidden rounded-[10px] border-2 transition-colors duration-150',
+                  theme === 'dark' ? 'border-[var(--cp-accent)]' : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
+                ].join(' ')}
+              >
+                <div className="flex h-[80px] overflow-hidden">
+                  <div className="flex w-10 flex-col gap-1.5 bg-[#1c1c1c] px-2 py-2.5">
+                    <div className="h-2 w-full rounded-sm bg-[#303030]" />
+                    <div className="h-2 w-full rounded-sm" style={{ backgroundColor: accentColor }} />
+                    <div className="h-2 w-full rounded-sm bg-[#303030]" />
+                    <div className="h-2 w-full rounded-sm bg-[#303030]" />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1.5 bg-[#111111] px-3 py-2.5">
+                    <div className="h-2.5 w-20 rounded-full bg-[#2c2c2c]" />
+                    <div className="h-2 w-16 rounded-full bg-[#262626]" />
+                    <div className="mt-0.5 h-6 w-full rounded-[6px] bg-[#1c1c1c] border border-[#2c2c2c]" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-[#2c2c2c] bg-[#1c1c1c] px-3 py-2">
+                  <span className="text-[13px] font-medium text-[#f2f2f2]">Dark</span>
+                  <span
+                    className="flex size-[18px] items-center justify-center rounded-full text-[10px]"
+                    style={{
+                      background: theme === 'dark' ? accentColor : '#262626',
+                      color: theme === 'dark' ? '#fff' : 'transparent',
+                      border: theme === 'dark' ? 'none' : '1.5px solid #3c3c3c',
+                    }}
+                  >
+                    {theme === 'dark' && '✓'}
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Section B: Brand Identity ─── */}
         <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
           <div className="border-b border-[var(--border-subtle)] px-5 py-4">
             <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Brand Identity</h2>
@@ -355,7 +443,7 @@ export default function CoachAppearancePage() {
           </div>
         </div>
 
-        {/* ─── Section B: Accent Color ─── */}
+        {/* ─── Section C: Accent Color ─── */}
         <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
           <div className="border-b border-[var(--border-subtle)] px-5 py-4">
             <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Accent Color</h2>
@@ -384,79 +472,6 @@ export default function CoachAppearancePage() {
           </div>
         </div>
 
-        {/* ─── Section C: Theme ─── */}
-        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
-          <div className="border-b border-[var(--border-subtle)] px-5 py-4">
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Theme</h2>
-            <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
-              Switch between light and dark mode. Your preference is saved to this device.
-            </p>
-          </div>
-
-          <div className="px-5 py-5">
-            <div className="grid grid-cols-2 gap-3">
-              {/* Light option */}
-              <button
-                type="button"
-                onClick={() => setTheme('light')}
-                className={[
-                  'flex flex-col overflow-hidden rounded-[10px] border-2 transition-colors duration-150',
-                  theme === 'light' ? 'border-[var(--cp-accent)]' : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
-                ].join(' ')}
-              >
-                {/* Preview */}
-                <div className="flex h-[72px] overflow-hidden">
-                  <div className="flex w-10 flex-col gap-1.5 bg-[#f1f5f9] px-2 py-2">
-                    <div className="h-2 w-full rounded-sm bg-[#cbd5e1]" />
-                    <div className="h-2 w-full rounded-sm" style={{ backgroundColor: accentColor }} />
-                    <div className="h-2 w-full rounded-sm bg-[#cbd5e1]" />
-                  </div>
-                  <div className="flex flex-1 flex-col gap-1.5 bg-white px-3 py-2">
-                    <div className="h-2.5 w-20 rounded-full bg-[#e2e8f0]" />
-                    <div className="h-2 w-16 rounded-full bg-[#e2e8f0]" />
-                    <div className="mt-0.5 h-2 w-12 rounded-full" style={{ backgroundColor: accentColor + '66' }} />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between border-t border-[var(--border-default)] px-3 py-2">
-                  <span className="text-[13px] font-medium text-[var(--text-primary)]">Light</span>
-                  {theme === 'light' && (
-                    <span className="flex size-4 items-center justify-center rounded-full text-white text-[10px]" style={{ background: accentColor }}>✓</span>
-                  )}
-                </div>
-              </button>
-
-              {/* Dark option */}
-              <button
-                type="button"
-                onClick={() => setTheme('dark')}
-                className={[
-                  'flex flex-col overflow-hidden rounded-[10px] border-2 transition-colors duration-150',
-                  theme === 'dark' ? 'border-[var(--cp-accent)]' : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
-                ].join(' ')}
-              >
-                {/* Preview */}
-                <div className="flex h-[72px] overflow-hidden">
-                  <div className="flex w-10 flex-col gap-1.5 bg-[#0F1117] px-2 py-2">
-                    <div className="h-2 w-full rounded-sm bg-[#1E2130]" />
-                    <div className="h-2 w-full rounded-sm" style={{ backgroundColor: accentColor }} />
-                    <div className="h-2 w-full rounded-sm bg-[#1E2130]" />
-                  </div>
-                  <div className="flex flex-1 flex-col gap-1.5 bg-[#181B27] px-3 py-2">
-                    <div className="h-2.5 w-20 rounded-full bg-[#252938]" />
-                    <div className="h-2 w-16 rounded-full bg-[#252938]" />
-                    <div className="mt-0.5 h-2 w-12 rounded-full" style={{ backgroundColor: accentColor + '44' }} />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between border-t border-[var(--border-default)] px-3 py-2">
-                  <span className="text-[13px] font-medium text-[var(--text-primary)]">Dark</span>
-                  {theme === 'dark' && (
-                    <span className="flex size-4 items-center justify-center rounded-full text-white text-[10px]" style={{ background: accentColor }}>✓</span>
-                  )}
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       <style>{`@keyframes cp-spin { to { transform: rotate(360deg); } }`}</style>
