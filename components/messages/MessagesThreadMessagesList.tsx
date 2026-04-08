@@ -235,6 +235,18 @@ export function MessagesThreadMessagesList({
                         {format(new Date(msg.created_at), 'h:mm a')}
                       </p>
                     </div>
+                  ) : isSession && !sessionData ? (
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3.5">
+                      <p className="text-[14px] font-semibold text-[var(--text-primary)]">📅 Session booked</p>
+                      <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">Session details are loading or unavailable.</p>
+                      <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">{format(new Date(msg.created_at), 'h:mm a')}</p>
+                    </div>
+                  ) : isInvoice && !invoiceData ? (
+                    <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3.5">
+                      <p className="text-[14px] font-semibold text-[var(--text-primary)]">🧾 Invoice</p>
+                      <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">Invoice details are loading or unavailable.</p>
+                      <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">{format(new Date(msg.created_at), 'h:mm a')}</p>
+                    </div>
                   ) : requestData ? (
                     <div className="max-w-[340px] rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3.5">
                       <p className="text-[14px] font-semibold text-[var(--text-primary)]">{selectedClientName} requested a session</p>

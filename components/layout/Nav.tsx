@@ -11,6 +11,7 @@ import { CoachNavTrail } from '@/components/layout/CoachNavTrail'
 import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/lib/workspace-context'
 import { openCommandPalette } from '@/lib/command-palette'
+import { useTheme } from '@/components/ThemeProvider'
 
 export interface NavProps {
   className?: string
@@ -123,6 +124,7 @@ function CoachUserMenu({
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const { theme, toggleTheme } = useTheme()
 
   useEffect(() => {
     if (!open) return
@@ -176,6 +178,16 @@ function CoachUserMenu({
           >
             Subscription
           </Link>
+          <div className="my-1 border-t border-[var(--border-subtle)]" />
+          <button
+            role="menuitem"
+            type="button"
+            onClick={() => { toggleTheme(); setOpen(false) }}
+            className="flex w-full items-center justify-between px-4 py-2.5 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
+          >
+            <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+            <span className="text-[16px]" aria-hidden>{theme === 'dark' ? '☀️' : '🌙'}</span>
+          </button>
         </div>
       ) : null}
     </div>

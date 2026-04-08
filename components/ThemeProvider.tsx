@@ -1,27 +1,51 @@
 'use client'
-import { createContext, useContext, useEffect, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+
+export type Theme = 'light' | 'dark'
+
+const STORAGE_KEY = 'clearpath-theme'
 
 type ThemeContextValue = {
-  theme: 'dark'
-  setTheme: (theme: 'dark') => void
+  theme: Theme
+  setTheme: (theme: Theme) => void
   toggleTheme: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>('dark')
+
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', 'dark')
-    // Clear any stored light preference
-    try { localStorage.removeItem('clearpath-theme') } catch { /* ignore */ }
+    let saved: Theme = 'dark'
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored === 'light' || stored === 'dark') saved = stored
+    } catch { /* ignore */ }
+    setThemeState(saved)
+    document.documentElement.setAttribute('data-theme', saved)
   }, [])
 
-  const value: ThemeContextValue = {
-    theme: 'dark',
-    setTheme: () => {},
-    toggleTheme: () => {},
-  }
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  const setTheme = useCallback((next: Theme) => {
+    setThemeState(next)
+    document.documentElement.setAttribute('data-theme', next)
+    try { localStorage.setItem(STORAGE_KEY, next) } catch { /* ignore */ }
+  }, [])
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      document.documentElement.setAttribute('data-theme', next)
+      try { localStorage.setItem(STORAGE_KEY, next) } catch { /* ignore */ }
+      return next
+    })
+  }, [])
+
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  )
 }
 
 export function useTheme(): ThemeContextValue {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useTheme } from '@/components/ThemeProvider'
 import { AccentColorPicker } from '@/components/settings/AccentColorPicker'
 import type { AccentColor } from '@/types/coach'
 import { coerceToAllowedCoachAccent, PHASE4_DEFAULT_COACH_ACCENT } from '@/lib/coach-accent-phase4'
@@ -12,6 +13,7 @@ import { useWorkspace } from '@/lib/workspace-context'
 export default function CoachAppearancePage() {
   const router = useRouter()
   const { updateSettings, refetchSettings } = useWorkspace()
+  const { theme, setTheme } = useTheme()
 
   // Accent color state
   const [accentColor, setAccentColor] = useState<AccentColor>(PHASE4_DEFAULT_COACH_ACCENT)
@@ -387,30 +389,72 @@ export default function CoachAppearancePage() {
           <div className="border-b border-[var(--border-subtle)] px-5 py-4">
             <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Theme</h2>
             <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
-              Your coach workspace uses a dark theme optimized for focus. Client portals adapt to your accent color and support both light and dark mode.
+              Switch between light and dark mode. Your preference is saved to this device.
             </p>
           </div>
 
           <div className="px-5 py-5">
-            {/* Mini dark sidebar preview */}
-            <div className="flex overflow-hidden rounded-[10px] border border-[var(--border-default)]" style={{ height: 88 }}>
-              {/* Sidebar */}
-              <div className="flex w-14 flex-col items-center gap-2 bg-[#0F1117] py-3">
-                <div className="size-6 rounded-[5px] bg-[#1E2130]" />
-                <div className="size-6 rounded-[5px]" style={{ backgroundColor: accentColor }} />
-                <div className="size-6 rounded-[5px] bg-[#1E2130]" />
-                <div className="size-6 rounded-[5px] bg-[#1E2130]" />
-              </div>
-              {/* Content area */}
-              <div className="flex flex-1 flex-col gap-2 bg-[#181B27] px-4 py-3">
-                <div className="h-3 w-24 rounded-full bg-[#252938]" />
-                <div className="h-2.5 w-32 rounded-full bg-[#252938]" />
-                <div className="mt-1 h-2.5 w-20 rounded-full" style={{ backgroundColor: accentColor + '44' }} />
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Light option */}
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                className={[
+                  'flex flex-col overflow-hidden rounded-[10px] border-2 transition-colors duration-150',
+                  theme === 'light' ? 'border-[var(--cp-accent)]' : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
+                ].join(' ')}
+              >
+                {/* Preview */}
+                <div className="flex h-[72px] overflow-hidden">
+                  <div className="flex w-10 flex-col gap-1.5 bg-[#f1f5f9] px-2 py-2">
+                    <div className="h-2 w-full rounded-sm bg-[#cbd5e1]" />
+                    <div className="h-2 w-full rounded-sm" style={{ backgroundColor: accentColor }} />
+                    <div className="h-2 w-full rounded-sm bg-[#cbd5e1]" />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1.5 bg-white px-3 py-2">
+                    <div className="h-2.5 w-20 rounded-full bg-[#e2e8f0]" />
+                    <div className="h-2 w-16 rounded-full bg-[#e2e8f0]" />
+                    <div className="mt-0.5 h-2 w-12 rounded-full" style={{ backgroundColor: accentColor + '66' }} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--border-default)] px-3 py-2">
+                  <span className="text-[13px] font-medium text-[var(--text-primary)]">Light</span>
+                  {theme === 'light' && (
+                    <span className="flex size-4 items-center justify-center rounded-full text-white text-[10px]" style={{ background: accentColor }}>✓</span>
+                  )}
+                </div>
+              </button>
+
+              {/* Dark option */}
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                className={[
+                  'flex flex-col overflow-hidden rounded-[10px] border-2 transition-colors duration-150',
+                  theme === 'dark' ? 'border-[var(--cp-accent)]' : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
+                ].join(' ')}
+              >
+                {/* Preview */}
+                <div className="flex h-[72px] overflow-hidden">
+                  <div className="flex w-10 flex-col gap-1.5 bg-[#0F1117] px-2 py-2">
+                    <div className="h-2 w-full rounded-sm bg-[#1E2130]" />
+                    <div className="h-2 w-full rounded-sm" style={{ backgroundColor: accentColor }} />
+                    <div className="h-2 w-full rounded-sm bg-[#1E2130]" />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1.5 bg-[#181B27] px-3 py-2">
+                    <div className="h-2.5 w-20 rounded-full bg-[#252938]" />
+                    <div className="h-2 w-16 rounded-full bg-[#252938]" />
+                    <div className="mt-0.5 h-2 w-12 rounded-full" style={{ backgroundColor: accentColor + '44' }} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-[var(--border-default)] px-3 py-2">
+                  <span className="text-[13px] font-medium text-[var(--text-primary)]">Dark</span>
+                  {theme === 'dark' && (
+                    <span className="flex size-4 items-center justify-center rounded-full text-white text-[10px]" style={{ background: accentColor }}>✓</span>
+                  )}
+                </div>
+              </button>
             </div>
-            <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
-              Coach workspace dark theme — always on.
-            </p>
           </div>
         </div>
       </div>

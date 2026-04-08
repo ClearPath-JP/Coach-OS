@@ -40,5 +40,5 @@ export function calculateEngagementScore(client: {
 export function engagementLabelText(label: 'engaged' | 'moderate' | 'at-risk'): string {
   if (label === 'engaged') return 'Engaged'
   if (label === 'moderate') return 'Moderate'
-  return 'At risk'
+  return 'Needs attention'
 }

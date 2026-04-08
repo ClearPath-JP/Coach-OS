@@ -300,7 +300,7 @@ export function CoachClientsPageContent() {
         render: (client) => {
           const e = client.engagement
           if (!e) return <span className="text-[13px] text-[var(--text-tertiary)]">—</span>
-          const dot = e.label === 'engaged' ? '🟢' : e.label === 'moderate' ? '🟡' : '🔴'
+          const dot = e.label === 'engaged' ? '🟢' : e.label === 'moderate' ? '🟡' : '🟠'
           const last = client.rewards?.last_activity_at
           const done = client.rewards?.assignments_completed ?? 0
           const total = client.rewards?.assignments_total ?? 0
@@ -413,14 +413,14 @@ export function CoachClientsPageContent() {
   return (
     <>
       <PageHeader title="Clients" countLabel={`${clients.length} clients`}>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           <Input
             type="search"
-            placeholder="Search by name or email…"
+            placeholder="Search…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             aria-label="Search clients"
-            className="h-9 w-[min(100vw-8rem,240px)] max-w-full border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[14px]"
+            className="h-8 w-[180px] border border-[var(--border-default)] bg-[var(--bg-subtle)] text-[13px]"
           />
           <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] p-0.5">
             <button
@@ -429,13 +429,11 @@ export function CoachClientsPageContent() {
               aria-pressed={view === 'list'}
               onClick={() => setViewPersist('list')}
               className={cn(
-                'flex size-9 min-h-[44px] min-w-9 items-center justify-center rounded-[6px] transition-colors duration-[80ms] sm:size-8 sm:min-h-8 sm:min-w-8',
+                'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
                 view === 'list' ? 'bg-[var(--cp-accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
               )}
             >
-              <span className="text-[14px]" aria-hidden>
-                ☰
-              </span>
+              <span className="text-[14px]" aria-hidden>☰</span>
             </button>
             <button
               type="button"
@@ -443,20 +441,15 @@ export function CoachClientsPageContent() {
               aria-pressed={view === 'grid'}
               onClick={() => setViewPersist('grid')}
               className={cn(
-                'flex size-9 min-h-[44px] min-w-9 items-center justify-center rounded-[6px] transition-colors duration-[80ms] sm:size-8 sm:min-h-8 sm:min-w-8',
+                'flex size-8 items-center justify-center rounded-[6px] transition-colors duration-[80ms]',
                 view === 'grid' ? 'bg-[var(--cp-accent)] text-white' : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]'
               )}
             >
-              <span className="text-[14px]" aria-hidden>
-                ⊞
-              </span>
+              <span className="text-[14px]" aria-hidden>⊞</span>
             </button>
           </div>
           <Button size="sm" onClick={() => setAddModalOpen(true)}>
             + Add client
-          </Button>
-          <Button size="sm" variant="secondary" type="button" onClick={() => fetchClients()}>
-            Refresh list
           </Button>
         </div>
       </PageHeader>
@@ -529,7 +522,7 @@ export function CoachClientsPageContent() {
               const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'
               const e = client.engagement
               const engLabel = e ? engagementLabelText(e.label) : '—'
-              const engDot = e?.label === 'engaged' ? '🟢' : e?.label === 'moderate' ? '🟡' : '🔴'
+              const engDot = e?.label === 'engaged' ? '🟢' : e?.label === 'moderate' ? '🟡' : '🟠'
               const sessionsN = client.sessionsCompletedCount ?? 0
               const showMenu = openMenuId === client.id
               return (

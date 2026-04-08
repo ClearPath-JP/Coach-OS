@@ -544,7 +544,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
               className="inline-flex items-center rounded-full border border-[var(--border-default)] px-2.5 py-1 text-[12px] font-medium"
               style={{ color: client.engagement.color }}
             >
-              {client.engagement.label === 'engaged' ? '🟢' : client.engagement.label === 'moderate' ? '🟡' : '🔴'}{' '}
+              {client.engagement.label === 'engaged' ? '🟢' : client.engagement.label === 'moderate' ? '🟡' : '🟠'}{' '}
               {engagementLabelText(client.engagement.label)}
             </span>
           ) : null}

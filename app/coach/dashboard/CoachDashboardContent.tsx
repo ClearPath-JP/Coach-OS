@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -20,7 +20,6 @@ import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { StatCard } from '@/components/dashboard/StatCard'
 import { sessionTypeLabel } from '@/app/coach/schedule/schedule-lib'
 import { formatTrendLabel } from '@/lib/dashboard-trends'
 import { formatCents } from '@/lib/format-currency'
@@ -602,23 +601,21 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           {/* LEFT COLUMN */}
           <div className="min-w-0">
 
-            {/* Hero */}
-            <div
-              className="hero-gradient-dark mb-5 flex min-h-0 shrink-0 flex-col gap-4 rounded-[14px] px-5 py-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:justify-between lg:mb-4 lg:px-7 lg:py-6"
-            >
+            {/* ── Command bar ── */}
+            <div className="mb-3 flex items-center justify-between gap-4">
               <div className="min-w-0">
-                <h1 className="text-[22px] font-bold leading-tight tracking-[-0.03em] text-[var(--text-primary)] lg:text-[24px]">
+                <h1 className="text-[20px] font-bold leading-tight tracking-[-0.03em] text-[var(--text-primary)]">
                   {greeting}, {coachFirst}
                 </h1>
-                <p className="mt-1 text-[13px] leading-normal text-[var(--text-tertiary)]">
-                  {loading ? 'One moment while we load your workspace…' : `${heroDateLine} · ${sessionsTodayLine}`}
+                <p className="text-[12px] text-[var(--text-tertiary)]">
+                  {loading ? 'Loading…' : `${heroDateLine} · ${sessionsTodayLine}`}
                 </p>
               </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-2">
-                <Button variant="secondary" size="md" type="button" onClick={() => router.push('/coach/schedule')}>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button variant="secondary" size="sm" type="button" onClick={() => router.push('/coach/schedule')}>
                   Book session
                 </Button>
-                <Button variant="primary" size="md" type="button" onClick={() => router.push('/coach/clients')}>
+                <Button variant="primary" size="sm" type="button" onClick={() => router.push('/coach/clients')}>
                   + Add client
                 </Button>
               </div>
@@ -701,131 +698,92 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </div>
             ) : null}
 
-            {/* Stat cards */}
+            {/* ── Metrics bar ── */}
             <div
-              className="mb-4 shrink-0 grid xl:grid-cols-5"
-              style={{
-                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                gap: 12,
-              }}
+              className="mb-3 shrink-0 overflow-hidden rounded-[10px] border border-[var(--border-default)]"
+              style={{ background: 'var(--bg-subtle)' }}
             >
               {loading && !summary ? (
-                <>
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Skeleton key={i} className="h-[100px] w-full rounded-[10px]" />
-                  ))}
-                </>
+                <div className="flex h-[68px] items-center justify-center">
+                  <Skeleton className="h-5 w-64 rounded" />
+                </div>
               ) : (
-                <>
-                  <StatCard
-                    label="Active clients"
-                    value={summary?.activeClientsCount ?? 0}
-                    animateValue
-                    animateOnce={statAnimateOnce}
-                    {...(() => {
-                      const st = [
-                        clientsAddedThisMonth > 0
-                          ? `+${clientsAddedThisMonth} this month`
-                          : totalClients === 0
-                            ? 'Add clients to get started'
-                            : '',
-                        formatTrendLabel(summary?.trends?.activeClients ?? null)?.label ?? '',
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')
-                      return {
-                        ...(st ? { subtext: st } : {}),
-                        ...(clientsAddedThisMonth > 0 ? { subtextPositive: true as const } : {}),
-                      }
-                    })()}
-                  />
-                  <StatCard
-                    label="Sessions this week"
-                    value={summary?.sessionsThisWeek ?? 0}
-                    animateValue
-                    animateOnce={statAnimateOnce}
-                    subtext={
-                      [
-                        upcomingToday > 0
-                          ? `${upcomingToday} today`
-                          : upcomingThisWeek > 0
-                            ? `${upcomingThisWeek} upcoming`
-                            : 'Schedule your first session',
-                        formatTrendLabel(summary?.trends?.sessionsThisWeek ?? null)?.label,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')
-                    }
-                  />
-                  <StatCard
-                    label="Revenue this month"
-                    value={formatCents(summary?.revenueMonthCents ?? 0)}
-                    {...(() => {
-                      const st = [
-                        (summary?.revenueMonthCents ?? 0) <= 0
-                          ? 'Record your first payment'
-                          : revenueMoMPct !== null
-                            ? `${revenueMoMPct >= 0 ? '↑' : '↓'} ${Math.abs(revenueMoMPct)}% vs last month`
-                            : '',
-                        formatTrendLabel(summary?.trends?.revenueMonth ?? null)?.label ?? '',
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')
-                      const pos =
-                        (summary?.revenueMonthCents ?? 0) > 0 && revenueMoMPct !== null
-                          ? revenueMoMPct >= 0
-                          : null
-                      return {
-                        ...(st ? { subtext: st } : {}),
-                        ...(pos !== null ? { subtextPositive: pos } : {}),
-                      }
-                    })()}
-                  />
-                  <StatCard
-                    label="Unread messages"
-                    value={unreadMessagesTotal}
-                    animateValue
-                    animateOnce={statAnimateOnce}
-                    subtext={
-                      [
-                        unreadMessagesTotal > 0 ? 'Tap to reply' : 'All caught up',
-                        formatTrendLabel(summary?.trends?.messagesToCoach ?? null)?.label,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')
-                    }
-                    {...(unreadMessagesTotal > 0 ? { href: '/coach/messages' as const } : {})}
-                  />
-                  <StatCard
-                    label="Storage (GB)"
-                    value={storage ? `${storage.usedGb.toFixed(1)} / ${storage.maxGb}` : '—'}
-                    {...(storage
-                      ? {
-                          footer: (
-                            <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                              <div
-                                className={cn(
-                                  'h-full rounded-full',
-                                  storage.pct >= 95
-                                    ? 'bg-[var(--error)]'
-                                    : storage.pct >= 80
-                                      ? 'bg-[var(--warning)]'
-                                      : 'bg-[var(--accent)]'
-                                )}
-                                style={{ width: `${Math.min(100, storage.pct)}%` }}
-                              />
-                            </div>
-                          ),
-                        }
-                      : {})}
-                  />
-                </>
+                <div className="grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+                  {[
+                    {
+                      label: 'Clients',
+                      value: summary?.activeClientsCount ?? 0,
+                      sub: clientsAddedThisMonth > 0 ? `+${clientsAddedThisMonth} this mo` : `${totalClients} total`,
+                      positive: clientsAddedThisMonth > 0,
+                      href: '/coach/clients' as const,
+                    },
+                    {
+                      label: 'Sessions / wk',
+                      value: summary?.sessionsThisWeek ?? 0,
+                      sub: upcomingToday > 0 ? `${upcomingToday} today` : upcomingThisWeek > 0 ? `${upcomingThisWeek} upcoming` : 'None today',
+                      href: '/coach/schedule' as const,
+                    },
+                    {
+                      label: 'Revenue / mo',
+                      value: formatCents(summary?.revenueMonthCents ?? 0),
+                      sub: revenueMoMPct !== null
+                        ? `${revenueMoMPct >= 0 ? '↑' : '↓'} ${Math.abs(revenueMoMPct)}% vs last mo`
+                        : (summary?.revenueMonthCents ?? 0) <= 0 ? 'No payments yet' : '',
+                      positive: revenueMoMPct !== null ? revenueMoMPct >= 0 : null,
+                    },
+                    {
+                      label: 'Unread',
+                      value: unreadMessagesTotal,
+                      sub: unreadMessagesTotal > 0 ? 'Tap to reply' : 'All caught up',
+                      positive: unreadMessagesTotal === 0 ? true : null,
+                      href: unreadMessagesTotal > 0 ? ('/coach/messages' as const) : undefined,
+                    },
+                    {
+                      label: 'Storage',
+                      value: storage ? `${storage.usedGb.toFixed(1)}/${storage.maxGb}GB` : '—',
+                      sub: storage ? `${storage.pct}% used` : '',
+                      positive: storage ? (storage.pct < 80 ? true : storage.pct >= 95 ? false : null) : null,
+                    },
+                  ].map((m, i) => {
+                    const inner = (
+                      <div
+                        key={m.label}
+                        className={cn(
+                          'flex flex-col justify-center px-4 py-3 transition-colors duration-100',
+                          i > 0 ? 'border-l border-[var(--border-subtle)]' : '',
+                          m.href ? 'cursor-pointer hover:bg-[var(--bg-muted)]' : ''
+                        )}
+                        style={{ minHeight: 68 }}
+                      >
+                        <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-tertiary)]">{m.label}</span>
+                        <span className="block text-[20px] font-bold leading-none tracking-[-0.02em] text-[var(--text-primary)]">{m.value}</span>
+                        {m.sub ? (
+                          <span
+                            className="mt-0.5 block truncate text-[11px] font-medium"
+                            style={{
+                              color: m.positive === true ? 'var(--success)' : m.positive === false ? 'var(--error)' : 'var(--text-tertiary)',
+                            }}
+                          >
+                            {m.sub}
+                          </span>
+                        ) : null}
+                      </div>
+                    )
+                    return m.href ? (
+                      <Link key={m.label} href={m.href} className="no-underline" style={{ color: 'inherit' }}>
+                        {inner}
+                      </Link>
+                    ) : (
+                      <React.Fragment key={m.label}>{inner}</React.Fragment>
+                    )
+                  })}
+                </div>
               )}
             </div>
 
             {/* Quick actions */}
-            <div className="mb-4 shrink-0">
-              <p className="section-label-coach mb-2">Quick actions</p>
+            <div className="mb-3 shrink-0">
+              <p className="section-label-coach mb-1.5">Quick actions</p>
               <div
                 className="grid grid-cols-2 gap-2 md:grid-cols-4"
                 style={{ gap: 8, marginBottom: 4 }}
@@ -833,7 +791,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 <button
                   type="button"
                   onClick={() => router.push('/coach/clients')}
-                  className="flex min-h-[64px] cursor-pointer items-center gap-2.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3.5 py-3 text-left shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
+                  className="flex min-h-[52px] cursor-pointer items-center gap-2 rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-left transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
                 >
                   <span
                     className="flex size-8 shrink-0 items-center justify-center rounded-full"
@@ -849,7 +807,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 <button
                   type="button"
                   onClick={() => router.push('/coach/schedule')}
-                  className="flex min-h-[64px] cursor-pointer items-center gap-2.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3.5 py-3 text-left shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
+                  className="flex min-h-[52px] cursor-pointer items-center gap-2 rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-left transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
                 >
                   <span
                     className="flex size-8 shrink-0 items-center justify-center rounded-full"
@@ -894,7 +852,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 <button
                   type="button"
                   onClick={() => router.push('/coach/programs')}
-                  className="flex min-h-[64px] cursor-pointer items-center gap-2.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3.5 py-3 text-left shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
+                  className="flex min-h-[52px] cursor-pointer items-center gap-2 rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-left transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
                 >
                   <span
                     className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-primary)]"
@@ -923,8 +881,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
 
             {/* Week strip + today */}
             <div
-              className="mb-4 grid shrink-0 grid-cols-1 gap-3 lg:grid-cols-[2fr_1fr] lg:gap-3"
-              style={{ gap: 12 }}
+              className="mb-3 grid shrink-0 grid-cols-1 gap-2 lg:grid-cols-[2fr_1fr]"
             >
               <div
                 className="overflow-hidden rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
