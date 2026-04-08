@@ -39,8 +39,8 @@ const STATUS_LABELS: Record<Status, string> = {
 
 const PLAN_MAX_CLIENTS: Record<Plan, number | null> = {
   free: 3,
-  starter: 10,
-  pro: 30,
+  starter: 15,
+  pro: null,
   scale: null,
 }
 
@@ -54,13 +54,12 @@ const PLAN_STORAGE_GB: Record<Plan, number> = {
 const PRICING_TIERS = [
   {
     plan: 'starter' as const,
-    price: '$49',
+    price: '$69',
     period: '/mo',
-    setupFee: '$197',
     popular: false,
     color: 'var(--text-primary)',
     features: [
-      'Up to 10 clients',
+      'Up to 15 clients',
       '10 GB video storage',
       'Programs & assignments',
       'Invoicing & packages',
@@ -69,13 +68,12 @@ const PRICING_TIERS = [
   },
   {
     plan: 'pro' as const,
-    price: '$99',
+    price: '$129',
     period: '/mo',
-    setupFee: '$297',
     popular: true,
     color: 'var(--cp-accent)',
     features: [
-      'Up to 30 clients',
+      'Unlimited clients',
       '50 GB video storage',
       'Everything in Starter',
       'Analytics dashboard',
@@ -85,9 +83,8 @@ const PRICING_TIERS = [
   },
   {
     plan: 'scale' as const,
-    price: '$149',
+    price: '$199',
     period: '/mo',
-    setupFee: '$397',
     popular: false,
     color: 'var(--text-primary)',
     features: [
@@ -247,7 +244,7 @@ export function SubscriptionPageContent({
           Available Plans
         </p>
         <div className="grid gap-4 sm:grid-cols-3">
-          {PRICING_TIERS.map(({ plan, price, period, setupFee, popular, features }) => {
+          {PRICING_TIERS.map(({ plan, price, period, popular, features }) => {
             const isCurrent = currentPlan === plan
             const planIndex = planOrder.indexOf(plan)
             const isUpgrade = planIndex > currentIndex
@@ -299,9 +296,6 @@ export function SubscriptionPageContent({
                     </span>
                     <span className="mb-1 text-[14px] text-[var(--text-secondary)]">{period}</span>
                   </div>
-                  <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
-                    {setupFee} one-time setup
-                  </p>
                 </div>
 
                 <ul className="flex-1 space-y-2">
@@ -339,7 +333,7 @@ export function SubscriptionPageContent({
           })}
         </div>
         <p className="mt-3 text-center text-[12px] text-[var(--text-tertiary)]">
-          One-time setup fee charged at checkout with your first invoice. Monthly price recurs each billing period.
+          Cancel anytime. Monthly price recurs each billing period.
         </p>
       </div>
     </main>
