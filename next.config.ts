@@ -2,6 +2,7 @@ import type { NextConfig } from 'next'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import bundleAnalyzer from '@next/bundle-analyzer'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const configDir = path.dirname(fileURLToPath(import.meta.url))
 
@@ -81,4 +82,21 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withBundleAnalyzer(nextConfig)
+const sentryOrg = process.env.SENTRY_ORG
+const sentryProject = process.env.SENTRY_PROJECT
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
+
+const withAnalyzer = withBundleAnalyzer(nextConfig)
+
+const finalConfig = sentryOrg && sentryProject && sentryAuthToken
+  ? withSentryConfig(withAnalyzer, {
+      org: sentryOrg,
+      project: sentryProject,
+      authToken: sentryAuthToken,
+      silent: !process.env.CI,
+      widenClientFileUpload: true,
+      disableLogger: true,
+    })
+  : withAnalyzer
+
+export default finalConfig
