@@ -421,8 +421,9 @@ export function DualRoleLoginPage() {
                 className="flex-1 rounded-[8px] py-2 text-center text-[13px] font-medium transition-all duration-200"
                 style={{
                   background: role === r ? 'var(--bg-subtle)' : 'transparent',
-                  color: role === r ? 'var(--text-primary)' : 'var(--text-quaternary)',
+                  color: role === r ? 'var(--ca-gold)' : 'var(--text-tertiary)',
                   boxShadow: role === r ? 'var(--shadow-sm)' : 'none',
+                  borderBottom: role === r ? '2px solid var(--ca-gold)' : '2px solid transparent',
                 }}
               >
                 {r === 'coach' ? 'Coach' : 'Client'}

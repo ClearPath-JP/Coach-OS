@@ -59,8 +59,9 @@ export function signStreamToken(
   const emailEnc = email?.trim() ? encodeURIComponent(email.trim()) : ''
   const payload = emailEnc ? `${videoId}:${userId}:${exp}:${emailEnc}` : `${videoId}:${userId}:${exp}`
   if (!secret) {
-    const token = b64url(Buffer.from(`unsigned:${payload}`, 'utf8'))
-    return { token, expiresAt: exp * 1000 }
+    throw new Error(
+      'VIDEO_STREAM_TOKEN_SECRET is not set — cannot sign stream tokens. Add it to your environment variables.'
+    )
   }
   const sig = createHmac('sha256', secret).update(payload).digest()
   const token = `${b64url(Buffer.from(payload, 'utf8'))}.${b64url(sig)}`
@@ -68,18 +69,15 @@ export function signStreamToken(
 }
 
 export function verifyStreamToken(token: string): StreamTokenPayload | null {
-  const secret = getSecret()
-  if (!secret) {
-    const raw = b64urlDecode(token)
-    if (!raw) return null
-    const s = raw.toString('utf8')
-    if (!s.startsWith('unsigned:')) return null
-    const rest = s.slice('unsigned:'.length)
-    const parsed = parsePayloadString(rest)
-    if (!parsed) return null
-    if (parsed.exp < Math.floor(Date.now() / 1000)) return null
-    return parsed
+  // Reject unsigned tokens — they are not trustworthy
+  const rawCheck = b64urlDecode(token)
+  if (rawCheck) {
+    const s = rawCheck.toString('utf8')
+    if (s.startsWith('unsigned:')) return null
   }
+
+  const secret = getSecret()
+  if (!secret) return null
 
   const dot = token.indexOf('.')
   if (dot < 1) return null

@@ -29,9 +29,9 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      // 'unsafe-eval' is only included in dev for Next.js HMR / fast-refresh.
-      // It is intentionally absent in production to reduce XSS attack surface.
-      `script-src 'self'${isDev ? " 'unsafe-eval'" : ''} 'unsafe-inline'`,
+      // 'unsafe-eval' and 'unsafe-inline' are only included in dev for Next.js HMR / fast-refresh.
+      // They are intentionally absent in production to reduce XSS attack surface.
+      `script-src 'self'${isDev ? " 'unsafe-eval' 'unsafe-inline'" : ''}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
@@ -51,6 +51,17 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: configDir,
   },
+  // Keep heavy packages out of the server bundle — they're client-only
+  serverExternalPackages: [
+    'three',
+    '@react-three/fiber',
+    '@react-three/drei',
+    '@splinetool/react-spline',
+    '@splinetool/runtime',
+    'gsap',
+    'animejs',
+    'lenis',
+  ],
   images: {
     formats: ['image/webp', 'image/avif'],
     remotePatterns: [

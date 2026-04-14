@@ -4,19 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 
-function Spinner() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="animate-spin" aria-hidden>
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
-  )
-}
-
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -50,27 +37,36 @@ export function ForgotPasswordForm() {
     return (
       <div className="text-center">
         <div
-          className="mx-auto flex size-[48px] items-center justify-center rounded-full"
+          className="mx-auto flex size-12 items-center justify-center rounded-full"
           style={{ background: 'rgba(22, 163, 74, 0.12)', color: '#16A34A' }}
           aria-hidden
         >
-          <span className="text-[24px] font-bold leading-none">✓</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
         </div>
         <h2
           className="mt-6"
-          style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.03em', color: '#0A1929' }}
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 22,
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+            color: 'var(--text-primary)',
+          }}
         >
           Check your email
         </h2>
-        <p className="mt-2 text-[15px] leading-relaxed" style={{ color: '#5B7FA6' }}>
-          We sent a reset link to <span style={{ color: '#0A1929', fontWeight: 600 }}>{email.trim()}</span>
+        <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+          We sent a reset link to{' '}
+          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{email.trim()}</span>
         </p>
         <Link
           href="/login"
-          className="login-premium-ghost-btn"
-          style={{ textDecoration: 'none' }}
+          className="mt-6 inline-block text-[14px] font-medium no-underline transition-colors duration-150 hover:underline"
+          style={{ color: 'var(--ca-gold)' }}
         >
-          Back to login
+          Back to sign in
         </Link>
       </div>
     )
@@ -79,18 +75,29 @@ export function ForgotPasswordForm() {
   return (
     <div>
       <h1
-        id="forgot-password-heading"
-        className="text-[1.375rem] font-semibold leading-tight tracking-[-0.03em] text-[#0A1929]"
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 24,
+          fontWeight: 500,
+          letterSpacing: '0.01em',
+          color: 'var(--text-primary)',
+          margin: 0,
+        }}
       >
-        Reset password
+        Reset your password
       </h1>
-      <p className="mb-8 mt-1.5 text-[14px] leading-relaxed text-[#5B7FA6]">
-        We&apos;ll email you a link to choose a new one.
+      <p style={{ fontSize: 14, color: 'var(--text-tertiary)', marginTop: 6, marginBottom: 24 }}>
+        Enter your email and we&apos;ll send you a reset link.
       </p>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
-          <label htmlFor="forgot-email" className="login-premium-label">
-            Email <span className="text-[#D92B3A]">*</span>
+          <label
+            htmlFor="forgot-email"
+            className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.08em]"
+            style={{ color: 'var(--text-quaternary)' }}
+          >
+            Email
           </label>
           <input
             id="forgot-email"
@@ -100,30 +107,78 @@ export function ForgotPasswordForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="login-premium-input"
             placeholder="you@example.com"
+            className="h-11 w-full rounded-[10px] border px-4 text-[14px] outline-none transition-[border-color,box-shadow] duration-200"
+            style={{
+              background: 'var(--bg-subtle)',
+              borderColor: 'var(--border-strong)',
+              color: 'var(--text-primary)',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'var(--ca-gold)'
+              e.target.style.boxShadow = '0 0 0 3px rgba(196,164,74,0.1)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'var(--border-strong)'
+              e.target.style.boxShadow = 'none'
+            }}
           />
         </div>
+
         {error && (
-          <div className="login-premium-error-card !mt-0" role="alert">
-            <span className="login-premium-error-card__icon" aria-hidden>
-              ⚠
-            </span>
-            <p className="login-premium-error-card__text">{error}</p>
-          </div>
+          <p
+            role="alert"
+            className="rounded-[8px] border px-3 py-2 text-[13px]"
+            style={{
+              background: 'var(--error-bg)',
+              borderColor: 'var(--error-border)',
+              color: 'var(--error)',
+            }}
+          >
+            {error}
+          </p>
         )}
-        <button type="submit" className="login-premium-btn" disabled={loading}>
-          <span className="login-premium-btn-inner text-white">
-            {loading && <Spinner />}
-            {loading ? 'Sending…' : 'Send reset link'}
-          </span>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="relative mt-2 flex h-12 w-full items-center justify-center overflow-hidden rounded-[10px] border-none text-[14px] font-semibold transition-all duration-200 disabled:opacity-60"
+          style={{
+            background: 'var(--accent)',
+            color: 'var(--text-on-accent)',
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? (
+            <div
+              style={{
+                width: 18,
+                height: 18,
+                border: '2px solid rgba(255,255,255,0.3)',
+                borderTopColor: 'currentColor',
+                borderRadius: '50%',
+                animation: 'cp-spin 0.7s linear infinite',
+              }}
+            />
+          ) : (
+            'Send reset link'
+          )}
         </button>
       </form>
-      <p className="mt-6 text-center text-[14px]">
-        <Link href="/login" className="font-medium hover:underline" style={{ color: '#3B9EE8' }}>
+
+      <p className="mt-6 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
+        <Link
+          href="/login"
+          className="font-medium no-underline transition-colors duration-150 hover:underline"
+          style={{ color: 'var(--ca-gold)' }}
+        >
           Back to sign in
         </Link>
       </p>
+
+      <style>{`
+        @keyframes cp-spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   )
 }

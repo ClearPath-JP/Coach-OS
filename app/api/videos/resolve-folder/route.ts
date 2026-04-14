@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 
 /**
@@ -8,7 +9,16 @@ import { createServiceClient } from '@/lib/supabase/service'
 export async function GET(request: Request) {
   const secret = request.headers.get('x-clearpath-secret') ?? request.headers.get('X-Clearpath-Secret')
   const expected = process.env.N8N_CALLBACK_SECRET
-  if (!expected || secret !== expected) {
+  if (!expected || !secret) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  try {
+    const a = Buffer.from(expected, 'utf8')
+    const b = Buffer.from(secret, 'utf8')
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

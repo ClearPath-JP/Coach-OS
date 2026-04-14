@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { requireCoach } from '@/lib/api-helpers'
 import { resolveWorkspaceForDriveFolder } from '@/lib/drive-import/resolve-workspace-folder'
@@ -33,7 +34,14 @@ function titleFromDriveName(name: string): string {
 function n8nAuth(request: Request): boolean {
   const secret = request.headers.get('x-clearpath-secret') ?? request.headers.get('X-Clearpath-Secret')
   const expected = process.env.N8N_CALLBACK_SECRET?.trim()
-  return Boolean(expected && secret === expected)
+  if (!expected || !secret) return false
+  try {
+    const a = Buffer.from(expected, 'utf8')
+    const b = Buffer.from(secret, 'utf8')
+    return a.length === b.length && timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
 }
 
 /**

@@ -7,7 +7,7 @@ const inputTransition =
   'transition-[border-color,box-shadow] duration-[var(--duration-fast)] [transition-timing-function:var(--ease-out)]'
 
 const inputBase = cn(
-  'w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)]',
+  'w-full rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-subtle)]',
   'px-3 font-normal text-[length:var(--text-14)] leading-[var(--leading-normal)] text-[var(--text-primary)] [font-family:var(--font)]',
   'placeholder:text-[var(--text-quaternary)]',
   inputTransition,

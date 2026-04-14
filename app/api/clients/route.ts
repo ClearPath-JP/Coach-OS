@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { randomBytes } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 import { requireCoach } from '@/lib/api-helpers'
 import { addClientSchema } from '@/lib/validations'
@@ -7,12 +8,15 @@ import { calculateEngagementScore } from '@/lib/client-engagement'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { normalizeEmail, sanitizeIlikeSearch } from '@/lib/utils'
 
+const ALPHANUMERIC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
 function generateTempPassword(): string {
-  return (
-    Math.random().toString(36).slice(-8).toUpperCase() +
-    Math.random().toString(36).slice(-4) +
-    '!'
-  )
+  const bytes = randomBytes(12)
+  let password = ''
+  for (let i = 0; i < 12; i++) {
+    password += ALPHANUMERIC[(bytes[i] as number) % ALPHANUMERIC.length]
+  }
+  return password
 }
 
 const CLIENTS_DEFAULT_LIMIT = 500
