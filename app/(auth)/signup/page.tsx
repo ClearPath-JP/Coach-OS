@@ -1,15 +1,10 @@
-import { AnimatedLoginPage } from '@/components/auth/AnimatedLoginPage'
-import { SignupCard } from '@/components/auth/SignupCard'
+import { Suspense } from 'react'
+import { SignupPageClient } from './SignupPageClient'
 
-/**
- * Coach signup — same split auth shell as login (public; API rate-limited).
- */
 export default function SignupPage() {
   return (
-    <AnimatedLoginPage>
-      <main aria-label="Create coach account">
-        <SignupCard />
-      </main>
-    </AnimatedLoginPage>
+    <Suspense fallback={<div className="min-h-screen w-full bg-[var(--bg-app)]" aria-hidden />}>
+      <SignupPageClient />
+    </Suspense>
   )
 }
