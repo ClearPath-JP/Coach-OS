@@ -29,9 +29,9 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      // 'unsafe-eval' and 'unsafe-inline' are only included in dev for Next.js HMR / fast-refresh.
-      // They are intentionally absent in production to reduce XSS attack surface.
-      `script-src 'self'${isDev ? " 'unsafe-eval' 'unsafe-inline'" : ''}`,
+      // 'unsafe-eval' is dev-only (HMR). 'unsafe-inline' is required in production
+      // because Next.js injects inline <script> tags for hydration/data.
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
