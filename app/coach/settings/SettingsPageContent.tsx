@@ -14,6 +14,7 @@ import { coerceToAllowedCoachAccent, PHASE4_DEFAULT_COACH_ACCENT } from '@/lib/c
 import { useWorkspace } from '@/lib/workspace-context'
 import { cn } from '@/lib/utils'
 import { WorkspaceStorageSection } from '@/components/coach/WorkspaceStorageSection'
+import { CustomDomainSection } from '@/components/settings/CustomDomainSection'
 import { AccentColorPicker } from '@/components/settings/AccentColorPicker'
 import { PageHeader } from '@/components/layout/PageHeader'
 import type { AccentColor } from '@/types/coach'
@@ -993,6 +994,10 @@ export function SettingsPageContent() {
               <Button onClick={saveWorkspace} disabled={savingWorkspace}>
                 {savingWorkspace ? 'Saving workspace...' : 'Save workspace'}
               </Button>
+            </Card>
+
+            <Card className="space-y-4">
+              <CustomDomainSection />
             </Card>
           </div>
         )}
