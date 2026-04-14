@@ -1,21 +1,6 @@
-import { Suspense } from 'react'
-import { DashboardHeaderSkeleton, StatCardsSkeleton, TableSkeleton } from '@/components/dashboard/skeletons'
-import { CoachDashboardWithProfile } from './CoachDashboardWithProfile'
+import { redirect } from 'next/navigation'
 
-function CoachDashboardFallback() {
-  return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden p-4 md:p-6">
-      <DashboardHeaderSkeleton />
-      <StatCardsSkeleton />
-      <TableSkeleton />
-    </div>
-  )
-}
-
+/** Schedule IS the home screen. Redirect any dashboard hits. */
 export default function CoachDashboardPage() {
-  return (
-    <Suspense fallback={<CoachDashboardFallback />}>
-      <CoachDashboardWithProfile />
-    </Suspense>
-  )
+  redirect('/coach/schedule')
 }

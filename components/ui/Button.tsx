@@ -74,19 +74,19 @@ const variantClasses: Record<
   ),
   secondary: cn(
     'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-medium',
-    'bg-transparent text-[var(--text-secondary)] border border-[rgba(255,250,240,0.08)] shadow-none',
-    'hover:bg-[var(--bg-muted)] hover:border-[rgba(196,164,74,0.12)] hover:text-[var(--text-primary)]',
+    'bg-transparent text-[var(--text-secondary)] border border-[var(--border-default)] shadow-none',
+    'hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
     'active:translate-y-0',
     'disabled:hover:bg-transparent'
   ),
   ghost: cn(
     'bg-transparent text-[var(--text-tertiary)] border-transparent shadow-none',
-    'hover:bg-[rgba(196,164,74,0.04)] hover:text-[var(--text-primary)]',
+    'hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]',
     'active:translate-y-0'
   ),
   accentGhost: cn(
-    'bg-[rgba(196,164,74,0.08)] text-[var(--got-gold)] border-transparent shadow-none',
-    'hover:bg-[rgba(196,164,74,0.14)]',
+    'bg-[var(--ca-gold-surface)] text-[var(--ca-gold)] border-transparent shadow-none',
+    'hover:bg-[color-mix(in_srgb,var(--ca-gold)_14%,transparent)]',
     'active:translate-y-0'
   ),
   danger: cn(

@@ -12,13 +12,13 @@ const inputBase = cn(
   'placeholder:text-[var(--text-quaternary)]',
   inputTransition,
   'hover:border-[var(--border-strong)]',
-  'focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_rgba(59,158,232,0.15)]',
+  'focus:border-[var(--accent)] focus:outline-none focus:shadow-[0_0_0_3px_var(--cp-focus-ring)]',
   'disabled:cursor-not-allowed disabled:bg-[var(--bg-subtle)] disabled:text-[var(--text-tertiary)]'
 )
 
 const inputError = cn(
-  'border-[var(--error)] shadow-[0_0_0_3px_rgba(220,38,38,0.1)]',
-  'focus:border-[var(--error)] focus:shadow-[0_0_0_3px_rgba(220,38,38,0.1)]'
+  'border-[var(--error)] shadow-[0_0_0_3px_color-mix(in_srgb,var(--error)_10%,transparent)]',
+  'focus:border-[var(--error)] focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--error)_10%,transparent)]'
 )
 
 export type InputSize = 'sm' | 'md' | 'lg'

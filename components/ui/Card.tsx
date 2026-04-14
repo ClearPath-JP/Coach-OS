@@ -19,22 +19,22 @@ function resolveVariant(v: CardVariant): 'default' | 'elevated' | 'ghost' | 'acc
 
 const variantClasses: Record<'default' | 'elevated' | 'ghost' | 'accent', string> = {
   default: cn(
-    'rounded-[var(--radius-lg)] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)]',
+    'rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)]',
     'shadow-[var(--shadow-xs)] text-[var(--text-primary)]'
   ),
   elevated: cn(
-    'rounded-[var(--radius-lg)] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)]',
+    'rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)]',
     'shadow-[var(--shadow-sm)] text-[var(--text-primary)]',
-    'transition-[box-shadow,transform,border-color] duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
-    'hover:shadow-[0_8px_24px_rgba(12,8,4,0.2)] hover:border-[rgba(196,164,74,0.12)] hover:-translate-y-0.5'
+    'transition-[box-shadow,transform,border-color] duration-200',
+    'hover:shadow-[var(--shadow-md)] hover:border-[var(--border-strong)] hover:-translate-y-0.5'
   ),
   ghost: cn(
-    'rounded-[var(--radius-lg)] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)]',
+    'rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-subtle)]',
     'text-[var(--text-primary)]'
   ),
   accent: cn(
-    'rounded-[var(--radius-lg)] border border-[rgba(196,164,74,0.12)] bg-[var(--bg-subtle)]',
-    'shadow-[0_0_0_1px_rgba(196,164,74,0.04)] text-[var(--text-primary)]'
+    'rounded-[10px] border border-[var(--accent)] bg-[var(--bg-subtle)]',
+    'shadow-[0_0_0_1px_var(--ca-gold-surface)] text-[var(--text-primary)]'
   ),
 }
 
@@ -64,7 +64,7 @@ function CardTitle({ className, ...props }: CardTitleProps) {
   return (
     <h3
       className={cn(
-        'font-display text-[var(--text-20)] font-[500] leading-[var(--leading-heading)] tracking-[0.01em] text-[var(--text-primary)]',
+        'text-[18px] font-semibold leading-tight tracking-[-0.01em] text-[var(--text-primary)]',
         className
       )}
       {...props}

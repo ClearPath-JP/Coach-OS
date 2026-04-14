@@ -13,9 +13,8 @@ import {
   startOfDay,
   startOfWeek,
 } from 'date-fns'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
 import { BookSessionModal } from './BookSessionModal'
@@ -193,20 +192,30 @@ export function CoachScheduleWorkspace() {
   const headerDatePill = format(new Date(), 'EEEE, MMMM d')
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[var(--bg-app)]">
-      <header className="sticky top-0 z-20 -mx-[var(--coach-content-px-mobile)] mb-[var(--coach-header-content-gap)] flex min-h-[var(--coach-header-height)] shrink-0 flex-wrap items-center gap-3 border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-[var(--coach-content-px-mobile)] py-2 lg:-mx-[var(--coach-content-px)] lg:px-[var(--coach-content-px)] lg:py-0">
-        <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">Schedule</h1>
-          <span className="rounded-full bg-[var(--accent-light)] px-2.5 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
-            {headerDatePill}
-          </span>
-        </div>
+    <div className="got-page">
 
-        <div className="flex flex-1 flex-wrap items-center justify-center gap-2">
+      {/* ── Header: label + date nav + actions ── */}
+      <header className="mb-6">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="got-page__label">Training Calendar</p>
+            <h2 className="got-page__heading mt-1">{headerDatePill}</h2>
+          </div>
           <button
             type="button"
+            className="got-page__action-btn"
+            onClick={() => openBookModal(null, null)}
+          >
+            Book Session
+          </button>
+        </div>
+
+        {/* Navigation + view toggle */}
+        <div className="got-page__toolbar mt-5">
+          <button
+            type="button"
+            className="got-page__nav-btn"
             aria-label="Previous"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-transparent text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
             onClick={() => {
               if (desktopView === 'week') setWeekStart((d) => addDays(d, -7))
               else if (desktopView === 'month') setMonthDate((d) => addMonths(d, -1))
@@ -215,22 +224,22 @@ export function CoachScheduleWorkspace() {
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
+
           <button
             type="button"
             className={cn(
-              'h-8 rounded-[8px] px-3 text-[13px] font-semibold transition-colors',
-              isCurrentWeek
-                ? 'border border-[var(--border-default)] bg-[var(--bg-muted)] text-[var(--text-primary)]'
-                : 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)]'
+              'got-page__toggle-btn rounded-lg border border-[var(--border-default)]',
+              isCurrentWeek ? 'opacity-40' : 'got-page__toggle-btn--active'
             )}
             onClick={goToday}
           >
             Today
           </button>
+
           <button
             type="button"
+            className="got-page__nav-btn"
             aria-label="Next"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[var(--border-default)] bg-transparent text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
             onClick={() => {
               if (desktopView === 'week') setWeekStart((d) => addDays(d, 7))
               else if (desktopView === 'month') setMonthDate((d) => addMonths(d, 1))
@@ -239,56 +248,37 @@ export function CoachScheduleWorkspace() {
           >
             <ChevronRight className="h-5 w-5" />
           </button>
-          <span className="text-[16px] font-semibold tabular-nums text-[var(--text-primary)]">
+
+          <span className="got-page__date-range ml-1">
             {desktopView === 'month'
               ? format(monthDate, 'MMMM yyyy')
-              : `${format(weekStart, 'MMM d')} — ${format(addDays(weekStart, 6), 'MMM d, yyyy')}`}
+              : `${format(weekStart, 'MMM d')} \u2014 ${format(addDays(weekStart, 6), 'MMM d, yyyy')}`}
           </span>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="hidden items-center rounded-lg border border-[var(--border-default)] lg:flex">
-            {(['week', 'month', 'agenda'] as const).map((v, i, arr) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setDesktopView(v)}
-                className={cn(
-                  'h-8 border-[var(--border-default)] px-3.5 text-[13px] font-medium capitalize',
-                  i === 0 && 'rounded-l-lg border-r',
-                  i === arr.length - 1 && 'rounded-r-lg border-l-0',
-                  i > 0 && i < arr.length - 1 && 'border-r',
-                  desktopView === v
-                    ? 'bg-[var(--cp-accent)] text-[var(--text-on-accent)]'
-                    : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)] hover:bg-[var(--bg-subtle)]'
-                )}
-              >
-                {v}
-              </button>
-            ))}
+          <div className="ml-auto hidden lg:block">
+            <div className="got-page__toggle-group">
+              {(['week', 'month', 'agenda'] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={cn('got-page__toggle-btn', desktopView === v && 'got-page__toggle-btn--active')}
+                  onClick={() => setDesktopView(v)}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="hidden h-6 w-px bg-[var(--border-default)] lg:block" aria-hidden />
-          <button
-            type="button"
-            className="h-9 rounded-[8px] bg-[var(--accent)] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
-            onClick={() => openBookModal(null, null)}
-          >
-            Book session
-          </button>
         </div>
       </header>
 
-      <div className="sticky top-0 z-10 flex border-b border-[var(--border-subtle)] bg-[var(--bg-app)] lg:hidden">
+      {/* ── Mobile tabs ── */}
+      <div className="got-page__tabs lg:hidden">
         {(['today', 'week', 'agenda'] as const).map((tab) => (
           <button
             key={tab}
             type="button"
-            className={cn(
-              'min-h-11 flex-1 border-b-2 py-3 text-[13px] font-medium capitalize',
-              mobileTab === tab
-                ? 'border-[var(--cp-accent)] text-[var(--cp-accent)]'
-                : 'border-transparent text-[var(--text-tertiary)]'
-            )}
+            className={cn('got-page__tab', mobileTab === tab && 'got-page__tab--active')}
             onClick={() => setMobileTab(tab)}
           >
             {tab}
@@ -296,83 +286,85 @@ export function CoachScheduleWorkspace() {
         ))}
       </div>
 
-      <details className="mt-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] text-sm open:shadow-sm">
-        <summary className="cursor-pointer select-none list-none px-4 py-3 font-medium text-[var(--text-primary)] [&::-webkit-details-marker]:hidden">
-          <span className="inline-flex items-center gap-2">
-            <span>Subscribe in Google Calendar or Apple Calendar</span>
-            <span className="text-[12px] font-normal text-[var(--text-tertiary)]">(optional)</span>
-          </span>
+      {/* ── Calendar subscribe ── */}
+      <details className="got-page__collapsible">
+        <summary>
+          Subscribe in Google Calendar or Apple Calendar
+          <span className="ml-2 text-[11px] text-[var(--text-quaternary)]">(optional)</span>
         </summary>
-        <div className="border-t border-[var(--border-subtle)] px-4 pb-4 pt-3">
+        <div className="got-page__collapsible-body">
           {calendarUrlLoading ? (
-            <p className="text-[var(--text-secondary)]">Loading your subscribe link…</p>
+            <p className="text-[13px] text-[var(--text-tertiary)]">Loading subscribe link&hellip;</p>
           ) : calendarSubscribeUrl ? (
             <>
-              <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                Paste the URL below in Google Calendar → <em>From URL</em>. Treat the link like a password.
+              <p className="text-[13px] leading-relaxed text-[var(--text-tertiary)]">
+                Paste the URL below in Google Calendar &rarr; <em>From URL</em>. Treat the link like a password.
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                   readOnly
                   value={calendarSubscribeUrl}
-                  className="min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2 font-mono text-[11px] text-[var(--text-primary)]"
+                  className="min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 font-mono text-[11px] text-[var(--text-primary)]"
                   aria-label="Calendar subscribe URL"
                 />
-                <Button
+                <button
                   type="button"
-                  variant="secondary"
-                  className="shrink-0"
+                  className="got-page__action-btn"
                   onClick={() => {
                     void navigator.clipboard.writeText(calendarSubscribeUrl).then(() => {
                       addToast('Calendar link copied', 'success')
                     })
                   }}
                 >
-                  Copy link
-                </Button>
+                  Copy
+                </button>
               </div>
-              <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">
+              <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
                 Next 90 days of sessions.{' '}
-                <a href="/api/calendar/feed/coach" className="font-medium text-[var(--cp-accent)] hover:underline">
+                <a href="/api/calendar/feed/coach" className="font-medium text-[var(--ca-gold-dim)] hover:text-[var(--ca-gold)]">
                   Download .ics
-                </a>{' '}
-                while signed in.
+                </a>
               </p>
             </>
           ) : (
-            <p className="text-[var(--text-secondary)]">
+            <p className="text-[13px] text-[var(--text-tertiary)]">
               Could not load a subscribe link.{' '}
-              <a href="/api/calendar/feed/coach" className="font-medium text-[var(--cp-accent)] hover:underline">
+              <a href="/api/calendar/feed/coach" className="font-medium text-[var(--ca-gold-dim)] hover:text-[var(--ca-gold)]">
                 Download .ics
-              </a>{' '}
-              while signed in.
+              </a>
             </p>
           )}
         </div>
       </details>
 
+      {/* ── Empty state ── */}
       {!calendarLoading && sessions.length === 0 && (
-        <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-6 py-8 text-center">
-          <p className="text-3xl" aria-hidden>
-            📅
-          </p>
-          <p className="mt-3 text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">No sessions this week</p>
-          <p className="mx-auto mt-2 max-w-[440px] text-[var(--text-14)] leading-relaxed text-[var(--text-tertiary)]">
+        <div className="got-page__empty mt-6">
+          <CalendarDays className="h-10 w-10 text-[var(--ca-gold-dim)]" strokeWidth={1} />
+          <p className="got-page__empty-title">No sessions this week</p>
+          <p className="got-page__empty-sub">
             Book your first session or set your availability so clients know when you&apos;re free.
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            <Button type="button" className="min-h-11" onClick={() => openBookModal(null, null)}>
-              Book your first session
-            </Button>
-            <Button type="button" variant="secondary" className="min-h-11" onClick={() => setAvailabilityOpen(true)}>
-              Set availability
-            </Button>
+          <div className="mt-6 flex gap-3">
+            <button type="button" className="got-page__action-btn" onClick={() => openBookModal(null, null)}>
+              Book Session
+            </button>
+            <button
+              type="button"
+              className="got-page__toggle-btn rounded-lg border border-[var(--border-default)] px-4"
+              onClick={() => setAvailabilityOpen(true)}
+            >
+              Set Availability
+            </button>
           </div>
         </div>
       )}
 
-      <div className="mt-4 flex min-h-0 min-w-0 flex-1 flex-col gap-0 lg:mt-6 lg:flex-row lg:gap-0">
-        <aside className="hidden w-[280px] shrink-0 border-r border-[var(--border-subtle)] lg:block lg:min-h-[560px]">
+      {/* ── Main content: sidebar + calendar grid ── */}
+      <div className="mt-4 flex min-h-0 flex-1 gap-0 lg:mt-6">
+
+        {/* Left panel — today focus */}
+        <aside className="hidden w-[280px] shrink-0 overflow-hidden rounded-l-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] lg:block">
           <ScheduleTodayPanel
             focusDay={panelDay}
             sessions={sessions}
@@ -388,256 +380,268 @@ export function CoachScheduleWorkspace() {
           />
         </aside>
 
+        {/* Right — calendar views */}
         <section
           id="coach-schedule-main"
           className="relative flex min-h-[480px] min-w-0 flex-1 flex-col scroll-mt-4 lg:min-h-[560px]"
         >
-          <div className="min-h-0 flex-1 pb-24">
-            <div className="hidden min-h-0 flex-1 flex-col lg:flex">
-              {calendarLoading ? (
-                <div className="h-[520px] animate-pulse rounded-lg bg-[var(--bg-subtle)]" />
-              ) : (
-                <ErrorBoundary
-                  fallback={
-                    <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] px-4 py-8 text-center text-[15px] text-[var(--text-tertiary)]">
-                      <p className="font-medium text-[var(--text-primary)]">Calendar could not be displayed</p>
-                      <p className="mt-1 text-[13px]">Try again or refresh the page.</p>
-                    </div>
-                  }
-                >
-                  {desktopView === 'week' ? (
-                    <ScheduleWeekGrid
-                      weekDays={weekDays}
-                      sessions={sessions}
-                      rules={rules}
-                      startHour={GRID_START_HOUR}
-                      endHour={GRID_END_HOUR}
-                      now={nowTick}
-                      onBookSlot={(d, t) => openBookModal(d, t)}
-                      onOpenSession={setDetailSession}
-                    />
-                  ) : null}
-                  {desktopView === 'month' ? (
-                    <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--border-subtle)]">
-                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((name) => (
-                        <div
-                          key={name}
-                          className="bg-[var(--bg-subtle)] py-2 text-center text-[10px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]"
+          {/* Desktop views */}
+          <div className="hidden min-h-0 flex-1 flex-col lg:flex">
+            {calendarLoading ? (
+              <div className="h-[520px] animate-pulse rounded-r-xl bg-[var(--bg-subtle)]" />
+            ) : (
+              <ErrorBoundary
+                fallback={
+                  <div className="got-page__card px-6 py-10 text-center">
+                    <p className="font-medium text-[var(--text-primary)]">Calendar could not be displayed</p>
+                    <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Try again or refresh the page.</p>
+                  </div>
+                }
+              >
+                {desktopView === 'week' && (
+                  <ScheduleWeekGrid
+                    weekDays={weekDays}
+                    sessions={sessions}
+                    rules={rules}
+                    startHour={GRID_START_HOUR}
+                    endHour={GRID_END_HOUR}
+                    now={nowTick}
+                    onBookSlot={(d, t) => openBookModal(d, t)}
+                    onOpenSession={setDetailSession}
+                  />
+                )}
+
+                {desktopView === 'month' && (
+                  <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--border-subtle)]">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((name) => (
+                      <div
+                        key={name}
+                        className="got-page__label bg-[var(--bg-subtle)] py-2.5 text-center"
+                      >
+                        {name}
+                      </div>
+                    ))}
+                    {monthCells.map((day) => {
+                      const daySessions = sessions.filter((s) => isSameDay(parseISO(s.scheduled_time), day))
+                      const inMonth = isSameMonth(day, monthDate)
+                      const today = isSameDay(day, new Date())
+                      return (
+                        <button
+                          key={day.toISOString()}
+                          type="button"
+                          className={cn(
+                            'flex min-h-[88px] flex-col bg-[var(--bg-subtle)] p-2 text-left transition-colors hover:bg-[var(--bg-muted)]',
+                            !inMonth && 'opacity-30',
+                            today && 'ring-1 ring-inset ring-[var(--ca-gold)]'
+                          )}
+                          onClick={() => {
+                            setWeekStart(startOfWeek(day, { weekStartsOn: 1 }))
+                            setPanelDay(startOfDay(day))
+                            setDesktopView('week')
+                          }}
                         >
-                          {name}
-                        </div>
-                      ))}
-                      {monthCells.map((day) => {
-                        const daySessions = sessions.filter((s) => isSameDay(parseISO(s.scheduled_time), day))
-                        const inMonth = isSameMonth(day, monthDate)
-                        const today = isSameDay(day, new Date())
-                        return (
-                          <button
-                            key={day.toISOString()}
-                            type="button"
+                          <span
                             className={cn(
-                              'flex min-h-[88px] flex-col bg-[var(--bg-subtle)] p-1.5 text-left transition-colors hover:bg-[var(--bg-muted)]',
-                              !inMonth && 'opacity-40',
-                              today && 'ring-1 ring-inset ring-[var(--cp-accent)]'
+                              'self-end text-[14px] font-medium tabular-nums',
+                              today
+                                ? 'flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ca-gold)] text-[13px] text-[var(--text-on-accent)]'
+                                : 'text-[var(--text-primary)]'
                             )}
-                            onClick={() => {
-                              setWeekStart(startOfWeek(day, { weekStartsOn: 1 }))
-                              setPanelDay(startOfDay(day))
-                              setDesktopView('week')
-                            }}
                           >
-                            <span
-                              className={cn(
-                                'self-end text-[14px] font-medium tabular-nums',
-                                today ? 'flex h-7 w-7 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[13px] text-white' : 'text-[var(--text-primary)]'
-                              )}
-                            >
-                              {format(day, 'd')}
-                            </span>
-                            <div className="mt-1 min-h-0 flex-1 space-y-0.5 overflow-hidden">
-                              {daySessions.slice(0, 2).map((s) => {
+                            {format(day, 'd')}
+                          </span>
+                          <div className="mt-1 min-h-0 flex-1 space-y-0.5 overflow-hidden">
+                            {daySessions.slice(0, 2).map((s) => {
+                              const name = fullName(s.clients ?? { first_name: null, last_name: null })
+                              const c = clientColorForId(s.client_id)
+                              return (
+                                <div
+                                  key={s.id}
+                                  className="truncate rounded px-1 py-0.5 text-[11px] font-medium text-[var(--text-primary)]"
+                                  style={{ backgroundColor: `${c}33` }}
+                                >
+                                  {name}
+                                </div>
+                              )
+                            })}
+                            {daySessions.length > 2 && (
+                              <span className="text-[11px] font-medium text-[var(--ca-gold-dim)]">
+                                +{daySessions.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {desktopView === 'agenda' && (
+                  <div className="space-y-6 overflow-y-auto rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] p-5">
+                    {agendaGroups.length === 0 ? (
+                      <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions in this range.</p>
+                    ) : (
+                      agendaGroups.map(({ date, list }) => {
+                        const d0 = parseISO(`${date}T12:00:00`)
+                        const label =
+                          isSameDay(d0, new Date()) ? `Today \u2014 ${format(d0, 'EEEE, MMMM d')}` : format(d0, 'EEEE, MMMM d')
+                        return (
+                          <div key={date}>
+                            <h3 className="got-page__label mb-3">{label}</h3>
+                            <ul className="space-y-2">
+                              {list.map((s) => {
+                                const st = parseISO(s.scheduled_time)
                                 const name = fullName(s.clients ?? { first_name: null, last_name: null })
                                 const c = clientColorForId(s.client_id)
                                 return (
-                                  <div
-                                    key={s.id}
-                                    className="truncate rounded px-1 py-0.5 text-[11px] font-medium text-[var(--text-primary)]"
-                                    style={{ backgroundColor: `${c}33` }}
-                                  >
-                                    {name}
-                                  </div>
+                                  <li key={s.id}>
+                                    <button
+                                      type="button"
+                                      className="got-page__card flex w-full items-start gap-4 text-left"
+                                      onClick={() => setDetailSession(s)}
+                                    >
+                                      <span className="w-[72px] shrink-0 text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">
+                                        {format(st, 'h:mm a')}
+                                      </span>
+                                      <span
+                                        className="mt-1 h-8 w-0.5 shrink-0 rounded-full"
+                                        style={{ backgroundColor: c }}
+                                      />
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-[14px] font-medium text-[var(--text-primary)]">{name}</p>
+                                        <p className="text-[12px] text-[var(--text-tertiary)]">
+                                          {s.duration_minutes ?? 60} min &middot; {s.session_type?.trim() || 'Video'}
+                                        </p>
+                                        {s.notes?.trim() && (
+                                          <p className="mt-1 truncate text-[12px] italic text-[var(--text-quaternary)]">{s.notes}</p>
+                                        )}
+                                      </div>
+                                      <Badge
+                                        variant={
+                                          s.status === 'confirmed' ? 'active' : s.status === 'completed' ? 'inactive' : 'pending'
+                                        }
+                                      >
+                                        {s.status}
+                                      </Badge>
+                                    </button>
+                                  </li>
                                 )
                               })}
-                              {daySessions.length > 2 ? (
-                                <span className="text-[11px] font-medium text-[var(--cp-accent)]">+{daySessions.length - 2} more</span>
-                              ) : null}
-                            </div>
-                          </button>
+                            </ul>
+                          </div>
                         )
-                      })}
-                    </div>
-                  ) : null}
-                  {desktopView === 'agenda' ? (
-                    <div className="space-y-6 overflow-y-auto rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
-                      {agendaGroups.length === 0 ? (
-                        <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions in this range.</p>
-                      ) : (
-                        agendaGroups.map(({ date, list }) => {
-                          const d0 = parseISO(`${date}T12:00:00`)
-                          const label =
-                            isSameDay(d0, new Date()) ? `Today — ${format(d0, 'EEEE, MMMM d')}` : format(d0, 'EEEE, MMMM d')
-                          return (
-                            <div key={date}>
-                              <h3 className="mb-2 text-[14px] font-semibold text-[var(--text-primary)]">{label}</h3>
-                              <ul className="space-y-2">
-                                {list.map((s) => {
-                                  const st = parseISO(s.scheduled_time)
-                                  const name = fullName(s.clients ?? { first_name: null, last_name: null })
-                                  const c = clientColorForId(s.client_id)
-                                  return (
-                                    <li key={s.id}>
-                                      <button
-                                        type="button"
-                                        className="flex w-full items-start gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3 text-left hover:bg-[var(--bg-muted)]"
-                                        onClick={() => setDetailSession(s)}
-                                      >
-                                        <span className="w-[72px] shrink-0 text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">
-                                          {format(st, 'h:mm a')}
-                                        </span>
-                                        <span className="mt-0.5 w-0.5 shrink-0 rounded-full bg-[var(--border-strong)]" style={{ backgroundColor: c }} />
-                                        <div className="min-w-0 flex-1">
-                                          <p className="text-[14px] font-medium text-[var(--text-primary)]">{name}</p>
-                                          <p className="text-[12px] text-[var(--text-tertiary)]">
-                                            {s.duration_minutes ?? 60} min · {s.session_type?.trim() || 'Video'}
-                                          </p>
-                                          {s.notes?.trim() ? (
-                                            <p className="mt-1 truncate text-[12px] italic text-[var(--text-tertiary)]">{s.notes}</p>
-                                          ) : null}
-                                        </div>
-                                        <Badge
-                                          variant={
-                                            s.status === 'confirmed' ? 'active' : s.status === 'completed' ? 'inactive' : 'pending'
-                                          }
-                                        >
-                                          {s.status}
-                                        </Badge>
-                                      </button>
-                                    </li>
-                                  )
-                                })}
-                              </ul>
-                            </div>
-                          )
-                        })
-                      )}
-                    </div>
-                  ) : null}
-                </ErrorBoundary>
-              )}
-            </div>
+                      })
+                    )}
+                  </div>
+                )}
+              </ErrorBoundary>
+            )}
+          </div>
 
-            <div className={cn('flex min-h-[420px] flex-col lg:hidden', mobileTab === 'today' ? 'flex' : 'hidden')}>
-              <ScheduleTodayPanel
-                focusDay={panelDay}
+          {/* Mobile: Today panel */}
+          <div className={cn('flex min-h-[420px] flex-col lg:hidden', mobileTab === 'today' ? 'flex' : 'hidden')}>
+            <ScheduleTodayPanel
+              focusDay={panelDay}
+              sessions={sessions}
+              rules={rules}
+              now={nowTick}
+              onSessionClick={(s) => setDetailSession(s)}
+              onBookSession={() => openBookModal(null, null)}
+              onEditAvailability={() => setAvailabilityOpen(true)}
+              onViewFullSchedule={() => setMobileTab('week')}
+            />
+          </div>
+
+          {/* Mobile: Week grid */}
+          <div className={cn('min-h-0 flex-1 flex-col pb-4 lg:hidden', mobileTab === 'week' ? 'flex' : 'hidden')}>
+            <div className="my-3 flex items-center justify-between">
+              <button
+                type="button"
+                className="got-page__nav-btn"
+                aria-label="Previous days"
+                onClick={() => setMobileAnchor((d) => addDays(d, -1))}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <span className="got-page__label">3-day view</span>
+              <button
+                type="button"
+                className="got-page__nav-btn"
+                aria-label="Next days"
+                onClick={() => setMobileAnchor((d) => addDays(d, 1))}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+            {calendarLoading ? (
+              <div className="h-[400px] animate-pulse rounded-xl bg-[var(--bg-subtle)]" />
+            ) : (
+              <ScheduleWeekGrid
+                weekDays={mobileWeekDays}
                 sessions={sessions}
                 rules={rules}
+                startHour={GRID_START_HOUR}
+                endHour={GRID_END_HOUR}
                 now={nowTick}
-                onSessionClick={(s) => setDetailSession(s)}
-                onBookSession={() => openBookModal(null, null)}
-                onEditAvailability={() => setAvailabilityOpen(true)}
-                onViewFullSchedule={() => setMobileTab('week')}
+                onBookSlot={(d, t) => openBookModal(d, t)}
+                onOpenSession={setDetailSession}
               />
-            </div>
+            )}
+          </div>
 
-            <div className={cn('min-h-0 flex-1 flex-col pb-4 lg:hidden', mobileTab === 'week' ? 'flex' : 'hidden')}>
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-9 px-2"
-                  aria-label="Previous days"
-                  onClick={() => setMobileAnchor((d) => addDays(d, -1))}
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-                <span className="text-[13px] font-medium text-[var(--text-secondary)]">3-day view</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-9 px-2"
-                  aria-label="Next days"
-                  onClick={() => setMobileAnchor((d) => addDays(d, 1))}
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-              </div>
-              {calendarLoading ? (
-                <div className="h-[400px] animate-pulse rounded-lg bg-[var(--bg-subtle)]" />
+          {/* Mobile: Agenda */}
+          <div className={cn('min-h-0 flex-1 lg:hidden', mobileTab === 'agenda' ? 'block' : 'hidden')}>
+            <div className="mt-3 max-h-[70vh] space-y-6 overflow-y-auto rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
+              {agendaGroups.length === 0 ? (
+                <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions.</p>
               ) : (
-                <ScheduleWeekGrid
-                  weekDays={mobileWeekDays}
-                  sessions={sessions}
-                  rules={rules}
-                  startHour={GRID_START_HOUR}
-                  endHour={GRID_END_HOUR}
-                  now={nowTick}
-                  onBookSlot={(d, t) => openBookModal(d, t)}
-                  onOpenSession={setDetailSession}
-                />
+                agendaGroups.map(({ date, list }) => {
+                  const d0 = parseISO(`${date}T12:00:00`)
+                  const label =
+                    isSameDay(d0, new Date()) ? `Today \u2014 ${format(d0, 'EEEE, MMMM d')}` : format(d0, 'EEEE, MMMM d')
+                  return (
+                    <div key={date}>
+                      <h3 className="got-page__label mb-3">{label}</h3>
+                      <ul className="space-y-2">
+                        {list.map((s) => {
+                          const st = parseISO(s.scheduled_time)
+                          const name = fullName(s.clients ?? { first_name: null, last_name: null })
+                          return (
+                            <li key={s.id}>
+                              <button
+                                type="button"
+                                className="got-page__card flex w-full flex-col text-left"
+                                onClick={() => setDetailSession(s)}
+                              >
+                                <span className="text-[13px] font-semibold text-[var(--ca-gold-dim)]">{format(st, 'h:mm a')}</span>
+                                <span className="mt-1 text-[14px] font-medium text-[var(--text-primary)]">{name}</span>
+                              </button>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  )
+                })
               )}
-            </div>
-
-            <div className={cn('min-h-0 flex-1 lg:hidden', mobileTab === 'agenda' ? 'block' : 'hidden')}>
-              <div className="max-h-[70vh] space-y-6 overflow-y-auto rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
-                {agendaGroups.length === 0 ? (
-                  <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions.</p>
-                ) : (
-                  agendaGroups.map(({ date, list }) => {
-                    const d0 = parseISO(`${date}T12:00:00`)
-                    const label =
-                      isSameDay(d0, new Date()) ? `Today — ${format(d0, 'EEEE, MMMM d')}` : format(d0, 'EEEE, MMMM d')
-                    return (
-                      <div key={date}>
-                        <h3 className="mb-2 text-[14px] font-semibold text-[var(--text-primary)]">{label}</h3>
-                        <ul className="space-y-2">
-                          {list.map((s) => {
-                            const st = parseISO(s.scheduled_time)
-                            const name = fullName(s.clients ?? { first_name: null, last_name: null })
-                            return (
-                              <li key={s.id}>
-                                <button
-                                  type="button"
-                                  className="flex w-full flex-col rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3 text-left hover:bg-[var(--bg-muted)]"
-                                  onClick={() => setDetailSession(s)}
-                                >
-                                  <span className="text-[13px] font-semibold text-[var(--text-primary)]">{format(st, 'h:mm a')}</span>
-                                  <span className="text-[14px] font-medium text-[var(--text-primary)]">{name}</span>
-                                </button>
-                              </li>
-                            )
-                          })}
-                        </ul>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
             </div>
           </div>
         </section>
 
-        {detailSession ? (
+        {/* Session detail drawer */}
+        {detailSession && (
           <>
             <button
               type="button"
-              className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px] lg:hidden"
               aria-label="Close session details"
               onClick={() => setDetailSession(null)}
             />
             <div
               className={cn(
-                'z-50 flex flex-col border-[var(--border-subtle)] bg-[var(--bg-subtle)] shadow-[var(--shadow-xl)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
-                'fixed inset-x-0 bottom-0 max-h-[90vh] rounded-t-[var(--radius-xl)] border-t lg:absolute lg:inset-x-auto lg:top-0 lg:right-0 lg:bottom-0 lg:h-full lg:max-h-none lg:w-[320px] lg:rounded-none lg:border-t-0 lg:border-l'
+                'z-50 flex flex-col border-[var(--border-default)] bg-[var(--bg-subtle)] shadow-[var(--shadow-xl)]',
+                'fixed inset-x-0 bottom-0 max-h-[90vh] rounded-t-xl border-t',
+                'lg:absolute lg:inset-x-auto lg:top-0 lg:right-0 lg:bottom-0 lg:h-full lg:max-h-none lg:w-[320px] lg:rounded-none lg:rounded-r-xl lg:border-t-0 lg:border-l'
               )}
               style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
             >
@@ -658,9 +662,10 @@ export function CoachScheduleWorkspace() {
               />
             </div>
           </>
-        ) : null}
+        )}
       </div>
 
+      {/* Modals */}
       <BookSessionModal
         open={modalOpen}
         onClose={() => {
@@ -685,18 +690,27 @@ export function CoachScheduleWorkspace() {
         }}
       />
 
+      {/* Mobile FAB */}
       <button
         type="button"
-        className="fixed bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[var(--text-on-accent)] shadow-[var(--shadow-xl)] lg:bottom-8 lg:hidden"
+        className="fixed bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-xl)] lg:bottom-8 lg:hidden"
+        style={{ background: 'var(--ca-gold)', color: 'var(--text-on-accent)' }}
         aria-label="Book session"
         onClick={() => openBookModal(null, null)}
       >
         <span className="text-2xl leading-none">+</span>
       </button>
 
+      {/* Toast notifications */}
       <div className="fixed right-4 top-20 z-[60] space-y-2">
         {toasts.map((toast) => (
-          <div key={toast.id} className={`rounded-lg px-3 py-2 text-sm ${toastStyle(toast.type)}`}>
+          <div
+            key={toast.id}
+            className={cn(
+              'rounded-lg px-4 py-2.5 text-[13px] font-medium shadow-lg',
+              toastStyle(toast.type)
+            )}
+          >
             {toast.text}
           </div>
         ))}

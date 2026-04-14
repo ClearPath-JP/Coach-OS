@@ -265,56 +265,59 @@
 }
 
 html[data-theme='dark'] {
-  /* Ghost of Tsushima — warm dark palette */
-  --bg-app: #0F0D0B;
-  --bg-app-rgb: 15, 13, 11;
-  --bg-subtle: #1A1714;
-  --bg-muted: #242018;
-  --bg-emphasis: #2E2820;
+  /* ═══ Combative Alchemy — disciplined dark palette ═══ */
 
-  /* Aged gold accent — GoT signature */
-  --accent: #C4A44A;
-  --accent-rgb: 196, 164, 74;
-  --accent-dark: #A08838;
-  --accent-light: #1E1A10;
-  --accent-muted: #2A2414;
-  --accent-hover: #D4B45A;
+  /* Surfaces — cool charcoal, layered depth */
+  --bg-app: #0E0E11;
+  --bg-app-rgb: 14, 14, 17;
+  --bg-subtle: #18181B;
+  --bg-muted: #222225;
+  --bg-emphasis: #2C2C30;
 
-  /* Parchment-warm text */
-  --text-primary: #F0EDE8;
-  --text-secondary: #C4BEB4;
-  --text-tertiary: #7A7268;
-  --text-quaternary: #4A4238;
-  --text-placeholder: #3A3428;
-  --text-on-accent: #0F0D0B;
+  /* Accent — alchemical brass. Used sparingly. */
+  --accent: #C4A24C;
+  --accent-rgb: 196, 162, 76;
+  --accent-dark: #8B7A3C;
+  --accent-light: #16150E;
+  --accent-muted: #1E1D14;
+  --accent-hover: #D4B25C;
 
-  /* Warm organic borders */
-  --border-subtle: #1E1A14;
-  --border-default: #2A2418;
-  --border-strong: #3A3228;
-  --border-accent: #C4A44A;
+  /* Text — clean, high contrast, no warmth */
+  --text-primary: #EDEDEF;
+  --text-secondary: #A1A1AA;
+  --text-tertiary: #63636B;
+  --text-quaternary: #3F3F46;
+  --text-placeholder: #2E2E33;
+  --text-on-accent: #0E0E11;
 
-  /* Semantic colors — warm-adjusted */
+  /* Borders — barely there, zinc-based */
+  --border-subtle: #1F1F23;
+  --border-default: #27272A;
+  --border-strong: #3F3F46;
+  --border-accent: #C4A24C;
+
+  /* Semantic — restrained, functional */
   --success: #34d399;
-  --success-bg: #0D1A12;
+  --success-bg: #0C1A14;
   --success-border: #1A3828;
   --warning: #fbbf24;
   --warning-bg: #1A1608;
   --warning-border: #3D2E08;
-  --error: #fc8181;
-  --error-bg: #1A0D0A;
-  --error-border: #3D1814;
-  --info: #C4A44A;
-  --info-bg: #1A1608;
-  --info-border: #2A2414;
+  --error: #f87171;
+  --error-bg: #1A0C0C;
+  --error-border: #3D1818;
+  --info: #60a5fa;
+  --info-bg: #0C1424;
+  --info-border: #1E2D4A;
 
-  /* Warm-tinted shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(12, 8, 4, 0.5);
-  --shadow-sm: 0 1px 3px 0 rgba(12, 8, 4, 0.55), 0 1px 2px -1px rgba(12, 8, 4, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(12, 8, 4, 0.6), 0 2px 4px -2px rgba(12, 8, 4, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(12, 8, 4, 0.65), 0 4px 6px -4px rgba(12, 8, 4, 0.45);
-  --shadow-xl: 0 20px 25px -5px rgba(12, 8, 4, 0.7), 0 8px 10px -6px rgba(12, 8, 4, 0.5);
+  /* Shadows — cool, not warm */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
 
+  /* Semantic aliases — components reference these */
   --color-bg: var(--bg-app);
   --color-surface: var(--bg-subtle);
   --color-surface-2: var(--bg-muted);
@@ -345,11 +348,11 @@ html[data-theme='dark'] {
   --color-error-light: var(--error-bg);
   --color-info-light: var(--info-bg);
   --color-error-hover: color-mix(in srgb, var(--error) 88%, #ffffff);
-  --color-accent-bg: color-mix(in srgb, var(--accent) 18%, var(--bg-subtle));
+  --color-accent-bg: color-mix(in srgb, var(--accent) 12%, var(--bg-subtle));
   --shadow-card: var(--shadow-xs);
   --shadow-card-raised: var(--shadow-sm);
 
-  /* Legacy ClearPath tokens — map to semantic dark surfaces */
+  /* Legacy ClearPath tokens — mapped to new palette */
   --cp-offwhite: var(--bg-app);
   --cp-white: var(--bg-subtle);
   --cp-border: var(--border-default);
@@ -362,23 +365,28 @@ html[data-theme='dark'] {
   --cp-sapphire: var(--accent);
   --cp-accent: var(--accent);
   --cp-accent-hover: var(--accent-hover);
-  --cp-lavender: color-mix(in srgb, var(--accent) 14%, var(--bg-muted));
+  --cp-lavender: color-mix(in srgb, var(--accent) 10%, var(--bg-muted));
   --cp-btn-bg: var(--accent);
   --cp-btn-hover: var(--accent-hover);
-  --cp-focus-ring: color-mix(in srgb, var(--accent) 30%, transparent);
-  /* Warm dark surface for nav panels */
-  --cp-nav-surface: #0D0B08;
+  --cp-focus-ring: color-mix(in srgb, var(--accent) 25%, transparent);
+  --cp-nav-surface: #0C0C0F;
 
-  /* Ghost of Tsushima — design tokens */
-  --got-ink: #1C1816;
-  --got-parchment: #E8E0D0;
-  --got-gold: #C4A44A;
-  --got-gold-dim: #A08838;
-  --got-gold-rgb: 196, 164, 74;
+  /* Combative Alchemy — brand tokens */
+  --ca-gold: #C4A24C;
+  --ca-gold-dim: #8B7A3C;
+  --ca-gold-rgb: 196, 162, 76;
+  --ca-gold-surface: rgba(196, 162, 76, 0.08);
+
+  /* GoT aliases — backward compat, point to CA palette */
+  --got-ink: #0E0E11;
+  --got-parchment: #EDEDEF;
+  --got-gold: var(--ca-gold);
+  --got-gold-dim: var(--ca-gold-dim);
+  --got-gold-rgb: var(--ca-gold-rgb);
   --got-crimson: #8B2B2B;
-  --got-steel: #4A6B8A;
-  --got-bamboo: #4A6B3A;
-  --got-frost: #8AA4B8;
+  --got-steel: #60a5fa;
+  --got-bamboo: #34d399;
+  --got-frost: #A1A1AA;
 }
 
 *,
@@ -566,7 +574,7 @@ html[data-theme='dark'] ::selection {
 }
 
 .link-nav {
-  color: var(--got-gold);
+  color: var(--ca-gold);
   text-decoration: none;
   text-underline-offset: 2px;
   transition:
@@ -886,7 +894,7 @@ html[data-theme='dark'] body::after {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--got-gold);
+  background: var(--ca-gold);
   border-radius: 0 2px 2px 0;
 }
 
@@ -1012,7 +1020,7 @@ html[data-theme='dark'] body::after {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--got-gold-dim);
+  color: var(--ca-gold-dim);
 }
 .game-panel-body {
   padding: 4px 0;
@@ -1048,7 +1056,7 @@ html[data-theme='dark'] body::after {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--got-gold-dim);
+  color: var(--ca-gold-dim);
 }
 .game-stat__sub {
   font-size: 11px;
@@ -1138,7 +1146,726 @@ html[data-theme='dark'] body::after {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--got-gold-dim);
+  color: var(--ca-gold-dim);
+}
+
+/* ═══════════════════════════════════════════════
+   COACH NAV — V3 minimal top bar + mobile dock
+   ═══════════════════════════════════════════════ */
+
+.coach-nav {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-app);
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+@media (min-width: 1024px) {
+  .coach-nav { padding: 0 24px; }
+}
+
+.coach-nav__brand {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  margin-right: 24px;
+  text-decoration: none;
+}
+@media (min-width: 1024px) {
+  .coach-nav__brand { font-size: 16px; margin-right: 32px; }
+}
+
+.coach-nav__links {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+@media (min-width: 1024px) {
+  .coach-nav__links { display: flex; }
+}
+
+.coach-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 200ms, background 200ms;
+}
+.coach-nav__link:hover {
+  color: var(--text-primary);
+  background: var(--bg-muted);
+}
+.coach-nav__link--active {
+  color: var(--ca-gold);
+  background: var(--ca-gold-surface);
+}
+.coach-nav__link-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.coach-nav__settings {
+  margin-left: auto;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 200ms, background 200ms;
+}
+.coach-nav__settings:hover {
+  color: var(--text-primary);
+  background: var(--bg-muted);
+}
+.coach-nav__settings.coach-nav__link--active {
+  color: var(--ca-gold);
+}
+@media (min-width: 1024px) {
+  .coach-nav__settings { display: flex; }
+}
+
+/* Mobile bottom dock */
+.coach-nav__mobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-app);
+  z-index: 40;
+}
+@media (min-width: 1024px) {
+  .coach-nav__mobile { display: none; }
+}
+
+.coach-nav__mobile-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  color: var(--text-quaternary);
+  text-decoration: none;
+  transition: color 200ms;
+}
+.coach-nav__mobile-link--active {
+  color: var(--ca-gold);
+}
+.coach-nav__mobile-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════
+   GAME BAR — slim navigation bar for inner pages (legacy V2)
+   ═══════════════════════════════════════════════ */
+
+.game-bar {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 250, 240, 0.04);
+  background: var(--bg-app);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  animation: gameBarSlideDown 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes gameBarSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.game-bar__home {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  transition: color 250ms, background 250ms;
+  cursor: pointer;
+}
+.game-bar__home:hover {
+  color: var(--ca-gold);
+  background: rgba(255, 250, 240, 0.03);
+}
+
+.game-bar__home-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.game-bar__title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.game-bar__spacer {
+  flex: 1;
+}
+
+@media (min-width: 1024px) {
+  .game-bar { height: 56px; padding: 0 32px; }
+  .game-bar__title { font-size: 14px; }
+}
+
+/* ═══════════════════════════════════════════════
+   GOT MENU — Ghost of Tsushima Legends-style
+   ═══════════════════════════════════════════════ */
+
+/* Root container — full viewport */
+.got-menu {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* ── Background layers ── */
+.got-menu__bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Base gradient — deep warm black to dark crimson edge */
+.got-menu__bg-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 75% 50%, rgba(120, 20, 20, 0.15), transparent 60%),
+    radial-gradient(ellipse 80% 100% at 20% 80%, rgba(15, 10, 5, 0.9), transparent 70%),
+    linear-gradient(135deg, #0a0806 0%, #12100c 40%, #1a0e0a 100%);
+}
+
+/* Mist / fog layer — animated drift */
+.got-menu__bg-mist {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(ellipse 40% 30% at 60% 40%, rgba(180, 160, 140, 0.04), transparent),
+    radial-gradient(ellipse 50% 40% at 30% 70%, rgba(140, 120, 100, 0.03), transparent);
+  animation: gotMistDrift 30s ease-in-out infinite alternate;
+}
+@keyframes gotMistDrift {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(3%, -2%) scale(1.05); }
+}
+
+/* Vignette — dark edges */
+.got-menu__bg-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 20%, rgba(5, 3, 2, 0.7) 100%);
+}
+
+/* ── Content layout ── */
+.got-menu__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 100dvh;
+}
+
+/* Left column — menu */
+.got-menu__left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  padding: 32px 24px;
+  max-width: 500px;
+  animation: gotLeftFadeIn 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Right column — empty atmospheric space (bg shows through) */
+.got-menu__right {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .got-menu__left {
+    width: 45%;
+    max-width: 520px;
+    padding: 48px 48px 48px 56px;
+  }
+  .got-menu__right {
+    display: block;
+    flex: 1;
+  }
+}
+
+@keyframes gotLeftFadeIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Brand ── */
+.got-menu__brand {
+  margin-bottom: 40px;
+}
+.got-menu__brand-name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.got-menu__brand-rule {
+  margin-top: 14px;
+  height: 2px;
+  width: 40px;
+  background: linear-gradient(90deg, var(--got-gold), transparent);
+}
+.got-menu__greeting {
+  margin-top: 20px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+.got-menu__date {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ca-gold-dim);
+}
+.got-menu__next {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.got-menu__next strong {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@media (min-width: 1024px) {
+  .got-menu__brand { margin-bottom: 48px; }
+  .got-menu__brand-name { font-size: 32px; }
+  .got-menu__greeting { font-size: 19px; }
+}
+
+/* ── Navigation — Legends-style buttons ── */
+.got-menu__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.got-menu__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 250, 240, 0.04);
+  transition: none;
+}
+.got-menu__btn:first-child {
+  border-top: 1px solid rgba(255, 250, 240, 0.04);
+}
+
+/* Red/crimson wash on hover — like GoT Legends active state */
+.got-menu__btn-wash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(140, 20, 20, 0.25) 0%, rgba(140, 20, 20, 0.08) 60%, transparent 100%);
+  opacity: 0;
+  transition: opacity 350ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.got-menu__btn--active .got-menu__btn-wash {
+  opacity: 1;
+}
+
+/* Left accent bar — crimson on hover */
+.got-menu__btn-accent {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--ca-gold);
+  opacity: 0;
+  transform: scaleY(0.4);
+  transition: opacity 300ms, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.got-menu__btn--active .got-menu__btn-accent {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* Icon */
+.got-menu__btn-icon {
+  position: relative;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: color 300ms;
+}
+.got-menu__btn--active .got-menu__btn-icon {
+  color: rgba(255, 220, 200, 0.9);
+}
+
+/* Label */
+.got-menu__btn-label {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  transition: color 300ms, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 110px;
+}
+.got-menu__btn--active .got-menu__btn-label {
+  color: #fff;
+  transform: translateX(4px);
+}
+
+/* Stat badge */
+.got-menu__btn-stat {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ca-gold);
+  margin-left: auto;
+  opacity: 0.7;
+  transition: opacity 300ms;
+}
+.got-menu__btn--active .got-menu__btn-stat {
+  opacity: 1;
+}
+
+/* Sub text */
+.got-menu__btn-sub {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  color: var(--text-quaternary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: color 300ms;
+}
+.got-menu__btn--active .got-menu__btn-sub {
+  color: rgba(255, 200, 180, 0.6);
+}
+
+/* Stagger entrance */
+.got-menu__btn {
+  animation: gotBtnSlide 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.got-menu__btn:nth-child(1) { animation-delay: 250ms; }
+.got-menu__btn:nth-child(2) { animation-delay: 320ms; }
+.got-menu__btn:nth-child(3) { animation-delay: 390ms; }
+.got-menu__btn:nth-child(4) { animation-delay: 460ms; }
+.got-menu__btn:nth-child(5) { animation-delay: 530ms; }
+.got-menu__btn:nth-child(6) { animation-delay: 600ms; }
+
+@keyframes gotBtnSlide {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (min-width: 1024px) {
+  .got-menu__btn { padding: 18px 20px; gap: 18px; }
+  .got-menu__btn-label { font-size: 16px; min-width: 130px; }
+  .got-menu__btn-icon { width: 22px; height: 22px; }
+  .got-menu__btn-stat { font-size: 20px; }
+}
+
+/* ── Bottom — settings + footer ── */
+.got-menu__bottom {
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.got-menu__settings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  transition: color 300ms, background 300ms;
+  cursor: pointer;
+}
+.got-menu__settings:hover {
+  color: var(--text-primary);
+  background: rgba(255, 250, 240, 0.03);
+}
+.got-menu__footer {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-quaternary);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .got-menu__left,
+  .got-menu__btn,
+  .got-menu__bg-mist {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   GOT PAGE — inner page layout (under GameBar)
+   ═══════════════════════════════════════════════ */
+
+.got-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 20px 16px 80px;
+  animation: gotPageFadeIn 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes gotPageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (min-width: 1024px) {
+  .got-page { padding: 28px 32px 48px; }
+}
+
+/* Section label — small, muted, functional */
+.got-page__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* Section heading — clean, modern */
+.got-page__heading {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+@media (min-width: 1024px) {
+  .got-page__heading { font-size: 24px; }
+}
+
+/* Card surface — layered, restrained */
+.got-page__card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 16px;
+  transition: border-color 200ms;
+}
+.got-page__card:hover {
+  border-color: var(--border-strong);
+}
+
+/* Toolbar — sticky actions bar */
+.got-page__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* View toggle group */
+.got-page__toggle-group {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+}
+.got-page__toggle-btn {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  background: var(--bg-subtle);
+  border-right: 1px solid var(--border-default);
+  transition: color 200ms, background 200ms;
+  cursor: pointer;
+}
+.got-page__toggle-btn:last-child { border-right: none; }
+.got-page__toggle-btn:hover { color: var(--text-secondary); background: var(--bg-muted); }
+.got-page__toggle-btn--active {
+  color: var(--ca-gold);
+  background: var(--ca-gold-surface);
+}
+
+/* Nav arrow button */
+.got-page__nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  transition: color 250ms, background 250ms;
+  cursor: pointer;
+}
+.got-page__nav-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-muted);
+}
+
+/* Primary action button — gold accent */
+.got-page__action-btn {
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-on-accent);
+  background: var(--ca-gold);
+  transition: background 200ms;
+  cursor: pointer;
+}
+.got-page__action-btn:hover {
+  background: var(--accent-hover);
+}
+
+/* Empty state */
+.got-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border: 1px dashed var(--border-default);
+  border-radius: 12px;
+  text-align: center;
+}
+.got-page__empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 12px;
+}
+.got-page__empty-sub {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+  max-width: 360px;
+}
+
+/* Mobile tab bar */
+.got-page__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  margin: 0 -16px;
+  padding: 0 16px;
+}
+.got-page__tab {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-tertiary);
+  border-bottom: 2px solid transparent;
+  transition: color 200ms, border-color 200ms;
+  cursor: pointer;
+}
+.got-page__tab:hover { color: var(--text-secondary); }
+.got-page__tab--active {
+  color: var(--text-primary);
+  border-bottom-color: var(--ca-gold);
+}
+
+/* Date range display */
+.got-page__date-range {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Calendar subscribe collapsible */
+.got-page__collapsible {
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-subtle);
+  margin-top: 16px;
+}
+.got-page__collapsible summary {
+  cursor: pointer;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  list-style: none;
+}
+.got-page__collapsible summary::-webkit-details-marker { display: none; }
+.got-page__collapsible[open] summary {
+  border-bottom: 1px solid var(--border-subtle);
+}
+.got-page__collapsible-body {
+  padding: 12px 16px 16px;
 }
 
 /* Client portal — XP bar micro-celebration when progress increases */
