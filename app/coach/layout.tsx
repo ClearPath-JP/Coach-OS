@@ -60,11 +60,12 @@ export default async function CoachLayout({
 
     if (!skipSubCheck) {
       const sub = subResult.data
-      if (!sub) {
-        redirect('/coach/subscription')
-      } else if (sub.status === 'past_due' || sub.status === 'cancelled') {
-        const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : new Date(0)
-        if (periodEnd < new Date()) redirect('/billing?warning=subscription')
+      // No subscription row = free trial / pre-Stripe coach — allow access
+      if (sub) {
+        if (sub.status === 'past_due' || sub.status === 'cancelled') {
+          const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : new Date(0)
+          if (periodEnd < new Date()) redirect('/billing?warning=subscription')
+        }
       }
     }
 
