@@ -93,7 +93,11 @@ export default async function CoachLayout({
     >
       <div className="flex min-h-[100dvh] flex-col bg-[var(--bg-app)]">
         <style>{accentStyle}</style>
-        <CoachNav brandName={brandName} />
+        <CoachNav
+          brandName={brandName}
+          coachName={profile?.full_name ?? null}
+          coachAvatarUrl={profile?.logo_url ?? initialWorkspaceSettings.logoUrl ?? null}
+        />
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
         </main>

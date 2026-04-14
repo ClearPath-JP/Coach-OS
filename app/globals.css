@@ -1169,17 +1169,48 @@ html[data-theme='dark'] body::after {
   .coach-nav { padding: 0 24px; }
 }
 
+.coach-nav__profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 20px;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 4px 8px 4px 4px;
+  transition: background 200ms;
+}
+.coach-nav__profile:hover { background: var(--bg-muted); }
+
+.coach-nav__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.coach-nav__avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--bg-emphasis);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .coach-nav__brand {
   font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.02em;
   white-space: nowrap;
-  margin-right: 24px;
-  text-decoration: none;
 }
 @media (min-width: 1024px) {
-  .coach-nav__brand { font-size: 16px; margin-right: 32px; }
+  .coach-nav__brand { font-size: 16px; }
+  .coach-nav__profile { margin-right: 28px; }
 }
 
 .coach-nav__links {
