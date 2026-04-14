@@ -53,9 +53,9 @@ export function effectiveClientLimit(plan: string, workspaceMaxClients: number |
 /** Implied monthly SaaS MRR per plan for admin rollups — keep aligned with Stripe Prices + SubscriptionPageContent. */
 export const PLAN_MRR_CENTS: Record<string, number> = {
   free: 0,
-  starter: 6900,
-  pro: 12900,
-  scale: 19900,
+  starter: 4900,
+  pro: 9900,
+  scale: 14900,
 }
 
 /**
