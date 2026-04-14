@@ -16,7 +16,7 @@ import {
   validateImageMagicBytes,
 } from '@/lib/file-validation'
 
-const UPLOAD_TYPES = ['avatar', 'logo', 'program-file'] as const
+const UPLOAD_TYPES = ['avatar', 'logo', 'program-file', 'program-thumbnail'] as const
 type UploadType = (typeof UPLOAD_TYPES)[number]
 
 function jsonError(message: string, status: number, retryAfter?: number) {
@@ -66,7 +66,7 @@ export async function handleUploadPost(request: Request): Promise<Response> {
       if (moduleId != null && workspaceId != null) {
         uploadType = 'program-file'
       } else {
-        return jsonError('Invalid or missing type (avatar | logo | program-file)', 400)
+        return jsonError('Invalid or missing type (avatar | logo | program-file | program-thumbnail)', 400)
       }
     }
 
@@ -97,6 +97,23 @@ export async function handleUploadPost(request: Request): Promise<Response> {
         bucket = 'avatars'
         storagePath = generateSafeStoragePath(coachWorkspaceId, 'workspaces', safeBase)
       }
+    } else if (uploadType === 'program-thumbnail') {
+      if (!isAllowedImageType(mimeRaw)) {
+        return jsonError('Only JPEG, PNG, and WebP images are allowed', 400)
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        return jsonError('Image must be under 5MB', 400)
+      }
+      const okMagic = await validateImageMagicBytes(buffer)
+      if (!okMagic) {
+        return jsonError('File content does not match an allowed image format', 400)
+      }
+      contentType = normalizeImageMime(mimeRaw)
+      const safeBase = sanitizeFileName(file.name || 'thumbnail.jpg')
+      const ext = safeBase.split('.').pop() || 'jpg'
+      const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      bucket = 'avatars'
+      storagePath = `program-thumbnails/${coachWorkspaceId}/${safeName}`
     } else {
       const moduleId = formData.get('moduleId')
       const workspaceId = formData.get('workspaceId')

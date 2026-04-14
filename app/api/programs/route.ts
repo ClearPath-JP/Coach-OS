@@ -110,10 +110,11 @@ export async function POST(request: Request) {
         coach_id: user.id,
         title: parsed.data.title,
         description: parsed.data.description ?? null,
+        thumbnail_url: parsed.data.thumbnail_url ?? null,
         status: 'draft',
         total_modules: 0,
       })
-      .select('id, workspace_id, coach_id, title, description, status, total_modules, created_at, updated_at')
+      .select('id, workspace_id, coach_id, title, description, thumbnail_url, status, total_modules, created_at, updated_at')
       .single()
 
     if (error) {

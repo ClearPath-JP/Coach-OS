@@ -70,6 +70,9 @@ export function ProgramsPageContent() {
   const [createDescription, setCreateDescription] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+  const [thumbnailUploading, setThumbnailUploading] = useState(false)
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null)
 
   const fetchPrograms = useCallback(async () => {
     setError(null)
@@ -104,12 +107,56 @@ export function ProgramsPageContent() {
     return programs.filter((p) => p.title.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q))
   }, [programs, searchQuery])
 
+  const MAX_THUMB_SIZE = 5 * 1024 * 1024
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+  const handleThumbnailUpload = async (file: File) => {
+    setThumbnailError(null)
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setThumbnailError('Only JPEG, PNG, or WebP images are allowed')
+      return
+    }
+    if (file.size > MAX_THUMB_SIZE) {
+      setThumbnailError('Image must be under 5MB')
+      return
+    }
+    setThumbnailUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'program-thumbnail')
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const json = await res.json()
+      if (!res.ok) {
+        setThumbnailError(json.error ?? 'Upload failed')
+        return
+      }
+      setThumbnailUrl(json.data?.url ?? null)
+    } catch {
+      setThumbnailError('Upload failed — try again')
+    } finally {
+      setThumbnailUploading(false)
+    }
+  }
+
+  const handleThumbnailDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files[0]
+    if (file) void handleThumbnailUpload(file)
+  }
+
+  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) void handleThumbnailUpload(file)
+  }
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitError(null)
     const parsed = createProgramSchema.safeParse({
       title: createTitle.trim(),
       description: createDescription.trim() || null,
+      thumbnail_url: thumbnailUrl || null,
     })
     if (!parsed.success) {
       setSubmitError(parsed.error.issues[0]?.message ?? 'Invalid input')
@@ -130,6 +177,8 @@ export function ProgramsPageContent() {
       setCreateOpen(false)
       setCreateTitle('')
       setCreateDescription('')
+      setThumbnailUrl(null)
+      setThumbnailError(null)
       router.push(`/coach/programs/${json.data.id}`)
     } catch {
       setSubmitError('Something went wrong — try again')
@@ -276,8 +325,15 @@ export function ProgramsPageContent() {
             >
               <div
                 className="relative h-[160px] shrink-0 overflow-hidden"
-                style={{ background: programGradient(prog.title) }}
+                style={prog.thumbnail_url ? undefined : { background: programGradient(prog.title) }}
               >
+                {prog.thumbnail_url && (
+                  <img
+                    src={prog.thumbnail_url}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
                 <span
                   className={cn(
                     'absolute right-2 top-2 z-[1] rounded-[8px] px-2 py-0.5 text-[11px] font-semibold',
@@ -292,9 +348,11 @@ export function ProgramsPageContent() {
                 <span className="absolute bottom-2 left-2 z-[1] text-[11px] font-semibold text-white drop-shadow-sm">
                   {prog.total_modules} modules
                 </span>
-                <div className="flex h-full items-center justify-center">
-                  <span className="text-[32px] font-bold text-white drop-shadow-sm">{previewLetters(prog.title)}</span>
-                </div>
+                {!prog.thumbnail_url && (
+                  <div className="flex h-full items-center justify-center">
+                    <span className="text-[32px] font-bold text-white drop-shadow-sm">{previewLetters(prog.title)}</span>
+                  </div>
+                )}
               </div>
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
@@ -361,12 +419,20 @@ export function ProgramsPageContent() {
                   href={`/coach/programs/${prog.id}`}
                   className="flex items-center gap-4 px-4 py-3 transition-colors duration-[80ms] hover:bg-[var(--bg-subtle)]"
                 >
-                  <div
-                    className="size-10 shrink-0 rounded-full text-center text-[11px] font-bold leading-10 text-white"
-                    style={{ background: programGradient(prog.title) }}
-                  >
-                    {previewLetters(prog.title)}
-                  </div>
+                  {prog.thumbnail_url ? (
+                    <img
+                      src={prog.thumbnail_url}
+                      alt=""
+                      className="size-10 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="size-10 shrink-0 rounded-full text-center text-[11px] font-bold leading-10 text-white"
+                      style={{ background: programGradient(prog.title) }}
+                    >
+                      {previewLetters(prog.title)}
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-[var(--text-primary)]">{prog.title}</p>
                     <p className="text-[12px] text-[var(--text-tertiary)]">
@@ -393,11 +459,62 @@ export function ProgramsPageContent() {
         onClose={() => {
           setCreateOpen(false)
           setSubmitError(null)
+          setThumbnailUrl(null)
+          setThumbnailError(null)
         }}
         title="Create program"
         className="w-full max-w-none md:max-w-md"
       >
         <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-primary)]">Thumbnail</label>
+            {thumbnailUrl ? (
+              <div className="relative">
+                <img
+                  src={thumbnailUrl}
+                  alt="Program thumbnail preview"
+                  className="h-[140px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => { setThumbnailUrl(null); setThumbnailError(null) }}
+                  className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-sm text-white transition-colors hover:bg-black/80"
+                  aria-label="Remove thumbnail"
+                >
+                  &times;
+                </button>
+              </div>
+            ) : (
+              <label
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleThumbnailDrop}
+                className={cn(
+                  'flex h-[140px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed transition-colors',
+                  thumbnailUploading
+                    ? 'border-[var(--cp-accent)] bg-[var(--accent-light)]'
+                    : 'border-[var(--border-default)] bg-[var(--bg-subtle)] hover:border-[var(--cp-accent)] hover:bg-[var(--accent-light)]'
+                )}
+              >
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleThumbnailSelect}
+                  disabled={thumbnailUploading}
+                />
+                {thumbnailUploading ? (
+                  <span className="text-sm text-[var(--text-tertiary)]">Uploading...</span>
+                ) : (
+                  <>
+                    <span className="text-2xl text-[var(--text-quaternary)]" aria-hidden>+</span>
+                    <span className="text-xs text-[var(--text-tertiary)]">Click or drag an image</span>
+                    <span className="text-[11px] text-[var(--text-quaternary)]">JPEG, PNG, WebP -- max 5MB</span>
+                  </>
+                )}
+              </label>
+            )}
+            {thumbnailError && <p className="mt-1 text-xs text-[var(--error)]">{thumbnailError}</p>}
+          </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-[var(--text-primary)]">Title *</label>
             <Input value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} placeholder="e.g. Getting Started" required />

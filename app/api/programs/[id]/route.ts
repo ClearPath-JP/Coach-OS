@@ -157,13 +157,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (parsed.data.title !== undefined) updates.title = parsed.data.title
     if (parsed.data.description !== undefined) updates.description = parsed.data.description
     if (parsed.data.status !== undefined) updates.status = parsed.data.status
+    if (parsed.data.thumbnail_url !== undefined) updates.thumbnail_url = parsed.data.thumbnail_url
 
     const { data: row, error } = await supabase
       .from('programs')
       .update(updates)
       .eq('id', id)
       .eq('workspace_id', coach.workspace_id)
-      .select('id, title, description, status, total_modules, updated_at')
+      .select('id, title, description, thumbnail_url, status, total_modules, updated_at')
       .single()
 
     if (error) {

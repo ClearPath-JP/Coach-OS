@@ -233,6 +233,7 @@ export type MarkInvoicePaidInput = z.infer<typeof markInvoicePaidSchema>
 export const createProgramSchema = z.object({
   title: z.string().min(1, 'Title is required').max(500),
   description: z.string().max(5000).optional().nullable(),
+  thumbnail_url: z.string().url().max(2000).optional().nullable(),
 })
 export type CreateProgramInput = z.infer<typeof createProgramSchema>
 
@@ -240,6 +241,7 @@ export const updateProgramSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   description: z.string().max(5000).nullable().optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
+  thumbnail_url: z.string().url().max(2000).nullable().optional(),
 })
 export type UpdateProgramInput = z.infer<typeof updateProgramSchema>
 
