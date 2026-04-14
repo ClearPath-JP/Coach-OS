@@ -8,7 +8,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen w-full bg-[var(--cp-offwhite)]" aria-hidden />
+        <div className="min-h-screen w-full bg-[var(--bg-app)]" aria-hidden />
       }
     >
       <DualRoleLoginPage />
