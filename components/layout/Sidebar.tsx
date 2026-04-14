@@ -122,7 +122,7 @@ function SidebarBrandMark({ invertLogo }: { invertLogo?: boolean }) {
 
   if (showCustomLogo) {
     return (
-      <span className="relative flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[6px] border border-[#2a2a2a] bg-[#1e1e1e]">
+      <span className="relative flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[6px] border border-[var(--border-subtle)] bg-[var(--bg-muted)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={url}
@@ -154,9 +154,10 @@ function SidebarWordmark() {
       <div className="min-w-0">
         <span
           style={{
+            fontFamily: 'var(--font-display)',
             fontSize: '15px',
-            fontWeight: 600,
-            letterSpacing: '-0.02em',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
             color: 'var(--text-primary)',
             maxWidth: '160px',
             overflow: 'hidden',
@@ -198,10 +199,10 @@ function CoachSidebarHeader() {
       >
         <SidebarBrandMark invertLogo />
         <div className="min-w-0 flex-1 leading-tight">
-          <div className="text-[15px] font-semibold tracking-[-0.02em] text-white">ClearPath</div>
+          <div className="font-display text-[15px] font-medium tracking-[0.01em] text-[var(--text-primary)]">ClearPath</div>
           <div
-            className="text-[10px] font-medium uppercase tracking-[0.1em]"
-            style={{ color: 'var(--cp-accent)' }}
+            className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+            style={{ color: 'var(--got-gold-dim)' }}
           >
             Coach OS
           </div>
@@ -211,16 +212,16 @@ function CoachSidebarHeader() {
       <div className="px-3 pb-2 pt-3">
         <button
           type="button"
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-muted)] py-2 pl-2 pr-2 transition-all duration-[80ms] hover:bg-[var(--bg-emphasis)]"
+          className="flex w-full cursor-pointer items-center gap-2.5 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-muted)] py-2 pl-2 pr-2 transition-all duration-[180ms] hover:bg-[var(--bg-emphasis)]"
           aria-label="Workspace"
         >
           <span
-            className="flex size-7 shrink-0 items-center justify-center rounded-[6px] text-[12px] font-bold text-white"
-            style={{ background: 'var(--cp-accent)' }}
+            className="flex size-7 shrink-0 items-center justify-center rounded-[6px] text-[12px] font-bold"
+            style={{ background: 'var(--got-gold)', color: 'var(--got-ink)' }}
           >
             {initial}
           </span>
-          <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[var(--text-primary)]">{displayName}</span>
+          <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium text-[var(--text-primary)]">{displayName}</span>
           <span className="shrink-0 text-[var(--text-quaternary)]">
             <ChevronDownIcon />
           </span>
@@ -327,9 +328,9 @@ function NavRowsCoach({
             key={item.href}
             href={item.href}
             className={cn(
-              'relative mb-px flex h-[32px] items-center gap-2 rounded-[8px] px-2 text-[13px] no-underline transition-[color,background-color] duration-[80ms] ease-out',
+              'relative mb-px flex h-[32px] items-center gap-2 rounded-[8px] px-2 text-[13px] no-underline transition-[color,background-color] duration-[180ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[var(--accent-light)] font-medium text-[var(--accent)] shadow-[inset_0_0_0_1px_var(--accent-muted)] [&_svg]:text-[var(--accent)]'
+                ? 'nav-item-active-coach bg-[rgba(196,164,74,0.08)] font-medium text-[var(--got-gold)] [&_svg]:text-[var(--got-gold)]'
                 : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--text-quaternary)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-secondary)]'
             )}
           >
@@ -339,9 +340,10 @@ function NavRowsCoach({
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
             {badge > 0 ? (
               <span
-                className="badge shrink-0 rounded-full px-1.5 py-px text-center text-[10px] font-semibold text-white transition-[filter] duration-[80ms] hover:brightness-[0.9]"
+                className="badge shrink-0 rounded-full px-1.5 py-px text-center text-[10px] font-semibold transition-[filter] duration-[180ms] hover:brightness-[0.9]"
                 style={{
-                  background: 'var(--accent)',
+                  background: 'var(--got-gold)',
+                  color: 'var(--got-ink)',
                   minWidth: '16px',
                 }}
               >
@@ -409,7 +411,7 @@ export function Sidebar({
           {filteredSections?.map((section) => (
             <div key={section.title}>
               <p
-                className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em]"
+                className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-[0.12em]"
                 style={{ color: 'var(--coach-sidebar-label)' }}
               >
                 {section.title}
@@ -433,9 +435,9 @@ export function Sidebar({
           <div className="shrink-0 border-t px-3 py-2" style={{ borderColor: 'var(--coach-sidebar-border)' }}>
             <Link
               href={settingsHref}
-              className="mt-2 flex h-10 cursor-pointer items-center gap-2.5 rounded-[8px] px-2 transition-colors duration-[80ms] hover:bg-[var(--coach-sidebar-hover)]"
+              className="mt-2 flex h-10 cursor-pointer items-center gap-2.5 rounded-[8px] px-2 transition-colors duration-[180ms] hover:bg-[var(--coach-sidebar-hover)]"
             >
-              <div className="avatar-hover flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold text-[var(--text-on-accent)]" style={{ background: 'var(--accent)' }}>
+              <div className="avatar-hover flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold" style={{ background: 'var(--got-gold)', color: 'var(--got-ink)' }}>
                 {userBar.avatarUrl ? (
                   <Image
                     src={userBar.avatarUrl}
@@ -454,7 +456,7 @@ export function Sidebar({
             <div className="mt-2 px-0">
               <SignOutButton
                 variant="sidebar"
-                className="h-9 w-full rounded-[8px] px-2 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[80ms] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)]"
+                className="h-9 w-full rounded-[8px] px-2 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[180ms] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)]"
               />
             </div>
             <p className="mt-1 px-1 text-[10px] text-[var(--text-quaternary)]">⌘K Quick actions</p>

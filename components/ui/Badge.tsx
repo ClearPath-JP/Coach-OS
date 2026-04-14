@@ -36,7 +36,7 @@ const variantClasses: Record<
   neutral:
     'bg-[var(--bg-muted)] text-[var(--text-tertiary)] border-[var(--border-default)]',
   accent:
-    'bg-[var(--accent-light)] text-[var(--cp-accent)] border-[var(--accent-muted)]',
+    'bg-[rgba(196,164,74,0.1)] text-[var(--got-gold)] border-[rgba(196,164,74,0.18)]',
 }
 
 const base = cn(

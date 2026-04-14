@@ -45,6 +45,7 @@ export function WorkspaceProvider({
         accentColor: json.data?.workspace?.accentColor ?? null,
         accentColorLight: json.data?.workspace?.accentColorLight ?? null,
         logoUrl: json.data?.workspace?.logoUrl ?? null,
+        stanceId: json.data?.workspace?.stanceId ?? null,
       })
     }
   }, [])

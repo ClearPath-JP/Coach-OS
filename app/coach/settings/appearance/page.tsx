@@ -9,11 +9,37 @@ import { coerceToAllowedCoachAccent, PHASE4_DEFAULT_COACH_ACCENT } from '@/lib/c
 import { applyWorkspaceAccentVars, getAccentLight } from '@/lib/accent-colors'
 import { useRouter } from 'next/navigation'
 import { useWorkspace } from '@/lib/workspace-context'
+import { STANCES, findStance, DEFAULT_STANCE_ID, type StanceId } from '@/lib/stances'
 
 export default function CoachAppearancePage() {
   const router = useRouter()
-  const { updateSettings, refetchSettings } = useWorkspace()
+  const { settings, updateSettings, refetchSettings } = useWorkspace()
   const { theme, setTheme } = useTheme()
+
+  // Stance state
+  const [selectedStance, setSelectedStance] = useState<StanceId>(
+    (settings.stanceId as StanceId) || DEFAULT_STANCE_ID
+  )
+  const [stanceSaving, setStanceSaving] = useState(false)
+  const [stanceSaved, setStanceSaved] = useState(false)
+
+  // Ambient effects state
+  const [ambientEnabled, setAmbientEnabled] = useState(false)
+  useEffect(() => {
+    try {
+      setAmbientEnabled(localStorage.getItem('clearpath-ambient-particles') !== 'false')
+    } catch { /* ignore */ }
+  }, [])
+
+  const toggleAmbient = () => {
+    const next = !ambientEnabled
+    setAmbientEnabled(next)
+    try {
+      localStorage.setItem('clearpath-ambient-particles', next ? 'true' : 'false')
+    } catch { /* ignore */ }
+    // Dispatch storage event for cross-component reactivity
+    window.dispatchEvent(new StorageEvent('storage', { key: 'clearpath-ambient-particles', newValue: next ? 'true' : 'false' }))
+  }
 
   // Accent color state
   const [accentColor, setAccentColor] = useState<AccentColor>(PHASE4_DEFAULT_COACH_ACCENT)
@@ -133,24 +159,165 @@ export default function CoachAppearancePage() {
     }
   }
 
+  const handleStanceSelect = async (id: StanceId) => {
+    setSelectedStance(id)
+
+    // Apply CSS variables immediately for live preview
+    const stance = findStance(id)
+    const root = document.documentElement
+    root.style.setProperty('--accent', stance.accent)
+    root.style.setProperty('--accent-hover', stance.accentHover)
+    root.style.setProperty('--accent-light', stance.accentLight)
+    root.style.setProperty('--accent-muted', stance.accentMuted)
+    root.style.setProperty('--text-on-accent', stance.textOnAccent)
+    root.style.setProperty('--cp-accent', stance.accent)
+    root.style.setProperty('--got-gold', stance.accent)
+    root.style.setProperty('--got-gold-dim', stance.sectionLabelColor)
+    root.style.setProperty('--coach-sidebar-bg', stance.sidebarBg)
+    root.style.setProperty('--coach-sidebar-border', stance.sidebarBorder)
+    root.style.setProperty('--coach-sidebar-hover', stance.sidebarHover)
+    root.style.setProperty('--coach-sidebar-label', stance.sectionLabelColor)
+
+    // Save to server
+    setStanceSaving(true)
+    try {
+      const res = await fetch('/api/coach/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ stanceId: id }),
+      })
+      if (!res.ok) throw new Error('Save failed')
+      updateSettings({ stanceId: id, accentColor: stance.accent })
+      setStanceSaved(true)
+      setTimeout(() => setStanceSaved(false), 2000)
+      void refetchSettings()
+      router.refresh()
+    } catch {
+      // Revert on failure
+      const prev = findStance(settings.stanceId)
+      root.style.setProperty('--accent', prev.accent)
+      root.style.setProperty('--cp-accent', prev.accent)
+      setSelectedStance((settings.stanceId as StanceId) || DEFAULT_STANCE_ID)
+    } finally {
+      setStanceSaving(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[var(--bg-app)] px-4 py-8 md:px-8">
       <div className="mx-auto max-w-[640px]">
         <nav className="mb-6">
           <Link
             href="/coach/settings"
-            className="text-[13px] text-[var(--cp-accent)] hover:underline underline-offset-2"
+            className="text-[13px] text-[var(--got-gold)] hover:underline underline-offset-2"
           >
             ← Settings
           </Link>
         </nav>
 
-        <h1 className="mb-1 text-[24px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">
+        <h1 className="font-display mb-1 text-[24px] font-medium tracking-[0.01em] text-[var(--text-primary)]">
           Appearance
         </h1>
         <p className="mb-8 text-[14px] text-[var(--text-tertiary)]">
           Make your workspace feel like yours. Changes are visible to you and your clients.
         </p>
+
+        {/* ─── Section: Stance ─── */}
+        <div className="mb-6 overflow-hidden rounded-[14px] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)]">
+          <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+            <h2 className="font-display text-[15px] font-medium text-[var(--text-primary)]">Stance</h2>
+            <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
+              Choose a visual theme inspired by the regions of Tsushima. This changes your accent color, sidebar, and overall feel.
+            </p>
+          </div>
+
+          <div className="px-5 py-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {STANCES.map((stance) => {
+                const isSelected = selectedStance === stance.id
+                return (
+                  <button
+                    key={stance.id}
+                    type="button"
+                    disabled={stanceSaving}
+                    onClick={() => void handleStanceSelect(stance.id as StanceId)}
+                    className={[
+                      'group relative flex flex-col overflow-hidden rounded-[12px] border-2 text-left transition-all duration-300',
+                      isSelected
+                        ? 'border-[var(--got-gold)] shadow-[0_0_0_1px_rgba(196,164,74,0.2)]'
+                        : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
+                      stanceSaving ? 'opacity-70 pointer-events-none' : '',
+                    ].join(' ')}
+                  >
+                    {/* Color preview strip */}
+                    <div className="flex h-10 items-center gap-0">
+                      <div className="h-full flex-1" style={{ background: stance.sidebarBg }} />
+                      <div className="h-full flex-1" style={{ background: stance.accent }} />
+                      <div className="h-full flex-1" style={{ background: stance.sectionLabelColor }} />
+                      <div className="h-full flex-1" style={{ background: stance.accentHover }} />
+                    </div>
+
+                    <div className="flex flex-1 flex-col gap-1 px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-display text-[14px] font-medium text-[var(--text-primary)]">
+                          {stance.label}
+                        </span>
+                        {isSelected && (
+                          <span
+                            className="flex size-[18px] items-center justify-center rounded-full text-[10px]"
+                            style={{ background: stance.accent, color: stance.textOnAccent }}
+                          >
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-quaternary)]">
+                        {stance.region}
+                      </span>
+                      <span className="text-[12px] text-[var(--text-tertiary)]">
+                        {stance.description}
+                      </span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            {stanceSaved && (
+              <p className="mt-3 text-[12px] font-medium text-[var(--success)]">Stance saved</p>
+            )}
+          </div>
+        </div>
+
+        {/* ─── Section: Ambient Effects ─── */}
+        <div className="mb-6 overflow-hidden rounded-[14px] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)]">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div>
+              <h2 className="font-display text-[15px] font-medium text-[var(--text-primary)]">Ambient effects</h2>
+              <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
+                Subtle floating particles that match your stance theme. Disabled on mobile.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={toggleAmbient}
+              role="switch"
+              aria-checked={ambientEnabled}
+              className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200"
+              style={{
+                background: ambientEnabled ? 'var(--got-gold)' : 'var(--bg-emphasis)',
+              }}
+            >
+              <span
+                className="pointer-events-none inline-block size-4 rounded-full shadow-sm transition-transform duration-200"
+                style={{
+                  background: ambientEnabled ? 'var(--got-ink)' : 'var(--text-tertiary)',
+                  transform: ambientEnabled ? 'translateX(22px)' : 'translateX(2px)',
+                }}
+              />
+            </button>
+          </div>
+        </div>
 
         {/* ─── Section A: Theme ─── */}
         <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">

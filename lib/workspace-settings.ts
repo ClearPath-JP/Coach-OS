@@ -6,6 +6,7 @@ export interface WorkspaceSettings {
   accentColor: string | null
   accentColorLight: string | null
   logoUrl: string | null
+  stanceId: string | null
 }
 
 /** Use as `key` on `WorkspaceProvider` so client state resets when the server layout passes new branding. */
@@ -16,5 +17,6 @@ export function workspaceProviderKey(initialSettings: WorkspaceSettings): string
     initialSettings.accentColor,
     initialSettings.accentColorLight,
     initialSettings.logoUrl,
+    initialSettings.stanceId,
   ].join('\0')
 }

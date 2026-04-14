@@ -15,7 +15,7 @@ import {
   parseISO,
   startOfWeek,
 } from 'date-fns'
-import { BookOpen, CalendarDays, CreditCard, MessageSquare, Plus, Users } from 'lucide-react'
+import { BookOpen, CalendarDays, CreditCard, MessageSquare, Plus, TrendingUp, Users } from 'lucide-react'
 import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import { Button } from '@/components/ui/Button'
@@ -138,6 +138,14 @@ type StorageStrip = {
   pct: number
 }
 
+type ClientRow = {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  email: string
+  status: string
+}
+
 function firstName(displayName: string): string {
   const p = displayName.trim().split(/\s+/)[0]
   return p || 'Coach'
@@ -185,6 +193,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
     lowMood: [],
     missedCheckin: [],
   })
+  const [clients, setClients] = useState<ClientRow[]>([])
   const [loading, setLoading] = useState(true)
   const [hasFetchError, setHasFetchError] = useState(false)
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
@@ -210,7 +219,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
     const wkEnd = endOfWeek(now, { weekStartsOn: 1 })
     const weekQ = `?from=${encodeURIComponent(wkStart.toISOString())}&to=${encodeURIComponent(wkEnd.toISOString())}`
     try {
-      const [sumRes, sessRes, weekSessRes, convRes, actRes, storRes, attRes, chkRes] = await Promise.all([
+      const [sumRes, sessRes, weekSessRes, convRes, actRes, storRes, attRes, chkRes, clientsRes] = await Promise.all([
         fetch('/api/coach/dashboard-summary'),
         fetch('/api/coach/sessions'),
         fetch(`/api/coach/sessions${weekQ}`),
@@ -219,6 +228,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         fetch('/api/coach/storage'),
         fetch('/api/coach/dashboard-attention'),
         fetch('/api/coach/checkins?alerts=true'),
+        fetch('/api/clients?limit=10&status=active'),
       ])
       const anyFailed = ![sumRes, sessRes, weekSessRes, convRes, actRes, storRes, attRes, chkRes].every(
         (r) => r.ok
@@ -276,6 +286,9 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
       } else {
         setStorage(null)
       }
+      const clientsJson = await clientsRes.json().catch(() => ({}))
+      if (Array.isArray(clientsJson.data)) setClients(clientsJson.data as ClientRow[])
+      else setClients([])
     } finally {
       setLoading(false)
     }
@@ -447,8 +460,8 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
 
         {/* Section 1 — Compact greeting bar */}
         <div className="mb-3">
-          <p className="text-[13px] text-[var(--text-tertiary)]">{heroDateLine}</p>
-          <h1 className="text-[22px] font-bold tracking-[-0.03em] text-[var(--text-primary)] leading-tight">
+          <p className="section-label-got">{heroDateLine}</p>
+          <h1 className="font-display text-[22px] font-medium tracking-[0.01em] text-[var(--text-primary)] leading-tight mt-1">
             {greeting}, {coachFirst}
           </h1>
           <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">
@@ -495,8 +508,8 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         {/* Section 3 — Today's sessions (compact card) */}
         <div className="mb-3 overflow-hidden rounded-[12px] border border-[var(--border-default)]" style={{ background: 'var(--bg-subtle)' }}>
           <div className="flex h-9 items-center justify-between border-b border-[var(--border-subtle)] px-3">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">Today</span>
-            <Link href="/coach/schedule" className="text-[12px] font-medium text-[var(--cp-accent)]">Schedule →</Link>
+            <span className="section-label-got">Today</span>
+            <Link href="/coach/schedule" className="text-[12px] font-medium text-[var(--got-gold)]">Schedule →</Link>
           </div>
           {todaySessions.length === 0 ? (
             <div className="flex items-center justify-between px-3 py-3">
@@ -527,41 +540,90 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
           )}
         </div>
 
-        {/* Section 4 — Quick action grid */}
+        {/* Section 4 — Stat+action tiles (3-col grid, shows actual stats) */}
         <div className="mb-3 grid grid-cols-3 gap-2">
           {[
-            { label: 'Clients', sub: `${totalClients} active`, href: '/coach/clients', bg: 'var(--accent-light)', color: 'var(--accent)', icon: <Users className="size-5" /> },
-            { label: 'Schedule', sub: `${upcomingToday} today`, href: '/coach/schedule', bg: 'var(--success-bg)', color: 'var(--success)', icon: <CalendarDays className="size-5" /> },
-            { label: 'Messages', sub: unreadMessagesTotal > 0 ? `${unreadMessagesTotal} unread` : 'All clear', href: '/coach/messages', bg: unreadMessagesTotal > 0 ? 'var(--accent-light)' : 'var(--bg-muted)', color: unreadMessagesTotal > 0 ? 'var(--accent)' : 'var(--text-tertiary)', icon: <MessageSquare className="size-5" />, badge: unreadMessagesTotal },
-            { label: 'Invoices', sub: pendingInvoices > 0 ? `${pendingInvoices} pending` : 'Billing', href: '/coach/invoices', bg: pendingInvoices > 0 ? 'var(--warning-bg)' : 'var(--bg-muted)', color: pendingInvoices > 0 ? 'var(--warning)' : 'var(--text-tertiary)', icon: <CreditCard className="size-5" />, badge: 0 },
-            { label: 'Programs', sub: 'Content', href: '/coach/programs', bg: 'color-mix(in srgb, #a855f7 15%, var(--bg-muted))', color: '#a855f7', icon: <BookOpen className="size-5" />, badge: 0 },
-            { label: 'Add Client', sub: 'New', href: '/coach/clients', bg: 'var(--accent)', color: 'white', icon: <Plus className="size-5" />, badge: 0 },
+            {
+              label: 'Clients',
+              value: `${totalClients}`,
+              sub: clientsAddedThisMonth > 0 ? `+${clientsAddedThisMonth} new` : 'active',
+              href: '/coach/clients',
+              bg: 'var(--accent-light)',
+              color: 'var(--accent)',
+              icon: <Users className="size-5" />,
+              badge: 0,
+            },
+            {
+              label: 'Schedule',
+              value: `${summary?.sessionsThisWeek ?? 0}`,
+              sub: upcomingToday > 0 ? `${upcomingToday} today` : 'this week',
+              href: '/coach/schedule',
+              bg: 'var(--success-bg)',
+              color: 'var(--success)',
+              icon: <CalendarDays className="size-5" />,
+              badge: 0,
+            },
+            {
+              label: 'Messages',
+              value: unreadMessagesTotal > 0 ? `${unreadMessagesTotal}` : '—',
+              sub: unreadMessagesTotal > 0 ? 'unread' : 'All read',
+              href: '/coach/messages',
+              bg: unreadMessagesTotal > 0 ? 'var(--accent-light)' : 'var(--bg-muted)',
+              color: unreadMessagesTotal > 0 ? 'var(--accent)' : 'var(--text-tertiary)',
+              icon: <MessageSquare className="size-5" />,
+              badge: unreadMessagesTotal,
+            },
+            {
+              label: 'Revenue',
+              value: formatCents(summary?.revenueMonthCents ?? 0),
+              sub: revenueMoMPct !== null
+                ? `${revenueMoMPct >= 0 ? '↑' : '↓'}${Math.abs(revenueMoMPct)}%`
+                : 'this month',
+              href: '/coach/invoices',
+              bg: 'color-mix(in srgb, var(--success) 12%, var(--bg-muted))',
+              color: 'var(--success)',
+              icon: <TrendingUp className="size-5" />,
+              badge: 0,
+            },
+            {
+              label: 'Invoices',
+              value: pendingInvoices > 0 ? `${pendingInvoices}` : '—',
+              sub: pendingInvoices > 0 ? 'pending' : 'All paid',
+              href: '/coach/invoices',
+              bg: pendingInvoices > 0 ? 'var(--warning-bg)' : 'var(--bg-muted)',
+              color: pendingInvoices > 0 ? 'var(--warning)' : 'var(--text-tertiary)',
+              icon: <CreditCard className="size-5" />,
+              badge: pendingInvoices > 0 ? pendingInvoices : 0,
+            },
+            {
+              label: 'New client',
+              value: '+',
+              sub: 'Add client',
+              href: '/coach/clients',
+              bg: 'var(--accent)',
+              color: 'white',
+              icon: <Plus className="size-5" />,
+              badge: 0,
+            },
           ].map(item => (
-            <button key={item.href + item.label} type="button" onClick={() => router.push(item.href)}
-              className="relative flex flex-col items-center gap-1.5 rounded-[12px] border border-[var(--border-default)] py-3.5 px-2 transition-all duration-100 active:scale-[0.97]"
-              style={{ background: 'var(--bg-subtle)' }}>
-              {item.badge && item.badge > 0 ? (
+            <button
+              key={item.href + item.label}
+              type="button"
+              onClick={() => router.push(item.href)}
+              className="relative flex flex-col items-center gap-1 rounded-[12px] border border-[var(--border-default)] py-3.5 px-2 transition-all duration-100 active:scale-[0.97]"
+              style={{ background: 'var(--bg-subtle)' }}
+            >
+              {item.badge > 0 ? (
                 <span className="absolute right-2 top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[9px] font-bold text-white">{item.badge}</span>
               ) : null}
               <span className="flex size-9 items-center justify-center rounded-full" style={{ background: item.bg, color: item.color }}>
                 {item.icon}
               </span>
-              <span className="text-[12px] font-semibold text-[var(--text-primary)] leading-tight">{item.label}</span>
+              <span className="mt-1 text-[18px] font-bold leading-none tracking-[-0.02em] text-[var(--text-primary)]">{item.value}</span>
+              <span className="text-[11px] font-semibold text-[var(--text-primary)] leading-tight">{item.label}</span>
               <span className="text-[10px] text-[var(--text-tertiary)] leading-tight">{item.sub}</span>
             </button>
           ))}
-        </div>
-
-        {/* Section 5 — Compact stats strip */}
-        <div className="flex gap-2">
-          <div className="flex-1 rounded-[10px] border border-[var(--border-default)] px-3 py-2.5" style={{ background: 'var(--bg-subtle)' }}>
-            <p className="text-[11px] text-[var(--text-tertiary)]">Active clients</p>
-            <p className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{summary?.activeClientsCount ?? 0}</p>
-          </div>
-          <div className="flex-1 rounded-[10px] border border-[var(--border-default)] px-3 py-2.5" style={{ background: 'var(--bg-subtle)' }}>
-            <p className="text-[11px] text-[var(--text-tertiary)]">This month</p>
-            <p className="text-[20px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{formatCents(summary?.revenueMonthCents ?? 0)}</p>
-          </div>
         </div>
 
       </div>
@@ -599,15 +661,15 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
         <div className="xl:grid xl:grid-cols-[1fr_380px] xl:gap-6 xl:items-start">
 
           {/* LEFT COLUMN */}
-          <div className="min-w-0">
+          <div className="coach-dash-stagger min-w-0">
 
             {/* ── Command bar ── */}
-            <div className="mb-3 flex items-center justify-between gap-4">
+            <div className="mb-5 flex items-center justify-between gap-4">
               <div className="min-w-0">
-                <h1 className="text-[20px] font-bold leading-tight tracking-[-0.03em] text-[var(--text-primary)]">
+                <h1 className="font-display text-[24px] font-medium leading-tight tracking-[0.01em] text-[var(--text-primary)]">
                   {greeting}, {coachFirst}
                 </h1>
-                <p className="text-[12px] text-[var(--text-tertiary)]">
+                <p className="section-label-got mt-1">
                   {loading ? 'Loading…' : `${heroDateLine} · ${sessionsTodayLine}`}
                 </p>
               </div>
@@ -621,6 +683,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </div>
             </div>
 
+            {/* ── Onboarding checklist (new coaches only) ── */}
             {showNewCoachOnboarding ? (
               <div
                 className="relative mb-5 shrink-0 rounded-[var(--radius-lg)] border border-[var(--accent-muted)] px-6 py-5"
@@ -698,199 +761,14 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </div>
             ) : null}
 
-            {/* ── Metrics bar ── */}
-            <div
-              className="mb-3 shrink-0 overflow-hidden rounded-[10px] border border-[var(--border-default)]"
-              style={{ background: 'var(--bg-subtle)' }}
-            >
-              {loading && !summary ? (
-                <div className="flex h-[68px] items-center justify-center">
-                  <Skeleton className="h-5 w-64 rounded" />
-                </div>
-              ) : (
-                <div className="grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
-                  {[
-                    {
-                      label: 'Clients',
-                      value: summary?.activeClientsCount ?? 0,
-                      sub: clientsAddedThisMonth > 0 ? `+${clientsAddedThisMonth} this mo` : `${totalClients} total`,
-                      positive: clientsAddedThisMonth > 0,
-                      href: '/coach/clients' as const,
-                    },
-                    {
-                      label: 'Sessions / wk',
-                      value: summary?.sessionsThisWeek ?? 0,
-                      sub: upcomingToday > 0 ? `${upcomingToday} today` : upcomingThisWeek > 0 ? `${upcomingThisWeek} upcoming` : 'None today',
-                      href: '/coach/schedule' as const,
-                    },
-                    {
-                      label: 'Revenue / mo',
-                      value: formatCents(summary?.revenueMonthCents ?? 0),
-                      sub: revenueMoMPct !== null
-                        ? `${revenueMoMPct >= 0 ? '↑' : '↓'} ${Math.abs(revenueMoMPct)}% vs last mo`
-                        : (summary?.revenueMonthCents ?? 0) <= 0 ? 'No payments yet' : '',
-                      positive: revenueMoMPct !== null ? revenueMoMPct >= 0 : null,
-                    },
-                    {
-                      label: 'Unread',
-                      value: unreadMessagesTotal,
-                      sub: unreadMessagesTotal > 0 ? 'Tap to reply' : 'All caught up',
-                      positive: unreadMessagesTotal === 0 ? true : null,
-                      href: unreadMessagesTotal > 0 ? ('/coach/messages' as const) : undefined,
-                    },
-                    {
-                      label: 'Storage',
-                      value: storage ? `${storage.usedGb.toFixed(1)}/${storage.maxGb}GB` : '—',
-                      sub: storage ? `${storage.pct}% used` : '',
-                      positive: storage ? (storage.pct < 80 ? true : storage.pct >= 95 ? false : null) : null,
-                    },
-                  ].map((m, i) => {
-                    const inner = (
-                      <div
-                        key={m.label}
-                        className={cn(
-                          'flex flex-col justify-center px-4 py-3 transition-colors duration-100',
-                          i > 0 ? 'border-l border-[var(--border-subtle)]' : '',
-                          m.href ? 'cursor-pointer hover:bg-[var(--bg-muted)]' : ''
-                        )}
-                        style={{ minHeight: 68 }}
-                      >
-                        <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-[0.07em] text-[var(--text-tertiary)]">{m.label}</span>
-                        <span className="block text-[20px] font-bold leading-none tracking-[-0.02em] text-[var(--text-primary)]">{m.value}</span>
-                        {m.sub ? (
-                          <span
-                            className="mt-0.5 block truncate text-[11px] font-medium"
-                            style={{
-                              color: m.positive === true ? 'var(--success)' : m.positive === false ? 'var(--error)' : 'var(--text-tertiary)',
-                            }}
-                          >
-                            {m.sub}
-                          </span>
-                        ) : null}
-                      </div>
-                    )
-                    return m.href ? (
-                      <Link key={m.label} href={m.href} className="no-underline" style={{ color: 'inherit' }}>
-                        {inner}
-                      </Link>
-                    ) : (
-                      <React.Fragment key={m.label}>{inner}</React.Fragment>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Quick actions */}
-            <div className="mb-3 shrink-0">
-              <p className="section-label-coach mb-1.5">Quick actions</p>
+            {/* ── Week strip + Today's sessions ── */}
+            <div className="mb-3 grid shrink-0 grid-cols-1 gap-2 lg:grid-cols-[2fr_1fr]">
               <div
-                className="grid grid-cols-2 gap-2 md:grid-cols-4"
-                style={{ gap: 8, marginBottom: 4 }}
-              >
-                <button
-                  type="button"
-                  onClick={() => router.push('/coach/clients')}
-                  className="flex min-h-[52px] cursor-pointer items-center gap-2 rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-left transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
-                >
-                  <span
-                    className="flex size-8 shrink-0 items-center justify-center rounded-full"
-                    style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
-                  >
-                    <Users className="size-4" strokeWidth={2} aria-hidden />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-[var(--text-primary)]">Clients</span>
-                    <span className="block text-[11px] text-[var(--text-tertiary)]">Manage roster</span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push('/coach/schedule')}
-                  className="flex min-h-[52px] cursor-pointer items-center gap-2 rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-left transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
-                >
-                  <span
-                    className="flex size-8 shrink-0 items-center justify-center rounded-full"
-                    style={{ background: 'var(--success-bg)', color: 'var(--success)' }}
-                  >
-                    <CalendarDays className="size-4" strokeWidth={2} aria-hidden />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-[var(--text-primary)]">Schedule</span>
-                    <span className="block text-[11px] text-[var(--text-tertiary)]">Calendar &amp; sessions</span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push('/coach/invoices')}
-                  className="relative flex min-h-[64px] cursor-pointer items-center gap-2.5 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3.5 py-3 text-left shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
-                >
-                  {pendingInvoices > 0 ? (
-                    <span
-                      className="absolute right-2 top-2 size-2 rounded-full bg-[var(--warning)]"
-                      aria-hidden
-                    />
-                  ) : null}
-                  <span
-                    className="flex size-8 shrink-0 items-center justify-center rounded-full"
-                    style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}
-                  >
-                    <CreditCard className="size-4" strokeWidth={2} aria-hidden />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-[var(--text-primary)]">Invoices</span>
-                    <span
-                      className={cn(
-                        'block text-[11px]',
-                        pendingInvoices > 0 ? 'font-medium text-[var(--warning)]' : 'text-[var(--text-tertiary)]'
-                      )}
-                    >
-                      {pendingInvoices > 0 ? `${pendingInvoices} unpaid` : 'Billing'}
-                    </span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push('/coach/programs')}
-                  className="flex min-h-[52px] cursor-pointer items-center gap-2 rounded-[8px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2.5 text-left transition-all duration-[120ms] ease-out hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]"
-                >
-                  <span
-                    className="flex size-8 shrink-0 items-center justify-center rounded-full text-[var(--text-primary)]"
-                    style={{ background: 'color-mix(in srgb, #a855f7 22%, var(--bg-muted))' }}
-                  >
-                    <BookOpen className="size-4" strokeWidth={2} aria-hidden />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-medium text-[var(--text-primary)]">Programs</span>
-                    <span className="block text-[11px] text-[var(--text-tertiary)]">Content &amp; progress</span>
-                  </span>
-                </button>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setQuickInvoiceOpen(true)}>
-                  Quick invoice
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => router.push('/coach/messages')}>
-                  Messages
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setPaymentModalOpen(true)}>
-                  Record payment
-                </Button>
-              </div>
-            </div>
-
-            {/* Week strip + today */}
-            <div
-              className="mb-3 grid shrink-0 grid-cols-1 gap-2 lg:grid-cols-[2fr_1fr]"
-            >
-              <div
-                className="overflow-hidden rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                className="overflow-hidden rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
                 style={{ background: 'var(--bg-subtle)' }}
               >
-                <div
-                  className="flex h-10 items-center justify-between border-b border-[var(--border-subtle)] px-3"
-                >
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+                <div className="flex h-10 items-center justify-between border-b border-[var(--border-subtle)] px-3">
+                  <span className="section-label-got">
                     This week
                   </span>
                   <Link href="/coach/schedule" className="link-nav text-[12px] font-medium">
@@ -913,7 +791,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                         className={cn(
                           'cursor-pointer rounded-[8px] px-1 py-2 text-center transition-colors duration-100',
                           isToday
-                            ? 'border border-[var(--accent-muted)] bg-[var(--accent-light)]'
+                            ? 'border border-[rgba(196,164,74,0.2)] bg-[rgba(196,164,74,0.06)]'
                             : 'border border-transparent hover:bg-[var(--bg-muted)]'
                         )}
                       >
@@ -923,7 +801,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                         <div
                           className={cn(
                             'mt-0.5 text-[17px] font-bold leading-none',
-                            isToday ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'
+                            isToday ? 'text-[var(--got-gold)]' : 'text-[var(--text-primary)]'
                           )}
                         >
                           {format(d, 'd')}
@@ -945,11 +823,11 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </div>
 
               <div
-                className="flex min-h-0 flex-col overflow-hidden rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                className="flex min-h-0 flex-col overflow-hidden rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
                 style={{ background: 'var(--bg-subtle)' }}
               >
                 <div className="flex h-10 items-center border-b border-[var(--border-subtle)] px-3">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+                  <span className="section-label-got">
                     Today&apos;s sessions
                   </span>
                   <span className="ml-2 text-[12px] font-medium text-[var(--text-secondary)]">
@@ -995,12 +873,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                               </span>
                               <span
                                 className="shrink-0 rounded-sm"
-                                style={{
-                                  width: 3,
-                                  height: 30,
-                                  borderRadius: 2,
-                                  background: bar,
-                                }}
+                                style={{ width: 3, height: 30, borderRadius: 2, background: bar }}
                                 aria-hidden
                               />
                               <span className="min-w-0 flex-1">
@@ -1011,10 +884,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                                 {soon ? (
                                   <span
                                     className="rounded-md px-2 py-0.5 text-[11px] font-medium"
-                                    style={{
-                                      background: 'var(--accent-light)',
-                                      color: 'var(--accent)',
-                                    }}
+                                    style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
                                   >
                                     Soon
                                   </span>
@@ -1033,11 +903,126 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                     </ul>
                   )}
                 </div>
-                <div className="border-t border-[var(--border-subtle)] px-3 py-2">
-                  <Button variant="ghost" size="sm" type="button" onClick={() => setPaymentModalOpen(true)}>
-                    Record payment
-                  </Button>
+              </div>
+            </div>
+
+            {/* ── Merged stat+action tiles (3×2 grid) ── */}
+            <div className="mb-3 shrink-0">
+              {loading && !summary ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <Skeleton key={i} className="h-[80px] w-full rounded-[8px]" />
+                  ))}
                 </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    {
+                      label: 'Clients',
+                      value: `${totalClients}`,
+                      sub: clientsAddedThisMonth > 0 ? `+${clientsAddedThisMonth} this month` : 'active',
+                      href: '/coach/clients',
+                      bg: 'var(--accent-light)',
+                      color: 'var(--accent)',
+                      icon: <Users className="size-4" strokeWidth={2} />,
+                      badge: 0,
+                    },
+                    {
+                      label: 'Sessions/wk',
+                      value: `${summary?.sessionsThisWeek ?? 0}`,
+                      sub: upcomingToday > 0 ? `${upcomingToday} today` : upcomingThisWeek > 0 ? `${upcomingThisWeek} this week` : 'None today',
+                      href: '/coach/schedule',
+                      bg: 'var(--success-bg)',
+                      color: 'var(--success)',
+                      icon: <CalendarDays className="size-4" strokeWidth={2} />,
+                      badge: 0,
+                    },
+                    {
+                      label: 'Messages',
+                      value: unreadMessagesTotal > 0 ? `${unreadMessagesTotal}` : '—',
+                      sub: unreadMessagesTotal > 0 ? 'unread' : 'All read',
+                      href: '/coach/messages',
+                      bg: unreadMessagesTotal > 0 ? 'var(--accent-light)' : 'var(--bg-muted)',
+                      color: unreadMessagesTotal > 0 ? 'var(--accent)' : 'var(--text-tertiary)',
+                      icon: <MessageSquare className="size-4" strokeWidth={2} />,
+                      badge: unreadMessagesTotal,
+                    },
+                    {
+                      label: 'Revenue/mo',
+                      value: formatCents(summary?.revenueMonthCents ?? 0),
+                      sub: revenueMoMPct !== null
+                        ? `${revenueMoMPct >= 0 ? '↑' : '↓'} ${Math.abs(revenueMoMPct)}% vs last mo`
+                        : (summary?.revenueMonthCents ?? 0) > 0 ? 'this month' : 'No payments yet',
+                      href: '/coach/invoices',
+                      bg: 'color-mix(in srgb, var(--success) 12%, var(--bg-muted))',
+                      color: 'var(--success)',
+                      icon: <TrendingUp className="size-4" strokeWidth={2} />,
+                      badge: 0,
+                    },
+                    {
+                      label: 'Invoices',
+                      value: pendingInvoices > 0 ? `${pendingInvoices}` : '—',
+                      sub: pendingInvoices > 0 ? 'pending payment' : 'All paid',
+                      href: '/coach/invoices',
+                      bg: pendingInvoices > 0 ? 'var(--warning-bg)' : 'var(--bg-muted)',
+                      color: pendingInvoices > 0 ? 'var(--warning)' : 'var(--text-tertiary)',
+                      icon: <CreditCard className="size-4" strokeWidth={2} />,
+                      badge: pendingInvoices > 0 ? pendingInvoices : 0,
+                    },
+                    {
+                      label: 'Programs',
+                      value: '→',
+                      sub: 'Manage content',
+                      href: '/coach/programs',
+                      bg: 'color-mix(in srgb, #a855f7 18%, var(--bg-muted))',
+                      color: '#a855f7',
+                      icon: <BookOpen className="size-4" strokeWidth={2} />,
+                      badge: 0,
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => router.push(item.href)}
+                      className="relative flex min-h-[88px] cursor-pointer flex-col gap-1 rounded-[12px] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)] px-4 py-3.5 text-left transition-all duration-[300ms] ease-out hover:border-[rgba(196,164,74,0.12)] hover:shadow-[0_8px_24px_rgba(12,8,4,0.15)] hover:-translate-y-[1px]"
+                    >
+                      {item.badge > 0 ? (
+                        <span
+                          className="absolute right-2 top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold"
+                          style={{ background: 'var(--got-gold)', color: 'var(--got-ink)' }}
+                        >
+                          {item.badge}
+                        </span>
+                      ) : null}
+                      <span
+                        className="flex size-7 shrink-0 items-center justify-center rounded-full"
+                        style={{ background: item.bg, color: item.color }}
+                      >
+                        {item.icon}
+                      </span>
+                      <span className="block font-display text-[22px] font-medium leading-none tracking-[0.01em] text-[var(--text-primary)]">
+                        {item.value}
+                      </span>
+                      <span className="section-label-got leading-tight">
+                        {item.label}
+                      </span>
+                      <span
+                        className="block truncate text-[11px] leading-tight"
+                        style={{ color: item.badge > 0 ? item.color : 'var(--text-tertiary)' }}
+                      >
+                        {item.sub}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="mt-2 flex gap-2">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setQuickInvoiceOpen(true)}>
+                  Quick invoice
+                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setPaymentModalOpen(true)}>
+                  Record payment
+                </Button>
               </div>
             </div>
 
@@ -1046,15 +1031,15 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
 
           {/* RIGHT COLUMN */}
           <div className="xl:sticky xl:top-0 xl:max-h-[calc(100dvh-var(--nav-height))] xl:overflow-y-auto">
-            <div className="flex flex-col gap-3 pb-4">
+            <div className="coach-dash-stagger flex flex-col gap-3 pb-4">
 
               {/* Attention panel */}
               <div
-                className="rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                className="rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
                 style={{ background: 'var(--bg-subtle)' }}
               >
                 <div className="border-b border-[var(--border-subtle)] px-3.5 py-2.5">
-                  <h2 className="text-[13px] font-semibold text-[var(--text-primary)]">
+                  <h2 className="section-label-got">
                     {attentionHasItems ? 'Needs attention' : 'All clear'}
                   </h2>
                 </div>
@@ -1226,9 +1211,18 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                       })}
                     </ul>
                   ) : !loading ? (
-                    <div className="px-3.5 py-6 text-center">
-                      <p className="text-[14px] font-medium text-[var(--success)]">All clients are on track</p>
-                      <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Nothing needs your attention right now.</p>
+                    <div className="px-3.5 py-5 text-center">
+                      <span
+                        className="mx-auto mb-2.5 flex size-9 items-center justify-center rounded-full"
+                        style={{ background: 'var(--success-bg)' }}
+                        aria-hidden
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5">
+                          <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                      <p className="text-[13px] font-semibold text-[var(--success)]">All clients on track</p>
+                      <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">Nothing needs your attention.</p>
                     </div>
                   ) : (
                     <div className="space-y-2 p-3">
@@ -1241,11 +1235,11 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
 
               {/* Conversations */}
               <div
-                className="rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                className="rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
                 style={{ background: 'var(--bg-subtle)' }}
               >
                 <div className="flex h-10 items-center justify-between border-b border-[var(--border-subtle)] px-3.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+                  <span className="section-label-got">
                     Conversations
                   </span>
                   <Link href="/coach/messages" className="link-nav text-[12px] font-medium">
@@ -1277,8 +1271,8 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                                 </span>
                                 {conv.unreadCount > 0 ? (
                                   <span
-                                    className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-[var(--text-on-accent)]"
-                                    style={{ background: 'var(--accent)', lineHeight: 1.4 }}
+                                    className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                                    style={{ background: 'var(--got-gold)', color: 'var(--got-ink)', lineHeight: 1.4 }}
                                   >
                                     {conv.unreadCount}
                                   </span>
@@ -1301,11 +1295,11 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
 
               {/* Recent activity */}
               <div
-                className="rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                className="rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
                 style={{ background: 'var(--bg-subtle)' }}
               >
                 <div className="flex h-10 items-center justify-between border-b border-[var(--border-subtle)] px-3.5">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+                  <span className="section-label-got">
                     Recent activity
                   </span>
                   <Link href="/coach/programs" className="link-nav text-[12px] font-medium">
@@ -1351,11 +1345,11 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               {/* Storage strip */}
               {storage ? (
                 <div
-                  className="rounded-[12px] border border-[var(--border-default)] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                  className="rounded-[12px] border border-[rgba(255,250,240,0.04)] px-4 py-3 shadow-[var(--shadow-xs)]"
                   style={{ background: 'var(--bg-subtle)' }}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+                    <span className="section-label-got">
                       Storage
                     </span>
                     <span className="text-[12px] text-[var(--text-tertiary)]">

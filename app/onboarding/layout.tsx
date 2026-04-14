@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { type ReactNode } from 'react'
 import { AuthBrandedLeftPanel } from '@/components/auth/AuthBrandedLeftPanel'
 import { AuthWordmark } from '@/components/auth/AuthWordmark'
@@ -23,8 +25,8 @@ const ONBOARDING_FEATURES = [
   'Most coaches finish in under five minutes',
 ]
 
-const MOBILE_NAVY =
-  'linear-gradient(155deg, #041a33 0%, #082952 28%, #0B2D5E 55%, #0d47a1 88%, #115293 100%)'
+const MOBILE_DARK_WARM =
+  'linear-gradient(155deg, #0D0B08 0%, #1A1612 28%, #1C1816 55%, #242018 88%, #2E2820 100%)'
 
 /**
  * Split layout aligned with coach login: navy brand column (lg+) + focused main column.
@@ -44,7 +46,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
       <div className="relative flex min-h-screen flex-col bg-[var(--cp-offwhite)]">
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-[128px] border-b border-white/10 lg:hidden"
-          style={{ background: MOBILE_NAVY }}
+          style={{ background: MOBILE_DARK_WARM }}
           aria-hidden
         />
 
@@ -57,10 +59,10 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
           <header className="hidden border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite)] lg:block">
             <div className="flex items-center justify-between gap-4 px-10 pb-4 pt-10">
               <div className="min-w-0">
-                <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-quaternary)]">
+                <p className="section-label-got">
                   Getting started
                 </p>
-                <p className="mt-0.5 text-[15px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+                <p className="mt-1 font-display text-[16px] font-medium tracking-[0.01em] text-[var(--text-primary)]">
                   Set up your coach workspace
                 </p>
               </div>

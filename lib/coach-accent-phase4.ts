@@ -1,12 +1,14 @@
 /**
  * Phase 4 coach accent — whitelist only (security + brand-safe).
  * Stored in `workspaces.accent_color` (existing column).
+ * Includes both legacy presets and stance-derived accent colors.
  */
 
-export const PHASE4_DEFAULT_COACH_ACCENT = '#1D4ED8' as const
+export const PHASE4_DEFAULT_COACH_ACCENT = '#C4A44A' as const
 
 export const ALLOWED_COACH_ACCENT_HEXES = [
-  '#1D4ED8', // Sapphire (default, matches --cp-sapphire)
+  // Legacy presets
+  '#1D4ED8', // Sapphire
   '#4F46E5', // Royal
   '#0369A1', // Ocean
   '#0F766E', // Teal
@@ -14,6 +16,12 @@ export const ALLOWED_COACH_ACCENT_HEXES = [
   '#7C3AED', // Violet
   '#BE185D', // Rose
   '#B45309', // Amber
+  // Stance accent colors (GoT)
+  '#C4A44A', // Golden Fields (Izuhara)
+  '#5A8A4A', // Jade Forest (Toyotama)
+  '#6A8AA4', // Winter Steel (Kamiagata)
+  '#8B3A3A', // Blood Oath (Crimson)
+  '#8A7A5A', // Ronin
 ] as const
 
 export type AccentColor = (typeof ALLOWED_COACH_ACCENT_HEXES)[number]

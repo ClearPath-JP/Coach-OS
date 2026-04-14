@@ -5,6 +5,7 @@ import { invalidateBrandingCache, invalidateSettingsCachesForWorkspace } from '@
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { findStance, STANCES } from '@/lib/stances'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,7 +78,38 @@ export async function PATCH(request: Request) {
       return res
     }
 
-    const body = (await request.json().catch(() => null)) as { accentColor?: unknown } | null
+    const body = (await request.json().catch(() => null)) as {
+      accentColor?: unknown
+      stanceId?: unknown
+    } | null
+
+    // Handle stance update
+    if (typeof body?.stanceId === 'string') {
+      const stance = STANCES.find((s) => s.id === body.stanceId)
+      if (!stance) {
+        return NextResponse.json({ error: 'Invalid stance' }, { status: 400 })
+      }
+      const light = getAccentLight(stance.accent).toUpperCase()
+      const { error } = await supabase
+        .from('workspaces')
+        .update({
+          stance_id: stance.id,
+          accent_color: stance.accent,
+          accent_color_light: light,
+        })
+        .eq('id', workspaceId)
+
+      if (error) {
+        return NextResponse.json({ error: 'Could not save stance' }, { status: 500 })
+      }
+
+      void invalidateSettingsCachesForWorkspace(workspaceId)
+      void invalidateBrandingCache(workspaceId)
+
+      return NextResponse.json({ stanceId: stance.id, accentColor: stance.accent })
+    }
+
+    // Handle direct accent color update (legacy / advanced override)
     const accentColor = typeof body?.accentColor === 'string' ? body.accentColor.trim() : ''
 
     if (!isAllowedCoachAccentHex(accentColor)) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { DevAuthToolbar } from '@/components/auth/DevAuthToolbar'
@@ -52,6 +52,46 @@ const ROLE_CONTENT = {
     ],
   },
 } as const
+
+// SVG icons for coach bullets: grid/overview, sparkles/brand, trending-up, shield
+const COACH_BULLET_ICONS = [
+  // Grid / overview
+  <svg key="grid" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+  </svg>,
+  // Sparkles / brand
+  <svg key="sparkles" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z" /><path d="M5 17l.75 2.25L8 20l-2.25.75L5 23l-.75-2.25L2 20l2.25-.75z" /><path d="M19 3l.75 2.25L22 6l-2.25.75L19 9l-.75-2.25L16 6l2.25-.75z" />
+  </svg>,
+  // Trending up
+  <svg key="trending" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" />
+  </svg>,
+  // Shield
+  <svg key="shield" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>,
+]
+
+// SVG icons for student bullets: file-text, target, calendar, heart
+const STUDENT_BULLET_ICONS = [
+  // File-text
+  <svg key="file" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+  </svg>,
+  // Target
+  <svg key="target" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+  </svg>,
+  // Calendar
+  <svg key="calendar" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+  </svg>,
+  // Heart
+  <svg key="heart" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cp-sky)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>,
+]
 
 function GoogleMark() {
   return (
@@ -111,19 +151,6 @@ export function DualRoleLoginPage() {
   const [googleNotice, setGoogleNotice] = useState(false)
 
   const emailInvalid = emailTouched && email.trim().length > 0 && !isValidEmail(email)
-
-  useEffect(() => {
-    const root = document.documentElement
-    const prevTheme = root.getAttribute('data-theme')
-    root.setAttribute('data-theme', 'light')
-    return () => {
-      if (prevTheme != null) {
-        root.setAttribute('data-theme', prevTheme)
-      } else {
-        root.removeAttribute('data-theme')
-      }
-    }
-  }, [])
 
   const rateLimitMessage =
     searchParams.get('error') === 'rate_limit'
@@ -218,44 +245,94 @@ export function DualRoleLoginPage() {
       >
         {/* Left panel — 50% width; content centered with same max width as form */}
         <div
-          className="cp-login-left hidden min-h-0 min-w-0 flex-col overflow-y-auto bg-[var(--cp-navy)] lg:flex lg:h-full lg:flex-col"
+          className="cp-login-left hidden min-h-0 min-w-0 flex-col overflow-y-auto bg-[var(--got-ink)] lg:flex lg:h-full lg:flex-col"
           style={{
             padding: 'clamp(20px, 4dvh, 48px) clamp(16px, 5vw, 56px)',
           }}
         >
           <div className="mx-auto flex min-h-0 w-full max-w-[min(480px,100%)] flex-1 flex-col justify-between">
           <div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--cp-white)' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 500, letterSpacing: '0.01em', color: 'var(--cp-white)' }}>
               ClearPath{' '}
-              <span style={{ color: 'var(--cp-sky)', fontWeight: 300 }}>Solutions</span>
+              <span style={{ color: 'var(--got-gold)', fontWeight: 400 }}>Solutions</span>
             </div>
             <div
               style={{
                 display: 'inline-block',
                 marginTop: 8,
-                background: 'color-mix(in srgb, var(--cp-sky) 12%, transparent)',
-                border: '1px solid color-mix(in srgb, var(--cp-sky) 25%, transparent)',
-                color: 'var(--cp-sky)',
-                fontSize: 11,
+                background: 'rgba(196, 164, 74, 0.12)',
+                border: '1px solid rgba(196, 164, 74, 0.25)',
+                color: 'var(--got-gold)',
+                fontSize: 10,
                 fontWeight: 600,
                 borderRadius: 20,
                 padding: '3px 10px',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.12em',
               }}
             >
               Coaching OS
+            </div>
+
+            {/* Feature chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
+              {[
+                {
+                  label: 'All clients in one place',
+                  icon: (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  ),
+                },
+                {
+                  label: 'Built for coaches',
+                  icon: (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                  ),
+                },
+                {
+                  label: 'Private & secure',
+                  icon: (
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  ),
+                },
+              ].map((chip) => (
+                <div
+                  key={chip.label}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    background: 'rgba(196, 164, 74, 0.08)',
+                    border: '1px solid rgba(196, 164, 74, 0.18)',
+                    color: 'var(--got-gold)',
+                    borderRadius: 100,
+                    padding: '4px 10px',
+                    fontSize: 11,
+                    fontWeight: 500,
+                  }}
+                >
+                  {chip.icon}
+                  {chip.label}
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="min-h-0 flex-1 py-8 lg:py-10">
             <h2
               style={{
+                fontFamily: 'var(--font-display)',
                 fontSize: 'clamp(28px, 4vw, 42px)',
-                fontWeight: 800,
+                fontWeight: 500,
                 color: 'var(--cp-white)',
                 lineHeight: 1.12,
                 marginBottom: 18,
-                letterSpacing: '-0.02em',
+                letterSpacing: '0.01em',
               }}
             >
               {rc.leftHeadline}
@@ -273,42 +350,38 @@ export function DualRoleLoginPage() {
               {rc.leftSub}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {rc.bullets.map((bullet) => (
-                <div key={bullet} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 6,
-                      background: 'color-mix(in srgb, var(--cp-sky) 12%, transparent)',
-                      border: '1px solid color-mix(in srgb, var(--cp-sky) 22%, transparent)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
+              {rc.bullets.map((bullet, idx) => {
+                const icons = role === 'coach' ? COACH_BULLET_ICONS : STUDENT_BULLET_ICONS
+                return (
+                  <div key={bullet} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div
                       style={{
-                        width: 7,
-                        height: 7,
-                        borderRadius: '50%',
-                        background: 'var(--cp-sky)',
+                        width: 24,
+                        height: 24,
+                        borderRadius: 6,
+                        background: 'rgba(196, 164, 74, 0.1)',
+                        border: '1px solid rgba(196, 164, 74, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
                       }}
-                    />
+                    >
+                      {icons[idx]}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 'clamp(15px, 1.65vw, 18px)',
+                        lineHeight: 1.35,
+                        fontWeight: 500,
+                        color: 'color-mix(in srgb, var(--cp-white) 88%, var(--cp-gray))',
+                      }}
+                    >
+                      {bullet}
+                    </span>
                   </div>
-                  <span
-                    style={{
-                      fontSize: 'clamp(15px, 1.65vw, 18px)',
-                      lineHeight: 1.35,
-                      fontWeight: 500,
-                      color: 'color-mix(in srgb, var(--cp-white) 88%, var(--cp-gray))',
-                    }}
-                  >
-                    {bullet}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 
@@ -367,7 +440,7 @@ export function DualRoleLoginPage() {
         <div
           className="cp-login-right flex min-h-0 w-full min-w-0 flex-1 flex-col items-center justify-center overflow-y-auto lg:h-full lg:flex-none lg:border-l lg:border-[var(--cp-border)]"
           style={{
-            background: 'var(--cp-white)',
+            background: 'var(--bg-app)',
             padding: 'clamp(20px, 4dvh, 48px) clamp(16px, 5vw, 56px)',
           }}
         >
@@ -435,7 +508,7 @@ export function DualRoleLoginPage() {
           ) : null}
 
           <div style={{ marginBottom: 24 }}>
-            <h1 id="login-heading" style={{ fontSize: 24, fontWeight: 800, color: 'var(--cp-navy)', margin: 0 }}>
+            <h1 id="login-heading" style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 500, letterSpacing: '0.01em', color: 'var(--text-primary)', margin: 0 }}>
               {rc.greeting}
             </h1>
             <div style={{ fontSize: 13, color: 'var(--cp-gray)', marginTop: 4 }}>{rc.subtext}</div>
@@ -486,7 +559,7 @@ export function DualRoleLoginPage() {
               height: 44,
               border: '1.5px solid var(--cp-border)',
               borderRadius: 10,
-              background: 'var(--cp-white)',
+              background: 'var(--bg-subtle)',
               color: 'var(--cp-text)',
               fontSize: 14,
               fontWeight: 500,
@@ -501,11 +574,11 @@ export function DualRoleLoginPage() {
             }}
             onMouseEnter={(e) => {
               if (loading) return
-              e.currentTarget.style.background = 'var(--bg-subtle)'
+              e.currentTarget.style.background = 'var(--bg-emphasis)'
               e.currentTarget.style.borderColor = 'var(--border-strong)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--cp-white)'
+              e.currentTarget.style.background = 'var(--bg-subtle)'
               e.currentTarget.style.borderColor = 'var(--cp-border)'
             }}
           >
@@ -587,8 +660,8 @@ export function DualRoleLoginPage() {
                   borderRadius: 10,
                   padding: '0 14px',
                   fontSize: 14,
-                  color: 'var(--cp-navy)',
-                  background: 'var(--cp-white)',
+                  color: 'var(--text-primary)',
+                  background: 'var(--bg-subtle)',
                   outline: 'none',
                   transition: 'border-color 0.15s, box-shadow 0.15s',
                 }}
@@ -656,8 +729,8 @@ export function DualRoleLoginPage() {
                     borderRadius: 10,
                     padding: '0 42px 0 14px',
                     fontSize: 14,
-                    color: 'var(--cp-navy)',
-                    background: 'var(--cp-white)',
+                    color: 'var(--text-primary)',
+                    background: 'var(--bg-subtle)',
                     outline: 'none',
                     transition: 'border-color 0.15s, box-shadow 0.15s',
                   }}

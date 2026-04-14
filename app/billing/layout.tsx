@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { coachAccentStyleTagContent, coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
 import { createClient } from '@/lib/supabase-server'
+
+export const dynamic = 'force-dynamic'
 import { Nav } from '@/components/layout/Nav'
 import { MobileNav, coachTabs } from '@/components/layout/MobileNav'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -40,11 +42,12 @@ export default async function BillingLayout({
 
   let resolvedCpAccent = coerceToAllowedCoachAccent(null)
   let initialWorkspaceSettings = {
-    workspaceDisplayName: null,
-    brandName: null,
-    accentColor: null,
-    accentColorLight: null,
-    logoUrl: null,
+    workspaceDisplayName: null as string | null,
+    brandName: null as string | null,
+    accentColor: null as string | null,
+    accentColorLight: null as string | null,
+    logoUrl: null as string | null,
+    stanceId: null as string | null,
   }
   const { data: coach } = await supabase
     .from('coaches')
@@ -56,7 +59,7 @@ export default async function BillingLayout({
     const { data: workspace } = await supabase
       .from('workspaces')
       .select(
-        'workspace_display_name, name, logo_url, accent_color, accent_color_light, brand_name'
+        'workspace_display_name, name, logo_url, accent_color, accent_color_light, brand_name, stance_id'
       )
       .eq('id', coach.workspace_id)
       .maybeSingle()
@@ -67,6 +70,7 @@ export default async function BillingLayout({
       accentColor: workspace?.accent_color ?? null,
       accentColorLight: workspace?.accent_color_light ?? null,
       logoUrl: workspace?.logo_url ?? null,
+      stanceId: workspace?.stance_id ?? null,
     }
 
     resolvedCpAccent = coerceToAllowedCoachAccent(workspace?.accent_color ?? null)

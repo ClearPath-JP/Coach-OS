@@ -1,7 +1,6 @@
 /* === CLEARPATH DESIGN SYSTEM === */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600&display=swap');
+/* Fonts: DM Sans (body) + Noto Serif JP (display) loaded via next/font/google in layout.tsx */
 
 @import 'tailwindcss';
 @config '../tailwind.config.ts';
@@ -29,6 +28,7 @@
   /* FONT */
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-sora: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Noto Serif JP', Georgia, serif;
 
   /* SPACING SCALE — multiples of 4px only */
   --space-1: 4px;
@@ -128,13 +128,14 @@
   --ease-default: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fast: 100ms;
-  --duration-normal: 150ms;
-  --duration-slow: 200ms;
-  --duration-slower: 300ms;
+  --duration-normal: 180ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
 
   --sidebar-width: 232px;
-  --nav-height: 48px;
+  --nav-height: 52px;
 
   /* Coach shell — page layout (desktop / mobile) */
   --coach-content-max: 1200px;
@@ -242,63 +243,77 @@
   --cp-input-border: var(--cp-border);
   --cp-input-focus: var(--cp-accent);
 
+  /* ── Always-dark surface (nav, panels) — never adapts to theme ── */
+  --cp-nav-surface: #0f172a;
+
   /* ── Legacy bridges (Phase 3 cleanup) ──────────────────── */
   --cp-offwhite: #f7f7f7;
   --cp-white: #ffffff;
   --accent: var(--cp-accent);
   --accent-hover: var(--cp-accent-hover);
+
+  /* Ghost of Tsushima — shared design tokens */
+  --got-ink: #1C1816;
+  --got-parchment: #E8E0D0;
+  --got-gold: #C4A44A;
+  --got-gold-dim: #A08838;
+  --got-gold-rgb: 196, 164, 74;
+  --got-crimson: #8B2B2B;
+  --got-steel: #4A6B8A;
+  --got-bamboo: #4A6B3A;
+  --got-frost: #8AA4B8;
 }
 
 html[data-theme='dark'] {
-  /* True dark gray/black base — no blue tint */
-  --bg-app: #111111;
-  --bg-app-rgb: 17, 17, 17;
-  --bg-subtle: #1c1c1c;
-  --bg-muted: #262626;
-  --bg-emphasis: #303030;
+  /* Ghost of Tsushima — warm dark palette */
+  --bg-app: #0F0D0B;
+  --bg-app-rgb: 15, 13, 11;
+  --bg-subtle: #1A1714;
+  --bg-muted: #242018;
+  --bg-emphasis: #2E2820;
 
-  /* Accent stays vibrant against dark gray */
-  --accent: #5ab4f0;
-  --accent-rgb: 90, 180, 240;
-  --accent-dark: #3b9ee8;
-  --accent-light: #0f1e2e;
-  --accent-muted: #172840;
-  --accent-hover: #6dc0f5;
+  /* Aged gold accent — GoT signature */
+  --accent: #C4A44A;
+  --accent-rgb: 196, 164, 74;
+  --accent-dark: #A08838;
+  --accent-light: #1E1A10;
+  --accent-muted: #2A2414;
+  --accent-hover: #D4B45A;
 
-  /* High-contrast readable text */
-  --text-primary: #f2f2f2;
-  --text-secondary: #c0c0c0;
-  --text-tertiary: #7a7a7a;
-  --text-quaternary: #4a4a4a;
-  --text-placeholder: #3a3a3a;
-  --text-on-accent: #ffffff;
+  /* Parchment-warm text */
+  --text-primary: #F0EDE8;
+  --text-secondary: #C4BEB4;
+  --text-tertiary: #7A7268;
+  --text-quaternary: #4A4238;
+  --text-placeholder: #3A3428;
+  --text-on-accent: #0F0D0B;
 
-  /* Visible but subtle borders */
-  --border-subtle: #202020;
-  --border-default: #2c2c2c;
-  --border-strong: #3c3c3c;
-  --border-accent: #5ab4f0;
+  /* Warm organic borders */
+  --border-subtle: #1E1A14;
+  --border-default: #2A2418;
+  --border-strong: #3A3228;
+  --border-accent: #C4A44A;
 
-  /* Semantic colors adjusted for dark gray context */
+  /* Semantic colors — warm-adjusted */
   --success: #34d399;
-  --success-bg: #0a1f14;
-  --success-border: #1a3d2a;
+  --success-bg: #0D1A12;
+  --success-border: #1A3828;
   --warning: #fbbf24;
-  --warning-bg: #1a1200;
-  --warning-border: #3d2a00;
+  --warning-bg: #1A1608;
+  --warning-border: #3D2E08;
   --error: #fc8181;
-  --error-bg: #1a0808;
-  --error-border: #3d1010;
-  --info: #5ab4f0;
-  --info-bg: #0a1929;
-  --info-border: #162d44;
+  --error-bg: #1A0D0A;
+  --error-border: #3D1814;
+  --info: #C4A44A;
+  --info-bg: #1A1608;
+  --info-border: #2A2414;
 
-  /* Strong shadows for depth on dark */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.55), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.65), 0 4px 6px -4px rgba(0, 0, 0, 0.45);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  /* Warm-tinted shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(12, 8, 4, 0.5);
+  --shadow-sm: 0 1px 3px 0 rgba(12, 8, 4, 0.55), 0 1px 2px -1px rgba(12, 8, 4, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(12, 8, 4, 0.6), 0 2px 4px -2px rgba(12, 8, 4, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(12, 8, 4, 0.65), 0 4px 6px -4px rgba(12, 8, 4, 0.45);
+  --shadow-xl: 0 20px 25px -5px rgba(12, 8, 4, 0.7), 0 8px 10px -6px rgba(12, 8, 4, 0.5);
 
   --color-bg: var(--bg-app);
   --color-surface: var(--bg-subtle);
@@ -351,6 +366,19 @@ html[data-theme='dark'] {
   --cp-btn-bg: var(--accent);
   --cp-btn-hover: var(--accent-hover);
   --cp-focus-ring: color-mix(in srgb, var(--accent) 30%, transparent);
+  /* Warm dark surface for nav panels */
+  --cp-nav-surface: #0D0B08;
+
+  /* Ghost of Tsushima — design tokens */
+  --got-ink: #1C1816;
+  --got-parchment: #E8E0D0;
+  --got-gold: #C4A44A;
+  --got-gold-dim: #A08838;
+  --got-gold-rgb: 196, 164, 74;
+  --got-crimson: #8B2B2B;
+  --got-steel: #4A6B8A;
+  --got-bamboo: #4A6B3A;
+  --got-frost: #8AA4B8;
 }
 
 *,
@@ -386,7 +414,7 @@ body {
 }
 
 html[data-theme='dark'] ::selection {
-  background: var(--accent-muted);
+  background: rgba(196, 164, 74, 0.3);
   color: var(--text-primary);
 }
 
@@ -413,18 +441,18 @@ html[data-theme='dark'] ::selection {
 
 .page-content,
 .page-enter {
-  animation: pageEnter 180ms ease-out both;
+  animation: pageEnter 300ms var(--ease-reveal) both;
 }
 
 .coach-route-enter,
 .client-route-enter {
-  animation: coachRouteEnter var(--duration-slower) var(--ease-out) both;
+  animation: coachRouteEnter 500ms var(--ease-reveal) both;
 }
 
 @keyframes coachRouteEnter {
   from {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -538,7 +566,7 @@ html[data-theme='dark'] ::selection {
 }
 
 .link-nav {
-  color: var(--accent);
+  color: var(--got-gold);
   text-decoration: none;
   text-underline-offset: 2px;
   transition:
@@ -568,6 +596,125 @@ tr.table-row-clickable:hover {
 html[data-theme='dark'] .badge-interactive:hover {
   filter: brightness(1.08);
 }
+
+/* ── Dark mode: neutralize hardcoded light-only Tailwind color classes ───────
+   Components using static Tailwind palette classes (text-slate-900, bg-slate-100, etc.)
+   won't respond to data-theme on their own. These overrides remap them to the
+   semantic dark tokens, giving consistent dark UI without touching every component. */
+
+html[data-theme='dark'] .text-slate-900,
+html[data-theme='dark'] .text-slate-800 { color: var(--text-primary); }
+
+html[data-theme='dark'] .text-slate-700,
+html[data-theme='dark'] .text-slate-600 { color: var(--text-secondary); }
+
+html[data-theme='dark'] .text-slate-500,
+html[data-theme='dark'] .text-slate-400 { color: var(--text-tertiary); }
+
+html[data-theme='dark'] .text-blue-600,
+html[data-theme='dark'] .text-blue-500 { color: var(--accent); }
+
+html[data-theme='dark'] .text-teal-700,
+html[data-theme='dark'] .text-teal-600 { color: #34d399; }
+
+html[data-theme='dark'] .text-emerald-600 { color: var(--success); }
+html[data-theme='dark'] .text-emerald-800 { color: var(--success); }
+
+html[data-theme='dark'] .text-amber-950,
+html[data-theme='dark'] .text-amber-900,
+html[data-theme='dark'] .text-amber-800 { color: var(--warning); }
+
+html[data-theme='dark'] .text-red-700,
+html[data-theme='dark'] .text-red-800 { color: var(--error); }
+
+html[data-theme='dark'] .text-violet-800 { color: #c4b5fd; }
+
+html[data-theme='dark'] .text-sky-800 { color: var(--info); }
+html[data-theme='dark'] .text-blue-800 { color: var(--info); }
+
+html[data-theme='dark'] .bg-white { background-color: var(--bg-subtle); }
+html[data-theme='dark'] .bg-slate-100 { background-color: var(--bg-subtle); }
+html[data-theme='dark'] .bg-slate-200 { background-color: var(--bg-muted); }
+
+html[data-theme='dark'] .border-slate-100 { border-color: var(--border-subtle); }
+html[data-theme='dark'] .border-slate-200 { border-color: var(--border-default); }
+html[data-theme='dark'] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-subtle); }
+
+html[data-theme='dark'] .bg-emerald-100 { background-color: var(--success-bg); }
+html[data-theme='dark'] .bg-blue-100 { background-color: var(--info-bg); }
+html[data-theme='dark'] .bg-amber-50 { background-color: var(--warning-bg); }
+html[data-theme='dark'] .bg-amber-100 { background-color: var(--warning-bg); }
+html[data-theme='dark'] .border-amber-200 { border-color: var(--warning-border); }
+html[data-theme='dark'] .bg-red-50 { background-color: var(--error-bg); }
+html[data-theme='dark'] .bg-red-100 { background-color: var(--error-bg); }
+html[data-theme='dark'] .border-red-200 { border-color: var(--error-border); }
+html[data-theme='dark'] .bg-violet-100 { background-color: color-mix(in srgb, #7c3aed 18%, var(--bg-muted)); }
+html[data-theme='dark'] .bg-sky-100 { background-color: var(--info-bg); }
+
+/* ── Dark mode: login-premium auth form classes (hardcoded light hex → tokens) ── */
+
+html[data-theme='dark'] .login-premium-card {
+  background: var(--bg-subtle);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  box-shadow:
+    0 0 0 1px var(--border-strong),
+    0 32px 64px rgba(0, 0, 0, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme='dark'] .auth-split-form-panel .login-premium-card {
+  background: var(--bg-subtle);
+  border-color: var(--border-default);
+  box-shadow: none;
+}
+
+html[data-theme='dark'] .login-premium-input {
+  background: var(--bg-muted);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+html[data-theme='dark'] .login-premium-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+html[data-theme='dark'] .login-premium-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--cp-focus-ring);
+  background: var(--bg-subtle);
+}
+
+html[data-theme='dark'] .login-premium-label {
+  color: var(--text-secondary);
+}
+
+html[data-theme='dark'] .login-premium-btn {
+  background: var(--accent);
+}
+
+html[data-theme='dark'] .login-premium-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: 0 8px 20px rgba(90, 180, 240, 0.25);
+}
+
+html[data-theme='dark'] .login-premium-ghost-btn {
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+}
+
+html[data-theme='dark'] .login-premium-ghost-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+html[data-theme='dark'] .login-premium-error-card {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+html[data-theme='dark'] .login-premium-error-card__icon,
+html[data-theme='dark'] .login-premium-error-card__text { color: var(--error); }
 
 /* Smooth element transitions */
 a,
@@ -669,34 +816,52 @@ tr:hover td {
   }
 }
 
+/* GoT — ink-wash paper grain texture (dark mode only) */
+html[data-theme='dark'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme='dark'] body::after {
+    display: none;
+  }
+}
+
 .modal-backdrop {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(12, 8, 4, 0.65);
+  backdrop-filter: blur(6px);
 }
 
 .card-interactive {
   cursor: pointer;
   transition:
-    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .card-interactive:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-strong);
+  box-shadow: 0 8px 24px rgba(12, 8, 4, 0.2);
+  border-color: rgba(196, 164, 74, 0.12);
 }
 
-/* Coach shell — dark sidebar chrome (fixed below nav) */
+/* Coach shell — warm dark sidebar chrome (GoT) */
 .coach-sidebar-dark {
-  --coach-sidebar-bg: #060e18;
-  --coach-sidebar-border: #0f1e2e;
-  --coach-sidebar-hover: rgba(255, 255, 255, 0.045);
-  --coach-sidebar-muted: #3d4f63;
-  --coach-sidebar-icon: #5c6d80;
-  --coach-sidebar-label: #3d5269;
-  --coach-sidebar-input-bg: #0a1520;
-  --coach-sidebar-input-border: #152030;
+  --coach-sidebar-bg: #0D0B08;
+  --coach-sidebar-border: #1A1612;
+  --coach-sidebar-hover: rgba(196, 164, 74, 0.06);
+  --coach-sidebar-muted: #5A5040;
+  --coach-sidebar-icon: #6A5E4E;
+  --coach-sidebar-label: #A08838;
+  --coach-sidebar-input-bg: #120F0C;
+  --coach-sidebar-input-border: #1E1A14;
 }
 
 .panel-body-scroll {
@@ -721,7 +886,7 @@ tr:hover td {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--accent);
+  background: var(--got-gold);
   border-radius: 0 2px 2px 0;
 }
 
@@ -748,6 +913,111 @@ tr:hover td {
   gap: var(--space-4);
   min-height: 0;
   overflow: hidden;
+}
+
+/* GoT — stagger reveal animation for dashboard sections */
+@keyframes coachDashLift {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.coach-dash-stagger > * {
+  animation: coachDashLift 0.5s var(--ease-reveal) both;
+}
+.coach-dash-stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.coach-dash-stagger > *:nth-child(2) { animation-delay: 0.09s; }
+.coach-dash-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.coach-dash-stagger > *:nth-child(4) { animation-delay: 0.21s; }
+.coach-dash-stagger > *:nth-child(5) { animation-delay: 0.27s; }
+.coach-dash-stagger > *:nth-child(6) { animation-delay: 0.33s; }
+.coach-dash-stagger > *:nth-child(7) { animation-delay: 0.39s; }
+.coach-dash-stagger > *:nth-child(8) { animation-delay: 0.45s; }
+
+/* GoT — stagger for list items (conversations, activity, etc.) */
+@keyframes coachListFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.coach-list-stagger > * {
+  animation: coachListFade 0.35s var(--ease-reveal) both;
+}
+.coach-list-stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.coach-list-stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.coach-list-stagger > *:nth-child(3) { animation-delay: 0.10s; }
+.coach-list-stagger > *:nth-child(4) { animation-delay: 0.14s; }
+.coach-list-stagger > *:nth-child(5) { animation-delay: 0.18s; }
+.coach-list-stagger > *:nth-child(6) { animation-delay: 0.22s; }
+.coach-list-stagger > *:nth-child(7) { animation-delay: 0.26s; }
+.coach-list-stagger > *:nth-child(8) { animation-delay: 0.30s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-dash-stagger > *,
+  .coach-list-stagger > * {
+    animation: none;
+  }
+}
+
+/* GoT — primary button gold shimmer on hover */
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+.btn-shimmer:hover:not(:disabled)::after {
+  animation: login-btn-shimmer 600ms ease;
+}
+
+/* GoT — gradient divider (replaces hard border-b lines) */
+.divider-fade {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border-default) 20%,
+    var(--border-default) 80%,
+    transparent 100%
+  );
+}
+
+/* GoT — organic list dividers (auto-applied between children) */
+.coach-list-organic > :not(:first-child)::before {
+  content: '';
+  display: block;
+  height: 1px;
+  margin: 0 16px;
+  background: linear-gradient(90deg, transparent, var(--border-default), transparent);
+}
+
+/* GoT — display heading utility */
+.heading-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* GoT — section label (gold uppercase small text) */
+.section-label-got {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--got-gold-dim);
 }
 
 /* Client portal — XP bar micro-celebration when progress increases */

@@ -1,6 +1,9 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { coachAccentStyleTagContent, coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
+import { coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
+import { findStance } from '@/lib/stances'
+
+export const dynamic = 'force-dynamic'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { Nav } from '@/components/layout/Nav'
@@ -12,7 +15,8 @@ import { getCoachSidebarNav } from '@/components/layout/coach-sidebar-nav'
 import { WorkspaceProvider } from '@/lib/workspace-context'
 import { workspaceProviderKey } from '@/lib/workspace-settings'
 import { CoachClientErrorReportingShell } from '@/components/shared/CoachClientErrorReporting'
-import { AccentInjector } from '@/components/layout/AccentInjector'
+import { StanceInjector } from '@/components/layout/StanceInjector'
+import { AmbientParticlesGuard } from '@/components/ambient/AmbientParticlesGuard'
 
 /**
  * Coach layout: require auth + role === 'coach' (11-auth §4.2).
@@ -46,15 +50,16 @@ export default async function CoachLayout({
 
   let resolvedCpAccent = coerceToAllowedCoachAccent(null)
   let initialWorkspaceSettings = {
-    workspaceDisplayName: null,
-    brandName: null,
-    accentColor: null,
-    accentColorLight: null,
-    logoUrl: null,
+    workspaceDisplayName: null as string | null,
+    brandName: null as string | null,
+    accentColor: null as string | null,
+    accentColorLight: null as string | null,
+    logoUrl: null as string | null,
+    stanceId: null as string | null,
   }
 
   if (workspaceId) {
-    const skipSubCheck = pathname.startsWith('/coach/suspended')
+    const skipSubCheck = pathname.startsWith('/coach/suspended') || pathname.startsWith('/coach/subscription')
     const [subResult, workspaceResult] = await Promise.all([
       skipSubCheck
         ? Promise.resolve({ data: null as { status: string; current_period_end: string | null } | null })
@@ -66,7 +71,7 @@ export default async function CoachLayout({
       supabase
         .from('workspaces')
         .select(
-          'workspace_display_name, name, logo_url, accent_color, accent_color_light, brand_name'
+          'workspace_display_name, name, logo_url, accent_color, accent_color_light, brand_name, stance_id'
         )
         .eq('id', workspaceId)
         .maybeSingle(),
@@ -74,7 +79,9 @@ export default async function CoachLayout({
 
     if (!skipSubCheck) {
       const sub = subResult.data
-      if (sub?.status === 'past_due' || sub?.status === 'cancelled') {
+      if (!sub) {
+        redirect('/coach/subscription')
+      } else if (sub.status === 'past_due' || sub.status === 'cancelled') {
         const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : new Date(0)
         if (periodEnd < new Date()) {
           redirect('/billing?warning=subscription')
@@ -90,12 +97,25 @@ export default async function CoachLayout({
       accentColor: workspace?.accent_color ?? null,
       accentColorLight: workspace?.accent_color_light ?? null,
       logoUrl: workspace?.logo_url ?? null,
+      stanceId: workspace?.stance_id ?? null,
     }
 
     resolvedCpAccent = coerceToAllowedCoachAccent(workspace?.accent_color ?? null)
   }
 
-  const cpAccentStyle = coachAccentStyleTagContent(resolvedCpAccent)
+  const stance = findStance(initialWorkspaceSettings.stanceId)
+  const stanceStyleTag = `:root {
+    --cp-accent: ${resolvedCpAccent};
+    --accent: ${stance.accent};
+    --accent-hover: ${stance.accentHover};
+    --got-gold: ${stance.accent};
+    --got-gold-dim: ${stance.sectionLabelColor};
+    --coach-sidebar-bg: ${stance.sidebarBg};
+    --coach-sidebar-border: ${stance.sidebarBorder};
+    --coach-sidebar-hover: ${stance.sidebarHover};
+    --coach-sidebar-label: ${stance.sectionLabelColor};
+    --text-on-accent: ${stance.textOnAccent};
+  }`
 
   const displayName =
     profile?.full_name?.trim() ||
@@ -122,8 +142,9 @@ export default async function CoachLayout({
       initialSettings={initialWorkspaceSettings}
     >
       <div className="flex min-h-screen min-h-0 flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
-        <style>{cpAccentStyle}</style>
-        <AccentInjector accentColor={resolvedCpAccent} />
+        <style>{stanceStyleTag}</style>
+        <StanceInjector stanceId={initialWorkspaceSettings.stanceId} />
+        <AmbientParticlesGuard />
         <Nav
           coachApp
           userDisplayName={displayName}

@@ -20,8 +20,8 @@ export default function CoachSegmentError({
 
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-      <h1 className="text-xl font-medium text-[var(--color-text-primary)]">Something went wrong</h1>
-      <p className="max-w-md text-[15px] text-[var(--color-muted)]">
+      <h1 className="font-display text-[22px] font-medium tracking-[0.01em] text-[var(--text-primary)]">Something went wrong</h1>
+      <p className="max-w-md text-[15px] text-[var(--text-tertiary)]">
         This coach area hit an unexpected error. Try again or return to your dashboard.
       </p>
       <div className="flex flex-wrap justify-center gap-3">
@@ -32,8 +32,8 @@ export default function CoachSegmentError({
           Back to dashboard
         </Button>
       </div>
-      <p className="text-[13px] text-[var(--color-muted)]">
-        <Link href="/coach/dashboard" className="text-[var(--color-accent)] underline-offset-2 hover:underline">
+      <p className="text-[13px] text-[var(--text-tertiary)]">
+        <Link href="/coach/dashboard" className="text-[var(--accent)] underline-offset-2 hover:underline">
           Coach home
         </Link>
       </p>
