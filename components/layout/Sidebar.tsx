@@ -189,45 +189,23 @@ function SidebarWordmark() {
 function CoachSidebarHeader() {
   const { settings } = useWorkspace()
   const displayName = settings.workspaceDisplayName || settings.brandName || 'ClearPath'
-  const initial = (displayName.trim().slice(0, 1) || 'C').toUpperCase()
 
   return (
-    <>
-      <div
-        className="flex h-14 shrink-0 items-center gap-2.5 border-b px-4"
-        style={{ borderColor: 'var(--coach-sidebar-border)' }}
-      >
-        <SidebarBrandMark invertLogo />
-        <div className="min-w-0 flex-1 leading-tight">
-          <div className="font-display text-[15px] font-medium tracking-[0.01em] text-[var(--text-primary)]">ClearPath</div>
-          <div
-            className="text-[10px] font-semibold uppercase tracking-[0.12em]"
-            style={{ color: 'var(--got-gold-dim)' }}
-          >
-            Coach OS
-          </div>
+    <div
+      className="flex h-[52px] shrink-0 items-center gap-2.5 px-4"
+      style={{ borderBottom: '1px solid var(--coach-sidebar-border)' }}
+    >
+      <SidebarBrandMark invertLogo />
+      <div className="min-w-0 flex-1 leading-tight">
+        <div className="font-display text-[14px] font-medium tracking-[0.02em] text-[var(--text-primary)]">{displayName}</div>
+        <div
+          className="text-[9px] font-semibold uppercase tracking-[0.14em]"
+          style={{ color: 'var(--got-gold-dim)', marginTop: 1 }}
+        >
+          Coach OS
         </div>
       </div>
-
-      <div className="px-3 pb-2 pt-3">
-        <button
-          type="button"
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-[8px] border border-[var(--border-subtle)] bg-[var(--bg-muted)] py-2 pl-2 pr-2 transition-all duration-[180ms] hover:bg-[var(--bg-emphasis)]"
-          aria-label="Workspace"
-        >
-          <span
-            className="flex size-7 shrink-0 items-center justify-center rounded-[6px] text-[12px] font-bold"
-            style={{ background: 'var(--got-gold)', color: 'var(--got-ink)' }}
-          >
-            {initial}
-          </span>
-          <span className="min-w-0 flex-1 truncate text-left text-[13px] font-medium text-[var(--text-primary)]">{displayName}</span>
-          <span className="shrink-0 text-[var(--text-quaternary)]">
-            <ChevronDownIcon />
-          </span>
-        </button>
-      </div>
-    </>
+    </div>
   )
 }
 
@@ -328,10 +306,10 @@ function NavRowsCoach({
             key={item.href}
             href={item.href}
             className={cn(
-              'relative mb-px flex h-[32px] items-center gap-2 rounded-[8px] px-2 text-[13px] no-underline transition-[color,background-color] duration-[180ms] ease-out',
+              'relative mb-[2px] flex h-[34px] items-center gap-2.5 rounded-[6px] px-2.5 text-[13px] no-underline transition-all duration-[200ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[rgba(196,164,74,0.08)] font-medium text-[var(--got-gold)] [&_svg]:text-[var(--got-gold)]'
-                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--text-quaternary)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-secondary)]'
+                ? 'nav-item-active-coach bg-[rgba(196,164,74,0.07)] font-medium text-[var(--got-gold)] [&_svg]:text-[var(--got-gold)]'
+                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--coach-sidebar-icon)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-secondary)]'
             )}
           >
             {item.icon ? (
@@ -459,7 +437,12 @@ export function Sidebar({
                 className="h-9 w-full rounded-[8px] px-2 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[180ms] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)]"
               />
             </div>
-            <p className="mt-1 px-1 text-[10px] text-[var(--text-quaternary)]">⌘K Quick actions</p>
+            <div className="mt-2 flex items-center justify-between px-1">
+              <p className="text-[9px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--coach-sidebar-muted)' }}>
+                Powered by ClearPath
+              </p>
+              <span className="text-[10px] text-[var(--text-quaternary)]">⌘K</span>
+            </div>
           </div>
         ) : null}
 

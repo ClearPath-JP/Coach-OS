@@ -630,8 +630,8 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
       {/* ── END MOBILE LAYOUT ── */}
 
       {/* ── DESKTOP LAYOUT (hidden below lg) ── */}
-      <div className="hidden lg:flex lg:flex-col px-4 py-5 md:px-8 md:py-6">
-      <div className="mx-auto flex w-full max-w-[1400px] flex-col">
+      <div className="coach-page hidden lg:flex lg:flex-col">
+      <div className="coach-page-inner coach-dash-stagger flex flex-col">
         <div
           style={{
             background: 'var(--warning-bg)',
@@ -984,7 +984,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                       key={item.label}
                       type="button"
                       onClick={() => router.push(item.href)}
-                      className="relative flex min-h-[88px] cursor-pointer flex-col gap-1 rounded-[12px] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)] px-4 py-3.5 text-left transition-all duration-[300ms] ease-out hover:border-[rgba(196,164,74,0.12)] hover:shadow-[0_8px_24px_rgba(12,8,4,0.15)] hover:-translate-y-[1px]"
+                      className="game-stat relative text-left"
                     >
                       {item.badge > 0 ? (
                         <span
@@ -1000,10 +1000,10 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                       >
                         {item.icon}
                       </span>
-                      <span className="block font-display text-[22px] font-medium leading-none tracking-[0.01em] text-[var(--text-primary)]">
+                      <span className="game-stat__value">
                         {item.value}
                       </span>
-                      <span className="section-label-got leading-tight">
+                      <span className="game-stat__label">
                         {item.label}
                       </span>
                       <span

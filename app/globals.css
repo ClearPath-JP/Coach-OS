@@ -970,6 +970,127 @@ html[data-theme='dark'] body::after {
   }
 }
 
+/* GoT — game-menu page wrapper */
+.coach-page {
+  padding: var(--coach-content-px-mobile);
+  padding-bottom: 80px;
+  min-height: 100%;
+}
+@media (min-width: 1024px) {
+  .coach-page {
+    padding: 24px 32px;
+    padding-bottom: 32px;
+  }
+}
+.coach-page-inner {
+  max-width: var(--coach-content-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* GoT — game-menu panel (card replacement for dashboard sections) */
+.game-panel {
+  background: var(--bg-subtle);
+  border: 1px solid rgba(255, 250, 240, 0.04);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.game-panel:hover {
+  border-color: rgba(196, 164, 74, 0.08);
+}
+.game-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  min-height: 40px;
+}
+.game-panel-header__title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--got-gold-dim);
+}
+.game-panel-body {
+  padding: 4px 0;
+}
+
+/* GoT — stat card (game HUD style) */
+.game-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid rgba(255, 250, 240, 0.04);
+  cursor: pointer;
+  transition: all 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.game-stat:hover {
+  border-color: rgba(196, 164, 74, 0.12);
+  box-shadow: 0 8px 24px rgba(12, 8, 4, 0.15);
+  transform: translateY(-1px);
+}
+.game-stat__value {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.game-stat__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--got-gold-dim);
+}
+.game-stat__sub {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+/* GoT — page title */
+.game-page-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+@media (min-width: 1024px) {
+  .game-page-title { font-size: 26px; }
+}
+
+/* GoT — session row (mission-list style) */
+.game-session-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  transition: background-color 200ms;
+  cursor: pointer;
+  min-height: 48px;
+}
+.game-session-row:hover {
+  background: var(--bg-muted);
+}
+
+/* GoT — attention row */
+.game-attention-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  min-height: 44px;
+}
+
 /* GoT — primary button gold shimmer on hover */
 .btn-shimmer::after {
   content: '';
