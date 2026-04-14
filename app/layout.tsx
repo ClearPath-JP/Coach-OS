@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Noto_Serif_JP } from 'next/font/google'
 import './globals.css'
