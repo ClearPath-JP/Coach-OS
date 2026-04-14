@@ -450,8 +450,6 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
     setOnboardingDismissed(true)
   }
 
-  const statAnimateOnce = !loading && summary !== null
-
   return (
     <div className="min-h-full w-full bg-[var(--bg-app)]">
 
@@ -630,58 +628,106 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
       {/* ── END MOBILE LAYOUT ── */}
 
       {/* ── DESKTOP LAYOUT (hidden below lg) ── */}
-      <div className="coach-page hidden lg:flex lg:flex-col">
-      <div className="coach-page-inner coach-dash-stagger flex flex-col">
-        <div
-          style={{
-            background: 'var(--warning-bg)',
-            border: '1px solid var(--warning-border)',
-            borderRadius: 'var(--radius-md)',
-            padding: '10px 16px',
-            marginBottom: '16px',
-            fontSize: '13px',
-            color: 'var(--warning)',
-            display: hasFetchError ? 'flex' : 'none',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <span aria-hidden>⚠️</span>
-          <span>Some dashboard data could not load.</span>
-          <button
-            type="button"
-            onClick={() => void loadDashboard()}
-            className="ml-auto shrink-0 rounded-[var(--radius-sm)] border border-[var(--warning-border)] bg-[var(--bg-subtle)] px-3 py-1 text-[12px] font-medium text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
-          >
-            Try again
-          </button>
+      <div className="coach-page hidden lg:block">
+      <div className="coach-page-inner coach-dash-stagger">
+
+        {/* Error banner */}
+        {hasFetchError && (
+          <div className="mb-4 flex items-center gap-2 rounded-[10px] border border-[var(--warning-border)] bg-[var(--warning-bg)] px-4 py-3 text-[13px] text-[var(--warning)]">
+            <span>Some data could not load.</span>
+            <button type="button" onClick={() => void loadDashboard()} className="ml-auto text-[12px] font-medium underline">Retry</button>
+          </div>
+        )}
+
+        {/* ── Hero: greeting + quick actions ── */}
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <p className="game-stat__label mb-1">{heroDateLine}</p>
+            <h1 className="game-page-title">{greeting}, {coachFirst}</h1>
+            <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">
+              {loading ? 'Loading...' : sessionsTodayLine}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button variant="secondary" size="sm" type="button" onClick={() => router.push('/coach/schedule')}>
+              Book session
+            </Button>
+            <Button variant="primary" size="sm" type="button" onClick={() => router.push('/coach/clients')}>
+              + Add client
+            </Button>
+          </div>
         </div>
 
-        {/* 2-column grid on xl, single column below */}
-        <div className="xl:grid xl:grid-cols-[1fr_380px] xl:gap-6 xl:items-start">
+        {/* ── HUD stat bar (like GoT rewards: Essence / Honor / Gear) ── */}
+        <div className="mb-6 grid grid-cols-3 gap-3 xl:grid-cols-6">
+          {loading && !summary ? (
+            Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="game-stat animate-pulse">
+                <div className="h-6 w-16 rounded bg-[var(--bg-muted)]" />
+                <div className="h-3 w-12 rounded bg-[var(--bg-muted)]" />
+              </div>
+            ))
+          ) : (
+            <>
+              <button type="button" onClick={() => router.push('/coach/clients')} className="game-stat text-left">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                  <Users className="size-4" strokeWidth={2} />
+                </span>
+                <span className="game-stat__value">{totalClients}</span>
+                <span className="game-stat__label">Clients</span>
+                <span className="game-stat__sub">{clientsAddedThisMonth > 0 ? `+${clientsAddedThisMonth} new` : 'active'}</span>
+              </button>
+              <button type="button" onClick={() => router.push('/coach/schedule')} className="game-stat text-left">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
+                  <CalendarDays className="size-4" strokeWidth={2} />
+                </span>
+                <span className="game-stat__value">{summary?.sessionsThisWeek ?? 0}</span>
+                <span className="game-stat__label">Sessions</span>
+                <span className="game-stat__sub">{upcomingToday > 0 ? `${upcomingToday} today` : 'this week'}</span>
+              </button>
+              <button type="button" onClick={() => router.push('/coach/messages')} className="game-stat text-left">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ background: unreadMessagesTotal > 0 ? 'var(--accent-light)' : 'var(--bg-muted)', color: unreadMessagesTotal > 0 ? 'var(--accent)' : 'var(--text-tertiary)' }}>
+                  <MessageSquare className="size-4" strokeWidth={2} />
+                </span>
+                <span className="game-stat__value">{unreadMessagesTotal > 0 ? unreadMessagesTotal : '—'}</span>
+                <span className="game-stat__label">Messages</span>
+                <span className="game-stat__sub">{unreadMessagesTotal > 0 ? 'unread' : 'All read'}</span>
+              </button>
+              <button type="button" onClick={() => router.push('/coach/invoices')} className="game-stat text-left">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ background: 'color-mix(in srgb, var(--success) 12%, var(--bg-muted))', color: 'var(--success)' }}>
+                  <TrendingUp className="size-4" strokeWidth={2} />
+                </span>
+                <span className="game-stat__value">{formatCents(summary?.revenueMonthCents ?? 0)}</span>
+                <span className="game-stat__label">Revenue</span>
+                <span className="game-stat__sub">{revenueMoMPct !== null ? `${revenueMoMPct >= 0 ? '↑' : '↓'} ${Math.abs(revenueMoMPct)}%` : 'this month'}</span>
+              </button>
+              <button type="button" onClick={() => router.push('/coach/invoices')} className="game-stat text-left">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ background: pendingInvoices > 0 ? 'var(--warning-bg)' : 'var(--bg-muted)', color: pendingInvoices > 0 ? 'var(--warning)' : 'var(--text-tertiary)' }}>
+                  <CreditCard className="size-4" strokeWidth={2} />
+                </span>
+                <span className="game-stat__value">{pendingInvoices > 0 ? pendingInvoices : '—'}</span>
+                <span className="game-stat__label">Invoices</span>
+                <span className="game-stat__sub">{pendingInvoices > 0 ? 'pending' : 'All paid'}</span>
+              </button>
+              <button type="button" onClick={() => router.push('/coach/programs')} className="game-stat text-left">
+                <span className="flex size-7 items-center justify-center rounded-full" style={{ background: 'color-mix(in srgb, #a855f7 18%, var(--bg-muted))', color: '#a855f7' }}>
+                  <BookOpen className="size-4" strokeWidth={2} />
+                </span>
+                <span className="game-stat__value">→</span>
+                <span className="game-stat__label">Programs</span>
+                <span className="game-stat__sub">Manage content</span>
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* ── Main 2-column grid ── */}
+        <div className="grid gap-4 xl:grid-cols-[1fr_360px] xl:items-start">
 
           {/* LEFT COLUMN */}
-          <div className="coach-dash-stagger min-w-0">
+          <div className="min-w-0 space-y-4">
 
-            {/* ── Command bar ── */}
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <h1 className="font-display text-[24px] font-medium leading-tight tracking-[0.01em] text-[var(--text-primary)]">
-                  {greeting}, {coachFirst}
-                </h1>
-                <p className="section-label-got mt-1">
-                  {loading ? 'Loading…' : `${heroDateLine} · ${sessionsTodayLine}`}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <Button variant="secondary" size="sm" type="button" onClick={() => router.push('/coach/schedule')}>
-                  Book session
-                </Button>
-                <Button variant="primary" size="sm" type="button" onClick={() => router.push('/coach/clients')}>
-                  + Add client
-                </Button>
-              </div>
-            </div>
+            {/* Command bar moved to hero above */}
 
             {/* ── Onboarding checklist (new coaches only) ── */}
             {showNewCoachOnboarding ? (
@@ -762,18 +808,11 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
             ) : null}
 
             {/* ── Week strip + Today's sessions ── */}
-            <div className="mb-3 grid shrink-0 grid-cols-1 gap-2 lg:grid-cols-[2fr_1fr]">
-              <div
-                className="overflow-hidden rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
-                style={{ background: 'var(--bg-subtle)' }}
-              >
-                <div className="flex h-10 items-center justify-between border-b border-[var(--border-subtle)] px-3">
-                  <span className="section-label-got">
-                    This week
-                  </span>
-                  <Link href="/coach/schedule" className="link-nav text-[12px] font-medium">
-                    View calendar →
-                  </Link>
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[2fr_1fr]">
+              <div className="game-panel">
+                <div className="game-panel-header">
+                  <span className="game-panel-header__title">This week</span>
+                  <Link href="/coach/schedule" className="link-nav text-[12px] font-medium">View calendar →</Link>
                 </div>
                 <div
                   className="grid p-3"
@@ -822,14 +861,9 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 </div>
               </div>
 
-              <div
-                className="flex min-h-0 flex-col overflow-hidden rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
-                style={{ background: 'var(--bg-subtle)' }}
-              >
-                <div className="flex h-10 items-center border-b border-[var(--border-subtle)] px-3">
-                  <span className="section-label-got">
-                    Today&apos;s sessions
-                  </span>
+              <div className="game-panel flex min-h-0 flex-col">
+                <div className="game-panel-header">
+                  <span className="game-panel-header__title">Today&apos;s sessions</span>
                   <span className="ml-2 text-[12px] font-medium text-[var(--text-secondary)]">
                     ({todaySessions.length})
                   </span>
@@ -906,8 +940,8 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </div>
             </div>
 
-            {/* ── Merged stat+action tiles (3×2 grid) ── */}
-            <div className="mb-3 shrink-0">
+            {/* ── Stat tiles moved to HUD bar above ── */}
+            <div className="hidden">
               {loading && !summary ? (
                 <div className="grid grid-cols-3 gap-2">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -1031,17 +1065,14 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
 
           {/* RIGHT COLUMN */}
           <div className="xl:sticky xl:top-0 xl:max-h-[calc(100dvh-var(--nav-height))] xl:overflow-y-auto">
-            <div className="coach-dash-stagger flex flex-col gap-3 pb-4">
+            <div className="flex flex-col gap-3 pb-4">
 
               {/* Attention panel */}
-              <div
-                className="rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
-                style={{ background: 'var(--bg-subtle)' }}
-              >
-                <div className="border-b border-[var(--border-subtle)] px-3.5 py-2.5">
-                  <h2 className="section-label-got">
+              <div className="game-panel">
+                <div className="game-panel-header">
+                  <span className="game-panel-header__title">
                     {attentionHasItems ? 'Needs attention' : 'All clear'}
-                  </h2>
+                  </span>
                 </div>
                 <div className="px-0 py-1">
                   {!loading && attentionHasItems ? (
@@ -1234,14 +1265,9 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </div>
 
               {/* Conversations */}
-              <div
-                className="rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
-                style={{ background: 'var(--bg-subtle)' }}
-              >
-                <div className="flex h-10 items-center justify-between border-b border-[var(--border-subtle)] px-3.5">
-                  <span className="section-label-got">
-                    Conversations
-                  </span>
+              <div className="game-panel">
+                <div className="game-panel-header">
+                  <span className="game-panel-header__title">Conversations</span>
                   <Link href="/coach/messages" className="link-nav text-[12px] font-medium">
                     View all →
                   </Link>
@@ -1294,14 +1320,9 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               </div>
 
               {/* Recent activity */}
-              <div
-                className="rounded-[12px] border border-[rgba(255,250,240,0.04)] shadow-[var(--shadow-xs)]"
-                style={{ background: 'var(--bg-subtle)' }}
-              >
-                <div className="flex h-10 items-center justify-between border-b border-[var(--border-subtle)] px-3.5">
-                  <span className="section-label-got">
-                    Recent activity
-                  </span>
+              <div className="game-panel">
+                <div className="game-panel-header">
+                  <span className="game-panel-header__title">Recent activity</span>
                   <Link href="/coach/programs" className="link-nav text-[12px] font-medium">
                     View all
                   </Link>
@@ -1344,14 +1365,9 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
 
               {/* Storage strip */}
               {storage ? (
-                <div
-                  className="rounded-[12px] border border-[rgba(255,250,240,0.04)] px-4 py-3 shadow-[var(--shadow-xs)]"
-                  style={{ background: 'var(--bg-subtle)' }}
-                >
+                <div className="game-panel px-4 py-3">
                   <div className="flex items-center justify-between">
-                    <span className="section-label-got">
-                      Storage
-                    </span>
+                    <span className="game-panel-header__title">Storage</span>
                     <span className="text-[12px] text-[var(--text-tertiary)]">
                       {storage.usedGb.toFixed(1)} / {storage.maxGb} GB
                     </span>
