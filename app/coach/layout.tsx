@@ -60,11 +60,28 @@ export default async function CoachLayout({
 
     if (!skipSubCheck) {
       const sub = subResult.data
-      // No subscription row = free trial / pre-Stripe coach — allow access
+      const ALLOWED_STATUSES = ['active', 'trialing']
+      const FREE_TRIAL_DAYS = 14
+
       if (sub) {
-        if (sub.status === 'past_due' || sub.status === 'cancelled') {
+        // Has a subscription record — only allow active or trialing
+        if (!ALLOWED_STATUSES.includes(sub.status)) {
           const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : new Date(0)
           if (periodEnd < new Date()) redirect('/billing?warning=subscription')
+        }
+      } else {
+        // No subscription record — allow time-limited free trial based on workspace creation date
+        const { data: wsCreated } = await supabase
+          .from('workspaces')
+          .select('created_at')
+          .eq('id', workspaceId)
+          .maybeSingle()
+        if (wsCreated?.created_at) {
+          const createdAt = new Date(wsCreated.created_at)
+          const trialExpiry = new Date(createdAt.getTime() + FREE_TRIAL_DAYS * 24 * 60 * 60 * 1000)
+          if (new Date() > trialExpiry) {
+            redirect('/billing?warning=trial_expired')
+          }
         }
       }
     }

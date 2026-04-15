@@ -62,14 +62,18 @@ export async function POST(request: Request) {
         )
       }
 
-      // Email confirmation is required or SMTP not configured — try admin bypass if service key available
-      const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
-      if (hasServiceKey) {
+      // Email confirmation is required or SMTP not configured.
+      // Only bypass email confirmation if COACH_SIGNUP_SKIP_EMAIL_CONFIRM is explicitly set.
+      // This prevents unverified emails from creating accounts in production.
+      const allowBypass =
+        !!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() &&
+        process.env.COACH_SIGNUP_SKIP_EMAIL_CONFIRM === 'true'
+
+      if (allowBypass) {
         const service = createServiceClient()
 
-        // If signUp failed entirely (e.g. SMTP not configured), create the user via admin
         if (signUpError) {
-          console.error('[signup] signUp error, attempting admin createUser bypass:', signUpError.message)
+          console.warn('[signup] signUp error, attempting admin createUser bypass:', signUpError.message)
           const { error: adminErr } = await service.auth.admin.createUser({
             email: emailLower,
             password,
@@ -90,7 +94,6 @@ export async function POST(request: Request) {
               { status: 400 }
             )
           }
-          // Sign in immediately after admin-created account
           const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
             email: emailLower,
             password,
@@ -99,7 +102,6 @@ export async function POST(request: Request) {
             sessionUser = signInData.user
           }
         } else if (signUpData.user?.id) {
-          // User created but no session (email confirmation pending) — confirm via admin
           const { error: confirmErr } = await service.auth.admin.updateUserById(signUpData.user.id, {
             email_confirm: true,
           })
@@ -114,9 +116,9 @@ export async function POST(request: Request) {
           }
         }
       } else if (signUpError) {
-        console.error('[signup] Supabase signUp error (no service key):', signUpError.message)
+        console.error('[signup] Supabase signUp error:', signUpError.message)
         return NextResponse.json(
-          { error: signUpError.message ?? 'Could not create account. Please try again.' },
+          { error: 'Could not create account. Please try again.' },
           { status: 400 }
         )
       }

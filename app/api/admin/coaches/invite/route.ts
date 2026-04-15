@@ -28,25 +28,18 @@ export async function POST(request: Request) {
     })
 
     if (inviteError) {
-      // If user already exists, that's an error we surface
-      return NextResponse.json({ error: inviteError.message }, { status: 400 })
+      const errLower = (inviteError.message ?? '').toLowerCase()
+      const isExists = errLower.includes('already') || errLower.includes('exists') || errLower.includes('registered')
+      console.error('[admin.coach.invite] inviteUserByEmail error:', inviteError.message)
+      return NextResponse.json(
+        { error: isExists ? 'A user with this email already exists.' : 'Could not send invite. Please try again.' },
+        { status: 400 }
+      )
     }
 
     const userId = inviteData.user.id
 
-    // Upsert profile with coach role
-    await service.from('profiles').upsert(
-      {
-        id: userId,
-        email,
-        full_name: fullName || null,
-        role: 'coach',
-      },
-      { onConflict: 'id' }
-    )
-
-    // Create workspace so the coach lands on a ready dashboard after accepting the invite.
-    // Check if a workspace already exists for this user (idempotent).
+    // Create workspace first (idempotent — check if one already exists for this user)
     const { data: existingWorkspace } = await service
       .from('workspaces')
       .select('id')
@@ -71,13 +64,32 @@ export async function POST(request: Request) {
         .single()
 
       if (wsError) {
-        return NextResponse.json({ error: `Workspace creation failed: ${wsError.message}` }, { status: 500 })
+        console.error('[admin.coach.invite] workspace creation failed:', wsError.message)
+        return NextResponse.json(
+          { error: 'Could not create workspace. Please try again.' },
+          { status: 500 }
+        )
       }
       workspaceId = newWorkspace.id
     }
 
+    // Upsert profile with coach role AND workspace_id (ensures resolveCoachWorkspaceIdForSession works)
+    const { error: profileError } = await service.from('profiles').upsert(
+      {
+        id: userId,
+        email,
+        full_name: fullName || null,
+        role: 'coach',
+        workspace_id: workspaceId,
+      },
+      { onConflict: 'id' }
+    )
+    if (profileError) {
+      console.error('[admin.coach.invite] profile upsert failed:', profileError.message)
+    }
+
     // Link coach to workspace (upsert so re-invites are safe)
-    await service.from('coaches').upsert(
+    const { error: coachLinkError } = await service.from('coaches').upsert(
       {
         user_id: userId,
         workspace_id: workspaceId,
@@ -85,6 +97,9 @@ export async function POST(request: Request) {
       },
       { onConflict: 'user_id,workspace_id' }
     )
+    if (coachLinkError) {
+      console.error('[admin.coach.invite] coach link failed:', coachLinkError.message)
+    }
 
     await logAdminAudit({
       action: 'admin.coach.invite',
