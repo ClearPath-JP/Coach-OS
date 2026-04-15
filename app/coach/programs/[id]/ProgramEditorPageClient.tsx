@@ -14,7 +14,7 @@ const ProgramEditorContent = dynamic(
 
 export function ProgramEditorPageClient({ programId }: { programId: string }) {
   return (
-    <main className="flex min-h-0 min-h-screen flex-1 flex-col">
+    <main className="flex min-h-screen flex-1 flex-col">
       <ProgramEditorContent programId={programId} />
     </main>
   )

@@ -3,6 +3,38 @@ import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
+function extractTextFromProseMirror(nodes: unknown[]): string {
+  const parts: string[] = []
+  for (const node of nodes) {
+    if (typeof node !== 'object' || !node) continue
+    const n = node as Record<string, unknown>
+    if (typeof n.text === 'string' && n.text) parts.push(n.text)
+    if (Array.isArray(n.content)) parts.push(extractTextFromProseMirror(n.content))
+  }
+  return parts.join('').trim()
+}
+
+function sanitizePreview(raw: string): string {
+  const trimmed = raw.trim()
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return raw
+  try {
+    const parsed = JSON.parse(trimmed) as unknown
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      (parsed as Record<string, unknown>).type === 'doc' &&
+      Array.isArray((parsed as Record<string, unknown>).content)
+    ) {
+      const content = (parsed as Record<string, unknown>).content as unknown[]
+      const text = extractTextFromProseMirror(content)
+      return text || 'Message'
+    }
+    return 'Message'
+  } catch {
+    return raw
+  }
+}
+
 function previewForMessage(content: string, messageType: string | null | undefined): string {
   if (messageType === 'invoice') return 'Invoice'
   if (messageType === 'session') return 'Session booking'
@@ -77,7 +109,7 @@ export async function GET() {
       const previewFromRpc =
         rawPreview === 'Invoice' || rawPreview === 'Session booking'
           ? rawPreview
-          : previewForMessage(rawPreview, null)
+          : sanitizePreview(previewForMessage(rawPreview, null))
       let lastMessagePreview = ''
       if (hasMessages) {
         lastMessagePreview =

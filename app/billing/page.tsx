@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { BillingPageContent } from './BillingPageContent'
 
+export const dynamic = 'force-dynamic'
+
 export default async function BillingPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

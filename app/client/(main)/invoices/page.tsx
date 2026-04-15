@@ -15,8 +15,8 @@ export default async function ClientInvoicesPage() {
   } = await supabase.auth.getUser()
   if (!user?.email) {
     return (
-      <main className="min-h-screen p-6">
-        <p className="text-[var(--color-muted)]">Please log in to view your invoices.</p>
+      <main className="client-page-content min-h-screen px-4 py-6 md:px-6">
+        <p className="text-[14px] text-[var(--text-tertiary)]">Please log in to view your invoices.</p>
       </main>
     )
   }
@@ -29,8 +29,8 @@ export default async function ClientInvoicesPage() {
 
   if (!client) {
     return (
-      <main className="min-h-screen p-6">
-        <p className="text-[var(--color-muted)]">We couldn&apos;t find your client record.</p>
+      <main className="client-page-content min-h-screen px-4 py-6 md:px-6">
+        <p className="text-[14px] text-[var(--text-tertiary)]">We couldn&apos;t find your client record.</p>
       </main>
     )
   }

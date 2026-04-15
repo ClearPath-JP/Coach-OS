@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"[System.Environment]::SetEnvironmentVariable\\('N8N_API_URL', 'https://jpotesta.app.n8n.cloud/api/v1', 'User'\\)\")",
+      "Bash(powershell -Command \"[System.Environment]::GetEnvironmentVariable\\(''N8N_API_URL'', ''User''\\)\")",
+      "Bash(powershell -Command \"[System.Environment]::GetEnvironmentVariable\\(''N8N_API_KEY'', ''User''\\)\")",
+      "Bash(powershell -Command \"[System.Environment]::SetEnvironmentVariable\\('N8N_API_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjN2QwMzNkNC1iZWYzLTQ2ZTYtYWQ1NS1kMWE5NTk1NGE5YmYiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiNTczZGNiYjctYzliOC00YzBlLWEwMGUtZDVjOTQxY2E5YjVjIiwiaWF0IjoxNzc1NjIyOTc1fQ.wlgv8nMHr8hiNxQs50lcs41aakHXt3Z-BlByPp5smmc', 'User'\\)\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\jpote\\\\Documents\\\\Obsidian Vault\\\\Projects\\\\ClearPath\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\jpote\\\\Documents\\\\Obsidian Vault\\\\Company\")",
+      "Read(//c/Users/jpote/.claude/**)",
+      "Bash(grep -rn \"console\\\\.log\\\\|console\\\\.warn\\\\|console\\\\.error\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/components /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/lib --include=*.ts --include=*.tsx)",
+      "Bash(grep -v \"^\\\\s*//\")",
+      "Bash(grep -rn console.log /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/components /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/lib --include=*.ts --include=*.tsx)",
+      "Bash(grep -rn \"TODO\\\\|FIXME\\\\|HACK\\\\|XXX\\\\|temp\\\\|hardcoded\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/components --include=*.tsx --include=*.ts -i)",
+      "Bash(grep -rn \"localhost\\\\|127\\\\.0\\\\.0\\\\.1\\\\|http://\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/lib --include=*.ts --include=*.tsx)",
+      "Bash(grep -v \"comment\\\\|//.*localhost\")",
+      "Bash(npm run:*)",
+      "Bash(grep -rn \"white.label\\\\|whiteLab\\\\|analytics\\\\|google.drive\\\\|is_pro\\\\|isPro\\\\|plan.*pro\\\\|plan.*scale\\\\|plan.*starter\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/api --include=*.ts -n)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(grep -rn \"message_type\\\\|insert.*messages\\\\|type.*session\\\\|type.*assignment\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/api --include=*.ts -n)",
+      "Bash(grep -rn \"at.risk\\\\|at_risk\\\\|atRisk\\\\|at-risk\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/coach/clients --include=*.tsx -n)",
+      "Bash(grep -rn \"message_type\\\\|insertCoachThreadMessage\\\\|insert.*message\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/lib/messages --include=*.ts -n)",
+      "Bash(grep -rn \"messageType\\\\|message_type.*assignment\\\\|message_type.*session\\\\|insertCoachThread\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/api/assignments /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/api/sessions --include=*.ts -n)",
+      "Bash(grep -rn \"message_type.*session\\\\b\\\\|messageType.*session\\\\b\\\\|type.*session\\\\b\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/api/sessions --include=*.ts -n)",
+      "Bash(grep -rn \"message_type\\\\|content.*JSON\\\\|JSON.stringify\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/api/sessions --include=*.ts -n)",
+      "Bash(grep -rn \"message_type.*session\\\\|''''session''''\\\\|session\\\\|messageType.*session\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/api /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/lib --include=*.ts -n)",
+      "Bash(grep -rn \"at.risk\\\\|At risk\\\\|atRisk\\\\|engagementLabel\\\\|engagementThumb\" /c/Users/jpote/OneDrive/Documents/ClearPath/COACH-OS/app/coach/clients --include=*.tsx -n)",
+      "mcp__n8n__validate_workflow",
+      "mcp__n8n__create_workflow_from_code"
+    ]
+  }
+}

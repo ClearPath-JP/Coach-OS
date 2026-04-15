@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase-server'
 import { normalizeEmail } from '@/lib/utils'
 import { ClientProfileContent } from './ClientProfileContent'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ClientProfilePage() {
   const supabase = await createClient()
   const {
@@ -18,14 +20,14 @@ export default async function ClientProfilePage() {
 
   if (!client) {
     return (
-      <main className="p-6">
-        <p className="text-[var(--text-tertiary)]">We couldn&apos;t find your client record.</p>
+      <main className="client-page-content min-h-screen px-4 py-6 md:px-6">
+        <p className="text-[14px] text-[var(--text-tertiary)]">We couldn&apos;t find your client record.</p>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen">
+    <main className="client-page-content min-h-screen">
       <ClientProfileContent
         clientId={client.id}
         initialFirstName={client.first_name ?? ''}

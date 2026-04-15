@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { getPostLoginRedirectPath } from '@/lib/post-login-redirect'
 import { createClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Root page: requires login; redirects by role (11-auth §4.3).
  * Not in middleware matcher — protection is here.

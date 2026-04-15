@@ -1,6 +1,8 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
+
+export const dynamic = 'force-dynamic'
 import { getClientWorkspaceBranding } from '@/lib/client-workspace-branding'
 import { normalizeEmail } from '@/lib/utils'
 import { ClientBrandingProvider } from '@/components/client/ClientBrandingContext'

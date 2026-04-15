@@ -5,6 +5,8 @@ import { resolveCoachUserIdForClientRow } from '@/lib/resolve-coach-user-for-cli
 import { normalizeEmail } from '@/lib/utils'
 import { ClientMessagesContent } from './ClientMessagesContent'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Client messages page: single thread with their coach.
  * Resolves client by user email, then coach user_id from workspace.
@@ -30,8 +32,8 @@ export default async function ClientMessagesPage() {
 
   if (!client) {
     return (
-      <main className="min-h-screen p-6">
-        <p className="text-[var(--color-muted)]">
+      <main className="client-page-content min-h-screen px-4 py-6 md:px-6">
+        <p className="text-[14px] text-[var(--text-tertiary)]">
           We couldn&apos;t find your client record. Please contact your coach.
         </p>
       </main>
@@ -46,7 +48,7 @@ export default async function ClientMessagesPage() {
   if (!coachUserId) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-        <p className="max-w-md text-[15px] text-[var(--color-muted)]">
+        <p className="max-w-md text-[15px] text-[var(--text-tertiary)]">
           Contact your coach to get started.
         </p>
       </main>
@@ -67,7 +69,7 @@ export default async function ClientMessagesPage() {
     <main className="flex min-h-0 flex-1 flex-col">
       <Suspense
         fallback={
-          <div className="flex flex-1 items-center justify-center text-[15px] text-[var(--color-muted)]">
+          <div className="flex flex-1 items-center justify-center text-[15px] text-[var(--text-tertiary)]">
             Loading messages…
           </div>
         }

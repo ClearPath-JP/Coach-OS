@@ -47,6 +47,11 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps
             <span className="coach-nav__avatar-fallback">{initials}</span>
           )}
           <span className="coach-nav__brand">{brandName}</span>
+          {coachName && (
+            <span className="hidden text-[11px] text-[var(--text-muted)] lg:inline">
+              {coachName}
+            </span>
+          )}
         </Link>
 
         {/* Nav links — desktop */}

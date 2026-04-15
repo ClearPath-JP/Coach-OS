@@ -135,6 +135,7 @@ export function SettingsPageContent() {
   const [brandTagline, setBrandTagline] = useState('')
   const [clientPortalHeading, setClientPortalHeading] = useState('')
   const [clientWelcomeMessage, setClientWelcomeMessage] = useState('')
+  const [driveFolderId, setDriveFolderId] = useState('')
   const [savingWorkspace, setSavingWorkspace] = useState(false)
   const [cashappUsername, setCashappUsername] = useState('')
   const [venmoUsername, setVenmoUsername] = useState('')
@@ -221,6 +222,13 @@ export function SettingsPageContent() {
         })
         setAutoCheckinEnabled(json.data.workspace.autoCheckinEnabled ?? false)
         setAutoCheckinMessage(json.data.workspace.autoCheckinMessage ?? '')
+        // Load Drive folder ID from separate endpoint
+        fetch('/api/workspaces/import-folder', { credentials: 'include' })
+          .then((r) => r.json())
+          .then((d: { folderId?: string | null }) => {
+            if (mounted) setDriveFolderId(d.folderId ?? '')
+          })
+          .catch(() => {})
       } catch {
         setError('Something went wrong — check your connection and try again')
       } finally {
@@ -941,6 +949,37 @@ export function SettingsPageContent() {
               </div>
 
               <WorkspaceStorageSection />
+
+              <div className="border-t border-[var(--color-border)] pt-6">
+                <h2 className="text-lg font-medium text-[var(--color-text-primary)] mb-4">Google Drive</h2>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Import folder ID</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={driveFolderId}
+                      onChange={(e) => setDriveFolderId(e.target.value)}
+                      placeholder="e.g. 1AbC_xYz..."
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={async () => {
+                        const res = await fetch('/api/workspaces/import-folder', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({ folderId: driveFolderId.trim() || null }),
+                        })
+                        setToast(res.ok ? 'Drive folder saved' : 'Could not save folder')
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+                    Videos uploaded to this Google Drive folder will auto-import into your library. Find the folder ID in the Drive URL after /folders/.
+                  </p>
+                </div>
+              </div>
 
               <div className="border-t border-[var(--color-border)] pt-6">
                 <h2 className="text-lg font-medium text-[var(--color-text-primary)] mb-4">Client branding</h2>

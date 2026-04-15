@@ -112,23 +112,8 @@ export function SignupForm() {
         return
       }
 
-      const completeRes = await fetch('/api/auth/signup-complete', {
-        method: 'POST',
-        credentials: 'include',
-      })
-      const completeJson = await completeRes.json()
-      if (!completeRes.ok) {
-        if (completeRes.status === 429) {
-          setSubmitError(
-            completeJson.error ?? 'Too many signup attempts. Please try again in 15 minutes.'
-          )
-        } else {
-          setSubmitError(completeJson.error ?? 'Something went wrong — please try again.')
-        }
-        setLoading(false)
-        return
-      }
-      router.push('/onboarding')
+      const dest = (typeof signupJson.data?.redirect === 'string' && signupJson.data.redirect) ? signupJson.data.redirect : '/subscribe'
+      router.push(dest)
       router.refresh()
     } catch {
       setSubmitError('Something went wrong — check your connection and try again.')
@@ -137,14 +122,14 @@ export function SignupForm() {
     }
   }
 
-  const linkStyle = { color: '#3B9EE8' } as const
+  const linkStyle = { color: 'var(--accent)' } as const
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="firstName" className="login-premium-label">
-            First name <span className="text-[#D92B3A]">*</span>
+            First name <span className="text-[var(--error)]">*</span>
           </label>
           <input
             id="firstName"
@@ -159,14 +144,14 @@ export function SignupForm() {
             aria-invalid={!!fieldErrors.firstName}
           />
           {fieldErrors.firstName && (
-            <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+            <p className="mt-1 text-[13px] text-[var(--error)]" role="alert">
               {fieldErrors.firstName}
             </p>
           )}
         </div>
         <div>
           <label htmlFor="lastName" className="login-premium-label">
-            Last name <span className="text-[#D92B3A]">*</span>
+            Last name <span className="text-[var(--error)]">*</span>
           </label>
           <input
             id="lastName"
@@ -181,7 +166,7 @@ export function SignupForm() {
             aria-invalid={!!fieldErrors.lastName}
           />
           {fieldErrors.lastName && (
-            <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+            <p className="mt-1 text-[13px] text-[var(--error)]" role="alert">
               {fieldErrors.lastName}
             </p>
           )}
@@ -189,7 +174,7 @@ export function SignupForm() {
       </div>
       <div>
         <label htmlFor="email" className="login-premium-label">
-          Email <span className="text-[#D92B3A]">*</span>
+          Email <span className="text-[var(--error)]">*</span>
         </label>
         <input
           id="email"
@@ -204,14 +189,14 @@ export function SignupForm() {
           aria-invalid={!!fieldErrors.email}
         />
         {fieldErrors.email && (
-          <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+          <p className="mt-1 text-[13px] text-[var(--error)]" role="alert">
             {fieldErrors.email}
           </p>
         )}
       </div>
       <div>
         <label htmlFor="password" className="login-premium-label">
-          Password <span className="text-[#D92B3A]">*</span>
+          Password <span className="text-[var(--error)]">*</span>
         </label>
         <div className="relative">
           <input
@@ -229,7 +214,7 @@ export function SignupForm() {
           />
           <button
             type="button"
-            className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#5B7FA6] transition-colors hover:text-[#0A1929]"
+            className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
             onClick={() => setShowPassword((v) => !v)}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
@@ -237,14 +222,14 @@ export function SignupForm() {
           </button>
         </div>
         {fieldErrors.password && (
-          <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+          <p className="mt-1 text-[13px] text-[var(--error)]" role="alert">
             {fieldErrors.password}
           </p>
         )}
       </div>
       <div>
         <label htmlFor="confirmPassword" className="login-premium-label">
-          Confirm password <span className="text-[#D92B3A]">*</span>
+          Confirm password <span className="text-[var(--error)]">*</span>
         </label>
         <div className="relative">
           <input
@@ -261,7 +246,7 @@ export function SignupForm() {
           />
           <button
             type="button"
-            className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[#5B7FA6] transition-colors hover:text-[#0A1929]"
+            className="absolute right-1.5 top-1/2 flex size-10 min-h-10 min-w-10 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]"
             onClick={() => setShowConfirm((v) => !v)}
             aria-label={showConfirm ? 'Hide password' : 'Show password'}
           >
@@ -269,7 +254,7 @@ export function SignupForm() {
           </button>
         </div>
         {fieldErrors.confirmPassword && (
-          <p className="mt-1 text-[13px] text-[#D92B3A]" role="alert">
+          <p className="mt-1 text-[13px] text-[var(--error)]" role="alert">
             {fieldErrors.confirmPassword}
           </p>
         )}
@@ -280,9 +265,9 @@ export function SignupForm() {
           type="checkbox"
           checked={acceptTerms}
           onChange={(e) => setAcceptTerms(e.target.checked)}
-          className="mt-1 h-4 w-4 shrink-0 rounded border-[1.5px] border-[#D0E3F0] text-[#3B9EE8] focus:ring-2 focus:ring-[#3B9EE8] focus:ring-offset-0"
+          className="mt-1 h-4 w-4 shrink-0 rounded border-[1.5px] border-[var(--border-default)] accent-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-0"
         />
-        <label htmlFor="acceptTerms" className="text-[14px] leading-snug" style={{ color: '#0A1929' }}>
+        <label htmlFor="acceptTerms" className="text-[14px] leading-snug" style={{ color: 'var(--text-primary)' }}>
           I agree to the{' '}
           <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={linkStyle}>
             Terms of Service
@@ -294,7 +279,7 @@ export function SignupForm() {
         </label>
       </div>
       {fieldErrors.acceptTerms && (
-        <p className="text-[13px] text-[#D92B3A]" role="alert">
+        <p className="text-[13px] text-[var(--error)]" role="alert">
           {fieldErrors.acceptTerms}
         </p>
       )}
@@ -309,7 +294,7 @@ export function SignupForm() {
       <button type="submit" className="login-premium-btn" disabled={loading}>
         <span className="login-premium-btn-inner text-white">
           {loading && <Spinner />}
-          {loading ? 'Creating account…' : 'Create account'}
+          {loading ? 'Creating account…' : 'Create my account →'}
         </span>
       </button>
     </form>

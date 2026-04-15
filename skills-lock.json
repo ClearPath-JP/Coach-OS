@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "skills": {
+    "adapt": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "44722c0ec8698cc0b57b7e1813e4e4c18db22a8015b243c03d06c1c7a02606e0"
+    },
+    "animate": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "49ccc3eccb47ab302fc5de3ef9f772dcdee1cab03c548012eb2998255a23171b"
+    },
+    "audit": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "11a982752a0ae87f06de0385c88df8f33b0f0a21dba2d9b4e119f78d1167fa4b"
+    },
+    "baseline-ui": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "computedHash": "e6340729e5db277987e5a8deb7f2e8e282bbd07f84ed6b98bb2dfb2a4b05b55f"
+    },
+    "beforemerge-nextjs-review": {
+      "source": "BeforeMerge/beforemerge-skills",
+      "sourceType": "github",
+      "computedHash": "fb5ea88387ba30a1f6043b7b7188bb460d2b911a909ccc1670d8934d61fffc72"
+    },
+    "beforemerge-nextjs-supabase-standards": {
+      "source": "BeforeMerge/beforemerge-skills",
+      "sourceType": "github",
+      "computedHash": "0c4e175ad725d40effa82f9d690086c6c136ab62f8d1f732508d507d2d1a5c7c"
+    },
+    "beforemerge-react-review": {
+      "source": "BeforeMerge/beforemerge-skills",
+      "sourceType": "github",
+      "computedHash": "dea0cd5f25598220d1b755b1ab2e9385fea310b178feda91cf78a4ec54d239ba"
+    },
+    "bolder": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "a543474e4ded36d5991abb2db6b50021442a23096144ef55622b27113c41c625"
+    },
+    "brand-guidelines": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "cf41642f38f35bcae5bbf59215f0ee629d5f6a54b4811454f6cb93bc9b12b69e"
+    },
+    "canvas-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "21e7c68d336893e4f2aa8d269854fd5e253c89cfc6dd0e74fa487fe7e96abdeb"
+    },
+    "clarify": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "22918eb15984e524bcd1db4f871cff9ab541b38c55979f725d12adf56abd2f36"
+    },
+    "colorize": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "7b14119c07e6c11698329018440b907ed3b99e15605309adfe2c2df0e42d9c82"
+    },
+    "critique": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "659e79835cc453341b5de302d9f91fa1e372d1de840ad0f4faabcc6138f80f4e"
+    },
+    "delight": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "65fd05ea4b4739db288f19b82cfd5ca7db72d3dfacc65b7ef4d58ec55f211d9f"
+    },
+    "design-everyday-things": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "a06d68c81c7bc007e7bcd14ec85c33898466d447706027e1f45e98fe6070a658"
+    },
+    "design-sprint": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "454ad8c94bae3577a654540a1899bb630da57434656097d9ec9e64cc8e896c8a"
+    },
+    "distill": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "15645c6dccfebd541e5a7934fc0741a12c951ee306d61454708ae1f75c99d10e"
+    },
+    "engineering-advanced-skills": {
+      "source": "alirezarezvani/claude-skills",
+      "sourceType": "github",
+      "computedHash": "d7235b219107d7f0d7001167b90fed0981ba64e6c4ce97870d2c58dfe3c86c53"
+    },
+    "engineering-skills": {
+      "source": "alirezarezvani/claude-skills",
+      "sourceType": "github",
+      "computedHash": "ae886d808f34c6fe2f0fd2f180b819b6cee3cde85931f0f5ede046ac0b36f08a"
+    },
+    "fixing-accessibility": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "computedHash": "f8ddcb0a8c7b8728105eab18e17223e41d74fb8649becba58a6deb90c6a5ce8d"
+    },
+    "fixing-metadata": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "computedHash": "10047222b01c2c9b6e904ef90079880d9dbc09de3241df7f311b238dbcb7869a"
+    },
+    "fixing-motion-performance": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "computedHash": "c1aca76fe18e8594f401cf78e5e76be24f182ce63167a398bdd4458f2a07639f"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "high-perf-browser": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "b382a43221e64e6f96158d6a910015bbb0913fb5566a9aa01e73e7141b0949bc"
+    },
+    "hooked-ux": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "2b9f0fa285d110280fe35e1bf97606478fb97273177793bc416a9d709585b78e"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "2e9a16d34daceeb43ba48f64538bd7035ae68c685ffac8a168ab16f290180c51"
+    },
+    "ios-hig-design": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "ea85f8ced9d68a6df5d1beca105be39f99a33ae72a02a1a7d9b6c56532362716"
+    },
+    "layout": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "746432275018adb16be89276afa95cd6f868a38598cf7075294973ce0e757919"
+    },
+    "lean-ux": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "72a810ecfa8f50beb6ecc64197264d42e8ce4df20debb3b4db1f102c2d26ad83"
+    },
+    "microinteractions": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "9706b350cd01e15b5fa7946ea9424fd9202ea3bfac7d12a7580d073a742666de"
+    },
+    "nextjs-seo": {
+      "source": "laguagu/claude-code-nextjs-skills",
+      "sourceType": "github",
+      "computedHash": "2c9ad043735c8e7cfe141186aaacf8ce911ab7c52c7424cee6a3df964ed81938"
+    },
+    "nextjs-shadcn": {
+      "source": "laguagu/claude-code-nextjs-skills",
+      "sourceType": "github",
+      "computedHash": "e8cb79842143937725c4466f5a14c3321fab450074f254890908f9a78b3b74fb"
+    },
+    "optimize": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "0220fcf48f835a80a7cd17b0cf975510e8f83a8fbb814189d20cea7159b454b0"
+    },
+    "overdrive": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "16f80188b3e700f0b7761b08036f69bb463adb42de5cf91576db448c8e85c683"
+    },
+    "polish": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "ca3bd07512cc763c4c41d13bb15e593b2cbc2a80471ad8685b93ed3b4d611c2e"
+    },
+    "quieter": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "c2b06cf395b04471bdd4cb07b71b49e3bce50800acdfa773a824d1c46d0661d3"
+    },
+    "refactoring-ui": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "a4d8ead4a0c44f3ed6c4228db417ae8c72d29d0b29b4435853239a973fafb6f7"
+    },
+    "seo": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "058f8f9d192233ee3056ec999710615f559f9a30ea22e3de2976165b5a598595"
+    },
+    "seo-audit": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "a03eb5c5a943d53b81adf8a131b2594d27c3cfbade77abf31be146fdf9507bf3"
+    },
+    "seo-backlinks": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "d08d32bdcae059f7e2268d305943df24c2061a6d41c7b6c5f69630f0831f41e5"
+    },
+    "seo-competitor-pages": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "2e9f4fef20bbea3d78272dfac79e8d4d4295e1eff1c8dd427eb273482504d8c7"
+    },
+    "seo-content": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "2b11402fd08f06166b80788a555b2ec287ef3f4be9bc91a3e84fe2b63451520f"
+    },
+    "seo-dataforseo": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "e795f8df78336553431cd27ffc1b2bb5a5c13b8165583edee55a3c199379c02f"
+    },
+    "seo-geo": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "a9b5c85ff70d5775b1ef27335d3e5563b8ad6629a52131b09da0ebea7d862baa"
+    },
+    "seo-google": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "6e51713430512b6edfa1cb150c657d4f8043f3ce33b52e2125c11399dad94831"
+    },
+    "seo-hreflang": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "478a5c490b14f99e6c073422518b488397478e96d203e5b1bbe65493b19e2f4e"
+    },
+    "seo-image-gen": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "080a56642214ba4600f44ac7786f3c82f183df0239d6e735eaa2aae72a31c3b6"
+    },
+    "seo-images": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "7d1e5f4663ce33c94f9d83a66d97257b6d76bcbba1ee0dacd1daee8ad1ce1a08"
+    },
+    "seo-local": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "36d6338a3e73533a90a7dd92a9abb4ccfd10aeb3933452b327cbd48529695160"
+    },
+    "seo-maps": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "59c46a50dc7c5b319002fe82137aa160c26b853c2f8a2fa24f5714a25a5aa68f"
+    },
+    "seo-page": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "14bc5f99c2607ca1cadf4b1209cdd7c658fb7072a2a67478c6bd382a9f909758"
+    },
+    "seo-plan": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "e42575ae3c81abc499549b897fe1401034816578ff1dd9d09a5c83b274749c88"
+    },
+    "seo-programmatic": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "143449cfc7c0ab8d4dd7bb6c00b22da8b066d2b4a9cca68debb0afdaaf95b8f9"
+    },
+    "seo-schema": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "5ca902ddd02ba19efe5f42b0b8d0f816b3c706a037bbc94f917a41d2f0e48a19"
+    },
+    "seo-sitemap": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "f8ee3ee3f97118771e47cae9e9fb4fa53343b30d04894604cb2b47b3c1fd43c1"
+    },
+    "seo-technical": {
+      "source": "AgriciDaniel/claude-seo",
+      "sourceType": "github",
+      "computedHash": "425ea75aeb59dd5a7db4e5d3557cee5d9b5a3775ca153c8646dcf8db966b219f"
+    },
+    "shadcn": {
+      "source": "laguagu/claude-code-nextjs-skills",
+      "sourceType": "github",
+      "computedHash": "d0d2a37e597672242ae44cda400435a76170d7470b8f7462cc412c1dde7b1cc4"
+    },
+    "shape": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "45e5bb82c573fb95a86ef86f358d744575f0abe35e57d9e10143cf8d16a1aa2d"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "57f470f512f45bdac598e302bc72fd62bf2b649fc7fad032efe97720149cde4d"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "3bc4f56943a13f4fe355742a4b3b30c56008e6d265ae71f19c592410b5f5a01f"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "abf015aafed757edaf2a329299fc106abebdc53bc7f089e92e1f762ed3d8f117"
+    },
+    "tailwindcss": {
+      "source": "blencorp/claude-code-kit",
+      "sourceType": "github",
+      "computedHash": "b1341efcc0dbeaa4c59ab4396f6a4688ad8bdf4073a35ed9e2b3b451041c8ae5"
+    },
+    "theme-factory": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "0290eabfd6fea9fcfd59c12de15e3f4046593185089956802b6d48ba1d07f428"
+    },
+    "top-design": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "ab2840f92dc511e9eb40969be979bbe83fa78aa518158454a9df4620aa78c9df"
+    },
+    "typeset": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "26f31a4cbe25cbe70a3bc95ce4f229767bf1dce2f59e049fadde13fc56bfc815"
+    },
+    "ux-heuristics": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "ad7fe92cf0e0758e5274b6b17affbb56d17ce1c9c550b8b0b93c09e37da70960"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "575757e3e25761c8c562d6e395d29f0b76c98b1273c0bd72d88e6ab1bc9c7d42"
+    },
+    "vercel-react-view-transitions": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "c8952fc9127fa0564d0cb71dccb4215a5608ac933b5831104f09173a97a46f85"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    },
+    "web-typography": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "be06b421155bd61ddf02e0cc7b0067cec6165672ec29b39fb83d2c19a746126f"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "5a6a18c0137cfbabec058e86fc1c8f6919d846a7b2a34ee978cc8ced866ee2e5"
+    }
+  }
+}

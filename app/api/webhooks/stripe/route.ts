@@ -58,6 +58,16 @@ export async function POST(request: Request) {
           return NextResponse.json({ received: true })
         }
         const workspaceId = session.metadata?.workspace_id as string | undefined
+        const newCoachUserId = session.metadata?.user_id as string | undefined
+
+        // New coach flow — workspace will be created by the activate redirect route
+        // The webhook is a backup; the activate route handles it synchronously
+        if (!workspaceId && !newCoachUserId) return NextResponse.json({ received: true })
+        if (!workspaceId && newCoachUserId) {
+          // Workspace activation is handled synchronously in /api/billing/new-coach-activate
+          // No action needed here
+          return NextResponse.json({ received: true })
+        }
         if (!workspaceId) return NextResponse.json({ received: true })
 
         const sub = await stripe.subscriptions.retrieve(session.subscription as string)

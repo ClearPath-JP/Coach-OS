@@ -102,6 +102,11 @@ export default async function CoachLayout({
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
         </main>
+        <footer className="shrink-0 border-t border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-center">
+          <p className="text-[11px] tracking-wide text-[var(--text-muted)]">
+            Powered by <span className="font-medium text-[var(--text-secondary)]">ClearPath</span>
+          </p>
+        </footer>
       </div>
     </WorkspaceProvider>
   )

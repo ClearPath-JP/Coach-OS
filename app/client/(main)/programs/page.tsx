@@ -3,13 +3,13 @@ import { ClientProgramsContent } from './ClientProgramsContent'
 
 export default function ClientProgramsPage() {
   return (
-    <main className="min-h-screen p-4 md:p-6">
+    <main className="client-page-content min-h-screen px-4 py-6 md:px-6">
       <div className="mb-4">
         <Link
           href="/client/portal"
-          className="text-sm text-[var(--color-muted)] hover:text-[var(--color-accent)]"
+          className="text-[13px] font-medium text-[var(--text-tertiary)] hover:text-[var(--accent)]"
         >
-          ← Home
+          &larr; Home
         </Link>
       </div>
       <ClientProgramsContent />

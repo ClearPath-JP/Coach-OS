@@ -336,7 +336,7 @@ export function PaymentsPageContent() {
     : `${rows.length} loaded`
 
   return (
-    <main className="flex min-h-0 min-h-screen flex-1 flex-col space-y-6">
+    <main className="flex min-h-screen flex-1 flex-col space-y-6">
       <PageHeader title="Payments" countLabel={paymentCountLabel}>
         <Button type="button" className="min-h-[44px]" onClick={() => { setEditing(null); setModalOpen(true) }}>
           Record payment

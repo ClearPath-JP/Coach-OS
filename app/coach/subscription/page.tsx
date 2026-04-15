@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { SubscriptionPageContent } from './SubscriptionPageContent'
 
 export const metadata = { title: 'Subscription' }
+export const dynamic = 'force-dynamic'
 
 export default async function SubscriptionPage() {
   const supabase = await createClient()

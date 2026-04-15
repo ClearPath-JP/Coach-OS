@@ -1,10 +1,9 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AdminNav } from '@/components/layout/AdminNav'
-import { AdminSidebarFooter } from '@/components/layout/AdminSidebarFooter'
-import { AdminWarningBanner } from '@/components/layout/AdminWarningBanner'
 import { isPlatformAdmin } from '@/lib/platform-admin'
 import { createClient } from '@/lib/supabase-server'
+import { AdminShellHeader } from '@/components/admin/AdminShellHeader'
+
+export const dynamic = 'force-dynamic'
 
 export default async function AdminShellLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -17,36 +16,11 @@ export default async function AdminShellLayout({ children }: { children: React.R
   const email = user.email ?? ''
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[var(--cp-navy)] text-white">
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-[var(--cp-slate)] bg-[var(--cp-navy)] px-4">
-        <div className="flex items-center gap-2">
-          <Link href="/admin/overview" className="text-[15px] font-semibold text-white">
-            ClearPath
-          </Link>
-          <span className="rounded-full bg-[#DC2626] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-            Admin
-          </span>
-        </div>
-        <div className="flex min-w-0 items-center gap-4">
-          <Link
-            href="/admin/guide"
-            className="shrink-0 text-[12px] font-medium text-sky-400 hover:text-sky-300"
-          >
-            Guide
-          </Link>
-          <span className="truncate text-[12px] text-slate-400">{email}</span>
-        </div>
-      </header>
-      <div className="flex min-h-0 flex-1">
-        <aside className="flex h-full min-h-0 w-[220px] shrink-0 flex-col border-r border-[var(--cp-slate)] bg-[var(--cp-navy)] py-3">
-          <AdminNav />
-          <AdminSidebarFooter email={email} />
-        </aside>
-        <main className="min-w-0 flex-1 overflow-y-auto bg-[var(--bg-app)] p-8 text-[var(--text-primary)]">
-          <AdminWarningBanner />
-          {children}
-        </main>
-      </div>
+    <div className="flex min-h-screen flex-col bg-[var(--bg-app)]">
+      <AdminShellHeader email={email} />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        {children}
+      </main>
     </div>
   )
 }

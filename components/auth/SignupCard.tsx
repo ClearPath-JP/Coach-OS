@@ -1,34 +1,25 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { AuthPremiumCard } from '@/components/auth/AuthPremiumCard'
-import { AuthPremiumCardHeader } from '@/components/auth/AuthPremiumCardHeader'
 import { SignupForm } from '@/app/(auth)/signup/SignupForm'
 
 export function SignupCard() {
   return (
     <AuthPremiumCard className="login-premium-card--minimal">
-      <AuthPremiumCardHeader />
-      <h1 className="text-[1.375rem] font-semibold leading-tight tracking-[-0.03em] text-[#0A1929]">
-        Create account
+      <h1 className="text-[1.5rem] font-bold leading-tight tracking-[-0.03em] text-[var(--text-primary)]">
+        Start your coaching business
       </h1>
-      <p className="mb-8 mt-1.5 text-[14px] leading-relaxed text-[#5B7FA6]">
-        Free trial — no credit card required.
+      <p className="mb-8 mt-2 text-[14px] leading-relaxed text-[var(--text-secondary)]">
+        Everything you need to run and grow your practice.
       </p>
       <Suspense
-        fallback={<div className="h-64 animate-pulse rounded-[12px] bg-[#E8F1F9]" aria-hidden />}
+        fallback={<div className="h-64 animate-pulse rounded-[var(--radius-lg)] bg-[var(--bg-muted)]" aria-hidden />}
       >
         <SignupForm />
       </Suspense>
-      <div
-        style={{
-          marginTop: '24px',
-          paddingTop: '24px',
-          borderTop: '1px solid #E8F1F9',
-          textAlign: 'center',
-        }}
-      >
-        <span style={{ fontSize: '14px', color: '#5B7FA6' }}>Already have an account?</span>{' '}
-        <Link href="/login" className="font-medium hover:underline" style={{ color: '#3B9EE8', fontSize: '14px' }}>
+      <div className="mt-6 border-t border-[var(--border-default)] pt-6 text-center">
+        <span className="text-[14px] text-[var(--text-secondary)]">Already have an account?</span>{' '}
+        <Link href="/login" className="text-[14px] font-medium text-[var(--accent)] hover:underline">
           Sign in
         </Link>
       </div>

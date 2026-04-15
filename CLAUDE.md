@@ -1,20 +1,23 @@
-# ClearPath — Claude Working Instructions
+# COACH-OS — Claude Working Instructions
 
 ## On every session start
 1. Read Company/company-overview.md from Obsidian vault
 2. Read Company/my-rules.md from Obsidian vault
-3. Read Projects/ClearPath/brain.md from Obsidian vault
-4. Read Projects/ClearPath/active-context.md from Obsidian vault
+3. Read Projects/COACH-OS/brain.md from Obsidian vault
+4. Read Projects/COACH-OS/active-context.md from Obsidian vault
 5. Confirm you have read all four files before doing anything else
 
 ## On every session end
-Write a summary to Projects/ClearPath/session-log.md in Obsidian:
+Write a summary to Projects/COACH-OS/session-log.md in Obsidian:
 - What was built or changed
 - Any decisions made
 - What to do next
 
 ## Project location
-C:\Users\jpote\Documents\ClearPath
+C:\Dev\ClearPath\COACH-OS
+
+## Obsidian vault
+C:\Users\jpote\OneDrive\Documents\ClearPath\Obsidian Vault
 
 ## Coding rules
 - Always use TypeScript, never plain JavaScript
@@ -30,8 +33,8 @@ C:\Users\jpote\Documents\ClearPath
 
 ## Session end ritual
 When I say "session done" or "we are done for today":
-1. Write a summary to Projects/ClearPath/session-log.md
-2. Update Projects/ClearPath/active-context.md 
+1. Write a summary to Projects/COACH-OS/session-log.md
+2. Update Projects/COACH-OS/active-context.md
    with what was completed and what is next
 3. Note any important decisions in Company/decisions.md
 Do this automatically without me having to ask for each file.

@@ -39,6 +39,13 @@ Thumbs.db
 supabase/.branches
 supabase/.temp
 
+# Serena (MCP server local state)
+.serena/
+
+# Build artifacts
+_rebuild/
+_screenshots/
+
 # Misc
 *.tsbuildinfo
 
@@ -46,3 +53,5 @@ supabase/.temp
 .test-context.json
 __tests__/.test-context.json
 next-env.d.ts
+
+.vercel
