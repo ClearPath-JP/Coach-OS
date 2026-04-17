@@ -70,7 +70,7 @@ async function checkWithUpstash(
           error
         )
       }
-      return checkInMemory(key, options)
+      return { success: true }
     }
     return { success: true }
   }
@@ -94,14 +94,11 @@ export async function checkRateLimitAsync(
     return checkInMemory(key, options)
   }
   if (!REDIS_URL?.trim() || !REDIS_TOKEN?.trim()) {
-    if (process.env.NODE_ENV === 'production') {
-      if (!warnedMissingRedis) {
-        warnedMissingRedis = true
-        console.error(
-          '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — using in-memory rate limiting. Add Upstash Redis in Vercel for distributed limits.'
-        )
-      }
-      return checkInMemory(key, options)
+    if (process.env.NODE_ENV === 'production' && !warnedMissingRedis) {
+      warnedMissingRedis = true
+      console.error(
+        '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — rate limiting disabled. Add Upstash Redis in Vercel.'
+      )
     }
     return { success: true }
   }
