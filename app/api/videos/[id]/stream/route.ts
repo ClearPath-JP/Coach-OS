@@ -66,7 +66,9 @@ export async function GET(request: Request, context: RouteContext) {
 
     const range = request.headers.get('range')
 
-    if (driveId) {
+    // If the video has already been converted and stored in Supabase, serve from there
+    // even if drive_file_id is set (avoids needing per-workspace Google Drive OAuth).
+    if (driveId && !playbackUrl) {
       const accessToken = await getValidAccessToken(video.workspace_id)
       if (!accessToken) {
         return NextResponse.json(

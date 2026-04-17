@@ -335,19 +335,19 @@ export function VideosPageContent() {
           title={playerVideo.title}
           className="w-full max-w-none md:w-[min(96vw,1400px)]"
         >
-          {playerVideo.drive_file_id?.trim() ? (
+          {playerVideo.playback_url?.trim() ? (
+            <video
+              src={playerVideo.playback_url}
+              controls
+              className="w-full max-h-[75vh] rounded-lg bg-black object-contain"
+              playsInline
+            />
+          ) : (
             <VideoPlayer
               videoId={playerVideo.id}
               title={playerVideo.title}
               thumbnailUrl={playerVideo.drive_thumbnail_url ?? playerVideo.thumbnail_url}
               className="max-h-[75vh]"
-            />
-          ) : (
-            <video
-              src={playerVideo.playback_url ?? undefined}
-              controls
-              className="w-full max-h-[75vh] rounded-lg bg-black object-contain"
-              playsInline
             />
           )}
           <div className="mt-3 flex gap-4 text-sm text-[var(--color-muted)]">
