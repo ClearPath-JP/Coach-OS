@@ -136,6 +136,7 @@ export function SettingsPageContent() {
   const [clientPortalHeading, setClientPortalHeading] = useState('')
   const [clientWelcomeMessage, setClientWelcomeMessage] = useState('')
   const [driveFolderId, setDriveFolderId] = useState('')
+  const [savingDrive, setSavingDrive] = useState(false)
   const [savingWorkspace, setSavingWorkspace] = useState(false)
   const [cashappUsername, setCashappUsername] = useState('')
   const [venmoUsername, setVenmoUsername] = useState('')
@@ -962,14 +963,23 @@ export function SettingsPageContent() {
                       className="flex-1"
                     />
                     <Button
+                      disabled={savingDrive}
+                      loading={savingDrive}
                       onClick={async () => {
-                        const res = await fetch('/api/workspaces/import-folder', {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          credentials: 'include',
-                          body: JSON.stringify({ folderId: driveFolderId.trim() || null }),
-                        })
-                        setToast(res.ok ? 'Drive folder saved' : 'Could not save folder')
+                        setSavingDrive(true)
+                        try {
+                          const res = await fetch('/api/workspaces/import-folder', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ folderId: driveFolderId.trim() || null }),
+                          })
+                          setToast(res.ok ? 'Drive folder saved' : 'Could not save folder')
+                        } catch {
+                          setToast('Could not save folder — check your connection')
+                        } finally {
+                          setSavingDrive(false)
+                        }
                       }}
                     >
                       Save
