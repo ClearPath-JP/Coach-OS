@@ -89,7 +89,7 @@ export async function proxy(request: NextRequest) {
       } else {
         key = `auth-page:${ip}`
         windowMs = 60_000
-        max = 60
+        max = 300
       }
       const { success, retryAfter } = await checkRateLimitAsync(key, { windowMs, max })
       if (!success) {
@@ -148,8 +148,10 @@ export async function proxy(request: NextRequest) {
             if (!workspace?.completed_onboarding) {
               return NextResponse.redirect(new URL('/onboarding', request.url))
             }
+            return NextResponse.redirect(new URL('/coach/dashboard', request.url))
           }
-          return NextResponse.redirect(new URL('/coach/dashboard', request.url))
+          // Coach without workspace — send to subscribe to pick a plan
+          return NextResponse.redirect(new URL('/subscribe', request.url))
         }
       }
 
@@ -161,6 +163,28 @@ export async function proxy(request: NextRequest) {
           return NextResponse.redirect(new URL('/coach/dashboard', request.url))
         }
       }
+    }
+    return response
+  }
+
+  // /subscribe — authenticated users without a workspace pick a plan here
+  if (pathname === '/subscribe') {
+    const response = nextWithPathname(request)
+    let supabase
+    try {
+      supabase = createServerClientForMiddleware(request, response)
+    } catch (err) {
+      if (isSupabaseNotConfigured(err)) return nextWithPathname(request)
+      throw err
+    }
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (!user || authError) {
+      return NextResponse.redirect(new URL('/login?next=/subscribe', request.url))
+    }
+    // If already has a workspace, go to dashboard
+    const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
+    if (workspaceId) {
+      return NextResponse.redirect(new URL('/coach/dashboard', request.url))
     }
     return response
   }
@@ -285,6 +309,14 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/client/portal', request.url))
       }
     }
+    // Coaches with a temporary password must set a new password first
+    if (pathname.startsWith('/coach') && profile?.role === 'coach') {
+      const mustChange = user.user_metadata?.must_change_password === true
+      if (mustChange && pathname !== '/auth/set-password') {
+        return NextResponse.redirect(new URL('/auth/set-password', request.url))
+      }
+    }
+
     // Coach with incomplete onboarding → /onboarding
     if (profile?.role === 'coach') {
       const coachWorkspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
@@ -395,5 +427,7 @@ export const config = {
     '/client-login',
     '/privacy',
     '/terms',
+    '/subscribe',
+    '/auth/set-password',
   ],
 }
