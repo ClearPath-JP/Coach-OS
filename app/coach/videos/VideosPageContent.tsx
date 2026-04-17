@@ -1103,7 +1103,7 @@ function VideoCard({
             sizes="(max-width: 768px) 50vw, 33vw"
             unoptimized={!!video.drive_thumbnail_url}
           />
-        ) : isReady && video.playback_url?.trim() && !isDrive ? (
+        ) : isReady && video.playback_url?.trim() ? (
           <video
             ref={previewRef}
             src={video.playback_url}
