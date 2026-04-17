@@ -86,6 +86,10 @@ export async function POST(request: Request) {
     )
     if (profileError) {
       console.error('[admin.coach.invite] profile upsert failed:', profileError.message)
+      return NextResponse.json(
+        { error: 'Could not create coach profile. Please try again.' },
+        { status: 500 }
+      )
     }
 
     // Link coach to workspace (upsert so re-invites are safe)
@@ -99,6 +103,10 @@ export async function POST(request: Request) {
     )
     if (coachLinkError) {
       console.error('[admin.coach.invite] coach link failed:', coachLinkError.message)
+      return NextResponse.json(
+        { error: 'Could not link coach to workspace. Please try again.' },
+        { status: 500 }
+      )
     }
 
     await logAdminAudit({

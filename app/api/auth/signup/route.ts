@@ -128,7 +128,7 @@ export async function POST(request: Request) {
       console.error('[signup] No session after signup. Email confirmation may be required. SUPABASE_SERVICE_ROLE_KEY set:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
       return NextResponse.json(
         { error: 'Account created — please check your email to confirm, then sign in.' },
-        { status: 401 }
+        { status: 200 }
       )
     }
 

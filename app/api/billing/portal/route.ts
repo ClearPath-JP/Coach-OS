@@ -61,7 +61,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin') ?? 'https://app.clearpath.com'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin')
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: 'Billing is not configured — contact support (missing app URL)' },
+        { status: 500 }
+      )
+    }
     const session = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
       return_url: `${baseUrl}/coach/subscription`,

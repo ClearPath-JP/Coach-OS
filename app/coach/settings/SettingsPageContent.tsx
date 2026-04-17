@@ -599,7 +599,7 @@ export function SettingsPageContent() {
         return
       }
       await supabase.auth.signOut()
-      window.location.href = 'https://clearpath.com?deleted=true'
+      window.location.href = `${window.location.origin}/login?deleted=true`
     } catch {
       setToast('Something went wrong — check your connection and try again')
     } finally {
