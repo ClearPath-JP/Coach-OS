@@ -66,10 +66,11 @@ async function checkWithUpstash(
       if (!warnedRedisCallFailed) {
         warnedRedisCallFailed = true
         console.error(
-          '[ClearPath] Upstash rate limit call failed — failing open until Redis works. Check URL, token, and Upstash dashboard.',
+          '[ClearPath] Upstash rate limit call failed — failing CLOSED. Check URL, token, and Upstash dashboard.',
           error
         )
       }
+      return { success: false, retryAfter: 60 }
     }
     return { success: true }
   }
@@ -93,11 +94,14 @@ export async function checkRateLimitAsync(
     return checkInMemory(key, options)
   }
   if (!REDIS_URL?.trim() || !REDIS_TOKEN?.trim()) {
-    if (process.env.NODE_ENV === 'production' && !warnedMissingRedis) {
-      warnedMissingRedis = true
-      console.error(
-        '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — rate limiting is disabled. Add Upstash Redis in Vercel (see .env.example) to enforce limits and avoid abuse.'
-      )
+    if (process.env.NODE_ENV === 'production') {
+      if (!warnedMissingRedis) {
+        warnedMissingRedis = true
+        console.error(
+          '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — failing CLOSED. Add Upstash Redis in Vercel (see .env.example).'
+        )
+      }
+      return { success: false, retryAfter: 60 }
     }
     return { success: true }
   }

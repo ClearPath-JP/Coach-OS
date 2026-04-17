@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { requireCoach } from '@/lib/api-helpers'
 import { resolveWorkspaceForDriveFolder } from '@/lib/drive-import/resolve-workspace-folder'
+import { createDriveToMp4Job } from '@/lib/drive-import/cloudconvert'
 import { checkStorageLimit } from '@/lib/plan-limits'
 import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -168,13 +169,13 @@ export async function POST(request: Request) {
         drive_web_view_link: webView,
         file_size_bytes: fileSizeBytes,
         duration_seconds: duration,
-        processing_status: 'ready',
+        processing_status: 'processing',
         processing_error: null,
         url: null,
         playback_url: null,
         thumbnail_url: thumb,
         storage_provider: null,
-        processed_at: new Date().toISOString(),
+        processed_at: null,
       })
       .select(videoRowSelect)
       .single()
@@ -183,6 +184,33 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Could not save video' },
         { status: 500 }
+      )
+    }
+
+    // Kick off CloudConvert job: Drive → MP4 → Supabase Storage (finalized by webhook)
+    try {
+      const origin =
+        process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+        new URL(request.url).origin
+      // Account-wide HMAC webhook validates via CloudConvert-Signature header — no secret in URL
+      const webhookUrl = `${origin}/api/webhooks/cloudconvert`
+
+      await createDriveToMp4Job({
+        driveFileId: parsed.data.driveFileId,
+        filename: parsed.data.driveFileName,
+        // No googleAccessToken — folder must be shared "Anyone with link can view"
+        webhookUrl,
+        tag: video.id,
+      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'CloudConvert job failed to start'
+      await service
+        .from('videos')
+        .update({ processing_status: 'failed', processing_error: msg })
+        .eq('id', video.id)
+      return NextResponse.json(
+        { data: { video, alreadyImported: false }, warning: msg },
+        { status: 202 }
       )
     }
 

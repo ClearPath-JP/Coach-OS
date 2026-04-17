@@ -62,7 +62,7 @@ export async function PATCH(request: Request, context: RouteContext) {
           payment_method: parsed.data.paymentMethod,
           payment_reference: parsed.data.paymentReference ?? null,
           payment_method_note: parsed.data.paymentMethodNote ?? null,
-          amount_cents: parsed.data.amountCents ?? invoice.amount_cents,
+          amount_cents: invoice.amount_cents,
           updated_at: new Date().toISOString(),
         })
         .eq('id', invoiceId)
@@ -87,7 +87,7 @@ export async function PATCH(request: Request, context: RouteContext) {
           client_id: invoice.client_id,
           scheduled_time: scheduledTime,
           status: 'pending',
-          amount_cents: parsed.data.amountCents ?? invoice.amount_cents,
+          amount_cents: invoice.amount_cents,
         })
         .select('id')
         .single()
@@ -107,7 +107,7 @@ export async function PATCH(request: Request, context: RouteContext) {
           payment_method: parsed.data.paymentMethod,
           payment_reference: parsed.data.paymentReference ?? null,
           payment_method_note: parsed.data.paymentMethodNote ?? null,
-          amount_cents: parsed.data.amountCents ?? invoice.amount_cents,
+          amount_cents: invoice.amount_cents,
           session_id: newSession.id,
           updated_at: new Date().toISOString(),
         })
@@ -137,7 +137,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         .maybeSingle()
 
       if (!existingPayment) {
-        const amountFinal = parsed.data.amountCents ?? invForPayment.amount_cents
+        const amountFinal = invForPayment.amount_cents
         const { error: payErr } = await supabase.from('payments').insert({
           workspace_id: workspaceId,
           coach_id: user.id,

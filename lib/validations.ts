@@ -225,7 +225,7 @@ export const markInvoicePaidSchema = z.object({
   paymentMethod: paymentMethodEnum,
   paymentReference: z.string().max(500).optional().nullable(),
   paymentMethodNote: z.string().max(500).optional().nullable(),
-  amountCents: z.number().int().min(0).optional(),
+  // amountCents intentionally omitted — always use invoice.amount_cents to prevent client-side override
 })
 export type MarkInvoicePaidInput = z.infer<typeof markInvoicePaidSchema>
 

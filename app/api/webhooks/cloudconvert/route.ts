@@ -68,9 +68,7 @@ export async function POST(request: Request) {
   if (!useHmac) {
     const n8nSecret = process.env.N8N_CALLBACK_SECRET?.trim()
     const headerSecret = (request.headers.get('x-clearpath-secret') ?? request.headers.get('X-Clearpath-Secret') ?? '').trim()
-    // CloudConvert per-job webhook_url can't set custom headers — fall back to ?secret= query param
-    const querySecret = new URL(request.url).searchParams.get('secret')?.trim() ?? ''
-    const providedSecret = headerSecret || querySecret
+    const providedSecret = headerSecret
     if (!n8nSecret || providedSecret !== n8nSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
