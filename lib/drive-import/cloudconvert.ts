@@ -1,17 +1,26 @@
 const CC_API = 'https://api.cloudconvert.com/v2'
 
-export function buildDriveMediaUrl(fileId: string): string {
+export function buildDriveMediaUrl(fileId: string, options?: { publicAccess?: boolean }): string {
+  if (options?.publicAccess) {
+    // Folder must be shared "Anyone with the link".
+    // Use the Drive API endpoint — the /uc?export=download format gets blocked by
+    // Google's virus-scan interstitial on larger files, which breaks CloudConvert.
+    return `https://drive.usercontent.google.com/download?id=${encodeURIComponent(fileId)}&export=download&confirm=t`
+  }
   return `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`
 }
 
 /**
- * Start async convert job: Drive file (via authed URL) → MP4 → temporary export URL.
+ * Start async convert job: Drive file → MP4 → temporary export URL.
  * CloudConvert downloads directly from Google; ClearPath/n8n never hold the binary.
+ *
+ * If `googleAccessToken` is provided, uses authenticated Drive API.
+ * If omitted, uses the public download URL (folder must be "Anyone with link can view").
  */
 export async function createDriveToMp4Job(params: {
   driveFileId: string
   filename: string
-  googleAccessToken: string
+  googleAccessToken?: string
   webhookUrl: string
   tag: string
 }): Promise<{ jobId: string }> {
@@ -21,17 +30,23 @@ export async function createDriveToMp4Job(params: {
   const safeName =
     params.filename.replace(/[^\w.\-()+ ]/g, '_').slice(0, 200) || 'video.bin'
 
+  const useAuth = Boolean(params.googleAccessToken)
+
   const body = {
     tag: params.tag,
     webhook_url: params.webhookUrl,
     tasks: {
       import_from_drive: {
         operation: 'import/url',
-        url: buildDriveMediaUrl(params.driveFileId),
+        url: buildDriveMediaUrl(params.driveFileId, { publicAccess: !useAuth }),
         filename: safeName,
-        headers: {
-          Authorization: `Bearer ${params.googleAccessToken}`,
-        },
+        ...(useAuth
+          ? {
+              headers: {
+                Authorization: `Bearer ${params.googleAccessToken}`,
+              },
+            }
+          : {}),
       },
       convert_mp4: {
         operation: 'convert',

@@ -19,6 +19,7 @@ const bodySchema = z.object({
   driveMimeType: z.string().min(1).optional(),
   driveThumbnailUrl: z.string().optional().nullable(),
   driveWebViewLink: z.string().optional().nullable(),
+  googleAccessToken: z.string().optional().nullable(),
   fileSizeBytes: z.coerce.number().int().nonnegative().optional(),
   durationSeconds: z.coerce.number().int().nonnegative().optional().nullable(),
   title: z.string().optional().nullable(),
@@ -198,7 +199,7 @@ export async function POST(request: Request) {
       await createDriveToMp4Job({
         driveFileId: parsed.data.driveFileId,
         filename: parsed.data.driveFileName,
-        // No googleAccessToken — folder must be shared "Anyone with link can view"
+        ...(parsed.data.googleAccessToken?.trim() ? { googleAccessToken: parsed.data.googleAccessToken.trim() } : {}),
         webhookUrl,
         tag: video.id,
       })
