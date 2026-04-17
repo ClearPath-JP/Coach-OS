@@ -15,14 +15,16 @@ export const stripe = secret ? new Stripe(secret) : null
 export const STRIPE_WEBHOOK_SECRET = readStripeWebhookSecret()
 
 /** Recurring subscription price IDs (monthly) — set in Stripe Dashboard */
-export const STRIPE_PRICES: Record<'starter' | 'pro' | 'scale', string | undefined> = {
+export const STRIPE_PRICES: Record<'founding' | 'starter' | 'pro' | 'scale', string | undefined> = {
+  founding: process.env.STRIPE_PRICE_FOUNDING_ID,
   starter: process.env.STRIPE_PRICE_STARTER_ID,
   pro: process.env.STRIPE_PRICE_PRO_ID,
   scale: process.env.STRIPE_PRICE_SCALE_ID,
 }
 
 /** One-time setup fee price IDs (optional — omit env to charge subscription only) */
-export const STRIPE_SETUP_FEE_PRICES: Record<'starter' | 'pro' | 'scale', string | undefined> = {
+export const STRIPE_SETUP_FEE_PRICES: Record<'founding' | 'starter' | 'pro' | 'scale', string | undefined> = {
+  founding: undefined,
   starter: process.env.STRIPE_SETUP_FEE_STARTER_ID,
   pro: process.env.STRIPE_SETUP_FEE_PRO_ID,
   scale: process.env.STRIPE_SETUP_FEE_SCALE_ID,

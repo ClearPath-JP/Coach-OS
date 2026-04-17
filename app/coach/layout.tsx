@@ -21,11 +21,17 @@ export default async function CoachLayout({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [profileRes, workspaceId, headerList] = await Promise.all([
+  const [profileRes, workspaceId, headerList, unreadRes] = await Promise.all([
     supabase.from('profiles').select('role, full_name, logo_url').eq('id', user.id).maybeSingle(),
     resolveCoachWorkspaceIdForSession(supabase, user.id),
     headers(),
+    supabase
+      .from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', user.id)
+      .is('read_at', null),
   ])
+  const unreadMessageCount = unreadRes.count ?? 0
   const profile = profileRes.data
   const pathname = headerList.get('x-pathname') ?? ''
 
@@ -115,6 +121,7 @@ export default async function CoachLayout({
           brandName={brandName}
           coachName={profile?.full_name ?? null}
           coachAvatarUrl={profile?.logo_url ?? initialWorkspaceSettings.logoUrl ?? null}
+          unreadMessageCount={unreadMessageCount}
         />
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>

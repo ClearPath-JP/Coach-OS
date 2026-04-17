@@ -10,9 +10,9 @@ import type Stripe from 'stripe'
  * Always return 200 so Stripe does not retry (log errors internally).
  */
 
-function priceIdToPlan(priceId: string): 'starter' | 'pro' | 'scale' | null {
+function priceIdToPlan(priceId: string): 'founding' | 'starter' | 'pro' | 'scale' | null {
   for (const [plan, id] of Object.entries(STRIPE_PRICES)) {
-    if (id === priceId) return plan as 'starter' | 'pro' | 'scale'
+    if (id === priceId) return plan as 'founding' | 'starter' | 'pro' | 'scale'
   }
   return null
 }

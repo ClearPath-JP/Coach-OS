@@ -189,7 +189,7 @@ export type CoachCalendarSessionCreateInput = z.infer<typeof coachCalendarSessio
 
 /** Stripe checkout plan */
 export const billingCheckoutSchema = z.object({
-  plan: z.enum(['starter', 'pro', 'scale']),
+  plan: z.enum(['founding', 'starter', 'pro', 'scale']),
 })
 export type BillingCheckoutInput = z.infer<typeof billingCheckoutSchema>
 

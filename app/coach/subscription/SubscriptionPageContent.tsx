@@ -3,13 +3,30 @@
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
-import { Check, Sparkles, Users, HardDrive, Zap } from 'lucide-react'
+import {
+  BarChart3,
+  BookOpen,
+  CalendarDays,
+  Check,
+  CreditCard,
+  FileText,
+  HardDrive,
+  MessageSquare,
+  Palette,
+  Shield,
+  Sparkles,
+  Star,
+  Target,
+  Users,
+  Video,
+  Zap,
+} from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 
-type Plan = 'free' | 'starter' | 'pro' | 'scale'
+type Plan = 'free' | 'founding' | 'starter' | 'pro' | 'scale'
 type Status = 'trialing' | 'active' | 'past_due' | 'cancelled' | 'paused'
 
 export interface SubscriptionPageContentProps {
@@ -24,7 +41,8 @@ export interface SubscriptionPageContentProps {
 }
 
 const PLAN_LABELS: Record<Plan, string> = {
-  free: 'Free',
+  free: 'Free Trial',
+  founding: 'Founding Member',
   starter: 'Starter',
   pro: 'Pro',
   scale: 'Scale',
@@ -38,74 +56,35 @@ const STATUS_LABELS: Record<Status, string> = {
   paused: 'Paused',
 }
 
-const PLAN_MAX_CLIENTS: Record<Plan, number | null> = {
-  free: 3,
-  starter: 15,
-  pro: null,
-  scale: null,
-}
+const BENEFITS = [
+  { icon: Users, title: 'Unlimited Clients', description: 'Add as many clients as you need, no caps' },
+  { icon: Video, title: 'Video Library (50 GB)', description: 'Import training videos from Google Drive' },
+  { icon: CalendarDays, title: 'Schedule & Calendar', description: 'Book sessions, set availability, iCal sync' },
+  { icon: MessageSquare, title: 'Messaging', description: 'Real-time chat + broadcast to all clients' },
+  { icon: CreditCard, title: 'Payments & Invoicing', description: 'Track payments, send invoices, manage packages' },
+  { icon: BookOpen, title: 'Programs', description: 'Create training programs with video modules' },
+  { icon: BarChart3, title: 'Analytics', description: 'Revenue trends, client engagement, session stats' },
+  { icon: Target, title: 'Goal Tracking', description: 'Set and track client goals + daily check-ins' },
+  { icon: Palette, title: 'White-Label Branding', description: 'Custom colors, logo, branded client portal' },
+  { icon: Star, title: 'Testimonials', description: 'Collect and display client testimonials' },
+  { icon: FileText, title: 'Assignments', description: 'Send homework with file uploads' },
+  { icon: Shield, title: 'Priority Support', description: 'Direct support from the ClearPath team' },
+] as const
 
-const PLAN_STORAGE_GB: Record<Plan, number> = {
-  free: 1,
-  starter: 10,
-  pro: 50,
-  scale: 200,
-}
-
-const PRICING_TIERS = [
-  {
-    plan: 'starter' as const,
-    price: '$69',
-    period: '/mo',
-    popular: false,
-    color: 'var(--text-primary)',
-    features: [
-      'Up to 15 clients',
-      '10 GB video storage',
-      'Client portal access',
-      'Programs & assignments',
-      'Invoicing & packages',
-      'Messaging (real-time)',
-      'Schedule & calendar',
-      'Goal tracking',
-      'Daily check-ins',
-      'Email support',
-    ],
-  },
-  {
-    plan: 'pro' as const,
-    price: '$129',
-    period: '/mo',
-    popular: true,
-    color: 'var(--cp-accent)',
-    features: [
-      'Unlimited clients',
-      '50 GB video storage',
-      'Everything in Starter',
-      'Analytics dashboard',
-      'White-label branding',
-      'Google Drive integration',
-      'Testimonial collection',
-      'Broadcast messaging',
-      'Coach iCal feed',
-      'Priority support',
-    ],
-  },
-  {
-    plan: 'scale' as const,
-    price: '$199',
-    period: '/mo',
-    popular: false,
-    color: 'var(--text-primary)',
-    features: [
-      'Unlimited clients',
-      '200 GB video storage',
-      'Everything in Pro',
-      'Stripe Connect payouts',
-      'Dedicated account support',
-      'API access (coming soon)',
-    ],
-  },
+const FOUNDING_FEATURES = [
+  'Unlimited clients',
+  '50 GB video storage',
+  'Client portal access',
+  'Programs & assignments',
+  'Invoicing & packages',
+  'Real-time messaging + broadcast',
+  'Schedule & calendar with iCal',
+  'Analytics dashboard',
+  'Google Drive video import',
+  'White-label branding',
+  'Goal tracking & check-ins',
+  'Testimonial collection',
+  'Priority support',
 ]
 
 export function SubscriptionPageContent({
@@ -117,24 +96,20 @@ export function SubscriptionPageContent({
   const success = searchParams.get('success') === 'true'
   const cancelled = searchParams.get('cancelled') === 'true'
 
-  const [loadingPlan, setLoadingPlan] = useState<Plan | null>(null)
+  const [loadingPlan, setLoadingPlan] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
   const currentPlan = subscription?.plan ?? 'free'
-  const maxClients = PLAN_MAX_CLIENTS[currentPlan]
-  const storageGb = PLAN_STORAGE_GB[currentPlan]
-  const clientPercent = maxClients ? Math.min(100, (clientCount / maxClients) * 100) : 0
+  const hasActiveSub = subscription && ['active', 'trialing'].includes(subscription.status)
+  const storageGb = currentPlan === 'scale' ? 200 : currentPlan === 'starter' ? 10 : 50
 
-  const planOrder: Plan[] = ['starter', 'pro', 'scale']
-  const currentIndex = planOrder.indexOf(currentPlan)
-
-  const handleCheckout = async (plan: 'starter' | 'pro' | 'scale') => {
-    setLoadingPlan(plan)
+  const handleCheckout = async () => {
+    setLoadingPlan(true)
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan: 'founding' }),
       })
       const json = await res.json()
       if (res.ok && json.data?.url) {
@@ -145,7 +120,7 @@ export function SubscriptionPageContent({
     } catch {
       alert('Something went wrong — try again')
     } finally {
-      setLoadingPlan(null)
+      setLoadingPlan(false)
     }
   }
 
@@ -178,10 +153,7 @@ export function SubscriptionPageContent({
 
       {success && (
         <div className="rounded-xl border border-[var(--color-success)] bg-[var(--color-success-light)] px-4 py-3 text-[15px] text-[var(--color-success)]">
-          Your subscription is active.{' '}
-          {subscription && subscription.plan !== 'free'
-            ? `Welcome to ClearPath ${PLAN_LABELS[subscription.plan]}!`
-            : 'Welcome to ClearPath!'}
+          Your subscription is active. Welcome to ClearPath!
         </div>
       )}
       {cancelled && (
@@ -198,7 +170,7 @@ export function SubscriptionPageContent({
             <div className="flex flex-wrap items-center gap-2">
               <Sparkles className="size-5 text-[var(--cp-accent)]" strokeWidth={2} aria-hidden />
               <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">
-                {PLAN_LABELS[currentPlan]} Plan
+                {PLAN_LABELS[currentPlan]}
               </h2>
               {subscription && (
                 <Badge variant={statusBadgeVariant(subscription.status)}>
@@ -224,7 +196,7 @@ export function SubscriptionPageContent({
           </div>
           {hasStripeCustomer && (
             <Button variant="secondary" onClick={handlePortal} disabled={portalLoading}>
-              {portalLoading ? 'Opening…' : 'Manage billing'}
+              {portalLoading ? 'Opening...' : 'Manage billing'}
             </Button>
           )}
         </div>
@@ -238,18 +210,8 @@ export function SubscriptionPageContent({
             </div>
             <p className="mt-1 text-[22px] font-semibold text-[var(--text-primary)]">
               {clientCount}
-              <span className="text-[15px] font-normal text-[var(--text-secondary)]">
-                {' '}/ {maxClients ?? '∞'}
-              </span>
+              <span className="text-[15px] font-normal text-[var(--text-secondary)]"> / unlimited</span>
             </p>
-            {maxClients && (
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                <div
-                  className="h-full rounded-full bg-[var(--cp-accent)] transition-all"
-                  style={{ width: `${clientPercent}%` }}
-                />
-              </div>
-            )}
           </div>
           <div className="rounded-xl bg-[var(--bg-subtle)] p-4">
             <div className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
@@ -260,110 +222,87 @@ export function SubscriptionPageContent({
               {storageGb} GB
               <span className="text-[15px] font-normal text-[var(--text-secondary)]"> included</span>
             </p>
-            <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">
-              Plus {currentPlan === 'free' ? '0.5' : currentPlan === 'starter' ? '5' : currentPlan === 'pro' ? '20' : '100'} GB for assignment files
-            </p>
           </div>
         </div>
       </Card>
 
-      {/* ── 3 plan cards ── */}
+      {/* ── Founding Member offer (show when not subscribed) ── */}
+      {!hasActiveSub && (
+        <Card
+          variant="raised"
+          padding="lg"
+          className="relative overflow-hidden border-2 border-[var(--cp-accent)]/60"
+        >
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span className="rounded-full bg-[var(--cp-accent)] px-4 py-1 text-[11px] font-semibold text-white shadow">
+              Founding Member
+            </span>
+          </div>
+
+          <div className="mt-3 text-center">
+            <div className="flex items-end justify-center gap-1">
+              <span className="text-[40px] font-bold leading-none text-[var(--text-primary)]">$99</span>
+              <span className="mb-1.5 text-[16px] text-[var(--text-secondary)]">/month</span>
+            </div>
+            <p className="mt-2 text-[14px] text-[var(--cp-accent)]">
+              Locked-in rate for life. No setup fee.
+            </p>
+            <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+              Only 10 founding spots available.
+            </p>
+          </div>
+
+          <ul className="mx-auto mt-6 max-w-md space-y-2">
+            {FOUNDING_FEATURES.map((f) => (
+              <li key={f} className="flex items-start gap-2 text-[14px] text-[var(--text-secondary)]">
+                <Check className="mt-0.5 size-4 shrink-0 text-[var(--cp-accent)]" strokeWidth={2.5} aria-hidden />
+                {f}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 text-center">
+            <Button
+              variant="primary"
+              onClick={handleCheckout}
+              disabled={loadingPlan}
+              className="min-w-[200px]"
+            >
+              {loadingPlan ? (
+                <span className="flex items-center gap-2">
+                  <Zap className="size-4 animate-pulse" aria-hidden />
+                  Redirecting...
+                </span>
+              ) : (
+                'Get started — $99/month'
+              )}
+            </Button>
+          </div>
+
+          <p className="mt-3 text-center text-[12px] text-[var(--text-tertiary)]">
+            Cancel anytime. Monthly price recurs each billing period.
+          </p>
+        </Card>
+      )}
+
+      {/* ── What's Included benefits grid ── */}
       <div>
         <p className="mb-3 text-[13px] font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
-          Available Plans
+          What&apos;s Included
         </p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {PRICING_TIERS.map(({ plan, price, period, popular, features }) => {
-            const isCurrent = currentPlan === plan
-            const planIndex = planOrder.indexOf(plan)
-            const isUpgrade = planIndex > currentIndex
-            const isDowngrade = planIndex < currentIndex && currentPlan !== 'free'
-            const buttonLabel = isCurrent
-              ? 'Current plan'
-              : isUpgrade
-                ? 'Upgrade'
-                : isDowngrade
-                  ? 'Downgrade'
-                  : 'Get started'
-
-            return (
-              <Card
-                key={plan}
-                variant="raised"
-                padding="lg"
-                className={[
-                  'relative flex flex-col transition-shadow',
-                  isCurrent
-                    ? 'border-2 border-[var(--cp-accent)] shadow-md'
-                    : popular
-                      ? 'border-2 border-[var(--cp-accent)]/40'
-                      : 'border border-[var(--border-default)]',
-                ].join(' ')}
-              >
-                {popular && !isCurrent && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-[var(--cp-accent)] px-3 py-0.5 text-[11px] font-semibold text-white shadow">
-                      Most popular
-                    </span>
-                  </div>
-                )}
-                {isCurrent && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="rounded-full bg-[var(--cp-accent)] px-3 py-0.5 text-[11px] font-semibold text-white shadow">
-                      Your plan
-                    </span>
-                  </div>
-                )}
-
-                <div className="mb-4">
-                  <p className="text-[15px] font-semibold text-[var(--text-primary)]">
-                    {PLAN_LABELS[plan]}
-                  </p>
-                  <div className="mt-1 flex items-end gap-1">
-                    <span className="text-[30px] font-bold leading-none text-[var(--text-primary)]">
-                      {price}
-                    </span>
-                    <span className="mb-1 text-[14px] text-[var(--text-secondary)]">{period}</span>
-                  </div>
-                </div>
-
-                <ul className="flex-1 space-y-2">
-                  {features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-[14px] text-[var(--text-secondary)]">
-                      <Check className="mt-0.5 size-4 shrink-0 text-[var(--cp-accent)]" strokeWidth={2.5} aria-hidden />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-5">
-                  <Button
-                    variant={isCurrent ? 'secondary' : 'primary'}
-                    fullWidth
-                    disabled={isCurrent || loadingPlan !== null}
-                    onClick={() =>
-                      !isCurrent &&
-                      (plan === 'starter' || plan === 'pro' || plan === 'scale') &&
-                      handleCheckout(plan)
-                    }
-                  >
-                    {loadingPlan === plan ? (
-                      <span className="flex items-center gap-2">
-                        <Zap className="size-4 animate-pulse" aria-hidden />
-                        Redirecting…
-                      </span>
-                    ) : (
-                      buttonLabel
-                    )}
-                  </Button>
-                </div>
-              </Card>
-            )
-          })}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {BENEFITS.map(({ icon: Icon, title, description }) => (
+            <Card key={title} variant="raised" padding="default" className="flex items-start gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-light)]">
+                <Icon className="size-[18px] text-[var(--cp-accent)]" strokeWidth={1.5} aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[14px] font-semibold text-[var(--text-primary)]">{title}</p>
+                <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--text-tertiary)]">{description}</p>
+              </div>
+            </Card>
+          ))}
         </div>
-        <p className="mt-3 text-center text-[12px] text-[var(--text-tertiary)]">
-          Cancel anytime. Monthly price recurs each billing period.
-        </p>
       </div>
     </main>
   )

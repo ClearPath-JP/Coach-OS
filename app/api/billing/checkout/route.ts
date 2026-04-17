@@ -57,7 +57,7 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
-    const key = parsed.data.plan
+    const key = parsed.data.plan === 'founding' ? 'founding' : parsed.data.plan
     const priceId = STRIPE_PRICES[key]
     if (!priceId || !stripe) {
       return NextResponse.json(
@@ -94,7 +94,15 @@ export async function POST(request: Request) {
       }
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin') ?? 'https://app.clearpath.com'
+    // NEXT_PUBLIC_APP_URL must be set in prod; origin fallback covers local dev.
+    // Removed stale clearpath.com fallback — would redirect Stripe checkout to a dead domain.
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin')
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: 'Billing is not configured — contact support (missing app URL)' },
+        { status: 500 }
+      )
+    }
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{ price: priceId, quantity: 1 }]
     const setupPriceId = STRIPE_SETUP_FEE_PRICES[key]?.trim()

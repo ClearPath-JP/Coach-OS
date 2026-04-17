@@ -8,6 +8,12 @@ export const PLAN_LIMITS = {
     maxAssignmentStorageGb: 0.5,
     maxAssignmentsPerClient: 5,
   },
+  founding: {
+    maxClients: null as number | null, // unlimited — same as pro
+    maxVideoStorageGb: 50,
+    maxAssignmentStorageGb: 20,
+    maxAssignmentsPerClient: 999,
+  },
   starter: {
     maxClients: 15,
     maxVideoStorageGb: 10,
@@ -33,13 +39,14 @@ export type StorageKind = 'video' | 'assignment_file'
 /** Default client caps by plan when workspace.max_clients is unset. */
 export const DEFAULT_MAX_CLIENTS_BY_PLAN = {
   free: PLAN_LIMITS.free.maxClients,
+  founding: 999999, // unlimited
   starter: PLAN_LIMITS.starter.maxClients,
   pro: 999999,  // unlimited
   scale: 999999, // unlimited
 } as const
 
 export function effectiveClientLimit(plan: string, workspaceMaxClients: number | null | undefined): number {
-  if (plan === 'pro' || plan === 'scale') {
+  if (plan === 'founding' || plan === 'pro' || plan === 'scale') {
     // Both pro and scale are unlimited — workspace override still respected for admin overrides
     return workspaceMaxClients != null && workspaceMaxClients > 0
       ? workspaceMaxClients
@@ -53,9 +60,10 @@ export function effectiveClientLimit(plan: string, workspaceMaxClients: number |
 /** Implied monthly SaaS MRR per plan for admin rollups — keep aligned with Stripe Prices + SubscriptionPageContent. */
 export const PLAN_MRR_CENTS: Record<string, number> = {
   free: 0,
-  starter: 4900,
-  pro: 9900,
-  scale: 14900,
+  founding: 9900,
+  starter: 9900,
+  pro: 14900,
+  scale: 24900,
 }
 
 /**
@@ -72,7 +80,7 @@ export async function checkClientLimit(
     .maybeSingle()
   const plan = sub?.plan ?? 'free'
 
-  if (plan === 'pro' || plan === 'scale') {
+  if (plan === 'founding' || plan === 'pro' || plan === 'scale') {
     return { allowed: true, max: null }
   }
 

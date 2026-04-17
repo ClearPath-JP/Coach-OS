@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { format } from 'date-fns'
 
-type Plan = 'free' | 'starter' | 'pro' | 'scale'
+type Plan = 'free' | 'founding' | 'starter' | 'pro' | 'scale'
 type Status = 'trialing' | 'active' | 'past_due' | 'cancelled' | 'paused'
 
 export interface BillingPageContentProps {
@@ -23,7 +23,8 @@ export interface BillingPageContentProps {
 }
 
 const PLAN_LABELS: Record<Plan, string> = {
-  free: 'Free',
+  free: 'Free Trial',
+  founding: 'Founding Member',
   starter: 'Starter',
   pro: 'Pro',
   scale: 'Scale',
@@ -37,53 +38,18 @@ const STATUS_LABELS: Record<Status, string> = {
   paused: 'Paused',
 }
 
-const PRICING_TIERS = [
-  {
-    plan: 'starter' as const,
-    price: '$69',
-    period: '/month',
-    popular: false,
-    features: [
-      'Up to 15 clients',
-      '10 GB video storage',
-      'Programs & assignments',
-      'Invoicing & packages',
-      'Client portal',
-      'Messaging',
-      'Schedule & calendar',
-      'Email support',
-    ],
-  },
-  {
-    plan: 'pro' as const,
-    price: '$129',
-    period: '/month',
-    popular: true,
-    features: [
-      'Unlimited clients',
-      '50 GB video storage',
-      'Everything in Starter',
-      'Analytics dashboard',
-      'White-label branding',
-      'Google Drive integration',
-      'Goal & testimonial tracking',
-      'Priority support',
-    ],
-  },
-  {
-    plan: 'scale' as const,
-    price: '$199',
-    period: '/month',
-    popular: false,
-    features: [
-      'Unlimited clients',
-      '200 GB video storage',
-      'Everything in Pro',
-      'Stripe Connect payouts',
-      'Dedicated support',
-      'API access (coming soon)',
-    ],
-  },
+const FOUNDING_FEATURES = [
+  'Unlimited clients',
+  '50 GB video storage',
+  'Programs & assignments',
+  'Invoicing & packages',
+  'Client portal',
+  'Real-time messaging + broadcast',
+  'Schedule & calendar with iCal',
+  'Analytics dashboard',
+  'White-label branding',
+  'Google Drive integration',
+  'Priority support',
 ]
 
 export function BillingPageContent({ subscription, hasStripeCustomer }: BillingPageContentProps) {
@@ -93,21 +59,21 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
   const warningPastDue = searchParams.get('warning') === 'past_due'
   const warningCancelled = searchParams.get('warning') === 'cancelled'
   const warningSubscription = searchParams.get('warning') === 'subscription'
+  const warningTrialExpired = searchParams.get('warning') === 'trial_expired'
 
-  const [loadingPlan, setLoadingPlan] = useState<Plan | null>(null)
+  const [loadingPlan, setLoadingPlan] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
   const currentPlan = subscription?.plan ?? 'free'
-  const planOrder: Plan[] = ['starter', 'pro', 'scale']
-  const currentIndex = planOrder.indexOf(currentPlan)
+  const hasActiveSub = subscription && ['active', 'trialing'].includes(subscription.status)
 
-  const handleCheckout = async (plan: 'starter' | 'pro' | 'scale') => {
-    setLoadingPlan(plan)
+  const handleCheckout = async () => {
+    setLoadingPlan(true)
     try {
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan: 'founding' }),
       })
       const json = await res.json()
       if (res.ok && json.data?.url) {
@@ -118,7 +84,7 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
     } catch {
       alert('Something went wrong — try again')
     } finally {
-      setLoadingPlan(null)
+      setLoadingPlan(false)
     }
   }
 
@@ -145,15 +111,17 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
 
       {success && (
         <div className="rounded-xl border border-[var(--color-success)] bg-[var(--color-success-light)] px-4 py-3 text-[15px] text-[var(--color-success)]">
-          Your subscription is active.{' '}
-          {subscription && subscription.plan !== 'free'
-            ? `Welcome to ClearPath ${PLAN_LABELS[subscription.plan]}!`
-            : 'Welcome to ClearPath!'}
+          Your subscription is active. Welcome to ClearPath!
         </div>
       )}
       {cancelled && (
         <div className="rounded-xl border border-[var(--color-warning)] bg-[var(--color-warning-light)] px-4 py-3 text-[15px] text-[var(--color-warning)]">
           Checkout cancelled. Your plan was not changed.
+        </div>
+      )}
+      {warningTrialExpired && (
+        <div className="rounded-xl border border-[var(--color-error)] bg-[var(--color-error-light)] px-4 py-3 text-[15px] text-[var(--color-error)]">
+          Your free trial has expired. Subscribe to keep access to your coaching workspace.
         </div>
       )}
       {warningPastDue && (
@@ -168,12 +136,12 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
       )}
       {warningSubscription && !warningPastDue && !warningCancelled && (
         <div className="rounded-xl border border-[var(--color-warning)] bg-[var(--color-warning-light)] px-4 py-3 text-[15px] text-[var(--color-warning)]">
-          Your subscription needs attention — update your payment method or choose a plan to restore full coach access.
+          Your subscription needs attention — choose a plan to restore full coach access.
         </div>
       )}
 
       {/* Current plan card */}
-      <Card variant="raised" padding="lg" className={currentPlan !== 'free' ? 'border-2 border-[var(--color-accent)]' : ''}>
+      <Card variant="raised" padding="lg" className={hasActiveSub ? 'border-2 border-[var(--color-accent)]' : ''}>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="active" className="capitalize">{PLAN_LABELS[currentPlan]}</Badge>
           <Badge
@@ -183,7 +151,7 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
               subscription?.status === 'trialing' ? 'pending' : 'active'
             }
           >
-            {subscription ? STATUS_LABELS[subscription.status] : 'Active'}
+            {subscription ? STATUS_LABELS[subscription.status] : 'Free Trial'}
           </Badge>
         </div>
         {subscription?.status === 'trialing' && subscription.trial_ends_at && (
@@ -196,106 +164,58 @@ export function BillingPageContent({ subscription, hasStripeCustomer }: BillingP
             Next billing date {format(new Date(subscription.current_period_end), 'MMMM d, yyyy')}.
           </p>
         )}
-        {subscription?.status === 'past_due' && (
-          <p className="mt-2 text-[15px] text-[var(--color-error)]">
-            Payment failed — update your payment method to keep access.
-          </p>
-        )}
-        {subscription?.status === 'cancelled' && (
-          <p className="mt-2 text-[15px] text-[var(--color-warning)]">
-            Your plan was cancelled. Renew to keep access.
-          </p>
-        )}
       </Card>
 
-      {/* Pricing cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {PRICING_TIERS.map(({ plan, price, period, popular, features }) => {
-          const isCurrent = currentPlan === plan
-          const planIndex = planOrder.indexOf(plan)
-          const isUpgrade = planIndex > currentIndex
-          const isDowngrade = planIndex < currentIndex && currentPlan !== 'free'
-          const buttonLabel = isCurrent ? 'Current plan' : isUpgrade ? 'Upgrade' : isDowngrade ? 'Downgrade' : 'Get started'
-          return (
-            <Card
-              key={plan}
-              variant="raised"
-              padding="lg"
-              className={[
-                'relative flex flex-col',
-                isCurrent
-                  ? 'border-2 border-[var(--color-accent)]'
-                  : popular
-                    ? 'border-2 border-[var(--color-accent)]/40'
-                    : 'border border-[var(--border-default)]',
-              ].join(' ')}
-            >
-              {popular && !isCurrent && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-[var(--color-accent)] px-3 py-0.5 text-[11px] font-semibold text-white shadow">
-                    Most popular
-                  </span>
-                </div>
+      {/* Founding Member offer */}
+      {!hasActiveSub && (
+        <Card variant="raised" padding="lg" className="relative overflow-hidden border-2 border-[var(--cp-accent)]/60">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span className="rounded-full bg-[var(--cp-accent)] px-4 py-1 text-[11px] font-semibold text-white shadow">
+              Founding Member
+            </span>
+          </div>
+
+          <div className="mt-3 text-center">
+            <div className="flex items-end justify-center gap-1">
+              <span className="text-[36px] font-bold leading-none text-[var(--text-primary)]">$99</span>
+              <span className="mb-1 text-[15px] text-[var(--text-secondary)]">/month</span>
+            </div>
+            <p className="mt-2 text-[14px] text-[var(--cp-accent)]">
+              Locked-in rate for life. No setup fee.
+            </p>
+          </div>
+
+          <ul className="mx-auto mt-5 max-w-sm space-y-2">
+            {FOUNDING_FEATURES.map((f) => (
+              <li key={f} className="flex items-start gap-2 text-[14px] text-[var(--text-secondary)]">
+                <Check className="mt-0.5 size-4 shrink-0 text-[var(--cp-accent)]" strokeWidth={2.5} aria-hidden />
+                {f}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-5 text-center">
+            <Button variant="primary" onClick={handleCheckout} disabled={loadingPlan} className="min-w-[200px]">
+              {loadingPlan ? (
+                <span className="flex items-center gap-2">
+                  <Zap className="size-4 animate-pulse" aria-hidden />
+                  Redirecting...
+                </span>
+              ) : (
+                'Subscribe — $99/month'
               )}
-              {isCurrent && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="rounded-full bg-[var(--color-accent)] px-3 py-0.5 text-[11px] font-semibold text-white shadow">
-                    Your plan
-                  </span>
-                </div>
-              )}
-
-              <div className="mb-4">
-                <p className="text-[15px] font-semibold text-[var(--color-text-primary)]">
-                  {PLAN_LABELS[plan]}
-                </p>
-                <div className="mt-1 flex items-end gap-1">
-                  <span className="text-[30px] font-bold leading-none text-[var(--color-text-primary)]">
-                    {price}
-                  </span>
-                  <span className="mb-1 text-[14px] text-[var(--color-text-secondary)]">{period}</span>
-                </div>
-              </div>
-
-              <ul className="flex-1 space-y-2">
-                {features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-[14px] text-[var(--color-text-secondary)]">
-                    <Check className="mt-0.5 size-4 shrink-0 text-[var(--color-accent)]" strokeWidth={2.5} aria-hidden />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-5">
-                <Button
-                  variant={isCurrent ? 'secondary' : 'primary'}
-                  fullWidth
-                  disabled={isCurrent || loadingPlan !== null}
-                  onClick={() => !isCurrent && (plan === 'starter' || plan === 'pro' || plan === 'scale') && handleCheckout(plan)}
-                >
-                  {loadingPlan === plan ? (
-                    <span className="flex items-center gap-2">
-                      <Zap className="size-4 animate-pulse" aria-hidden />
-                      Redirecting…
-                    </span>
-                  ) : (
-                    buttonLabel
-                  )}
-                </Button>
-              </div>
-            </Card>
-          )
-        })}
-      </div>
-
-      <p className="text-center text-[12px] text-[var(--color-text-secondary)]">
-        Cancel anytime. Monthly price recurs each billing period.
-      </p>
+            </Button>
+          </div>
+          <p className="mt-3 text-center text-[12px] text-[var(--text-tertiary)]">
+            Cancel anytime. Only 10 founding spots available.
+          </p>
+        </Card>
+      )}
 
       {hasStripeCustomer && (
         <Card variant="flat" padding="default">
           <Button variant="secondary" onClick={handlePortal} disabled={portalLoading}>
-            {portalLoading ? 'Opening…' : 'Manage billing'}
+            {portalLoading ? 'Opening...' : 'Manage billing'}
           </Button>
           <p className="mt-2 text-[13px] text-[var(--color-text-secondary)]">
             Update payment method, view invoices, or change plan in Stripe.

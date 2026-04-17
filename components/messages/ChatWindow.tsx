@@ -85,34 +85,13 @@ export function ChatWindow({
 
   if (!conversation) {
     return (
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--cp-offwhite)',
-          gap: 12,
-          minWidth: 0,
-        }}
-      >
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: '50%',
-            background: 'var(--cp-lavender)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-[var(--bg-subtle)]">
+        <div className="flex size-14 items-center justify-center rounded-full bg-[var(--accent-light)]">
           <svg
-            width="22"
-            height="22"
+            width="24"
+            height="24"
             fill="none"
-            stroke="var(--cp-sapphire)"
+            stroke="var(--cp-accent)"
             strokeWidth="1.5"
             viewBox="0 0 24 24"
             aria-hidden
@@ -120,19 +99,11 @@ export function ChatWindow({
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--cp-navy)', margin: 0 }}>
-          No conversation selected
+        <p className="text-[16px] font-semibold text-[var(--text-primary)]">
+          Select a conversation
         </p>
-        <p
-          style={{
-            fontSize: 12,
-            color: 'var(--cp-gray)',
-            textAlign: 'center',
-            maxWidth: 240,
-            margin: 0,
-          }}
-        >
-          Pick someone from the list to start.
+        <p className="max-w-[260px] text-center text-[13px] text-[var(--text-tertiary)]">
+          Choose a client from the sidebar to view your messages.
         </p>
       </div>
     )
