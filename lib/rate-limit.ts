@@ -70,7 +70,7 @@ async function checkWithUpstash(
           error
         )
       }
-      return { success: false, retryAfter: 60 }
+      return checkInMemory(key, options)
     }
     return { success: true }
   }
@@ -98,10 +98,10 @@ export async function checkRateLimitAsync(
       if (!warnedMissingRedis) {
         warnedMissingRedis = true
         console.error(
-          '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — failing CLOSED. Add Upstash Redis in Vercel (see .env.example).'
+          '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — using in-memory rate limiting. Add Upstash Redis in Vercel for distributed limits.'
         )
       }
-      return { success: false, retryAfter: 60 }
+      return checkInMemory(key, options)
     }
     return { success: true }
   }
