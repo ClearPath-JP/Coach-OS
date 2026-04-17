@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, CreditCard, MessageSquare, Swords, Users, Video, Settings } from 'lucide-react'
+import { CalendarDays, CreditCard, LogOut, MessageSquare, Swords, Users, Video, Settings } from 'lucide-react'
+import { SignOutButton } from '@/components/layout/SignOutButton'
 
 const NAV_ITEMS = [
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarDays },
@@ -80,14 +81,20 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl, unreadMessageCo
           ))}
         </nav>
 
-        {/* Settings */}
-        <Link
-          href="/coach/settings"
-          className={`coach-nav__settings ${isActive('/coach/settings') ? 'coach-nav__link--active' : ''}`}
-          aria-label="Settings"
-        >
-          <Settings className="size-[18px]" strokeWidth={1.5} />
-        </Link>
+        {/* Settings + Log out */}
+        <div className="flex items-center gap-1">
+          <Link
+            href="/coach/settings"
+            className={`coach-nav__settings ${isActive('/coach/settings') ? 'coach-nav__link--active' : ''}`}
+            aria-label="Settings"
+          >
+            <Settings className="size-[18px]" strokeWidth={1.5} />
+          </Link>
+          <SignOutButton
+            variant="nav"
+            className="!min-h-[36px] !px-2 !text-[12px] text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+          />
+        </div>
       </header>
 
       {/* Mobile bottom dock */}
