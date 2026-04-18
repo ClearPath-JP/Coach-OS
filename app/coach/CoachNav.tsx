@@ -3,8 +3,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, CreditCard, LogOut, Swords, Users, Video, Settings } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { CalendarDays, CreditCard, LogOut, Swords, Users, Video, Settings, Volume2, VolumeX } from 'lucide-react'
 import { SignOutButton } from '@/components/layout/SignOutButton'
+import { playHover, playSelect, isSoundEnabled, setSoundEnabled } from '@/lib/game-sounds'
 
 const NAV_ITEMS = [
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarDays },
@@ -24,6 +26,11 @@ type CoachNavProps = {
 
 export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps) {
   const pathname = usePathname()
+  const [soundOn, setSoundOn] = useState(false)
+
+  useEffect(() => {
+    setSoundOn(isSoundEnabled())
+  }, [])
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + '/')
@@ -64,6 +71,8 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps
               key={href}
               href={href}
               className={`coach-nav__link ${isActive(href) ? 'coach-nav__link--active' : ''}`}
+              onMouseEnter={playHover}
+              onClick={playSelect}
             >
               <Icon className="coach-nav__link-icon" strokeWidth={1.5} />
               <span>{label}</span>
@@ -71,8 +80,22 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps
           ))}
         </nav>
 
-        {/* Settings + Log out */}
+        {/* Sound toggle + Settings + Log out */}
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              const next = !soundOn
+              setSoundOn(next)
+              setSoundEnabled(next)
+              if (next) playSelect()
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-tertiary)] transition-colors hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+            aria-label={soundOn ? 'Mute sounds' : 'Enable sounds'}
+            title={soundOn ? 'Sound on' : 'Sound off'}
+          >
+            {soundOn ? <Volume2 className="size-4" strokeWidth={1.5} /> : <VolumeX className="size-4" strokeWidth={1.5} />}
+          </button>
           <Link
             href="/coach/settings"
             className={`coach-nav__settings ${isActive('/coach/settings') ? 'coach-nav__link--active' : ''}`}
