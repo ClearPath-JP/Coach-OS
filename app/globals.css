@@ -243,8 +243,8 @@
   --cp-input-border: var(--cp-border);
   --cp-input-focus: var(--cp-accent);
 
-  /* ── Nav surface — adapts to theme ── */
-  --cp-nav-surface: #ffffff;
+  /* ── Nav surface ── */
+  --cp-nav-surface: #0f172a;
 
   /* ── Legacy bridges (Phase 3 cleanup) ──────────────────── */
   --cp-offwhite: #f7f7f7;
@@ -274,13 +274,13 @@ html[data-theme='dark'] {
   --bg-muted: #222225;
   --bg-emphasis: #2C2C30;
 
-  /* Accent — alchemical brass. Used sparingly. */
-  --accent: #C4A24C;
-  --accent-rgb: 196, 162, 76;
-  --accent-dark: #8B7A3C;
-  --accent-light: #16150E;
-  --accent-muted: #1E1D14;
-  --accent-hover: #D4B25C;
+  /* Accent — deep burgundy/maroon combat red */
+  --accent: #9f1239;
+  --accent-rgb: 159, 18, 57;
+  --accent-dark: #7f1d1d;
+  --accent-light: #1a0a0e;
+  --accent-muted: #2a1015;
+  --accent-hover: #be123c;
 
   /* Text — clean, high contrast, no warmth */
   --text-primary: #EDEDEF;
@@ -288,13 +288,13 @@ html[data-theme='dark'] {
   --text-tertiary: #63636B;
   --text-quaternary: #3F3F46;
   --text-placeholder: #2E2E33;
-  --text-on-accent: #0E0E11;
+  --text-on-accent: #ffffff;
 
   /* Borders — barely there, zinc-based */
   --border-subtle: #1F1F23;
   --border-default: #27272A;
   --border-strong: #3F3F46;
-  --border-accent: #C4A24C;
+  --border-accent: #9f1239;
 
   /* Semantic — restrained, functional */
   --success: #34d399;
@@ -371,11 +371,11 @@ html[data-theme='dark'] {
   --cp-focus-ring: color-mix(in srgb, var(--accent) 25%, transparent);
   --cp-nav-surface: #0C0C0F;
 
-  /* Combative Alchemy — brand tokens */
-  --ca-gold: #C4A24C;
-  --ca-gold-dim: #8B7A3C;
-  --ca-gold-rgb: 196, 162, 76;
-  --ca-gold-surface: rgba(196, 162, 76, 0.08);
+  /* Combative Alchemy — brand tokens (burgundy) */
+  --ca-gold: #9f1239;
+  --ca-gold-dim: #7f1d1d;
+  --ca-gold-rgb: 159, 18, 57;
+  --ca-gold-surface: rgba(159, 18, 57, 0.08);
 
   /* GoT aliases — backward compat, point to CA palette */
   --got-ink: #0E0E11;
