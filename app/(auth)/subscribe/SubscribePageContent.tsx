@@ -3,68 +3,20 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-type Plan = 'starter' | 'pro' | 'scale'
-
-interface PlanConfig {
-  id: Plan
-  badge: string
-  name: string
-  price: number
-  tagline: string
-  features: string[]
-  popular: boolean
-}
-
-const PLANS: PlanConfig[] = [
-  {
-    id: 'starter',
-    badge: 'STARTER',
-    name: 'Starter',
-    price: 69,
-    tagline: 'For coaches just getting started',
-    popular: false,
-    features: [
-      'Up to 15 clients',
-      'Client portal & messaging',
-      'Session notes & programs',
-      'Goal & progress tracking',
-      'Schedule & calendar',
-      'Invoicing & packages',
-      '10 GB video storage',
-      'Email support',
-    ],
-  },
-  {
-    id: 'pro',
-    badge: 'PRO',
-    name: 'Pro',
-    price: 129,
-    tagline: 'For coaches ready to scale',
-    popular: true,
-    features: [
-      'Everything in Starter',
-      'Unlimited clients',
-      'Advanced analytics',
-      '50 GB video storage',
-      'Daily check-ins',
-      'Priority support',
-    ],
-  },
-  {
-    id: 'scale',
-    badge: 'SCALE',
-    name: 'Scale',
-    price: 199,
-    tagline: 'For elite coaches & teams',
-    popular: false,
-    features: [
-      'Everything in Pro',
-      'White-label client portal',
-      '200 GB video storage',
-      'Custom branding',
-      'Priority onboarding call',
-    ],
-  },
+const FOUNDING_FEATURES = [
+  'Unlimited clients',
+  '50 GB video storage',
+  'Client portal access',
+  'Programs & assignments',
+  'Invoicing & packages',
+  'Real-time messaging + broadcast',
+  'Schedule & calendar with iCal',
+  'Analytics dashboard',
+  'Google Drive video import',
+  'White-label branding',
+  'Goal tracking & check-ins',
+  'Testimonial collection',
+  'Priority support',
 ]
 
 function CheckIcon() {
@@ -107,23 +59,23 @@ interface Props {
 
 export function SubscribePageContent({ userEmail }: Props) {
   const router = useRouter()
-  const [loadingPlan, setLoadingPlan] = useState<Plan | null>(null)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSelectPlan(plan: Plan) {
+  async function handleCheckout() {
     setError(null)
-    setLoadingPlan(plan)
+    setLoading(true)
     try {
       const res = await fetch('/api/billing/new-coach-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan: 'founding' }),
       })
       const json = await res.json().catch(() => ({}))
       if (!res.ok) {
         setError(typeof json.error === 'string' ? json.error : 'Something went wrong. Please try again.')
-        setLoadingPlan(null)
+        setLoading(false)
         return
       }
       const url = json.data?.url
@@ -131,11 +83,11 @@ export function SubscribePageContent({ userEmail }: Props) {
         router.push(url)
       } else {
         setError('Could not start checkout. Please try again.')
-        setLoadingPlan(null)
+        setLoading(false)
       }
     } catch {
       setError('Something went wrong — check your connection and try again.')
-      setLoadingPlan(null)
+      setLoading(false)
     }
   }
 
@@ -162,7 +114,7 @@ export function SubscribePageContent({ userEmail }: Props) {
             lineHeight: 1,
           }}
         >
-          ClearPath<span style={{ color: 'var(--accent)' }}>OS</span>
+          COACH<span style={{ color: 'var(--accent)' }}>OS</span>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 6 }}>
           Built for coaches. Designed for growth.
@@ -170,7 +122,7 @@ export function SubscribePageContent({ userEmail }: Props) {
       </div>
 
       {/* Heading */}
-      <div style={{ textAlign: 'center', maxWidth: 600, marginBottom: 52 }}>
+      <div style={{ textAlign: 'center', maxWidth: 600, marginBottom: 40 }}>
         <h1
           style={{
             fontFamily: 'var(--font-display)',
@@ -182,10 +134,10 @@ export function SubscribePageContent({ userEmail }: Props) {
             margin: '0 0 16px',
           }}
         >
-          Choose the right plan for your coaching business
+          Become a Founding Member
         </h1>
         <p style={{ fontSize: 16, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-          Join coaches growing their practice with COACH-OS
+          Lock in $99/month for life. No setup fee. Full platform access.
         </p>
         {userEmail && (
           <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 8 }}>
@@ -214,199 +166,137 @@ export function SubscribePageContent({ userEmail }: Props) {
         </div>
       )}
 
-      {/* Plan cards */}
+      {/* Founding Member Card */}
       <div
+        className="card-glow"
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 20,
+          background: 'var(--bg-subtle)',
+          border: '2px solid var(--accent)',
+          borderRadius: 16,
+          padding: '40px 32px',
+          maxWidth: 440,
           width: '100%',
-          maxWidth: 1100,
+          position: 'relative',
+          boxShadow: '0 0 40px rgba(159, 18, 57, 0.1), 0 0 80px rgba(159, 18, 57, 0.05)',
         }}
       >
-        {PLANS.map((plan) => (
-          <div key={plan.id} style={{ position: 'relative' }}>
-            {/* Most Popular chip */}
-            {plan.popular && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: -14,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  padding: '4px 14px',
-                  borderRadius: 20,
-                  whiteSpace: 'nowrap',
-                  zIndex: 1,
-                }}
-              >
-                Most Popular
-              </div>
-            )}
+        {/* Badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -14,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'var(--accent)',
+            color: '#fff',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            padding: '4px 14px',
+            borderRadius: 20,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Founding Member
+        </div>
 
-            <div
+        {/* Price */}
+        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+          <span
+            style={{
+              fontSize: 48,
+              fontWeight: 800,
+              letterSpacing: '-0.04em',
+              color: 'var(--text-primary)',
+              lineHeight: 1,
+            }}
+          >
+            $99
+          </span>
+          <span
+            style={{
+              fontSize: 15,
+              color: 'var(--text-secondary)',
+              fontWeight: 500,
+              paddingBottom: 6,
+            }}
+          >
+            /mo
+          </span>
+        </div>
+
+        <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--accent)', margin: '0 0 4px', fontWeight: 500 }}>
+          Locked-in rate for life. No setup fee.
+        </p>
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-tertiary)', margin: '0 0 28px' }}>
+          Only 10 founding spots available.
+        </p>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'var(--border-default)', marginBottom: 24 }} />
+
+        {/* Features */}
+        <ul
+          style={{
+            listStyle: 'none',
+            padding: 0,
+            margin: '0 0 32px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+        >
+          {FOUNDING_FEATURES.map((f) => (
+            <li
+              key={f}
               style={{
-                background: 'var(--bg-subtle)',
-                border: plan.popular
-                  ? '2px solid var(--accent)'
-                  : '1px solid var(--border-default)',
-                borderRadius: 16,
-                padding: '32px 28px',
                 display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
+                alignItems: 'flex-start',
+                gap: 10,
+                fontSize: 14,
+                color: 'var(--text-secondary)',
+                lineHeight: 1.4,
               }}
             >
-              {/* Badge */}
-              <div
-                style={{
-                  display: 'inline-block',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
-                  color: plan.popular ? 'var(--accent)' : 'var(--text-tertiary)',
-                  background: plan.popular
-                    ? 'color-mix(in srgb, var(--accent) 12%, transparent)'
-                    : 'color-mix(in srgb, var(--border-default) 60%, transparent)',
-                  borderRadius: 6,
-                  padding: '4px 10px',
-                  marginBottom: 20,
-                  alignSelf: 'flex-start',
-                }}
-              >
-                {plan.badge}
-              </div>
+              <CheckIcon />
+              {f}
+            </li>
+          ))}
+        </ul>
 
-              {/* Price */}
-              <div style={{ marginBottom: 8, display: 'flex', alignItems: 'flex-end', gap: 4 }}>
-                <span
-                  style={{
-                    fontSize: 48,
-                    fontWeight: 800,
-                    letterSpacing: '-0.04em',
-                    color: 'var(--text-primary)',
-                    lineHeight: 1,
-                  }}
-                >
-                  ${plan.price}
-                </span>
-                <span
-                  style={{
-                    fontSize: 15,
-                    color: 'var(--text-secondary)',
-                    fontWeight: 500,
-                    paddingBottom: 6,
-                  }}
-                >
-                  /mo
-                </span>
-              </div>
-
-              {/* Tagline */}
-              <p
-                style={{
-                  fontSize: 14,
-                  color: 'var(--text-secondary)',
-                  margin: '0 0 24px',
-                  lineHeight: 1.5,
-                }}
-              >
-                {plan.tagline}
-              </p>
-
-              {/* Divider */}
-              <div
-                style={{
-                  height: 1,
-                  background: 'var(--border-default)',
-                  marginBottom: 24,
-                }}
-              />
-
-              {/* Features */}
-              <ul
-                style={{
-                  listStyle: 'none',
-                  padding: 0,
-                  margin: '0 0 32px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 12,
-                  flex: 1,
-                }}
-              >
-                {plan.features.map((feature) => (
-                  <li
-                    key={feature}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 10,
-                      fontSize: 14,
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    <CheckIcon />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA button */}
-              <button
-                type="button"
-                disabled={loadingPlan !== null}
-                onClick={() => handleSelectPlan(plan.id)}
-                style={{
-                  width: '100%',
-                  height: 48,
-                  borderRadius: 10,
-                  fontSize: 15,
-                  fontWeight: 600,
-                  cursor: loadingPlan !== null ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  transition: 'opacity 0.15s',
-                  opacity: loadingPlan !== null && loadingPlan !== plan.id ? 0.5 : 1,
-                  background: plan.popular ? 'var(--accent)' : 'transparent',
-                  color: plan.popular ? '#fff' : 'var(--text-primary)',
-                  border: plan.popular ? 'none' : '1.5px solid var(--border-default)',
-                }}
-                onMouseEnter={(e) => {
-                  if (loadingPlan !== null) return
-                  if (plan.popular) {
-                    e.currentTarget.style.opacity = '0.88'
-                  } else {
-                    e.currentTarget.style.background = 'var(--bg-emphasis)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = loadingPlan !== null && loadingPlan !== plan.id ? '0.5' : '1'
-                  if (!plan.popular) {
-                    e.currentTarget.style.background = 'transparent'
-                  }
-                }}
-              >
-                {loadingPlan === plan.id ? (
-                  <>
-                    <Spinner />
-                    Redirecting…
-                  </>
-                ) : (
-                  'Get started'
-                )}
-              </button>
-            </div>
-          </div>
-        ))}
+        {/* CTA */}
+        <button
+          type="button"
+          disabled={loading}
+          onClick={handleCheckout}
+          style={{
+            width: '100%',
+            height: 48,
+            borderRadius: 10,
+            fontSize: 15,
+            fontWeight: 600,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={(e) => { if (!loading) e.currentTarget.style.opacity = '0.88' }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+        >
+          {loading ? (
+            <>
+              <Spinner />
+              Redirecting…
+            </>
+          ) : (
+            'Get started — $99/month'
+          )}
+        </button>
       </div>
 
       {/* Footer note */}

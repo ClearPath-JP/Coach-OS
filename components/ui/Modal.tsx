@@ -91,7 +91,7 @@ export function Modal({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-[rgba(0,0,0,0.6)] backdrop-blur-[4px]"
+        className="absolute inset-0 bg-[rgba(0,0,0,0.55)] backdrop-blur-[6px]"
         onClick={onClose}
         aria-label="Close modal"
         tabIndex={-1}
@@ -99,7 +99,8 @@ export function Modal({
       <div
         ref={cardRef}
         className={cn(
-          'relative z-10 flex max-h-[90vh] w-full flex-col overflow-y-auto border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[0_8px_24px_rgba(0,0,0,0.4)]',
+          'glass-modal relative z-10 flex max-h-[90vh] w-full flex-col overflow-y-auto',
+          'border border-[var(--border-default)] bg-[var(--bg-app)] shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_80px_rgba(159,18,57,0.04)]',
           'rounded-t-[14px] max-md:max-w-none md:mx-auto md:max-w-md md:rounded-[14px]',
           'p-5 max-md:pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]',
           className

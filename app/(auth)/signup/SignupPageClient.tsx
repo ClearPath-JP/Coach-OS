@@ -48,8 +48,8 @@ const LABEL_CLASS =
   'mb-1.5 block text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--text-quaternary)]'
 
 function focusGold(e: React.FocusEvent<HTMLInputElement>) {
-  e.target.style.borderColor = 'var(--got-gold)'
-  e.target.style.boxShadow = '0 0 0 3px rgba(196,164,74,0.1)'
+  e.target.style.borderColor = 'var(--accent)'
+  e.target.style.boxShadow = '0 0 0 3px rgba(159,18,57,0.15)'
 }
 function blurReset(e: React.FocusEvent<HTMLInputElement>) {
   e.target.style.borderColor = 'var(--border-default)'
@@ -149,20 +149,23 @@ export function SignupPageClient() {
           }}
         />
 
-        {/* Warm glow */}
+        {/* Accent glow */}
         <div
           aria-hidden
           style={{
-            position: 'absolute', bottom: '-20%', left: '20%', width: '70%', height: '60%',
-            background: 'radial-gradient(ellipse, rgba(180,100,40,0.05) 0%, transparent 70%)',
+            position: 'absolute', bottom: '-15%', left: '20%', width: '70%', height: '60%',
+            background: 'radial-gradient(ellipse, rgba(159,18,57,0.1) 0%, rgba(180,100,40,0.04) 40%, transparent 70%)',
             pointerEvents: 'none', zIndex: 1,
           }}
         />
 
         <div className="relative z-10 flex flex-1 flex-col justify-between p-10 xl:p-14">
           <div>
-            <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(200,170,100,0.5)' }}>
-              Powered by ClearPath
+            <div style={{
+              fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500,
+              letterSpacing: '0.04em', color: 'rgba(237,237,239,0.7)', lineHeight: 1,
+            }}>
+              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
             </div>
           </div>
 
@@ -191,7 +194,7 @@ export function SignupPageClient() {
                 <div key={text} className="flex items-center gap-3">
                   <div style={{
                     width: 5, height: 5, borderRadius: '50%',
-                    background: 'rgba(196,164,74,0.4)', flexShrink: 0,
+                    background: 'rgba(159,18,57,0.5)', flexShrink: 0,
                   }} />
                   <span style={{ fontSize: 13, color: 'rgba(200,190,170,0.55)', lineHeight: 1.4 }}>
                     {text}
@@ -215,16 +218,23 @@ export function SignupPageClient() {
         className="flex min-h-[100dvh] w-full flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8 lg:min-h-0 lg:w-[55%] lg:px-12"
         style={{ background: 'var(--bg-app)' }}
       >
-        <div className="w-full max-w-[440px]">
+        <div
+          className="glass-modal w-full max-w-[480px] rounded-2xl p-7 lg:p-9"
+          style={{
+            background: 'rgba(24,24,27,0.5)',
+            border: '1px solid rgba(159,18,57,0.12)',
+            boxShadow: '0 0 60px rgba(159,18,57,0.06), 0 8px 32px rgba(0,0,0,0.3)',
+          }}
+        >
 
           {/* Mobile brand */}
           <div className="mb-6 text-center lg:hidden">
-            <div className="mx-auto mb-2">
-              <AlchemySymbol />
+            <div style={{
+              fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500,
+              letterSpacing: '0.04em', color: 'var(--text-primary)', lineHeight: 1,
+            }}>
+              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
             </div>
-            <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--got-gold-dim)' }}>
-              Powered by ClearPath
-            </p>
           </div>
 
           {/* Heading */}
@@ -325,13 +335,13 @@ export function SignupPageClient() {
               <input
                 id="acceptTerms" type="checkbox" checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
-                className="mt-0.5 size-4 shrink-0 rounded border-[var(--border-default)] accent-[var(--got-gold)]"
+                className="mt-0.5 size-4 shrink-0 rounded border-[var(--border-default)] accent-[var(--accent)]"
               />
               <label htmlFor="acceptTerms" className="text-[13px] leading-snug text-[var(--text-secondary)]">
                 I agree to the{' '}
-                <a href="/terms" target="_blank" className="font-medium text-[var(--got-gold)] hover:underline">Terms</a>
+                <a href="/terms" target="_blank" className="font-medium text-[var(--accent)] hover:underline">Terms</a>
                 {' '}and{' '}
-                <a href="/privacy" target="_blank" className="font-medium text-[var(--got-gold)] hover:underline">Privacy Policy</a>
+                <a href="/privacy" target="_blank" className="font-medium text-[var(--accent)] hover:underline">Privacy Policy</a>
               </label>
             </div>
             {fieldErrors.acceptTerms && <p className="text-[12px] text-[var(--error)]">{fieldErrors.acceptTerms}</p>}
@@ -361,7 +371,7 @@ export function SignupPageClient() {
           <div className="mt-6 text-center">
             <p className="text-[13px] text-[var(--text-tertiary)]">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-[var(--got-gold)] no-underline hover:underline">
+              <Link href="/login" className="font-medium text-[var(--accent)] no-underline hover:text-[var(--accent-hover)] hover:underline">
                 Sign in
               </Link>
             </p>

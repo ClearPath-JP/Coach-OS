@@ -270,16 +270,30 @@ export function DualRoleLoginPage() {
           }}
         />
 
-        {/* Radial warm glow at bottom */}
+        {/* Radial accent glow at bottom */}
         <div
           aria-hidden
           style={{
             position: 'absolute',
-            bottom: '-20%',
-            left: '30%',
-            width: '60%',
+            bottom: '-15%',
+            left: '20%',
+            width: '70%',
             height: '60%',
-            background: 'radial-gradient(ellipse, rgba(180,100,40,0.06) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(159,18,57,0.1) 0%, rgba(180,100,40,0.04) 40%, transparent 70%)',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+        {/* Secondary glow — top right */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            top: '-10%',
+            right: '-10%',
+            width: '50%',
+            height: '50%',
+            background: 'radial-gradient(ellipse, rgba(159,18,57,0.06) 0%, transparent 60%)',
             pointerEvents: 'none',
             zIndex: 1,
           }}
@@ -289,19 +303,19 @@ export function DualRoleLoginPage() {
 
         {/* Content layer */}
         <div className="relative z-10 flex flex-1 flex-col justify-between p-10 xl:p-14">
-          {/* Top — brand placeholder */}
+          {/* Top — brand */}
           <div>
             <div
               style={{
-                fontSize: 10,
-                fontWeight: 600,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                color: 'rgba(200,170,100,0.5)',
-                marginBottom: 4,
+                fontFamily: 'var(--font-display)',
+                fontSize: 20,
+                fontWeight: 500,
+                letterSpacing: '0.04em',
+                color: 'rgba(237,237,239,0.7)',
+                lineHeight: 1,
               }}
             >
-              Powered by ClearPath
+              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
             </div>
           </div>
 
@@ -357,16 +371,30 @@ export function DualRoleLoginPage() {
         className="flex min-h-[100dvh] w-full flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-10 lg:min-h-0 lg:w-[50%] lg:px-12"
         style={{ background: 'var(--bg-app)' }}
       >
-        <div className="w-full max-w-[400px]">
+        {/* Glass card wrapper */}
+        <div
+          className="glass-modal w-full max-w-[440px] rounded-2xl p-8 lg:p-10"
+          style={{
+            background: 'rgba(24,24,27,0.5)',
+            border: '1px solid rgba(159,18,57,0.12)',
+            boxShadow: '0 0 60px rgba(159,18,57,0.06), 0 8px 32px rgba(0,0,0,0.3)',
+          }}
+        >
 
           {/* Mobile-only brand mark */}
           <div className="mb-8 text-center lg:hidden">
-            <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-xl" style={{ background: 'rgba(200,170,100,0.08)', border: '1px solid rgba(200,170,100,0.12)' }}>
-              <KatanaSVG />
+            <div
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 22,
+                fontWeight: 500,
+                letterSpacing: '0.04em',
+                color: 'var(--text-primary)',
+                lineHeight: 1,
+              }}
+            >
+              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
             </div>
-            <p style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--got-gold-dim)' }}>
-              Powered by ClearPath
-            </p>
           </div>
 
           {/* Alerts */}
@@ -421,9 +449,9 @@ export function DualRoleLoginPage() {
                 className="flex-1 rounded-[8px] py-2 text-center text-[13px] font-medium transition-all duration-200"
                 style={{
                   background: role === r ? 'var(--bg-subtle)' : 'transparent',
-                  color: role === r ? 'var(--ca-gold)' : 'var(--text-tertiary)',
-                  boxShadow: role === r ? 'var(--shadow-sm)' : 'none',
-                  borderBottom: role === r ? '2px solid var(--ca-gold)' : '2px solid transparent',
+                  color: role === r ? 'var(--accent)' : 'var(--text-tertiary)',
+                  boxShadow: role === r ? '0 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(159,18,57,0.08)' : 'none',
+                  borderBottom: role === r ? '2px solid var(--accent)' : '2px solid transparent',
                 }}
               >
                 {r === 'coach' ? 'Coach' : 'Client'}
@@ -472,7 +500,7 @@ export function DualRoleLoginPage() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-[12px] text-[var(--got-gold-dim)] no-underline transition-colors duration-150 hover:text-[var(--got-gold)] hover:underline"
+                  className="text-[12px] text-[var(--text-tertiary)] no-underline transition-colors duration-150 hover:text-[var(--accent)] hover:underline"
                   tabIndex={-1}
                 >
                   Forgot?
@@ -488,8 +516,8 @@ export function DualRoleLoginPage() {
                   placeholder="Your password"
                   className="h-11 w-full rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-4 pr-11 text-[14px] text-[var(--text-primary)] outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-[var(--text-quaternary)]"
                   onFocus={(e) => {
-                    e.target.style.borderColor = 'var(--got-gold)'
-                    e.target.style.boxShadow = '0 0 0 3px rgba(196,164,74,0.1)'
+                    e.target.style.borderColor = 'var(--accent)'
+                    e.target.style.boxShadow = '0 0 0 3px rgba(159,18,57,0.15)'
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = 'var(--border-default)'
@@ -549,7 +577,7 @@ export function DualRoleLoginPage() {
               New here?{' '}
               <Link
                 href="/signup"
-                className="font-medium text-[var(--got-gold)] no-underline transition-colors duration-150 hover:underline"
+                className="font-medium text-[var(--accent)] no-underline transition-colors duration-150 hover:text-[var(--accent-hover)] hover:underline"
               >
                 Create your coaching workspace
               </Link>

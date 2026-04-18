@@ -13,6 +13,7 @@ import {
   sessionTypeLabel,
   type AvailabilityRule,
 } from './schedule-lib'
+import { labelForTimeValue } from './sessionFormOptions'
 
 export type SessionRow = SessionForDrawer
 
@@ -122,7 +123,7 @@ export function ScheduleTodayPanel({
                   type="button"
                   onClick={() => onSessionClick(s)}
                   className={cn(
-                    'relative w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3 text-left transition-colors hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)]',
+                    'card-glow relative w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3 text-left transition-all duration-[var(--duration-slow)] hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)] hover:-translate-y-px',
                     isNext && isFocusToday && 'ring-2 ring-[var(--cp-accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]',
                     inProgress && isFocusToday && 'border-[var(--success)]'
                   )}
@@ -169,7 +170,7 @@ export function ScheduleTodayPanel({
             <li key={r.id} className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--success)]" />
               <span>
-                {r.start_time.slice(0, 5)} – {r.end_time.slice(0, 5)}
+                {labelForTimeValue(r.start_time.slice(0, 5))} – {labelForTimeValue(r.end_time.slice(0, 5))}
                 {r.label ? ` · ${r.label}` : ''}
               </span>
             </li>

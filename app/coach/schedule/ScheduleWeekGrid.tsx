@@ -99,7 +99,7 @@ export function ScheduleWeekGrid({
                 key={day.toISOString()}
                 className={cn(
                   'min-w-0 flex-1 border-b border-l border-[var(--border-default)]/60 px-1 py-2 text-center first:border-l-0',
-                  today ? 'bg-[rgba(90,180,240,0.06)]' : 'bg-[var(--bg-subtle)]'
+                  today ? 'bg-[rgba(159,18,57,0.04)]' : 'bg-[var(--bg-subtle)]'
                 )}
                 style={{ height: HEADER_PX }}
               >
@@ -180,7 +180,7 @@ export function ScheduleWeekGrid({
                 key={`col-${dayStr}`}
                 className={cn(
                   'relative min-w-0 flex-1 border-l border-[var(--border-default)]/60 first:border-l-0',
-                  todayCol ? 'bg-[rgba(90,180,240,0.04)]' : 'bg-[var(--bg-subtle)]'
+                  todayCol ? 'bg-[rgba(159,18,57,0.03)]' : 'bg-[var(--bg-subtle)]'
                 )}
                 style={{ height: gridHeightPx }}
               >
@@ -229,7 +229,7 @@ export function ScheduleWeekGrid({
                       className={cn(
                         'group absolute right-0 left-0 z-[1] flex items-center justify-center border-b border-dashed border-[var(--border-subtle)] transition-colors',
                         inAvail
-                          ? 'hover:bg-[rgba(90,180,240,0.08)]'
+                          ? 'hover:bg-[rgba(159,18,57,0.06)]'
                           : 'cursor-default bg-[rgba(255,255,255,0.015)] hover:bg-[rgba(255,255,255,0.015)]'
                       )}
                       style={{ top, height: 30 }}
@@ -278,7 +278,7 @@ export function ScheduleWeekGrid({
                       onClick={(e) => { e.stopPropagation(); onOpenSession(s) }}
                     >
                       <span className="block text-[10px] font-semibold tabular-nums leading-tight" style={{ color }}>
-                        {format(start, 'h:mm')}{'–'}{format(end, 'h:mm a')}
+                        {format(start, 'h:mm a')}{'–'}{format(end, 'h:mm a')}
                       </span>
                       <span className="block truncate text-[12px] font-semibold leading-tight text-white/90">{name}</span>
                       {heightPx >= 48 ? (

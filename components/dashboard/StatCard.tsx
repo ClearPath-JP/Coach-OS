@@ -90,17 +90,19 @@ export const StatCard = React.memo(function StatCard({
   )
 
   const shellProps: {
+    className: string
     style: CSSProperties
     onMouseEnter: (e: MouseEvent<HTMLDivElement>) => void
     onMouseLeave: (e: MouseEvent<HTMLDivElement>) => void
   } = {
+    className: 'card-glow',
     style: {
       background: 'var(--bg-subtle)',
       border: '1px solid var(--border-default)',
       borderRadius: 10,
       padding: '14px 16px',
       cursor: interactive ? ('pointer' as const) : ('default' as const),
-      transition: 'border-color 0.12s ease, background-color 0.12s ease',
+      transition: 'border-color 0.3s var(--ease-default), background-color 0.3s var(--ease-default), box-shadow 0.3s var(--ease-default), transform 0.3s var(--ease-default)',
       display: 'flex' as const,
       flexDirection: 'column' as const,
       minWidth: 0,
@@ -110,6 +112,7 @@ export const StatCard = React.memo(function StatCard({
         const el = e.currentTarget as HTMLDivElement
         el.style.borderColor = 'var(--border-strong)'
         el.style.background = 'var(--bg-muted)'
+        el.style.transform = 'translateY(-2px)'
       }
     },
     onMouseLeave: (e: MouseEvent<HTMLDivElement>) => {
@@ -117,6 +120,7 @@ export const StatCard = React.memo(function StatCard({
         const el = e.currentTarget as HTMLDivElement
         el.style.borderColor = 'var(--border-default)'
         el.style.background = 'var(--bg-subtle)'
+        el.style.transform = 'translateY(0)'
       }
     },
   }

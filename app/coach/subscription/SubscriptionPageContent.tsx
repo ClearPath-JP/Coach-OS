@@ -292,7 +292,7 @@ export function SubscriptionPageContent({
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {BENEFITS.map(({ icon: Icon, title, description }) => (
-            <Card key={title} variant="raised" padding="default" className="flex items-start gap-3">
+            <Card key={title} variant="glow" padding="default" className="flex items-start gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-light)]">
                 <Icon className="size-[18px] text-[var(--cp-accent)]" strokeWidth={1.5} aria-hidden />
               </div>

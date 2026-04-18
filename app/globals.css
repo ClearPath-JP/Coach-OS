@@ -422,13 +422,15 @@ body {
 }
 
 html[data-theme='dark'] ::selection {
-  background: rgba(196, 164, 74, 0.3);
+  background: rgba(159, 18, 57, 0.35);
   color: var(--text-primary);
 }
 
 :focus-visible {
   outline: none;
-  box-shadow: var(--focus-ring);
+  box-shadow:
+    0 0 0 2px var(--bg-app),
+    0 0 0 4px var(--accent);
   border-radius: var(--radius-sm);
 }
 
@@ -507,6 +509,15 @@ html[data-theme='dark'] ::selection {
   border-radius: var(--radius-full);
   background: var(--bg-muted);
   font-size: 32px;
+  color: var(--text-quaternary);
+  border: 1px solid var(--border-subtle);
+  transition: box-shadow var(--duration-slow) var(--ease-default);
+}
+html[data-theme='dark'] .empty-state-coach__icon {
+  background: rgba(159, 18, 57, 0.06);
+  border-color: rgba(159, 18, 57, 0.12);
+  color: var(--accent);
+  box-shadow: 0 0 32px rgba(159, 18, 57, 0.08);
 }
 .empty-state-coach__title {
   margin-top: 16px;
@@ -567,10 +578,21 @@ html[data-theme='dark'] ::selection {
   }
 }
 
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .skeleton {
-  background: var(--bg-muted);
+  background: linear-gradient(
+    90deg,
+    var(--bg-muted) 25%,
+    var(--bg-emphasis) 50%,
+    var(--bg-muted) 75%
+  );
+  background-size: 200% 100%;
   border-radius: var(--radius-sm);
-  animation: skeletonPulse 1.8s ease-in-out infinite;
+  animation: skeletonShimmer 1.8s ease-in-out infinite;
 }
 
 .link-nav {
@@ -824,15 +846,16 @@ tr:hover td {
   }
 }
 
-/* GoT — ink-wash paper grain texture (dark mode only) */
+/* Subtle noise grain texture (dark mode only) — adds analog warmth */
 html[data-theme='dark'] body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.018;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 200px 200px;
 }
 
@@ -843,8 +866,16 @@ html[data-theme='dark'] body::after {
 }
 
 .modal-backdrop {
-  background: rgba(12, 8, 4, 0.65);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(6px);
+}
+
+/* Glass morphism modal surface (dark mode) */
+html[data-theme='dark'] .glass-modal {
+  background: rgba(14, 14, 17, 0.78);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .card-interactive {
@@ -857,7 +888,74 @@ html[data-theme='dark'] body::after {
 .card-interactive:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(12, 8, 4, 0.2);
-  border-color: rgba(196, 164, 74, 0.12);
+  border-color: rgba(159, 18, 57, 0.15);
+}
+html[data-theme='dark'] .card-interactive:hover {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(159, 18, 57, 0.08);
+}
+
+/* Accent glow on hover — for stat cards and primary cards */
+html[data-theme='dark'] .card-glow {
+  transition:
+    box-shadow var(--duration-slow) var(--ease-default),
+    border-color var(--duration-slow) var(--ease-default),
+    transform var(--duration-slow) var(--ease-default);
+}
+html[data-theme='dark'] .card-glow:hover {
+  box-shadow:
+    0 0 20px rgba(159, 18, 57, 0.15),
+    0 0 60px rgba(159, 18, 57, 0.05);
+  border-color: rgba(159, 18, 57, 0.25);
+}
+
+/* Gradient border card — shows animated gradient sweep on hover */
+html[data-theme='dark'] .card-gradient-border {
+  position: relative;
+  transition:
+    box-shadow var(--duration-slow) var(--ease-default),
+    border-color var(--duration-slow) var(--ease-default);
+}
+html[data-theme='dark'] .card-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent, transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-default);
+  pointer-events: none;
+}
+html[data-theme='dark'] .card-gradient-border:hover::before {
+  opacity: 1;
+  background: linear-gradient(135deg, #9f1239, rgba(159, 18, 57, 0.1), #be123c);
+}
+html[data-theme='dark'] .card-gradient-border:hover {
+  box-shadow:
+    0 0 24px rgba(159, 18, 57, 0.1),
+    0 0 48px rgba(159, 18, 57, 0.04);
+}
+
+/* Section header with accent gradient wash */
+html[data-theme='dark'] .section-header-glow {
+  position: relative;
+}
+html[data-theme='dark'] .section-header-glow::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: -4px;
+  bottom: -4px;
+  width: 200px;
+  background: linear-gradient(90deg, rgba(159, 18, 57, 0.06), transparent);
+  border-radius: var(--radius-md);
+  pointer-events: none;
 }
 
 /* Coach shell — warm dark sidebar chrome (GoT) */
@@ -973,7 +1071,8 @@ html[data-theme='dark'] body::after {
 
 @media (prefers-reduced-motion: reduce) {
   .coach-dash-stagger > *,
-  .coach-list-stagger > * {
+  .coach-list-stagger > *,
+  .skeleton {
     animation: none;
   }
 }
@@ -1006,6 +1105,9 @@ html[data-theme='dark'] body::after {
 }
 .game-panel:hover {
   border-color: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+html[data-theme='dark'] .game-panel:hover {
+  box-shadow: 0 0 24px rgba(159, 18, 57, 0.06);
 }
 .game-panel-header {
   display: flex;
@@ -1110,6 +1212,9 @@ html[data-theme='dark'] body::after {
 }
 .btn-shimmer:hover:not(:disabled)::after {
   animation: login-btn-shimmer 600ms ease;
+}
+html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(159, 18, 57, 0.3), 0 0 4px rgba(159, 18, 57, 0.2);
 }
 
 /* GoT — gradient divider (replaces hard border-b lines) */
@@ -1241,6 +1346,12 @@ html[data-theme='dark'] body::after {
 .coach-nav__link--active {
   color: var(--ca-gold);
   background: var(--ca-gold-surface);
+  box-shadow: inset 0 -2px 0 0 var(--ca-gold);
+}
+html[data-theme='dark'] .coach-nav__link--active {
+  box-shadow:
+    inset 0 -2px 0 0 var(--ca-gold),
+    0 0 12px rgba(159, 18, 57, 0.08);
 }
 .coach-nav__link-icon {
   width: 16px;
@@ -1301,6 +1412,9 @@ html[data-theme='dark'] body::after {
 }
 .coach-nav__mobile-link--active {
   color: var(--ca-gold);
+}
+html[data-theme='dark'] .coach-nav__mobile-link--active {
+  text-shadow: 0 0 12px rgba(159, 18, 57, 0.4);
 }
 .coach-nav__mobile-label {
   font-size: 10px;
