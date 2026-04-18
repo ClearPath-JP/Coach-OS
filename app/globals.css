@@ -69,32 +69,32 @@
   --tracking-wider: 0.06em;
   --tracking-widest: 0.12em;
 
-  /* LIGHT MODE COLORS — clean neutral gray/white palette */
-  --bg-app: #f7f7f7;
+  /* LIGHT MODE COLORS — Combat Light (warm white + crimson red) */
+  --bg-app: #faf9f7;
   /* For translucent sticky chrome: rgba(var(--bg-app-rgb), 0.9) */
-  --bg-app-rgb: 247, 247, 247;
-  --bg-subtle: #f0f0f0;
-  --bg-muted: #e6e6e6;
-  --bg-emphasis: #d8d8d8;
+  --bg-app-rgb: 250, 249, 247;
+  --bg-subtle: #f5f3f0;
+  --bg-muted: #ebe8e4;
+  --bg-emphasis: #ddd9d4;
 
-  --accent: #3b9ee8;
-  --accent-rgb: 59, 158, 232;
-  --accent-dark: #2980cc;
-  --accent-light: #e8f3fd;
-  --accent-muted: #c0ddf7;
-  --accent-hover: #2d8fd4;
+  --accent: #dc2626;
+  --accent-rgb: 220, 38, 38;
+  --accent-dark: #991b1b;
+  --accent-light: #fef2f2;
+  --accent-muted: #fecaca;
+  --accent-hover: #b91c1c;
 
-  --text-primary: #111111;
-  --text-secondary: #333333;
-  --text-tertiary: #666666;
-  --text-quaternary: #999999;
-  --text-placeholder: #bbbbbb;
+  --text-primary: #1c1917;
+  --text-secondary: #44403c;
+  --text-tertiary: #78716c;
+  --text-quaternary: #a8a29e;
+  --text-placeholder: #d6d3d1;
   --text-on-accent: #ffffff;
 
-  --border-subtle: #ebebeb;
-  --border-default: #dcdcdc;
-  --border-strong: #c4c4c4;
-  --border-accent: #3b9ee8;
+  --border-subtle: #e7e5e4;
+  --border-default: #d6d3d1;
+  --border-strong: #a8a29e;
+  --border-accent: #dc2626;
 
   --success: #16a34a;
   --success-bg: #f0fdf4;
@@ -228,7 +228,7 @@
   --cp-gray: #64748b;
   --cp-border: #e2e8f0;
   --cp-text: #374151;
-  --cp-accent: var(--cp-sapphire);
+  --cp-accent: var(--accent);
   --cp-accent-hover: color-mix(in srgb, var(--cp-accent) 85%, #000);
   --cp-accent-light: color-mix(in srgb, var(--cp-accent) 15%, #fff);
   --cp-role-coach: var(--cp-sapphire);
@@ -243,8 +243,8 @@
   --cp-input-border: var(--cp-border);
   --cp-input-focus: var(--cp-accent);
 
-  /* ── Always-dark surface (nav, panels) — never adapts to theme ── */
-  --cp-nav-surface: #0f172a;
+  /* ── Nav surface — adapts to theme ── */
+  --cp-nav-surface: #ffffff;
 
   /* ── Legacy bridges (Phase 3 cleanup) ──────────────────── */
   --cp-offwhite: #f7f7f7;
