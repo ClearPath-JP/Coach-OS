@@ -518,6 +518,7 @@ export const updateSessionSchema = z
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
     startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
     durationMinutes: z.number().int().min(15).max(240).optional(),
+    recapVideoId: z.string().uuid().nullable().optional(),
   })
   .refine((d) => (d.date == null) === (d.startTime == null), {
     message: 'Provide both date and start time together',

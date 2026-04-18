@@ -48,6 +48,8 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
   const [notesSaving, setNotesSaving] = useState(false)
   const [notesSending, setNotesSending] = useState(false)
   const [notesSentAt, setNotesSentAt] = useState<string | null>(null)
+  const [recapVideoUrl, setRecapVideoUrl] = useState<string | null>(null)
+  const [uploadingRecap, setUploadingRecap] = useState(false)
   const [confirmCancel, setConfirmCancel] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -394,6 +396,93 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
             )}
           </p>
         </div>
+        {/* Session Recap Video */}
+        {(session.status === 'completed' || session.status === 'confirmed') && (
+          <div className="space-y-2 border-t border-[var(--border-subtle)] pt-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Session video</p>
+            {recapVideoUrl ? (
+              <div className="overflow-hidden rounded-lg">
+                <video
+                  src={recapVideoUrl}
+                  controls
+                  playsInline
+                  className="w-full rounded-lg bg-black"
+                  style={{ maxHeight: '200px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    void (async () => {
+                      await fetch(`/api/sessions/${session.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ recapVideoId: null }),
+                      })
+                      setRecapVideoUrl(null)
+                      onToast?.('Video removed', 'success')
+                    })()
+                  }}
+                  className="mt-1 text-[11px] text-[var(--text-tertiary)] hover:text-[var(--error)]"
+                >
+                  Remove video
+                </button>
+              </div>
+            ) : (
+              <label className={cn(
+                'flex cursor-pointer flex-col items-center gap-2 rounded-lg border border-dashed border-[var(--border-default)] py-6',
+                'text-[13px] text-[var(--text-tertiary)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]',
+                uploadingRecap && 'pointer-events-none opacity-50'
+              )}>
+                <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+                  <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {uploadingRecap ? 'Uploading...' : 'Upload session video'}
+                <span className="text-[11px]">Record a recap of what you worked on</span>
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    setUploadingRecap(true)
+                    try {
+                      const form = new FormData()
+                      form.append('file', file)
+                      const upRes = await fetch('/api/client/videos/upload', {
+                        method: 'POST',
+                        body: form,
+                      })
+                      const upJson = await upRes.json()
+                      if (!upRes.ok) {
+                        onToast?.(upJson.error ?? 'Upload failed', 'error')
+                        return
+                      }
+                      const videoId = upJson.data?.id
+                      const videoUrl = upJson.data?.playbackUrl ?? upJson.data?.url
+                      if (videoId) {
+                        await fetch(`/api/sessions/${session.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ recapVideoId: videoId }),
+                        })
+                        setRecapVideoUrl(videoUrl ?? null)
+                        onToast?.('Session video saved', 'success')
+                        onUpdated()
+                      }
+                    } catch {
+                      onToast?.('Upload failed — try again', 'error')
+                    } finally {
+                      setUploadingRecap(false)
+                    }
+                  }}
+                />
+              </label>
+            )}
+          </div>
+        )}
+
         <div className="space-y-2 border-t border-[var(--color-border)] pt-4">
           <p className="text-sm font-medium text-[var(--color-text-primary)]">Payment</p>
           {paymentState === 'none' ? (

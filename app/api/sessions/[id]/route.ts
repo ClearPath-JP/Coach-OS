@@ -61,6 +61,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
     if (typeof patch.notes !== 'undefined') updates.notes = patch.notes
     if (patch.status) updates.status = patch.status
+    if (typeof patch.recapVideoId !== 'undefined') updates.recap_video_id = patch.recapVideoId
     if (typeof patch.paid === 'boolean') {
       updates.paid_at = patch.paid ? new Date().toISOString() : null
     }
@@ -82,25 +83,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       updates.end_time = addMinutes(newStart, duration).toISOString()
     }
 
-    if (scheduleAffectsEnd && current.status !== 'completed') {
-      const { data: others } = await supabase
-        .from('sessions')
-        .select('id, scheduled_time, end_time, duration_minutes')
-        .eq('coach_id', user.id)
-        .neq('id', id)
-        .in('status', ['pending', 'confirmed'])
-
-      const windowStart = newStart
-      const windowEnd = addMinutes(newStart, duration)
-      const hasOverlap = (others ?? []).some((s) => {
-        const sStart = new Date(s.scheduled_time)
-        const sEnd = s.end_time ? new Date(s.end_time) : addMinutes(sStart, s.duration_minutes ?? 60)
-        return sEnd > windowStart && windowEnd > sStart
-      })
-      if (hasOverlap) {
-        return NextResponse.json({ error: 'That time overlaps another session' }, { status: 409 })
-      }
-    }
+    // No server-side overlap blocking — coach manages their own schedule.
 
     const { data, error } = await supabase
       .from('sessions')

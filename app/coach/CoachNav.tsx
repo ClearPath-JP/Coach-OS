@@ -3,29 +3,26 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, CreditCard, LogOut, MessageSquare, Swords, Users, Video, Settings } from 'lucide-react'
+import { CalendarDays, CreditCard, LogOut, Swords, Users, Video, Settings } from 'lucide-react'
 import { SignOutButton } from '@/components/layout/SignOutButton'
 
 const NAV_ITEMS = [
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarDays },
   { href: '/coach/clients', label: 'Clients', icon: Users },
-  { href: '/coach/messages', label: 'Messages', icon: MessageSquare },
   { href: '/coach/payments', label: 'Payments', icon: CreditCard },
   { href: '/coach/videos', label: 'Videos', icon: Video },
   { href: '/coach/programs', label: 'Programs', icon: Swords },
 ] as const
 
-/** Mobile dock: show 5 most-used items + settings (skip Programs to stay under 7) */
-const MOBILE_NAV_ITEMS = NAV_ITEMS.filter(item => item.label !== 'Programs')
+const MOBILE_NAV_ITEMS = NAV_ITEMS
 
 type CoachNavProps = {
   brandName: string
   coachName: string | null
   coachAvatarUrl: string | null
-  unreadMessageCount?: number
 }
 
-export function CoachNav({ brandName, coachName, coachAvatarUrl, unreadMessageCount = 0 }: CoachNavProps) {
+export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps) {
   const pathname = usePathname()
 
   const isActive = (href: string) =>
@@ -68,14 +65,7 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl, unreadMessageCo
               href={href}
               className={`coach-nav__link ${isActive(href) ? 'coach-nav__link--active' : ''}`}
             >
-              <span className="relative">
-                <Icon className="coach-nav__link-icon" strokeWidth={1.5} />
-                {label === 'Messages' && unreadMessageCount > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[9px] font-bold leading-none text-white">
-                    {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
-                  </span>
-                )}
-              </span>
+              <Icon className="coach-nav__link-icon" strokeWidth={1.5} />
               <span>{label}</span>
             </Link>
           ))}
@@ -105,14 +95,7 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl, unreadMessageCo
             href={href}
             className={`coach-nav__mobile-link ${isActive(href) ? 'coach-nav__mobile-link--active' : ''}`}
           >
-            <span className="relative">
-              <Icon className="size-5" strokeWidth={1.5} />
-              {label === 'Messages' && unreadMessageCount > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex size-3.5 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[8px] font-bold leading-none text-white">
-                  {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
-                </span>
-              )}
-            </span>
+            <Icon className="size-5" strokeWidth={1.5} />
             <span className="coach-nav__mobile-label">{label}</span>
           </Link>
         ))}
