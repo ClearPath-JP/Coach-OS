@@ -551,11 +551,84 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
   }
 
   const moduleCount = program.modules?.length ?? 0
+  const totalContent = (program.modules ?? []).reduce((sum, m) => sum + (m.content?.length ?? 0), 0)
+  const hasTitle = title.trim().length > 0
+  const hasModules = moduleCount > 0
+  const hasContent = totalContent > 0
+  const isPublished = status === 'published'
+
+  // Flow step calculation
+  const currentStep = !hasTitle ? 0 : !hasModules ? 1 : !hasContent ? 2 : !isPublished ? 3 : 4
+  const steps = [
+    { label: 'Details', done: hasTitle },
+    { label: 'Modules', done: hasModules },
+    { label: 'Content', done: hasContent },
+    { label: 'Publish', done: isPublished },
+  ]
 
   /* ─── Main layout ─── */
 
   return (
-    <div className="relative flex flex-col gap-6 pb-24 lg:flex-row lg:items-start lg:pb-0">
+    <div className="relative flex flex-col gap-0 pb-24 lg:pb-20">
+      {/* ────────── TOP FLOW BAR ────────── */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/coach/programs"
+            className="flex h-8 items-center gap-1 rounded-lg px-2 text-[13px] font-medium text-[var(--text-tertiary)] transition-colors hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+          >
+            <ChevronLeftIcon className="size-4" />
+            Programs
+          </Link>
+          <span className="text-[var(--border-default)]">/</span>
+          <span className="truncate text-[13px] font-medium text-[var(--text-primary)]">
+            {title || 'Untitled program'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Step indicators */}
+          <div className="hidden items-center gap-1 sm:flex">
+            {steps.map((step, i) => (
+              <div key={step.label} className="flex items-center gap-1">
+                {i > 0 && <div className={`h-px w-4 ${i <= currentStep ? 'bg-[var(--color-accent)]' : 'bg-[var(--border-default)]'}`} />}
+                <div className="flex items-center gap-1.5">
+                  <div className={`flex size-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                    step.done ? 'bg-[var(--color-accent)] text-white' :
+                    i === currentStep ? 'border-2 border-[var(--color-accent)] text-[var(--color-accent)]' :
+                    'border border-[var(--border-default)] text-[var(--text-tertiary)]'
+                  }`}>
+                    {step.done ? (
+                      <svg className="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                    ) : i + 1}
+                  </div>
+                  <span className={`text-[11px] font-medium ${i <= currentStep ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}`}>
+                    {step.label}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Primary action button */}
+          {!isPublished ? (
+            <Button
+              size="sm"
+              className="h-8"
+              disabled={!hasTitle || !hasModules || !hasContent || savingStatus}
+              onClick={toggleStatus}
+            >
+              {savingStatus ? 'Publishing...' : 'Publish'}
+            </Button>
+          ) : (
+            <Button size="sm" className="h-8" onClick={() => setAssignOpen(true)}>
+              <UsersIcon className="mr-1" />
+              Assign to clients
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* ────────── EDITOR BODY ────────── */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
       {/* ────────── LEFT PANEL ────────── */}
       <div className="flex w-full shrink-0 flex-col gap-5 lg:w-[380px] lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-1">
 
@@ -834,6 +907,58 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
           </div>
         </form>
       </Modal>
+
+      </div>{/* end EDITOR BODY */}
+
+      {/* ────────── BOTTOM ACTION BAR ────────── */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--border-default)] bg-[var(--bg-app)]/95 backdrop-blur-sm lg:bottom-0">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2 text-[13px] text-[var(--text-tertiary)]">
+            <span>{moduleCount} {moduleCount === 1 ? 'module' : 'modules'}</span>
+            <span aria-hidden>·</span>
+            <span>{totalContent} {totalContent === 1 ? 'item' : 'items'}</span>
+            {isPublished && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="flex items-center gap-1 text-[var(--color-success)]">
+                  <span className="size-1.5 rounded-full bg-[var(--color-success)]" />
+                  Published
+                </span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {!isPublished && hasModules && hasContent && (
+              <Button size="sm" className="h-9" disabled={savingStatus} onClick={toggleStatus}>
+                Publish program
+              </Button>
+            )}
+            {!isPublished && (!hasModules || !hasContent) && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-9"
+                onClick={() => {
+                  if (!hasModules) setAddModuleOpen(true)
+                  else if (selectedModule && !hasContent) setAddContentOpen(true)
+                }}
+              >
+                {!hasModules ? 'Add first module' : 'Add content'}
+              </Button>
+            )}
+            {isPublished && (
+              <>
+                <Button size="sm" variant="secondary" className="h-9" onClick={toggleStatus} disabled={savingStatus}>
+                  Unpublish
+                </Button>
+                <Button size="sm" className="h-9" onClick={() => setAssignOpen(true)}>
+                  Assign to clients
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* ────────── Assign modal ────────── */}
       <AssignProgramModal
