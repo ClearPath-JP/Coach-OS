@@ -262,16 +262,9 @@ export function CoachClientsPageContent() {
         header: 'Name',
         sortValue: (r) => `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim(),
         render: (client) => {
-          const e = client.engagement
-          const label = e?.label
           return (
             <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  'flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white',
-                  engagementThumbClass(label)
-                )}
-              >
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[11px] font-bold text-white">
                 {getInitials(client.first_name, client.last_name, client.email)}
               </div>
               <div className="min-w-0">
@@ -294,28 +287,13 @@ export function CoachClientsPageContent() {
         ),
       },
       {
-        key: 'engagement',
-        header: 'Engagement',
-        sortValue: (r) => r.engagement?.score ?? 0,
+        key: 'lastActive',
+        header: 'Last Active',
+        sortValue: (r) => lastActiveSortValue(r),
         render: (client) => {
-          const e = client.engagement
-          if (!e) return <span className="text-[13px] text-[var(--text-tertiary)]">—</span>
-          const dot = e.label === 'engaged' ? '🟢' : e.label === 'moderate' ? '🟡' : '🟠'
-          const last = client.rewards?.last_activity_at
-          const done = client.rewards?.assignments_completed ?? 0
-          const total = client.rewards?.assignments_total ?? 0
-          const streak = client.rewards?.current_streak_days ?? 0
-          const activeLine = last ? `Active ${formatDistanceToNow(new Date(last), { addSuffix: true })}` : 'No recent activity logged'
-          const tip = `${activeLine} · ${done}/${total} assignments complete · ${streak}-day streak`
-          const label = engagementLabelText(e.label)
+          const iso = lastActivityIso(client)
           return (
-            <Tooltip content={tip}>
-              <span className="inline-flex cursor-default items-center gap-1.5 text-[13px] font-medium" style={{ color: e.color }}>
-                <span aria-hidden>{dot}</span>
-                {label}{' '}
-                <span className="tabular-nums text-[var(--text-tertiary)]">({e.score}/10)</span>
-              </span>
-            </Tooltip>
+            <span className={cn('text-[13px]', lastActiveTextClass(iso))}>{formatLastActiveLine(iso)}</span>
           )
         },
       },
@@ -366,17 +344,6 @@ export function CoachClientsPageContent() {
                 />
               </div>
             </div>
-          )
-        },
-      },
-      {
-        key: 'lastActive',
-        header: 'Last active',
-        sortValue: (r) => lastActiveSortValue(r),
-        render: (client) => {
-          const iso = lastActivityIso(client)
-          return (
-            <span className={cn('text-[13px]', lastActiveTextClass(iso))}>{formatLastActiveLine(iso)}</span>
           )
         },
       },
@@ -520,9 +487,6 @@ export function CoachClientsPageContent() {
           >
             {visibleClients.map((client) => {
               const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'
-              const e = client.engagement
-              const engLabel = e ? engagementLabelText(e.label) : '—'
-              const engDot = e?.label === 'engaged' ? '🟢' : e?.label === 'moderate' ? '🟡' : '🟠'
               const sessionsN = client.sessionsCompletedCount ?? 0
               const showMenu = openMenuId === client.id
               return (
@@ -539,17 +503,8 @@ export function CoachClientsPageContent() {
                   role="link"
                   tabIndex={0}
                 >
-                  <div className={cn('relative flex h-20 min-h-[80px] items-center justify-center', engagementThumbClass(e?.label))}>
-                    <div
-                      className={cn(
-                        'relative flex size-12 items-center justify-center rounded-full text-[15px] font-bold text-white',
-                        e?.label === 'at-risk'
-                          ? 'bg-[var(--warning)]'
-                          : e?.label === 'moderate'
-                            ? 'bg-[var(--text-tertiary)]'
-                            : 'bg-[var(--cp-accent)]'
-                      )}
-                    >
+                  <div className="relative flex h-20 min-h-[80px] items-center justify-center bg-[var(--bg-muted)]">
+                    <div className="relative flex size-12 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[15px] font-bold text-white">
                       {getInitials(client.first_name, client.last_name, client.email)}
                       <span
                         className={cn(
@@ -608,8 +563,9 @@ export function CoachClientsPageContent() {
                         </details>
                       </div>
                     </div>
-                    <p className="mt-1 text-[12px] font-medium text-[var(--text-tertiary)]">
-                      <span aria-hidden>{engDot}</span> {engLabel}
+                    <p className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
+                      <StatusDot tone={statusTone(client.status)} />
+                      {client.status}
                     </p>
                     <div className="mt-3">
                       {(() => {

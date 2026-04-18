@@ -136,19 +136,22 @@ export function ClientAssignmentsPageContent() {
       )}
 
       <div className="flex flex-wrap gap-2">
-        {(['all', 'pending', 'completed'] as const).map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setFilter(f)}
-            className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium',
-              filter === f ? 'bg-[var(--cp-accent)] text-white' : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)]'
-            )}
-          >
-            {f === 'all' ? 'All' : f === 'pending' ? 'Pending' : 'Completed'}
-          </button>
-        ))}
+        {(['all', 'pending', 'completed'] as const).map((f) => {
+          const count = f === 'all' ? rows.length : f === 'pending' ? pendingCount : rows.filter((r) => r.status === 'approved').length
+          return (
+            <button
+              key={f}
+              type="button"
+              onClick={() => setFilter(f)}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                filter === f ? 'bg-[var(--cp-accent)] text-white' : 'bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:bg-[var(--bg-muted)]'
+              )}
+            >
+              {f === 'all' ? `All ${count}` : f === 'pending' ? `Due Soon ${count}` : `Completed ${count}`}
+            </button>
+          )
+        })}
       </div>
 
       <div className="space-y-3">
@@ -170,33 +173,46 @@ export function ClientAssignmentsPageContent() {
           const overdue = r.due_at && new Date(r.due_at) < new Date() && (r.status === 'pending' || r.status === 'returned')
           return (
             <Card key={r.id} className="p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-medium text-[var(--text-primary)]">{t?.title ?? 'Assignment'}</p>
-                  <p className={cn('text-xs', overdue ? 'text-red-600' : 'text-[var(--text-tertiary)]')}>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 text-[20px]" aria-hidden>
+                  {t?.assignment_type === 'video' ? '🎥' : t?.assignment_type === 'checklist' ? '✅' : '📝'}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-medium text-[var(--text-primary)]">{t?.title ?? 'Assignment'}</p>
+                    {t?.points ? (
+                      <span className="shrink-0 rounded-full bg-[var(--accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
+                        +{r.status === 'approved' ? r.points_awarded || t.points : t.points} XP
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className={cn('text-xs', overdue ? 'font-medium text-[var(--error)]' : 'text-[var(--text-tertiary)]')}>
                     {r.due_at
                       ? overdue
                         ? `Overdue ${formatDistanceToNow(new Date(r.due_at), { addSuffix: true })}`
                         : `Due ${formatDistanceToNow(new Date(r.due_at), { addSuffix: true })}`
-                      : null}
+                      : 'No due date'}
                   </p>
                 </div>
-                <Badge variant="pending">{t?.assignment_type}</Badge>
               </div>
               {t?.instructions ? (
                 <p className="mt-2 text-sm text-[var(--text-secondary)] line-clamp-3">{t.instructions}</p>
               ) : null}
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 {(r.status === 'pending' || r.status === 'returned') && t ? (
                   <Button type="button" size="sm" onClick={() => setSubmitFor(r)}>
-                    {r.status === 'returned' ? 'Resubmit' : 'Submit'}
+                    {r.status === 'returned' ? 'Resubmit' : t.assignment_type === 'video' ? 'Upload Video' : 'Mark Complete'}
                   </Button>
                 ) : null}
                 {r.status === 'approved' ? (
-                  <span className="text-sm text-emerald-700">+{r.points_awarded || t?.points || 0} XP</span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success-bg)] px-2.5 py-1 text-[12px] font-medium text-[var(--success)]">
+                    Earned +{r.points_awarded || t?.points || 0} XP
+                  </span>
                 ) : null}
                 {r.coach_feedback && (r.status === 'returned' || r.status === 'approved') ? (
-                  <p className="w-full text-sm text-[var(--text-secondary)]">Coach: {r.coach_feedback}</p>
+                  <p className="w-full rounded-[var(--radius-md)] bg-[var(--bg-subtle)] px-3 py-2 text-[13px] text-[var(--text-secondary)]">
+                    <span className="font-medium">Coach:</span> {r.coach_feedback}
+                  </p>
                 ) : null}
               </div>
             </Card>

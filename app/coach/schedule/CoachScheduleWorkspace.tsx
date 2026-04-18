@@ -22,6 +22,7 @@ import { AddAvailabilityModal } from './AddAvailabilityModal'
 import type { SessionForDrawer } from './SessionDetailDrawer'
 import { SessionDetailDrawer } from './SessionDetailDrawer'
 import { ScheduleTodayPanel } from './ScheduleTodayPanel'
+import type { DashboardStats, AttentionData } from './ScheduleTodayPanel'
 import { ScheduleWeekGrid } from './ScheduleWeekGrid'
 import { clientColorForId, fullName, type AvailabilityRule } from './schedule-lib'
 
@@ -68,6 +69,9 @@ export function CoachScheduleWorkspace() {
   const [toasts, setToasts] = useState<Toast[]>([])
   const [calendarSubscribeUrl, setCalendarSubscribeUrl] = useState<string | null>(null)
   const [calendarUrlLoading, setCalendarUrlLoading] = useState(true)
+
+  const [dashStats, setDashStats] = useState<DashboardStats | null>(null)
+  const [attention, setAttention] = useState<AttentionData | null>(null)
 
   const sessionFetchRange = useMemo(() => {
     if (desktopView === 'week' || desktopView === 'agenda') {
@@ -117,6 +121,26 @@ export function CoachScheduleWorkspace() {
   useEffect(() => {
     const t = window.setInterval(() => setNowTick(new Date()), 60_000)
     return () => window.clearInterval(t)
+  }, [])
+
+  // Fetch dashboard stats + attention data
+  useEffect(() => {
+    let cancelled = false
+    void Promise.all([
+      fetch('/api/coach/dashboard-summary', { credentials: 'include', cache: 'no-store' }),
+      fetch('/api/coach/dashboard-attention', { credentials: 'include', cache: 'no-store' }),
+    ]).then(async ([summaryRes, attentionRes]) => {
+      if (cancelled) return
+      if (summaryRes.ok) {
+        const j = (await summaryRes.json().catch(() => ({}))) as { data?: DashboardStats }
+        if (j.data) setDashStats(j.data)
+      }
+      if (attentionRes.ok) {
+        const j = (await attentionRes.json().catch(() => ({}))) as { data?: AttentionData }
+        if (j.data) setAttention(j.data)
+      }
+    }).catch(() => { /* ignore */ })
+    return () => { cancelled = true }
   }, [])
 
   useEffect(() => {
@@ -370,6 +394,8 @@ export function CoachScheduleWorkspace() {
             sessions={sessions}
             rules={rules}
             now={nowTick}
+            dashStats={dashStats}
+            attention={attention}
             onSessionClick={(s) => setDetailSession(s)}
             onBookSession={() => openBookModal(null, null)}
             onEditAvailability={() => setAvailabilityOpen(true)}
@@ -545,6 +571,8 @@ export function CoachScheduleWorkspace() {
               sessions={sessions}
               rules={rules}
               now={nowTick}
+              dashStats={dashStats}
+              attention={attention}
               onSessionClick={(s) => setDetailSession(s)}
               onBookSession={() => openBookModal(null, null)}
               onEditAvailability={() => setAvailabilityOpen(true)}

@@ -536,28 +536,57 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
         </Link>
       </div>
 
-      <PageHeader title={fullName}>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={statusBadgeVariant(client.status)}>{client.status}</Badge>
-          {client.engagement ? (
-            <span
-              className="inline-flex items-center rounded-full border border-[var(--border-default)] px-2.5 py-1 text-[12px] font-medium"
-              style={{ color: client.engagement.color }}
-            >
-              {client.engagement.label === 'engaged' ? '🟢' : client.engagement.label === 'moderate' ? '🟡' : '🟠'}{' '}
-              {engagementLabelText(client.engagement.label)}
-            </span>
-          ) : null}
-          <Button type="button" variant="secondary" className="min-h-[44px]" onClick={() => setQuickInvoiceOpen(true)}>
-            Quick invoice
-          </Button>
-          {tab === 'payments' && (
-            <Button type="button" className="min-h-[44px]" onClick={() => setPaymentModalOpen(true)}>
-              Record payment
+      {/* ── Profile Header Banner ── */}
+      <Card variant="elevated" padding="lg" className="overflow-hidden !p-0">
+        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[20px] font-bold text-white">
+            {(client.first_name?.[0] ?? '').toUpperCase()}{(client.last_name?.[0] ?? '').toUpperCase() || ''}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{fullName}</h1>
+              <Badge variant={statusBadgeVariant(client.status)}>{client.status}</Badge>
+            </div>
+            <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">
+              {client.email || 'No email'}{client.phone ? ` · ${client.phone}` : ''}
+            </p>
+            <p className="text-[12px] text-[var(--text-quaternary)]">
+              Member since {format(new Date(client.created_at), 'MMM yyyy')}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" className="min-h-[44px]" onClick={() => setQuickInvoiceOpen(true)}>
+              Send Invoice
             </Button>
-          )}
+            {tab === 'payments' && (
+              <Button type="button" className="min-h-[44px]" onClick={() => setPaymentModalOpen(true)}>
+                Record payment
+              </Button>
+            )}
+          </div>
         </div>
-      </PageHeader>
+      </Card>
+
+      {/* ── Stats Row ── */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
+          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">Total Sessions</p>
+          <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--text-primary)]">{client.rewards?.assignments_total != null ? daysAsClient : '—'}</p>
+        </div>
+        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
+          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">Assignments Done</p>
+          <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--text-primary)]">{client.rewards?.assignments_completed ?? 0}/{client.rewards?.assignments_total ?? 0}</p>
+        </div>
+        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
+          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">Active Program</p>
+          <p className="mt-1 truncate text-[14px] font-semibold text-[var(--text-primary)]">{clientPrograms[0]?.title ?? '—'}</p>
+        </div>
+        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
+          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">XP / Level</p>
+          <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</p>
+          <p className="text-[11px] text-[var(--text-tertiary)]">Level {client.rewards?.level ?? 1}</p>
+        </div>
+      </div>
 
       <div className="flex flex-wrap gap-2 border-b border-[var(--color-border)] pb-2" role="tablist" aria-label="Client sections">
         <button

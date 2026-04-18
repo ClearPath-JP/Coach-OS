@@ -96,6 +96,12 @@ export function ClientProfileContent({
               <span className="min-w-0 truncate">{email}</span>
             </div>
           </label>
+          <label className="block">
+            <span className="mb-1 block text-[13px] font-medium text-[var(--text-secondary)]">Phone</span>
+            <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-3 py-2 text-[14px] text-[var(--text-tertiary)]">
+              <span className="min-w-0 truncate text-[var(--text-quaternary)]">Contact your coach to update</span>
+            </div>
+          </label>
         </div>
         {message ? <p className="mt-2 text-[13px] text-[var(--text-secondary)]">{message}</p> : null}
         <Button type="button" variant="primary" className="mt-4 h-11 w-full sm:w-auto" disabled={saving} onClick={() => void save()}>
