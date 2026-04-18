@@ -1,3 +1,10 @@
+export type VideoCategory = {
+  id: string
+  name: string
+  color: string
+  position: number
+}
+
 export type Video = {
   id: string
   workspace_id: string
@@ -5,6 +12,7 @@ export type Video = {
   title: string
   description: string | null
   category: string | null
+  category_id: string | null
   drive_file_id: string | null
   drive_file_name: string | null
   drive_folder_id?: string | null

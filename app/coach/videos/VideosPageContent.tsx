@@ -12,7 +12,8 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { DriveFileBrowser } from '@/components/coach/DriveFileBrowser'
-import type { Video } from './types'
+import { getCategoryColor } from '@/lib/video-category-colors'
+import type { Video, VideoCategory } from './types'
 
 type AccessDirect = {
   assignmentId: string
@@ -56,6 +57,7 @@ export function VideosPageContent() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [bulkCategoryOpen, setBulkCategoryOpen] = useState(false)
+  const [categories, setCategories] = useState<VideoCategory[]>([])
   const router = useRouter()
 
   const fetchVideos = useCallback(async () => {
@@ -65,19 +67,22 @@ export function VideosPageContent() {
     else setError(data.error ?? 'Could not load videos')
   }, [])
 
-  const uniqueCategories = useMemo(() => {
-    const s = new Set<string>()
-    for (const v of videos) {
-      const c = v.category?.trim()
-      if (c) s.add(c)
-    }
-    return [...s].sort((a, b) => a.localeCompare(b))
-  }, [videos])
+  const fetchCategories = useCallback(async () => {
+    const res = await fetch('/api/video-categories')
+    const data = await res.json()
+    if (res.ok) setCategories(data.data ?? [])
+  }, [])
+
+  const categoryMap = useMemo(() => {
+    const m = new Map<string, VideoCategory>()
+    for (const c of categories) m.set(c.id, c)
+    return m
+  }, [categories])
 
   const filteredVideos = useMemo(() => {
     if (categoryFilter === 'all') return videos
-    if (categoryFilter === '__none__') return videos.filter((v) => !v.category?.trim())
-    return videos.filter((v) => (v.category ?? '').trim() === categoryFilter)
+    if (categoryFilter === '__none__') return videos.filter((v) => !v.category_id)
+    return videos.filter((v) => v.category_id === categoryFilter)
   }, [videos, categoryFilter])
 
   useEffect(() => {
@@ -85,7 +90,7 @@ export function VideosPageContent() {
     void (async () => {
       setLoading(true)
       try {
-        await Promise.all([fetchVideos()])
+        await Promise.all([fetchVideos(), fetchCategories()])
       } finally {
         if (mounted) setLoading(false)
       }
@@ -225,9 +230,9 @@ export function VideosPageContent() {
             >
               <option value="all">All videos</option>
               <option value="__none__">Uncategorized</option>
-              {uniqueCategories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -278,10 +283,15 @@ export function VideosPageContent() {
 
         {!error && videos.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredVideos.map((video) => (
+            {filteredVideos.map((video) => {
+              const cat = video.category_id ? categoryMap.get(video.category_id) : null
+              const catColor = cat ? getCategoryColor(cat.color) : null
+              return (
               <VideoCard
                 key={video.id}
                 video={video}
+                categoryName={cat?.name ?? null}
+                categoryColor={catColor ? { bg: catColor.bg, text: catColor.text, dot: catColor.dot } : null}
                 selectMode={selectMode}
                 selected={selectedIds.has(video.id)}
                 onToggleSelect={() => toggleSelect(video.id)}
@@ -291,7 +301,8 @@ export function VideosPageContent() {
                 onRequestDelete={() => setDeleteVideo(video)}
                 onAddToProgram={() => setAddToProgramVideo(video)}
               />
-            ))}
+              )
+            })}
           </div>
         )}
 
@@ -382,7 +393,7 @@ export function VideosPageContent() {
       {manageVideo && (
         <VideoManageModal
           video={manageVideo}
-          categorySuggestions={uniqueCategories}
+          categorySuggestions={categories.map((c) => c.name)}
           onClose={() => setManageVideo(null)}
           onSaved={(row) => {
             setVideos((prev) =>
@@ -423,7 +434,7 @@ export function VideosPageContent() {
       {bulkCategoryOpen && (
         <BulkCategoryModal
           count={selectedIds.size}
-          suggestions={uniqueCategories}
+          suggestions={categories.map((c) => c.name)}
           onClose={() => setBulkCategoryOpen(false)}
           onApply={async (category) => {
             const ids = [...selectedIds]
@@ -1039,6 +1050,8 @@ function formatFileSize(bytes: number): string {
 
 function VideoCard({
   video,
+  categoryName,
+  categoryColor,
   selectMode,
   selected,
   onToggleSelect,
@@ -1049,6 +1062,8 @@ function VideoCard({
   onAddToProgram,
 }: {
   video: Video
+  categoryName: string | null
+  categoryColor: { bg: string; text: string; dot: string } | null
   selectMode: boolean
   selected: boolean
   onToggleSelect: () => void
@@ -1060,39 +1075,25 @@ function VideoCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const previewRef = useRef<HTMLVideoElement | null>(null)
-  const isDrive = Boolean(video.drive_file_id?.trim())
   const isReady = video.processing_status === 'ready'
   const isFailed = video.processing_status === 'failed'
-  const isProcessing =
-    !isDrive && (video.processing_status === 'processing' || video.processing_status === 'queued')
-  const canPlay = isReady && (isDrive || Boolean(video.playback_url?.trim()))
-
-  const startPreview = async () => {
-    const el = previewRef.current
-    if (!el) return
-    try {
-      await el.play()
-    } catch {
-      // Ignore autoplay restrictions
-    }
-  }
-
-  const stopPreview = () => {
-    const el = previewRef.current
-    if (!el) return
-    el.pause()
-    el.currentTime = 0
-  }
+  const isProcessing = video.processing_status === 'processing' || video.processing_status === 'queued'
+  const canPlay = isReady && Boolean(video.playback_url?.trim() || video.drive_file_id?.trim())
 
   return (
-    <Card className={`overflow-hidden p-0 ${selected ? 'ring-2 ring-[var(--color-accent)]' : ''}`}>
-      <div className="relative aspect-video bg-[var(--color-border)]" onMouseEnter={startPreview} onMouseLeave={stopPreview}>
-        {selectMode && (
-          <label className="absolute left-2 top-2 z-30 flex cursor-pointer items-center gap-2 rounded-md bg-black/50 px-2 py-1 text-xs text-white">
-            <input type="checkbox" checked={selected} onChange={onToggleSelect} className="rounded border-white/40" />
-            Select
-          </label>
-        )}
+    <div
+      className={`group relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-200 ${
+        selected ? 'ring-2 ring-[var(--color-accent)]' : 'hover:shadow-md hover:-translate-y-0.5 hover:border-[var(--border-strong)]'
+      }`}
+    >
+      {/* Thumbnail / Preview */}
+      <div
+        className="relative aspect-video cursor-pointer bg-neutral-900"
+        onClick={canPlay ? onPlay : undefined}
+        onMouseEnter={() => { const el = previewRef.current; if (el) void el.play().catch(() => {}) }}
+        onMouseLeave={() => { const el = previewRef.current; if (el) { el.pause(); el.currentTime = 0 } }}
+      >
+        {/* Video preview */}
         {isReady && video.playback_url?.trim() ? (
           <video
             ref={previewRef}
@@ -1103,150 +1104,150 @@ function VideoCard({
             preload="metadata"
             loop
           />
-        ) : video.thumbnail_url && !video.drive_thumbnail_url ? (
-          <Image
-            src={video.thumbnail_url}
-            alt=""
-            fill
-            loading="lazy"
-            className="object-cover"
-            sizes="(max-width: 768px) 50vw, 33vw"
-          />
         ) : (
-          <div className="h-full w-full flex items-center justify-center">
-            <svg className="w-12 h-12 text-[var(--color-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="2" y="2" width="20" height="20" rx="2" ry="2" />
-              <path d="M10 8l6 4-6 4V8z" />
+          <div className="flex h-full w-full items-center justify-center bg-neutral-800">
+            <svg className="size-10 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
+              <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
         )}
+
+        {/* Select checkbox */}
+        {selectMode && (
+          <label className="absolute left-2.5 top-2.5 z-30 flex cursor-pointer items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-[11px] font-medium text-white backdrop-blur-sm">
+            <input type="checkbox" checked={selected} onChange={onToggleSelect} className="rounded border-white/50 bg-white/20" />
+            Select
+          </label>
+        )}
+
+        {/* Category badge (top-left) */}
+        {categoryName && categoryColor && !selectMode && (
+          <span className={`absolute left-2.5 top-2.5 z-20 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold backdrop-blur-sm ${categoryColor.bg} ${categoryColor.text}`}>
+            <span className="inline-block size-1.5 rounded-full" style={{ backgroundColor: categoryColor.dot }} />
+            {categoryName}
+          </span>
+        )}
+
+        {/* Duration badge (bottom-right, YouTube style) */}
+        {isReady && video.duration_seconds != null && video.duration_seconds > 0 && (
+          <span className="absolute bottom-2 right-2 z-20 rounded bg-black/75 px-1.5 py-0.5 text-[11px] font-medium text-white tabular-nums backdrop-blur-sm">
+            {formatDuration(video.duration_seconds)}
+          </span>
+        )}
+
+        {/* Play overlay on hover */}
         {canPlay && (
-          <button
-            type="button"
-            onClick={onPlay}
-            className="absolute inset-0 flex items-center justify-center bg-[var(--color-ink)]/30 opacity-0 hover:opacity-100 transition-opacity rounded-t-lg z-10"
-            aria-label={`Play ${video.title}`}
-          >
-            <span className="rounded-full bg-white/90 p-3">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="rounded-full bg-white/90 p-3 shadow-lg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--color-ink)">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </span>
-          </button>
-        )}
-        <div className="absolute top-2 right-2 z-20">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setMenuOpen((o) => !o)}
-              className="min-h-[44px] min-w-[44px] rounded-lg p-2 text-[var(--color-muted)] hover:bg-white/20 hover:text-white"
-              aria-label="Options"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="6" r="1.5" />
-                <circle cx="12" cy="12" r="1.5" />
-                <circle cx="12" cy="18" r="1.5" />
-              </svg>
-            </button>
-            {menuOpen && (
-              <>
-                <button type="button" className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden />
-                <div className="absolute right-0 top-full z-20 mt-1 w-56 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] py-1 shadow-lg">
-                  <button
-                    type="button"
-                    className="block w-full px-4 py-2 text-left text-sm text-[var(--color-ink)] hover:bg-[var(--color-surface)]"
-                    onClick={() => {
-                      onManage()
-                      setMenuOpen(false)
-                    }}
-                  >
-                    Manage (title, category, access…)
-                  </button>
-                  <button
-                    type="button"
-                    className="block w-full px-4 py-2 text-left text-sm text-[var(--color-ink)] hover:bg-[var(--color-surface)]"
-                    onClick={() => {
-                      onAddToProgram()
-                      setMenuOpen(false)
-                    }}
-                  >
-                    Add to program
-                  </button>
-                  <button
-                    type="button"
-                    className="block w-full px-4 py-2 text-left text-sm text-[var(--color-error)] hover:bg-[var(--color-error-light)]"
-                    onClick={() => {
-                      onRequestDelete()
-                      setMenuOpen(false)
-                    }}
-                  >
-                    Delete…
-                  </button>
-                </div>
-              </>
-            )}
           </div>
-        </div>
-      </div>
-      <div className="p-3">
-        {video.category?.trim() ? (
-          <span className="mb-1 inline-block rounded-full bg-[var(--color-surface)] px-2 py-0.5 text-xs font-medium text-[var(--color-muted)]">
-            {video.category.trim()}
-          </span>
-        ) : null}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-medium text-[var(--color-ink)] line-clamp-2 min-w-0 flex-1">{video.title}</h3>
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-[36px] shrink-0 px-3 py-1.5 text-xs"
-            onClick={(e) => {
-              e.stopPropagation()
-              onManage()
-            }}
-            aria-label={`Edit title: ${video.title}`}
-          >
-            Edit
-          </Button>
-        </div>
-        {video.description ? <p className="mt-1 text-sm text-[var(--color-muted)] line-clamp-2">{video.description}</p> : null}
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[var(--color-muted)]">
-          {isReady && video.duration_seconds != null && <span>{formatDuration(video.duration_seconds)}</span>}
-          {isReady && video.file_size_bytes != null && <span>{formatFileSize(video.file_size_bytes)}</span>}
-          {isReady && (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">Ready</span>
-          )}
-        </div>
+        )}
+
+        {/* Processing overlay */}
         {isProcessing && (
-          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 animate-pulse">
-            Processing (legacy pipeline)
-          </span>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
+            <div className="flex flex-col items-center gap-2">
+              <svg className="size-6 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <span className="text-[11px] font-medium text-white/90">Processing</span>
+            </div>
+          </div>
         )}
-        {!isDrive && video.processing_status === 'queued' && (
-          <span className="mt-2 inline-block rounded-full bg-[var(--color-muted)]/20 px-2 py-0.5 text-xs font-medium text-[var(--color-muted)]">
-            Queued (legacy)
-          </span>
-        )}
+
+        {/* Failed overlay */}
         {isFailed && (
-          <div className="mt-2 space-y-1">
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-[var(--color-error)]/15 px-2 py-0.5 text-xs font-medium text-[var(--color-error)]">
-                Failed
-              </span>
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-red-900/40 backdrop-blur-[2px]">
+            <div className="flex flex-col items-center gap-2">
+              <svg className="size-6 text-red-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M15 9l-6 6M9 9l6 6" />
+              </svg>
+              <span className="text-[11px] font-medium text-red-200">Failed</span>
               {onRetry && (
-                <Button variant="secondary" className="min-h-[32px] text-xs" onClick={onRetry}>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onRetry() }}
+                  className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium text-white hover:bg-white/30"
+                >
                   Retry
-                </Button>
+                </button>
               )}
             </div>
-            {video.processing_error ? (
-              <p className="text-xs text-[var(--color-error)] break-words line-clamp-4" title={video.processing_error}>
-                {video.processing_error}
-              </p>
-            ) : null}
           </div>
         )}
+
+        {/* 3-dot menu */}
+        <div className="absolute right-2 top-2 z-20">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o) }}
+            className="rounded-lg p-1.5 text-white/70 opacity-0 transition-opacity hover:bg-white/20 hover:text-white group-hover:opacity-100"
+            aria-label="Options"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="6" r="1.5" />
+              <circle cx="12" cy="12" r="1.5" />
+              <circle cx="12" cy="18" r="1.5" />
+            </svg>
+          </button>
+          {menuOpen && (
+            <>
+              <button type="button" className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden />
+              <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] py-1 shadow-xl">
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                  onClick={() => { onManage(); setMenuOpen(false) }}
+                >
+                  <svg className="size-4 text-[var(--text-tertiary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Manage
+                </button>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                  onClick={() => { onAddToProgram(); setMenuOpen(false) }}
+                >
+                  <svg className="size-4 text-[var(--text-tertiary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                  Add to program
+                </button>
+                <div className="my-1 border-t border-[var(--border-default)]" />
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[var(--error)] hover:bg-[var(--error-bg)]"
+                  onClick={() => { onRequestDelete(); setMenuOpen(false) }}
+                >
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  Delete
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </Card>
+
+      {/* Card body */}
+      <div className="px-3 pb-3 pt-2.5">
+        <h3
+          className="cursor-pointer truncate text-[14px] font-medium text-[var(--text-primary)] hover:text-[var(--color-accent)]"
+          onClick={onManage}
+          title={video.title}
+        >
+          {video.title}
+        </h3>
+        <div className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
+          {video.file_size_bytes != null && <span>{formatFileSize(video.file_size_bytes)}</span>}
+          {video.file_size_bytes != null && video.created_at && <span aria-hidden>·</span>}
+          {video.created_at && (
+            <span>{new Date(video.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
