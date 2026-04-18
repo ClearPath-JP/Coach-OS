@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { DriveFileBrowser } from '@/components/coach/DriveFileBrowser'
-import { getCategoryColor } from '@/lib/video-category-colors'
+import { getCategoryColor, CATEGORY_COLORS, type CategoryColorKey } from '@/lib/video-category-colors'
 import type { Video, VideoCategory } from './types'
 
 type AccessDirect = {
@@ -58,6 +58,7 @@ export function VideosPageContent() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [bulkCategoryOpen, setBulkCategoryOpen] = useState(false)
   const [categories, setCategories] = useState<VideoCategory[]>([])
+  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false)
   const router = useRouter()
 
   const fetchVideos = useCallback(async () => {
@@ -238,6 +239,16 @@ export function VideosPageContent() {
             </select>
             <Button
               type="button"
+              variant="ghost"
+              size="sm"
+              className="h-9 min-h-9 text-[var(--text-tertiary)]"
+              onClick={() => setCategoryManagerOpen(true)}
+            >
+              <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              Manage
+            </Button>
+            <Button
+              type="button"
               variant={selectMode ? 'primary' : 'secondary'}
               size="sm"
               className="h-9 min-h-9"
@@ -312,6 +323,14 @@ export function VideosPageContent() {
       </div>
 
       {toast ? <div className="toast-coach">{toast}</div> : null}
+
+      {categoryManagerOpen && (
+        <CategoryManagerModal
+          categories={categories}
+          onClose={() => setCategoryManagerOpen(false)}
+          onUpdate={() => { void fetchCategories(); void fetchVideos() }}
+        />
+      )}
 
       {infoOpen && (
         <Modal isOpen onClose={() => setInfoOpen(false)} title="How to add videos from your phone" className="w-full max-w-none md:max-w-md">
@@ -457,6 +476,165 @@ export function VideosPageContent() {
         />
       )}
     </>
+  )
+}
+
+function CategoryManagerModal({
+  categories,
+  onClose,
+  onUpdate,
+}: {
+  categories: VideoCategory[]
+  onClose: () => void
+  onUpdate: () => void
+}) {
+  const [newName, setNewName] = useState('')
+  const [newColor, setNewColor] = useState<CategoryColorKey>('blue')
+  const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editColor, setEditColor] = useState<CategoryColorKey>('blue')
+
+  const handleCreate = async () => {
+    if (!newName.trim()) return
+    setSaving(true)
+    const res = await fetch('/api/video-categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name: newName.trim(), color: newColor }),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setNewName('')
+      setNewColor('blue')
+      onUpdate()
+    }
+  }
+
+  const handleUpdate = async (id: string) => {
+    if (!editName.trim()) return
+    setSaving(true)
+    const res = await fetch(`/api/video-categories?id=${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name: editName.trim(), color: editColor }),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setEditingId(null)
+      onUpdate()
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/video-categories?id=${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+    if (res.ok) onUpdate()
+  }
+
+  return (
+    <Modal isOpen onClose={onClose} title="Manage categories" className="w-full max-w-none md:max-w-md">
+      <div className="space-y-4">
+        {/* Existing categories */}
+        {categories.length > 0 && (
+          <div className="space-y-1">
+            {categories.map((cat) => {
+              const c = getCategoryColor(cat.color)
+              const isEditing = editingId === cat.id
+              if (isEditing) {
+                return (
+                  <div key={cat.id} className="flex items-center gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-2">
+                    <Input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="h-8 flex-1 text-[13px]"
+                      onKeyDown={(e) => { if (e.key === 'Enter') void handleUpdate(cat.id) }}
+                    />
+                    <div className="flex gap-1">
+                      {CATEGORY_COLORS.map((pc) => (
+                        <button
+                          key={pc.key}
+                          type="button"
+                          onClick={() => setEditColor(pc.key)}
+                          className={`size-5 rounded-full border-2 transition-transform ${editColor === pc.key ? 'scale-125 border-[var(--text-primary)]' : 'border-transparent hover:scale-110'}`}
+                          style={{ backgroundColor: pc.dot }}
+                          aria-label={pc.label}
+                        />
+                      ))}
+                    </div>
+                    <Button size="sm" className="h-7 text-[11px]" disabled={saving} onClick={() => void handleUpdate(cat.id)}>
+                      Save
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => setEditingId(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                )
+              }
+              return (
+                <div key={cat.id} className="group flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-[var(--bg-muted)]">
+                  <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: c.dot }} />
+                  <span className="flex-1 text-[14px] font-medium text-[var(--text-primary)]">{cat.name}</span>
+                  <button
+                    type="button"
+                    className="rounded p-1 text-[var(--text-tertiary)] opacity-0 hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)] group-hover:opacity-100"
+                    onClick={() => { setEditingId(cat.id); setEditName(cat.name); setEditColor(cat.color as CategoryColorKey) }}
+                    aria-label={`Edit ${cat.name}`}
+                  >
+                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded p-1 text-[var(--text-tertiary)] opacity-0 hover:bg-[var(--error-bg)] hover:text-[var(--error)] group-hover:opacity-100"
+                    onClick={() => void handleDelete(cat.id)}
+                    aria-label={`Delete ${cat.name}`}
+                  >
+                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {categories.length === 0 && (
+          <p className="py-4 text-center text-[13px] text-[var(--text-tertiary)]">No categories yet. Create one below.</p>
+        )}
+
+        {/* Create new category */}
+        <div className="border-t border-[var(--border-default)] pt-4">
+          <p className="mb-2 text-[13px] font-medium text-[var(--text-secondary)]">New category</p>
+          <div className="flex items-center gap-2">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Category name"
+              className="h-9 flex-1 text-[13px]"
+              onKeyDown={(e) => { if (e.key === 'Enter') void handleCreate() }}
+            />
+            <Button size="sm" className="h-9" disabled={saving || !newName.trim()} onClick={() => void handleCreate()}>
+              Add
+            </Button>
+          </div>
+          <div className="mt-2 flex gap-1.5">
+            {CATEGORY_COLORS.map((pc) => (
+              <button
+                key={pc.key}
+                type="button"
+                onClick={() => setNewColor(pc.key)}
+                className={`size-6 rounded-full border-2 transition-all ${newColor === pc.key ? 'scale-110 border-[var(--text-primary)] shadow-sm' : 'border-transparent hover:scale-105'}`}
+                style={{ backgroundColor: pc.dot }}
+                aria-label={pc.label}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </Modal>
   )
 }
 
