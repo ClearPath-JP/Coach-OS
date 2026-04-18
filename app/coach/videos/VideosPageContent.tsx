@@ -1093,17 +1093,7 @@ function VideoCard({
             Select
           </label>
         )}
-        {video.drive_thumbnail_url || video.thumbnail_url ? (
-          <Image
-            src={(video.drive_thumbnail_url || video.thumbnail_url) as string}
-            alt=""
-            fill
-            loading="lazy"
-            className="object-cover"
-            sizes="(max-width: 768px) 50vw, 33vw"
-            unoptimized={!!video.drive_thumbnail_url}
-          />
-        ) : isReady && video.playback_url?.trim() ? (
+        {isReady && video.playback_url?.trim() ? (
           <video
             ref={previewRef}
             src={video.playback_url}
@@ -1112,6 +1102,15 @@ function VideoCard({
             playsInline
             preload="metadata"
             loop
+          />
+        ) : video.thumbnail_url && !video.drive_thumbnail_url ? (
+          <Image
+            src={video.thumbnail_url}
+            alt=""
+            fill
+            loading="lazy"
+            className="object-cover"
+            sizes="(max-width: 768px) 50vw, 33vw"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center">
