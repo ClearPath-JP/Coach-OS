@@ -36,6 +36,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
+      "media-src 'self' https://*.supabase.co blob:",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.upstash.io",
       "frame-src 'none'",
       // frame-ancestors overrides X-Frame-Options in modern browsers.
