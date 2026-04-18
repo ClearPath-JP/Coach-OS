@@ -4,11 +4,11 @@
  * Includes both legacy presets and stance-derived accent colors.
  */
 
-export const PHASE4_DEFAULT_COACH_ACCENT = '#DC2626' as const
+export const PHASE4_DEFAULT_COACH_ACCENT = '#7F1D1D' as const
 
 export const ALLOWED_COACH_ACCENT_HEXES = [
   // Combat Light default
-  '#DC2626', // Crimson Red
+  '#7F1D1D', // Burgundy Maroon
   // Legacy presets
   '#1D4ED8', // Sapphire
   '#4F46E5', // Royal
