@@ -46,10 +46,11 @@ function previewLetters(title: string): string {
 function ProgramCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
-      <div className="h-[160px] animate-pulse bg-[var(--bg-muted)]" />
-      <div className="space-y-2 p-3">
-        <div className="h-4 w-2/3 animate-pulse rounded bg-[var(--bg-muted)]" />
-        <div className="h-3 w-full animate-pulse rounded bg-[var(--bg-muted)]" />
+      <div className="h-[140px] animate-pulse bg-[var(--bg-muted)]" />
+      <div className="space-y-3 p-4">
+        <div className="h-4 w-3/4 animate-pulse rounded-[4px] bg-[var(--bg-muted)]" />
+        <div className="h-3 w-1/2 animate-pulse rounded-[4px] bg-[var(--bg-muted)]" />
+        <div className="h-3 w-1/3 animate-pulse rounded-[4px] bg-[var(--bg-muted)]" />
       </div>
     </div>
   )
@@ -276,7 +277,7 @@ export function ProgramsPageContent() {
       </div>
 
       {loading && (
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
           {[1, 2, 3].map((i) => (
             <ProgramCardSkeleton key={i} />
           ))}
@@ -308,11 +309,11 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && !error && programs.length > 0 && view === 'grid' && (
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
           {filtered.map((prog) => (
             <div
               key={prog.id}
-              className="card-interactive group relative flex w-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-left"
+              className="card-interactive group relative flex w-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-left shadow-[var(--shadow-xs)]"
               onClick={() => router.push(`/coach/programs/${prog.id}`)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -323,63 +324,59 @@ export function ProgramsPageContent() {
               role="link"
               tabIndex={0}
             >
+              {/* --- Thumbnail / Gradient header --- */}
               <div
-                className="relative h-[160px] shrink-0 overflow-hidden"
+                className="relative h-[140px] shrink-0 overflow-hidden"
                 style={prog.thumbnail_url ? undefined : { background: programGradient(prog.title) }}
               >
                 {prog.thumbnail_url && (
                   <img
                     src={prog.thumbnail_url}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                   />
                 )}
-                <span
-                  className={cn(
-                    'absolute right-2 top-2 z-[1] rounded-[8px] px-2 py-0.5 text-[11px] font-semibold',
-                    prog.status === 'published'
-                      ? 'bg-[var(--cp-offwhite)] text-[var(--cp-accent)]'
-                      : 'bg-[var(--cp-offwhite)]/60 text-white'
-                  )}
-                >
-                  {prog.status === 'published' ? 'Published' : 'Draft'}
-                </span>
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.35)_0%,transparent_55%)]" />
-                <span className="absolute bottom-2 left-2 z-[1] text-[11px] font-semibold text-white drop-shadow-sm">
-                  {prog.total_modules} modules
-                </span>
                 {!prog.thumbnail_url && (
                   <div className="flex h-full items-center justify-center">
-                    <span className="text-[32px] font-bold text-white drop-shadow-sm">{previewLetters(prog.title)}</span>
+                    <span className="text-[36px] font-bold tracking-tight text-white/90 drop-shadow-sm">{previewLetters(prog.title)}</span>
                   </div>
                 )}
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.4)_0%,transparent_60%)]" />
+                <span className="absolute bottom-2.5 left-3 z-[1] text-[12px] font-medium text-white/90 drop-shadow-sm">
+                  {prog.total_modules} {prog.total_modules === 1 ? 'module' : 'modules'}
+                </span>
               </div>
-              <div className="p-4">
+
+              {/* --- Card body --- */}
+              <div className="flex flex-1 flex-col p-4">
+                {/* Title row + kebab menu */}
                 <div className="flex items-start justify-between gap-2">
-                  <p className="line-clamp-2 min-w-0 flex-1 text-[15px] font-semibold leading-snug text-[var(--text-primary)]">{prog.title}</p>
-                  <div className="relative shrink-0 opacity-0 transition-opacity group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                  <h3 className="line-clamp-2 min-w-0 flex-1 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--text-primary)]">
+                    {prog.title}
+                  </h3>
+                  <div className="relative shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
                     <details open={menuId === prog.id} onToggle={(ev) => setMenuId((ev.target as HTMLDetailsElement).open ? prog.id : null)}>
-                      <summary className="flex size-6 cursor-pointer list-none items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]">
+                      <summary className="flex size-7 cursor-pointer list-none items-center justify-center rounded-md text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)]">
                         ···
                       </summary>
                       <div className="absolute right-0 z-20 mt-1 min-w-[160px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] py-1 shadow-[var(--shadow-lg)]">
                         <Link
                           href={`/coach/programs/${prog.id}`}
-                          className="block px-3 py-2 text-left text-[13px] hover:bg-[var(--bg-muted)]"
+                          className="block px-3 py-2 text-left text-[13px] text-[var(--text-secondary)] hover:bg-[var(--bg-muted)]"
                           onClick={() => setMenuId(null)}
                         >
                           Edit
                         </Link>
                         <button
                           type="button"
-                          className="block w-full px-3 py-2 text-left text-[13px] hover:bg-[var(--bg-muted)]"
+                          className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-secondary)] hover:bg-[var(--bg-muted)]"
                           onClick={() => setAssignProgramId(prog.id)}
                         >
                           Assign
                         </button>
                         <button
                           type="button"
-                          className="block w-full px-3 py-2 text-left text-[13px] hover:bg-[var(--bg-muted)]"
+                          className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-secondary)] hover:bg-[var(--bg-muted)]"
                           onClick={() => void archiveProgram(prog.id)}
                         >
                           Archive
@@ -395,14 +392,44 @@ export function ProgramsPageContent() {
                     </details>
                   </div>
                 </div>
+
+                {/* Status pill + client count */}
+                <div className="mt-2.5 flex items-center gap-2">
+                  <span
+                    className={cn(
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-none',
+                      prog.status === 'published'
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'mr-1.5 inline-block size-1.5 rounded-full',
+                        prog.status === 'published' ? 'bg-emerald-500' : 'bg-[var(--text-tertiary)]'
+                      )}
+                    />
+                    {prog.status === 'published' ? 'Published' : 'Draft'}
+                  </span>
+                  <span className="text-[12px] text-[var(--text-tertiary)]">
+                    {(prog.assigned_count ?? 0) === 0
+                      ? 'No clients assigned'
+                      : `${prog.assigned_count} client${prog.assigned_count === 1 ? '' : 's'} assigned`}
+                  </span>
+                </div>
+
+                {/* Description (if present) */}
                 {prog.description?.trim() ? (
-                  <p className="mt-1 line-clamp-1 text-[12px] text-[var(--text-tertiary)]">{prog.description}</p>
+                  <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-[var(--text-tertiary)]">{prog.description}</p>
                 ) : null}
               </div>
-              <div className="mt-auto flex items-center justify-between border-t border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-4 py-2.5 text-[13px] text-[var(--text-tertiary)]">
-                <span>{prog.assigned_count ?? 0} clients assigned</span>
-                <span className="text-[var(--text-quaternary)]">
-                  {prog.updated_at ? formatDistanceToNow(new Date(prog.updated_at), { addSuffix: true }) : '—'}
+
+              {/* --- Footer --- */}
+              <div className="mt-auto border-t border-[var(--border-default)] px-4 py-2.5">
+                <span className="text-[12px] text-[var(--text-tertiary)]">
+                  {prog.updated_at
+                    ? `Edited ${formatDistanceToNow(new Date(prog.updated_at), { addSuffix: true })}`
+                    : 'No edits yet'}
                 </span>
               </div>
             </div>
@@ -411,41 +438,49 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && !error && programs.length > 0 && view === 'list' && (
-        <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)]">
-          <ul className="divide-y divide-[var(--border-subtle)]">
+        <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]">
+          <ul className="divide-y divide-[var(--border-default)]">
             {filtered.map((prog) => (
               <li key={prog.id}>
                 <Link
                   href={`/coach/programs/${prog.id}`}
-                  className="flex items-center gap-4 px-4 py-3 transition-colors duration-[80ms] hover:bg-[var(--bg-subtle)]"
+                  className="flex items-center gap-4 px-4 py-3.5 transition-colors duration-100 hover:bg-[var(--bg-subtle)]"
                 >
                   {prog.thumbnail_url ? (
                     <img
                       src={prog.thumbnail_url}
                       alt=""
-                      className="size-10 shrink-0 rounded-full object-cover"
+                      className="size-10 shrink-0 rounded-[var(--radius-md)] object-cover"
                     />
                   ) : (
                     <div
-                      className="size-10 shrink-0 rounded-full text-center text-[11px] font-bold leading-10 text-white"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[12px] font-bold text-white"
                       style={{ background: programGradient(prog.title) }}
                     >
                       {previewLetters(prog.title)}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-[var(--text-primary)]">{prog.title}</p>
-                    <p className="text-[12px] text-[var(--text-tertiary)]">
-                      {prog.total_modules} modules · {prog.assigned_count ?? 0} clients
+                    <p className="truncate text-[14px] font-semibold text-[var(--text-primary)]">{prog.title}</p>
+                    <p className="mt-0.5 text-[12px] text-[var(--text-tertiary)]">
+                      {prog.total_modules} {prog.total_modules === 1 ? 'module' : 'modules'} · {prog.assigned_count ?? 0} client{(prog.assigned_count ?? 0) === 1 ? '' : 's'}
                     </p>
                   </div>
                   <span
                     className={cn(
-                      'shrink-0 rounded px-2 py-0.5 text-[11px] font-medium',
-                      prog.status === 'published' ? 'bg-[var(--success-bg)] text-[var(--success)]' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+                      'inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium leading-none',
+                      prog.status === 'published'
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
                     )}
                   >
-                    {prog.status}
+                    <span
+                      className={cn(
+                        'mr-1.5 inline-block size-1.5 rounded-full',
+                        prog.status === 'published' ? 'bg-emerald-500' : 'bg-[var(--text-tertiary)]'
+                      )}
+                    />
+                    {prog.status === 'published' ? 'Published' : 'Draft'}
                   </span>
                 </Link>
               </li>
@@ -465,20 +500,21 @@ export function ProgramsPageContent() {
         title="Create program"
         className="w-full max-w-none md:max-w-md"
       >
-        <form onSubmit={handleCreate} className="space-y-4">
+        <form onSubmit={handleCreate} className="space-y-5">
+          {/* Thumbnail upload */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--text-primary)]">Thumbnail</label>
+            <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Cover image</label>
             {thumbnailUrl ? (
-              <div className="relative">
+              <div className="relative overflow-hidden rounded-[var(--radius-lg)]">
                 <img
                   src={thumbnailUrl}
                   alt="Program thumbnail preview"
-                  className="h-[140px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] object-cover"
+                  className="h-[140px] w-full object-cover"
                 />
                 <button
                   type="button"
                   onClick={() => { setThumbnailUrl(null); setThumbnailError(null) }}
-                  className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/60 text-sm text-white transition-colors hover:bg-black/80"
+                  className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-black/50 text-sm text-white backdrop-blur-sm transition-colors hover:bg-black/70"
                   aria-label="Remove thumbnail"
                 >
                   &times;
@@ -489,7 +525,7 @@ export function ProgramsPageContent() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleThumbnailDrop}
                 className={cn(
-                  'flex h-[140px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed transition-colors',
+                  'flex h-[120px] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[var(--radius-lg)] border-2 border-dashed transition-colors',
                   thumbnailUploading
                     ? 'border-[var(--cp-accent)] bg-[var(--accent-light)]'
                     : 'border-[var(--border-default)] bg-[var(--bg-subtle)] hover:border-[var(--cp-accent)] hover:bg-[var(--accent-light)]'
@@ -503,33 +539,41 @@ export function ProgramsPageContent() {
                   disabled={thumbnailUploading}
                 />
                 {thumbnailUploading ? (
-                  <span className="text-sm text-[var(--text-tertiary)]">Uploading...</span>
+                  <span className="text-[13px] text-[var(--text-tertiary)]">Uploading...</span>
                 ) : (
                   <>
-                    <span className="text-2xl text-[var(--text-quaternary)]" aria-hidden>+</span>
-                    <span className="text-xs text-[var(--text-tertiary)]">Click or drag an image</span>
-                    <span className="text-[11px] text-[var(--text-quaternary)]">JPEG, PNG, WebP -- max 5MB</span>
+                    <span className="text-[22px] leading-none text-[var(--text-tertiary)]" aria-hidden>+</span>
+                    <span className="text-[13px] text-[var(--text-tertiary)]">Click or drag an image</span>
+                    <span className="text-[11px] text-[var(--text-tertiary)]">JPEG, PNG, or WebP -- max 5 MB</span>
                   </>
                 )}
               </label>
             )}
-            {thumbnailError && <p className="mt-1 text-xs text-[var(--error)]">{thumbnailError}</p>}
+            {thumbnailError && <p className="mt-1.5 text-[12px] text-[var(--error)]">{thumbnailError}</p>}
           </div>
+
+          {/* Title */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--text-primary)]">Title *</label>
-            <Input value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} placeholder="e.g. Getting Started" required />
+            <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">
+              Program title <span className="text-[var(--error)]">*</span>
+            </label>
+            <Input value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} placeholder="e.g. 12-Week Striking Fundamentals" required />
           </div>
+
+          {/* Description */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--text-primary)]">Description</label>
-            <Textarea value={createDescription} onChange={(e) => setCreateDescription(e.target.value)} placeholder="Optional" rows={3} />
+            <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Description</label>
+            <Textarea value={createDescription} onChange={(e) => setCreateDescription(e.target.value)} placeholder="What will your clients learn?" rows={3} />
           </div>
-          {submitError && <p className="text-sm text-[var(--error)]">{submitError}</p>}
-          <div className="flex justify-end gap-2 pt-2">
+
+          {submitError && <p className="text-[13px] text-[var(--error)]">{submitError}</p>}
+
+          <div className="flex justify-end gap-2 border-t border-[var(--border-default)] pt-4">
             <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)} disabled={submitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? 'Creating…' : 'Create program'}
+              {submitting ? 'Creating...' : 'Create program'}
             </Button>
           </div>
         </form>

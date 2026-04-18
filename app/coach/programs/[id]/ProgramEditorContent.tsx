@@ -28,6 +28,8 @@ import { VideoSelectModal, type VideoOption } from '@/components/coach/VideoSele
 import { DriveFileBrowser } from '@/components/coach/DriveFileBrowser'
 import { cn } from '@/lib/utils'
 
+/* ─── Types ─── */
+
 type ProgramModule = {
   id: string
   program_id: string
@@ -67,6 +69,139 @@ type ProgramData = {
   modules: ProgramModule[]
 }
 
+/* ─── Inline SVG Icons ─── */
+
+function GripIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <circle cx="5" cy="3" r="1.25" />
+      <circle cx="11" cy="3" r="1.25" />
+      <circle cx="5" cy="8" r="1.25" />
+      <circle cx="11" cy="8" r="1.25" />
+      <circle cx="5" cy="13" r="1.25" />
+      <circle cx="11" cy="13" r="1.25" />
+    </svg>
+  )
+}
+
+function FilmIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+      <line x1="7" y1="2" x2="7" y2="22" />
+      <line x1="17" y1="2" x2="17" y2="22" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <line x1="2" y1="7" x2="7" y2="7" />
+      <line x1="2" y1="17" x2="7" y2="17" />
+      <line x1="17" y1="7" x2="22" y2="7" />
+      <line x1="17" y1="17" x2="22" y2="17" />
+    </svg>
+  )
+}
+
+function TextIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <line x1="17" y1="10" x2="3" y2="10" />
+      <line x1="21" y1="6" x2="3" y2="6" />
+      <line x1="21" y1="14" x2="3" y2="14" />
+      <line x1="17" y1="18" x2="3" y2="18" />
+    </svg>
+  )
+}
+
+function LinkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  )
+}
+
+function PaperclipIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+    </svg>
+  )
+}
+
+function PencilIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  )
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  )
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  )
+}
+
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  )
+}
+
+function PlayCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="10 8 16 12 10 16 10 8" />
+    </svg>
+  )
+}
+
+function UsersIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  )
+}
+
+/* ─── Content type icon resolver ─── */
+
+function ContentTypeIcon({ type, className }: { type: string; className?: string }) {
+  const cls = className ?? ''
+  switch (type) {
+    case 'video':
+      return <FilmIcon className={cls} />
+    case 'text':
+      return <TextIcon className={cls} />
+    case 'url':
+      return <LinkIcon className={cls} />
+    case 'file':
+      return <PaperclipIcon className={cls} />
+    default:
+      return <TextIcon className={cls} />
+  }
+}
+
+/* ─── ModuleRow (sortable) ─── */
+
 function ModuleRow({
   module,
   isSelected,
@@ -96,53 +231,81 @@ function ModuleRow({
     transition,
   }
   const contentCount = module.content?.length ?? 0
+
   return (
     <div
       ref={setNodeRef}
       style={style}
+      onClick={onSelect}
       className={cn(
-        'flex items-center gap-2 rounded-lg border px-3 py-2 group',
+        'group flex items-center gap-3 rounded-lg px-3 py-2.5 cursor-pointer',
+        'transition-all duration-150',
         isSelected
-          ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
-          : 'border-[var(--color-border)] bg-[var(--color-bg)] hover:border-[var(--color-muted)]/50',
-        isDragging && 'opacity-50 shadow-lg'
+          ? 'bg-[var(--color-accent)]/10 ring-1 ring-[var(--color-accent)]/40'
+          : 'hover:bg-[var(--bg-subtle)]',
+        isDragging && 'opacity-40 shadow-lg scale-[1.02]'
       )}
     >
+      {/* Drag handle */}
       <button
         type="button"
-        className="touch-none flex min-h-[44px] min-w-[44px] cursor-grab items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)] disabled:cursor-not-allowed"
+        className={cn(
+          'touch-none flex h-8 w-6 shrink-0 items-center justify-center rounded',
+          'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]',
+          'transition-colors duration-150',
+          isDragDisabled ? 'cursor-default opacity-30' : 'cursor-grab active:cursor-grabbing'
+        )}
         aria-label="Drag to reorder"
+        onClick={(e) => e.stopPropagation()}
         {...(isDragDisabled ? {} : { ...attributes, ...listeners })}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-          <path d="M8 6h0M8 12h0M8 18h0M16 6h0M16 12h0M16 18h0" />
-        </svg>
+        <GripIcon />
       </button>
-      <button
-        type="button"
-        onClick={onSelect}
-        className="flex-1 text-left text-sm font-medium text-[var(--color-ink)] min-h-[44px] flex items-center"
-      >
-        {module.title || 'Untitled module'}
-      </button>
-      <span className="text-xs text-[var(--color-muted)]">
-        {contentCount} item{contentCount !== 1 ? 's' : ''}
+
+      {/* Module info */}
+      <div className="min-w-0 flex-1">
+        <p className={cn(
+          'truncate text-sm font-medium leading-snug',
+          isSelected ? 'text-[var(--color-accent)]' : 'text-[var(--text-primary)]'
+        )}>
+          {module.title || 'Untitled module'}
+        </p>
+      </div>
+
+      {/* Content count badge */}
+      <span className={cn(
+        'inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5',
+        'text-[11px] font-medium tabular-nums',
+        isSelected
+          ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)]'
+          : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+      )}>
+        {contentCount}
       </span>
+
+      {/* Delete button */}
       <button
         type="button"
-        onClick={onDelete}
-        className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded p-1 text-[var(--color-muted)] opacity-100 hover:bg-[var(--color-error)]/10 hover:text-[var(--color-error)] lg:opacity-0 lg:group-hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation()
+          onDelete()
+        }}
+        className={cn(
+          'flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
+          'text-[var(--text-tertiary)] transition-all duration-150',
+          'opacity-0 group-hover:opacity-100 focus:opacity-100',
+          'hover:bg-[var(--error)]/10 hover:text-[var(--error)]',
+          'lg:opacity-0 lg:group-hover:opacity-100'
+        )}
         aria-label="Delete module"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          <line x1="10" y1="11" x2="10" y2="17" />
-          <line x1="14" y1="11" x2="14" y2="17" />
-        </svg>
+        <TrashIcon />
       </button>
     </div>
   )
 }
+
+/* ─── Main Editor ─── */
 
 export function ProgramEditorContent({ programId }: { programId: string }) {
   const [program, setProgram] = useState<ProgramData | null>(null)
@@ -173,6 +336,8 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
   )
   const selectedModuleIdRef = useRef(selectedModuleId)
   selectedModuleIdRef.current = selectedModuleId
+
+  /* ─── Data fetching ─── */
 
   const fetchProgram = useCallback(async () => {
     setError(null)
@@ -206,6 +371,8 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
   }, [fetchProgram])
 
   const selectedModule = program?.modules?.find((m) => m.id === selectedModuleId)
+
+  /* ─── Handlers ─── */
 
   const handleModuleSelect = (id: string) => {
     if (isLgUp) {
@@ -343,20 +510,39 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
     }
   }
 
+  /* ─── Loading state ─── */
+
   if (loading) {
     return (
-      <div className="flex gap-6">
-        <div className="w-1/3 animate-pulse rounded-lg bg-[var(--color-border)] h-64" />
-        <div className="flex-1 animate-pulse rounded-lg bg-[var(--color-border)] h-96" />
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="w-full lg:w-[380px] space-y-4">
+          <div className="animate-pulse rounded-xl bg-[var(--bg-subtle)] h-40" />
+          <div className="animate-pulse rounded-xl bg-[var(--bg-subtle)] h-10" />
+          <div className="animate-pulse rounded-xl bg-[var(--bg-subtle)] h-48" />
+        </div>
+        <div className="flex-1">
+          <div className="animate-pulse rounded-xl bg-[var(--bg-subtle)] h-96" />
+        </div>
       </div>
     )
   }
+
+  /* ─── Error state ─── */
+
   if (error || !program) {
     return (
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
-        <p className="text-[var(--color-muted)]">{error ?? 'Program not found'}</p>
+      <div className="flex flex-col items-center justify-center rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-6 py-16 text-center">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--error)]/10">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <p className="text-sm text-[var(--text-tertiary)] max-w-sm">{error ?? 'Program not found'}</p>
         <Link href="/coach/programs">
-          <Button variant="secondary" className="mt-4">
+          <Button variant="secondary" className="mt-6">
+            <ChevronLeftIcon className="mr-1.5" />
             Back to programs
           </Button>
         </Link>
@@ -364,107 +550,206 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
     )
   }
 
+  const moduleCount = program.modules?.length ?? 0
+
+  /* ─── Main layout ─── */
+
   return (
-    <div className="relative flex flex-col gap-6 pb-24 lg:flex-row lg:pb-0">
-      {/* Left panel — modules first; on lg+ pairs with right editor */}
-      <div className="flex w-full flex-shrink-0 flex-col gap-4 lg:max-h-[calc(100vh-12rem)] lg:w-1/3 lg:overflow-y-auto">
+    <div className="relative flex flex-col gap-6 pb-24 lg:flex-row lg:items-start lg:pb-0">
+      {/* ────────── LEFT PANEL ────────── */}
+      <div className="flex w-full shrink-0 flex-col gap-5 lg:w-[380px] lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-1">
+
+        {/* Thumbnail / gradient placeholder */}
+        <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '16 / 9' }}>
+          {program.thumbnail_url ? (
+            <img
+              src={program.thumbnail_url}
+              alt={program.title}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div
+              className="h-full w-full"
+              style={{
+                background: 'linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 40%, var(--bg-app)) 100%)',
+              }}
+            >
+              <div className="flex h-full w-full items-center justify-center">
+                <PlayCircleIcon className="h-10 w-10 text-white/60" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Title input */}
         <div>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={saveTitle}
             disabled={savingTitle}
-            className="text-base font-medium"
+            placeholder="Program title"
+            inputSize="lg"
+            className="text-base font-semibold"
           />
+        </div>
+
+        {/* Description textarea */}
+        <div>
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             onBlur={saveDescription}
             disabled={savingDesc}
-            placeholder="Description (optional)"
+            placeholder="Add a description..."
             rows={2}
-            className="mt-2"
           />
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Status toggle + Assign button row */}
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={toggleStatus}
             disabled={savingStatus}
             className={cn(
-              'min-h-[44px] rounded-full px-4 py-2 text-sm font-medium',
+              'inline-flex h-8 items-center gap-1.5 rounded-full px-3.5 text-xs font-semibold uppercase tracking-wide',
+              'transition-all duration-150 disabled:opacity-50',
               status === 'published'
                 ? 'bg-[var(--color-success)]/15 text-[var(--color-success)]'
-                : 'bg-[var(--color-muted)]/20 text-[var(--color-muted)]'
+                : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
             )}
           >
+            <span className={cn(
+              'h-1.5 w-1.5 rounded-full',
+              status === 'published' ? 'bg-[var(--color-success)]' : 'bg-[var(--text-tertiary)]'
+            )} />
             {status === 'draft' ? 'Draft' : 'Published'}
           </button>
-        </div>
-        <Button variant="secondary" className="w-full min-h-[44px]" onClick={() => setAssignOpen(true)}>
-          Assign to client
-        </Button>
-        <hr className="border-[var(--color-border)]" />
-        <div className="flex flex-col gap-2">
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext
-              items={(program.modules || []).map((m) => m.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {(program.modules || []).map((mod) => (
-                <div key={mod.id} className="space-y-2">
-                  <ModuleRow
-                    module={mod}
-                    isSelected={selectedModuleId === mod.id}
-                    onSelect={() => handleModuleSelect(mod.id)}
-                    onDelete={() => handleDeleteModule(mod.id)}
-                    isDragDisabled={!isLgUp}
-                  />
-                  {!isLgUp && selectedModuleId === mod.id && selectedModule?.id === mod.id ? (
-                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-                      <ProgramModuleEditor
-                        programId={programId}
-                        workspaceId={program.workspace_id}
-                        module={selectedModule}
-                        onUpdate={(updated) => {
-                          setProgram((p) =>
-                            p
-                              ? {
-                                  ...p,
-                                  modules:
-                                    p.modules?.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)) ?? [],
-                                }
-                              : null
-                          )
-                        }}
-                        onRefresh={fetchProgram}
-                        editingContentId={editingContentId}
-                        setEditingContentId={setEditingContentId}
-                        addContentOpen={addContentOpen}
-                        setAddContentOpen={setAddContentOpen}
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-            </SortableContext>
-          </DndContext>
-          <Button
-            variant="ghost"
-            className="hidden w-full min-h-[44px] border border-dashed border-[var(--color-border)] lg:flex"
-            onClick={() => setAddModuleOpen(true)}
+
+          <button
+            type="button"
+            onClick={() => setAssignOpen(true)}
+            className={cn(
+              'ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg px-3',
+              'border border-[var(--border-default)] bg-transparent',
+              'text-xs font-medium text-[var(--text-secondary)]',
+              'transition-all duration-150',
+              'hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
+            )}
           >
-            Add module
-          </Button>
+            <UsersIcon />
+            Assign to client
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-[var(--border-default)]" />
+
+        {/* Module list header */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+            Modules
+            {moduleCount > 0 && (
+              <span className="ml-1.5 text-[var(--text-tertiary)]/60">({moduleCount})</span>
+            )}
+          </h3>
+          <button
+            type="button"
+            onClick={() => setAddModuleOpen(true)}
+            className={cn(
+              'hidden lg:inline-flex h-7 items-center gap-1 rounded-md px-2',
+              'text-xs font-medium text-[var(--color-accent)]',
+              'transition-colors duration-150',
+              'hover:bg-[var(--color-accent)]/10'
+            )}
+          >
+            <PlusIcon className="h-3.5 w-3.5" />
+            Add
+          </button>
+        </div>
+
+        {/* Module list with drag-and-drop */}
+        <div className="flex flex-col gap-1">
+          {moduleCount === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border-default)] py-10 text-center">
+              <p className="text-sm text-[var(--text-tertiary)]">No modules yet</p>
+              <button
+                type="button"
+                onClick={() => setAddModuleOpen(true)}
+                className="mt-2 text-sm font-medium text-[var(--color-accent)] hover:underline"
+              >
+                Add your first module
+              </button>
+            </div>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext
+                items={(program.modules || []).map((m) => m.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {(program.modules || []).map((mod) => (
+                  <div key={mod.id}>
+                    <ModuleRow
+                      module={mod}
+                      isSelected={selectedModuleId === mod.id}
+                      onSelect={() => handleModuleSelect(mod.id)}
+                      onDelete={() => handleDeleteModule(mod.id)}
+                      isDragDisabled={!isLgUp}
+                    />
+
+                    {/* Mobile inline editor: shows below selected module */}
+                    {!isLgUp && selectedModuleId === mod.id && selectedModule?.id === mod.id && (
+                      <div className="mt-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
+                        <ProgramModuleEditor
+                          programId={programId}
+                          workspaceId={program.workspace_id}
+                          module={selectedModule}
+                          onUpdate={(updated) => {
+                            setProgram((p) =>
+                              p
+                                ? {
+                                    ...p,
+                                    modules:
+                                      p.modules?.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)) ?? [],
+                                  }
+                                : null
+                            )
+                          }}
+                          onRefresh={fetchProgram}
+                          editingContentId={editingContentId}
+                          setEditingContentId={setEditingContentId}
+                          addContentOpen={addContentOpen}
+                          setAddContentOpen={setAddContentOpen}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </SortableContext>
+            </DndContext>
+          )}
         </div>
       </div>
 
-      {/* Right panel — desktop only; mobile uses inline editors above */}
-      <div className="hidden min-w-0 flex-1 overflow-y-auto lg:block">
+      {/* ────────── RIGHT PANEL (desktop only) ────────── */}
+      <div className="hidden min-w-0 flex-1 lg:block">
         {!selectedModule ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-12 text-center">
-            <p className="font-medium text-[var(--color-ink)]">
-              Select a module on the left to edit its content, or add a new module.
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] px-8 py-20 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-muted)]">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-[var(--text-primary)]">
+              Select a module to start editing
+            </p>
+            <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+              Choose from the list on the left, or add a new module
             </p>
           </div>
         ) : (
@@ -491,16 +776,25 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
         )}
       </div>
 
-      <div className="safe-bottom fixed bottom-16 left-0 right-0 z-30 border-t border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 lg:hidden">
-        <Button
-          variant="ghost"
-          className="w-full min-h-[44px] border border-dashed border-[var(--color-border)]"
+      {/* ────────── Mobile bottom bar: Add module ────────── */}
+      <div className="safe-bottom fixed bottom-16 left-0 right-0 z-30 border-t border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 lg:hidden">
+        <button
+          type="button"
           onClick={() => setAddModuleOpen(true)}
+          className={cn(
+            'flex w-full items-center justify-center gap-2 rounded-lg',
+            'border border-dashed border-[var(--border-default)]',
+            'h-11 text-sm font-medium text-[var(--text-tertiary)]',
+            'transition-colors duration-150',
+            'hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
+          )}
         >
+          <PlusIcon className="h-4 w-4" />
           Add module
-        </Button>
+        </button>
       </div>
 
+      {/* ────────── Add module modal ────────── */}
       <Modal
         isOpen={addModuleOpen}
         onClose={() => setAddModuleOpen(false)}
@@ -509,34 +803,39 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
       >
         <form onSubmit={handleAddModule} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Title *</label>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
+              Title <span className="text-[var(--error)]">*</span>
+            </label>
             <Input
               value={newModuleTitle}
               onChange={(e) => setNewModuleTitle(e.target.value)}
-              placeholder="e.g. Week 1"
+              placeholder="e.g. Week 1 — Fundamentals"
               required
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">Description</label>
+            <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
+              Description
+            </label>
             <Textarea
               value={newModuleDesc}
               onChange={(e) => setNewModuleDesc(e.target.value)}
-              placeholder="Optional"
+              placeholder="Optional module description"
               rows={2}
             />
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setAddModuleOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={addingModule}>
-              {addingModule ? 'Adding…' : 'Add module'}
+              {addingModule ? 'Adding...' : 'Add module'}
             </Button>
           </div>
         </form>
       </Modal>
 
+      {/* ────────── Assign modal ────────── */}
       <AssignProgramModal
         programId={programId}
         open={assignOpen}
@@ -549,6 +848,8 @@ export function ProgramEditorContent({ programId }: { programId: string }) {
     </div>
   )
 }
+
+/* ─── Module Detail Editor (right panel / inline mobile) ─── */
 
 function ProgramModuleEditor({
   programId,
@@ -644,91 +945,126 @@ function ProgramModuleEditor({
 
   const contentBlocks = (module.content ?? []).sort((a, b) => a.position - b.position)
 
+  const contentTypeOptions: { type: 'text' | 'url' | 'video' | 'file'; label: string; desc: string }[] = [
+    { type: 'text', label: 'Text / Notes', desc: 'Written instructions or notes' },
+    { type: 'url', label: 'URL Link', desc: 'Link to an external resource' },
+    { type: 'video', label: 'Video', desc: 'From your library or Drive' },
+    { type: 'file', label: 'File', desc: 'Upload a document or image' },
+  ]
+
   return (
-    <Card
-      variant="flat"
-      padding="lg"
-      className="border-[0.5px] border-[var(--color-border)] bg-[var(--color-background-primary)]"
-    >
-      <Input
-        value={moduleTitle}
-        onChange={(e) => setModuleTitle(e.target.value)}
-        onBlur={saveModuleTitle}
-        disabled={savingMod}
-        className="text-base font-medium mb-2"
-      />
-      <Textarea
-        value={moduleDesc}
-        onChange={(e) => setModuleDesc(e.target.value)}
-        onBlur={saveModuleDesc}
-        disabled={savingMod}
-        placeholder="Description (optional)"
-        rows={2}
-        className="mb-4"
-      />
-      <hr className="border-[var(--color-border)] my-4" />
-      <div className="space-y-3">
-        {contentBlocks.map((block) => (
-          <ContentBlockRow
-            key={block.id}
-            block={block}
-            isEditing={editingContentId === block.id}
-            onEdit={() => setEditingContentId(block.id)}
-            onDelete={() => deleteContent(block.id)}
-            onCloseEditor={() => setEditingContentId(null)}
-            onSaved={() => {
-              onRefresh()
-              setEditingContentId(null)
-            }}
-            onRefreshProgram={onRefresh}
-            workspaceId={workspaceId}
+    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+      {/* Module header */}
+      <div className="border-b border-[var(--border-default)] p-5">
+        <Input
+          value={moduleTitle}
+          onChange={(e) => setModuleTitle(e.target.value)}
+          onBlur={saveModuleTitle}
+          disabled={savingMod}
+          placeholder="Module title"
+          inputSize="lg"
+          className="text-base font-semibold"
+        />
+        <div className="mt-3">
+          <Textarea
+            value={moduleDesc}
+            onChange={(e) => setModuleDesc(e.target.value)}
+            onBlur={saveModuleDesc}
+            disabled={savingMod}
+            placeholder="Module description (optional)"
+            rows={2}
           />
-        ))}
+        </div>
       </div>
-      <div className="mt-4 relative">
-        <Button
-          variant="secondary"
-          className="min-h-[44px]"
-          onClick={() => setAddContentOpen(!addContentOpen)}
-        >
-          Add content
-        </Button>
-        {addContentOpen && (
-          <div className="absolute top-full left-0 mt-1 z-10 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-2 shadow-lg min-w-[200px]">
-            <button
-              type="button"
-              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
-              onClick={() => addContent('text')}
-            >
-              + Add text / notes
-            </button>
-            <button
-              type="button"
-              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
-              onClick={() => addContent('url')}
-            >
-              + Add URL
-            </button>
-            <button
-              type="button"
-              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
-              onClick={() => addContent('video')}
-            >
-              + Add video
-            </button>
-            <button
-              type="button"
-              className="block min-h-[44px] w-full rounded-lg px-3 text-left text-sm hover:bg-[var(--color-surface)]"
-              onClick={() => addContent('file')}
-            >
-              + Add file
-            </button>
+
+      {/* Content blocks */}
+      <div className="p-5">
+        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+          Content
+          {contentBlocks.length > 0 && (
+            <span className="ml-1.5 normal-case tracking-normal font-normal">
+              ({contentBlocks.length} item{contentBlocks.length !== 1 ? 's' : ''})
+            </span>
+          )}
+        </h4>
+
+        {contentBlocks.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-[var(--border-default)] py-8 text-center">
+            <p className="text-sm text-[var(--text-tertiary)]">No content yet</p>
+            <p className="mt-0.5 text-xs text-[var(--text-tertiary)]/60">
+              Add videos, notes, links, or files below
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {contentBlocks.map((block) => (
+              <ContentBlockRow
+                key={block.id}
+                block={block}
+                isEditing={editingContentId === block.id}
+                onEdit={() => setEditingContentId(block.id)}
+                onDelete={() => deleteContent(block.id)}
+                onCloseEditor={() => setEditingContentId(null)}
+                onSaved={() => {
+                  onRefresh()
+                  setEditingContentId(null)
+                }}
+                onRefreshProgram={onRefresh}
+                workspaceId={workspaceId}
+              />
+            ))}
           </div>
         )}
+
+        {/* Add content button + dropdown */}
+        <div className="relative mt-4">
+          <button
+            type="button"
+            onClick={() => setAddContentOpen(!addContentOpen)}
+            className={cn(
+              'inline-flex h-9 items-center gap-1.5 rounded-lg px-3.5',
+              'text-sm font-medium',
+              'bg-[var(--color-accent)] text-white',
+              'transition-all duration-150',
+              'hover:bg-[var(--color-accent-hover)]',
+              'active:scale-[0.98]'
+            )}
+          >
+            <PlusIcon className="h-4 w-4" />
+            Add content
+          </button>
+
+          {addContentOpen && (
+            <div className="absolute top-full left-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)] p-1.5 shadow-lg">
+              {contentTypeOptions.map((opt) => (
+                <button
+                  key={opt.type}
+                  type="button"
+                  onClick={() => addContent(opt.type)}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left',
+                    'transition-colors duration-100',
+                    'hover:bg-[var(--bg-subtle)]'
+                  )}
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-muted)] text-[var(--text-tertiary)]">
+                    <ContentTypeIcon type={opt.type} className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{opt.label}</p>
+                    <p className="text-xs text-[var(--text-tertiary)]">{opt.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </Card>
+    </div>
   )
 }
+
+/* ─── Content Block Row ─── */
 
 function ContentBlockRow({
   block,
@@ -749,35 +1085,78 @@ function ContentBlockRow({
   onRefreshProgram: () => void
   workspaceId: string
 }) {
-  const icon =
-    block.content_type === 'text' ? 'T' : block.content_type === 'url' ? '🔗' : block.content_type === 'video' ? '▶' : '📎'
-  const label = block.title || (block.body ? block.body.slice(0, 60) + (block.body.length > 60 ? '…' : '') : 'Untitled')
+  const label = block.title
+    || (block.body ? block.body.slice(0, 60) + (block.body.length > 60 ? '...' : '') : null)
+    || (block.url ? block.url.replace(/^https?:\/\//, '').slice(0, 50) : null)
+    || (block.file_url ? block.file_url.split('/').pop()?.slice(0, 40) : null)
+    || 'Untitled'
+
+  const typeLabel = block.content_type === 'text' ? 'Text'
+    : block.content_type === 'url' ? 'Link'
+    : block.content_type === 'video' ? 'Video'
+    : 'File'
+
   return (
-    <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-      <div className="flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded bg-[var(--color-border)] text-xs font-medium text-[var(--color-muted)]">
-          {icon}
+    <div className="overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] transition-shadow duration-150 hover:shadow-sm">
+      {/* Compact row */}
+      <div className="group flex items-center gap-3 px-3.5 py-2.5">
+        {/* Type icon */}
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-muted)] text-[var(--text-tertiary)]">
+          <ContentTypeIcon type={block.content_type} />
         </span>
-        <span className="flex-1 truncate text-sm text-[var(--color-ink)]">{label}</span>
-        <Button variant="ghost" className="min-h-[44px] text-sm" onClick={onEdit}>
-          Edit
-        </Button>
-        <Button variant="ghost" className="min-h-[44px] text-sm text-[var(--color-error)]" onClick={onDelete}>
-          Delete
-        </Button>
+
+        {/* Title + type label */}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-[var(--text-primary)]">{label}</p>
+          <p className="text-xs text-[var(--text-tertiary)]">{typeLabel}</p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={onEdit}
+            className={cn(
+              'flex h-7 w-7 items-center justify-center rounded-md',
+              'text-[var(--text-tertiary)] transition-colors duration-150',
+              'hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]'
+            )}
+            aria-label="Edit content"
+          >
+            <PencilIcon />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className={cn(
+              'flex h-7 w-7 items-center justify-center rounded-md',
+              'text-[var(--text-tertiary)] transition-colors duration-150',
+              'hover:bg-[var(--error)]/10 hover:text-[var(--error)]'
+            )}
+            aria-label="Delete content"
+          >
+            <TrashIcon />
+          </button>
+        </div>
       </div>
+
+      {/* Expanded editor */}
       {isEditing && (
-        <ContentBlockEditor
-          block={block}
-          onClose={onCloseEditor}
-          onSaved={onSaved}
-          onRefreshProgram={onRefreshProgram}
-          workspaceId={workspaceId}
-        />
+        <div className="border-t border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
+          <ContentBlockEditor
+            block={block}
+            onClose={onCloseEditor}
+            onSaved={onSaved}
+            onRefreshProgram={onRefreshProgram}
+            workspaceId={workspaceId}
+          />
+        </div>
       )}
     </div>
   )
 }
+
+/* ─── Video Block Editor ─── */
 
 function VideoBlockEditor({
   block,
@@ -817,35 +1196,37 @@ function VideoBlockEditor({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)]/10 p-4">
-      <p className="text-sm text-[var(--color-muted)] mb-2">Link a video from your library or browse Google Drive.</p>
+    <div className="space-y-3">
+      <p className="text-xs text-[var(--text-tertiary)]">
+        Link a video from your library or browse Google Drive.
+      </p>
+
+      {/* Currently linked video preview */}
       {block.video_id && (
-        <div className="mb-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3 flex items-center gap-3">
-          <div className="h-14 w-24 shrink-0 rounded bg-[var(--color-border)] flex items-center justify-center overflow-hidden">
-            <svg className="w-8 h-8 text-[var(--color-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M10 8l6 4-6 4V8z" />
-              <rect x="2" y="2" width="20" height="20" rx="2" ry="2" />
-            </svg>
+        <div className="flex items-center gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] p-3">
+          <div className="flex h-12 w-20 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-muted)] overflow-hidden">
+            <PlayCircleIcon className="text-[var(--text-tertiary)]" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-[var(--color-ink)] truncate">{block.title || 'Video'}</p>
-            <p className="text-xs text-[var(--color-muted)]">Video linked</p>
+            <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+              {block.title || 'Video'}
+            </p>
+            <p className="text-xs text-[var(--color-success)]">Linked</p>
           </div>
         </div>
       )}
-      {driveLinkError ? (
-        <p className="mb-3 text-sm text-[var(--color-error)]" role="alert">
-          {driveLinkError}
-        </p>
-      ) : null}
-      {driveSuccess ? (
-        <p className="mb-3 text-sm font-medium text-[var(--color-success)]" role="status">
-          {driveSuccess}
-        </p>
-      ) : null}
+
+      {driveLinkError && (
+        <p className="text-xs text-[var(--error)]" role="alert">{driveLinkError}</p>
+      )}
+      {driveSuccess && (
+        <p className="text-xs font-medium text-[var(--color-success)]" role="status">{driveSuccess}</p>
+      )}
+
       <div className="flex flex-wrap gap-2">
         <Button
           variant="secondary"
+          size="sm"
           onClick={() => {
             setDriveSuccess(null)
             setVideoSelectOpen(true)
@@ -857,6 +1238,7 @@ function VideoBlockEditor({
         <Button
           type="button"
           variant="secondary"
+          size="sm"
           onClick={() => {
             setDriveSuccess(null)
             setDriveLinkError(null)
@@ -866,8 +1248,11 @@ function VideoBlockEditor({
         >
           Browse Drive
         </Button>
-        <Button variant="ghost" onClick={onClose}>Cancel</Button>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          Cancel
+        </Button>
       </div>
+
       <VideoSelectModal
         open={videoSelectOpen}
         onClose={() => setVideoSelectOpen(false)}
@@ -899,7 +1284,7 @@ function VideoBlockEditor({
               return
             }
             setDriveOpen(false)
-            setDriveSuccess('Imported and added ✓')
+            setDriveSuccess('Imported and linked successfully')
             onRefreshProgram()
           } finally {
             setSaving(false)
@@ -909,6 +1294,8 @@ function VideoBlockEditor({
     </div>
   )
 }
+
+/* ─── Content Block Editor ─── */
 
 function ContentBlockEditor({
   block,
@@ -983,20 +1370,30 @@ function ContentBlockEditor({
   }
 
   return (
-    <div className="mt-3 space-y-3 border-t border-[var(--color-border)] pt-3">
+    <div className="space-y-3">
+      {/* Title field */}
       <div>
-        <label className="mb-1 block text-xs font-medium text-[var(--color-muted)]">Title</label>
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Optional" />
+        <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Title</label>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Optional title" />
       </div>
+
+      {/* Text body */}
       {block.content_type === 'text' && (
         <div>
-          <label className="mb-1 block text-xs font-medium text-[var(--color-muted)]">Body</label>
-          <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} placeholder="Content" />
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Body</label>
+          <Textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={5}
+            placeholder="Write your content here..."
+          />
         </div>
       )}
+
+      {/* URL field */}
       {block.content_type === 'url' && (
         <div>
-          <label className="mb-1 block text-xs font-medium text-[var(--color-muted)]">URL</label>
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">URL</label>
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -1008,31 +1405,46 @@ function ContentBlockEditor({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 block rounded-lg border border-[var(--color-border)] p-3 text-sm text-[var(--color-accent)] hover:underline"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs text-[var(--color-accent)] hover:underline"
             >
-              {url}
+              <LinkIcon className="h-3 w-3" />
+              {url.replace(/^https?:\/\//, '').slice(0, 50)}
             </a>
           )}
         </div>
       )}
+
+      {/* File upload */}
       {block.content_type === 'file' && (
         <div>
-          <label className="mb-1 block text-xs font-medium text-[var(--color-muted)]">File</label>
-          <input
-            type="file"
-            accept="image/*,.pdf,.doc,.docx"
-            onChange={handleFileChange}
-            disabled={uploading}
-            className="block w-full text-sm"
-          />
-          {fileUrl && <p className="mt-2 text-sm text-[var(--color-muted)]">Uploaded: {fileUrl.slice(0, 50)}…</p>}
+          <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">File</label>
+          <div className="rounded-lg border border-dashed border-[var(--border-default)] p-4">
+            <input
+              type="file"
+              accept="image/*,.pdf,.doc,.docx"
+              onChange={handleFileChange}
+              disabled={uploading}
+              className="block w-full text-sm text-[var(--text-primary)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--bg-muted)] file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-[var(--text-secondary)]"
+            />
+          </div>
+          {fileUrl && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
+              <PaperclipIcon className="h-3 w-3" />
+              {fileUrl.split('/').pop()?.slice(0, 50) || 'File uploaded'}
+            </p>
+          )}
         </div>
       )}
-      <div className="flex gap-2">
-        <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
-        <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+
+      {/* Action buttons */}
+      <div className="flex gap-2 pt-1">
+        <Button variant="ghost" size="sm" onClick={onClose} disabled={saving}>
+          Cancel
+        </Button>
+        <Button size="sm" onClick={save} disabled={saving}>
+          {saving ? 'Saving...' : 'Save'}
+        </Button>
       </div>
     </div>
   )
 }
-
