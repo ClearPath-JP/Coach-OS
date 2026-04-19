@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0a0a0a"/>
+  <text x="540" y="480" font-family="'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="108" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="10">FoundOS</text>
+  <line x1="380" y1="520" x2="700" y2="520" stroke="#ffffff" stroke-width="1.5" opacity="0.3"/>
+  <text x="540" y="580" font-family="'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="400" fill="#999999" text-anchor="middle" letter-spacing="12">BUILD · AUTOMATE · SCALE</text>
+</svg>

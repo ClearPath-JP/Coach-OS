@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error:
-              'This email already has a ClearPath account. The client can log in at /client-login.',
+              'This email already has a Sensei App account. The client can log in at /client-login.',
           },
           { status: 409 }
         )

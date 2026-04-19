@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#000000"/>
+
+  <!-- Stacked layers (foundation, building up, OS layers) -->
+  <!-- Bottom layer - widest, most solid -->
+  <path d="M540 720 L820 600 L540 680 L260 600 Z" fill="#ffffff" opacity="1"/>
+  <path d="M260 600 L540 480 L820 600 L540 720 Z" fill="#ffffff" opacity="0.9"/>
+
+  <!-- Middle layer -->
+  <path d="M260 490 L540 370 L820 490 L540 610 Z" fill="#ffffff" opacity="0.55"/>
+
+  <!-- Top layer - smallest, lightest -->
+  <path d="M260 380 L540 260 L820 380 L540 500 Z" fill="#ffffff" opacity="0.25"/>
+
+  <!-- F lettermark floating above -->
+  <text x="540" y="860" font-family="'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif"
+        font-size="40" font-weight="600" fill="#ffffff" text-anchor="middle" letter-spacing="14" opacity="0.4">FOUNDOS</text>
+</svg>

@@ -75,6 +75,16 @@ export default function SetPasswordPage() {
         setSubmitting(false)
         return
       }
+      // Redirect coach to dashboard, client to portal
+      const supabase = createClient()
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (currentUser) {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', currentUser.id).maybeSingle()
+        if (profile?.role === 'coach') {
+          router.replace('/coach/dashboard')
+          return
+        }
+      }
       router.replace('/client/portal')
       return
     } catch {

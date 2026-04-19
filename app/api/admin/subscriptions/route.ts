@@ -37,6 +37,7 @@ export async function GET(request: Request) {
 
     const mrrByPlan: Record<string, { coaches: number; mrrCents: number }> = {
       free: { coaches: 0, mrrCents: 0 },
+      founding: { coaches: 0, mrrCents: 0 },
       starter: { coaches: 0, mrrCents: 0 },
       pro: { coaches: 0, mrrCents: 0 },
       scale: { coaches: 0, mrrCents: 0 },

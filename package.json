@@ -22,6 +22,7 @@
     "setup:admin": "npx tsx scripts/setup-admin.ts",
     "create:admin": "npx tsx scripts/setup-admin.ts",
     "wipe:dev": "npx tsx scripts/wipe-dev-data.ts",
+    "wipe:except-admin": "npx tsx scripts/wipe-except-admin.ts",
     "seed:test-client": "npx tsx scripts/seed-test-client.ts",
     "reset:demo": "npx tsx scripts/reset-demo.ts",
     "seed:demo": "npx tsx scripts/seed-demo-data.ts"
@@ -66,6 +67,7 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.2.1",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/animejs": "^3.1.13",
     "@types/jest": "^30.0.0",

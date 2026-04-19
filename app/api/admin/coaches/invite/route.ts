@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server'
 import { assertAdminApi, logAdminAudit } from '@/lib/admin'
 import { createServiceClient } from '@/lib/supabase/service'
+import crypto from 'crypto'
+
+/** Generate a readable temp password like "Coach-a7f3b2" */
+function generateTempPassword(): string {
+  return `Coach-${crypto.randomBytes(3).toString('hex')}`
+}
 
 export async function POST(request: Request) {
   try {
@@ -19,27 +25,63 @@ export async function POST(request: Request) {
 
     const service = createServiceClient()
 
-    // Invite the user via Supabase admin - this sends an invite email
-    const { data: inviteData, error: inviteError } = await service.auth.admin.inviteUserByEmail(email, {
-      data: {
-        role: 'coach',
-        full_name: fullName || undefined,
-      },
-    })
+    // Check if user already exists
+    const { data: existingUsers } = await service.auth.admin.listUsers()
+    const existingUser = existingUsers?.users?.find(
+      (u) => u.email?.toLowerCase() === email
+    )
 
-    if (inviteError) {
-      const errLower = (inviteError.message ?? '').toLowerCase()
-      const isExists = errLower.includes('already') || errLower.includes('exists') || errLower.includes('registered')
-      console.error('[admin.coach.invite] inviteUserByEmail error:', inviteError.message)
-      return NextResponse.json(
-        { error: isExists ? 'A user with this email already exists.' : 'Could not send invite. Please try again.' },
-        { status: 400 }
-      )
+    let userId: string
+    let tempPassword: string | null = null
+
+    if (existingUser) {
+      const { data: existingCoach } = await service
+        .from('coaches')
+        .select('workspace_id')
+        .eq('user_id', existingUser.id)
+        .maybeSingle()
+      if (existingCoach?.workspace_id) {
+        return NextResponse.json(
+          { error: 'A coach with this email already exists.' },
+          { status: 400 }
+        )
+      }
+      // Existing user without workspace — set a temp password and flag for reset
+      tempPassword = generateTempPassword()
+      await service.auth.admin.updateUserById(existingUser.id, {
+        password: tempPassword,
+        user_metadata: {
+          ...existingUser.user_metadata,
+          role: 'coach',
+          full_name: fullName || existingUser.user_metadata?.full_name,
+          must_change_password: true,
+        },
+      })
+      userId = existingUser.id
+    } else {
+      tempPassword = generateTempPassword()
+      const { data: newUser, error: createError } = await service.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          role: 'coach',
+          full_name: fullName || undefined,
+          must_change_password: true,
+        },
+      })
+
+      if (createError || !newUser.user) {
+        console.error('[admin.coach.invite] createUser error:', createError?.message)
+        return NextResponse.json(
+          { error: 'Could not create user account. Please try again.' },
+          { status: 500 }
+        )
+      }
+      userId = newUser.user.id
     }
 
-    const userId = inviteData.user.id
-
-    // Create workspace first (idempotent — check if one already exists for this user)
+    // Create workspace (idempotent)
     const { data: existingWorkspace } = await service
       .from('workspaces')
       .select('id')
@@ -56,8 +98,7 @@ export async function POST(request: Request) {
         .insert({
           owner_id: userId,
           name: fullName || 'New Coach',
-          plan: 'starter',
-          status: 'active',
+          plan: 'free',
           completed_onboarding: true,
         })
         .select('id')
@@ -73,7 +114,7 @@ export async function POST(request: Request) {
       workspaceId = newWorkspace.id
     }
 
-    // Upsert profile with coach role AND workspace_id (ensures resolveCoachWorkspaceIdForSession works)
+    // Upsert profile
     const { error: profileError } = await service.from('profiles').upsert(
       {
         id: userId,
@@ -92,7 +133,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Link coach to workspace (upsert so re-invites are safe)
+    // Link coach to workspace
     const { error: coachLinkError } = await service.from('coaches').upsert(
       {
         user_id: userId,
@@ -116,7 +157,13 @@ export async function POST(request: Request) {
       metadata: { invitedEmail: email, newUserId: userId, workspaceId },
     })
 
-    return NextResponse.json({ ok: true, userId, workspaceId, message: `Invite sent to ${email}` })
+    return NextResponse.json({
+      ok: true,
+      userId,
+      workspaceId,
+      tempPassword,
+      message: `Coach account created for ${email}`,
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })

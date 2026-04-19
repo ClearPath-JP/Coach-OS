@@ -43,7 +43,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: message }, { status: 400 })
     }
 
-    const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+    const { error } = await supabase.auth.updateUser({
+      password: parsed.data.password,
+      data: { must_change_password: false },
+    })
     if (error) {
       const msg = 'Could not set password. Please try again.'
       return NextResponse.json({ error: msg }, { status: 400 })

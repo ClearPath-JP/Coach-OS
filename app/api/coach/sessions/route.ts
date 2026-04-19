@@ -151,24 +151,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Client not found or not in your workspace' }, { status: 404 })
     }
 
-    const { data: existingSessions } = await supabase
-      .from('sessions')
-      .select('id, scheduled_time, end_time, duration_minutes')
-      .eq('coach_id', user.id)
-      .in('status', ['pending', 'confirmed'])
-      .lt('scheduled_time', endIso)
-
-    const hasOverlap = (existingSessions ?? []).some((s) => {
-      const sStart = new Date(s.scheduled_time)
-      const sEnd = s.end_time ? new Date(s.end_time) : addMinutes(sStart, s.duration_minutes ?? 60)
-      return sEnd > start
-    })
-    if (hasOverlap) {
-      return NextResponse.json(
-        { error: 'You already have a session at this time', conflict: true },
-        { status: 409 }
-      )
-    }
+    // No server-side overlap blocking — coach manages their own schedule.
 
     const { data: inserted, error } = await supabase
       .from('sessions')

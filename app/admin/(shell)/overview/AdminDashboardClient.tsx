@@ -76,13 +76,13 @@ export function AdminDashboardClient({ data }: { data: AdminOverviewPayload }) {
       })
       const json = await res.json()
       if (res.ok) {
-        setInviteResult('Coach invited! They will receive an email.')
+        const pw = json.tempPassword
+        setInviteResult(`CREDENTIALS\n${inviteEmail.trim()}\n${pw ?? '(no password)'}`)
         setInviteEmail('')
         setInviteFirst('')
         setInviteLast('')
-        setTimeout(() => window.location.reload(), 1500)
       } else {
-        setInviteResult(json.error ?? 'Failed to invite')
+        setInviteResult(json.error ?? 'Failed to add coach')
       }
     } catch {
       setInviteResult('Network error')
@@ -167,7 +167,7 @@ export function AdminDashboardClient({ data }: { data: AdminOverviewPayload }) {
           onClick={() => setShowInvite(true)}
           className="rounded-lg bg-[var(--accent)] px-4 py-2 text-[13px] font-medium text-white hover:opacity-90"
         >
-          + Invite Coach
+          + Add Coach
         </button>
       </div>
 
@@ -207,7 +207,7 @@ export function AdminDashboardClient({ data }: { data: AdminOverviewPayload }) {
         </div>
         {data.workspaces.length === 0 ? (
           <div className="px-5 py-12 text-center">
-            <p className="text-[14px] text-[var(--text-muted)]">No coaches yet. Invite your first one above.</p>
+            <p className="text-[14px] text-[var(--text-muted)]">No coaches yet. Add your first one above.</p>
           </div>
         ) : (
           <div className="divide-y divide-[var(--border-default)]">
@@ -231,61 +231,102 @@ export function AdminDashboardClient({ data }: { data: AdminOverviewPayload }) {
         )}
       </div>
 
-      {/* Invite Modal */}
+      {/* Add Coach Modal */}
       {showInvite && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowInvite(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { if (!inviteResult?.includes('Magic link')) setShowInvite(false) }}>
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-[17px] font-semibold text-[var(--text-primary)]">Invite a Coach</h3>
-            <p className="mt-1 text-[13px] text-[var(--text-muted)]">
-              They will get an email to set up their account.
-            </p>
-            <div className="mt-4 space-y-3">
-              <input
-                type="email"
-                placeholder="Email address *"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                className="w-full rounded-lg border border-[var(--border-default)] px-3 py-2 text-[14px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
-              />
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="First name"
-                  value={inviteFirst}
-                  onChange={(e) => setInviteFirst(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border-default)] px-3 py-2 text-[14px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
-                />
-                <input
-                  type="text"
-                  placeholder="Last name"
-                  value={inviteLast}
-                  onChange={(e) => setInviteLast(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border-default)] px-3 py-2 text-[14px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
-                />
-              </div>
-              {inviteResult && (
-                <p className={`text-[13px] ${inviteResult.includes('invited') ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {inviteResult}
+            {inviteResult?.includes('CREDENTIALS') ? (
+              <>
+                <h3 className="text-[17px] font-semibold text-emerald-700">Coach Added</h3>
+                <p className="mt-2 text-[13px] text-[var(--text-secondary)]">
+                  Send these credentials to the coach. They will be asked to set a new password on first login.
                 </p>
-              )}
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowInvite(false)}
-                  className="rounded-lg border border-[var(--border-default)] px-4 py-2 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleInvite()}
-                  disabled={inviting || !inviteEmail.trim()}
-                  className="rounded-lg bg-[var(--accent)] px-4 py-2 text-[13px] font-medium text-white hover:opacity-90 disabled:opacity-50"
-                >
-                  {inviting ? 'Inviting...' : 'Send Invite'}
-                </button>
-              </div>
-            </div>
+                <div className="mt-4 space-y-3">
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-2">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-600">Email</p>
+                      <p className="text-[14px] font-mono text-emerald-900 select-all">{inviteResult.split('\n')[1]}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-600">Temp Password</p>
+                      <p className="text-[16px] font-mono font-bold text-emerald-900 select-all">{inviteResult.split('\n')[2]}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const email = inviteResult.split('\n')[1]
+                      const pw = inviteResult.split('\n')[2]
+                      void navigator.clipboard.writeText(`Email: ${email}\nTemp Password: ${pw}`)
+                    }}
+                    className="w-full rounded-lg bg-[var(--accent)] px-4 py-2.5 text-[13px] font-medium text-white hover:opacity-90"
+                  >
+                    Copy Credentials
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowInvite(false); setInviteResult(null); window.location.reload() }}
+                    className="w-full rounded-lg border border-[var(--border-default)] px-4 py-2 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                  >
+                    Done
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-[17px] font-semibold text-[var(--text-primary)]">Add a Coach</h3>
+                <p className="mt-1 text-[13px] text-[var(--text-muted)]">
+                  Creates their account and workspace. You will get a magic link to send them.
+                </p>
+                <div className="mt-4 space-y-3">
+                  <input
+                    type="email"
+                    placeholder="Email address *"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="w-full rounded-lg border border-[var(--border-default)] px-3 py-2 text-[14px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+                  />
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="First name"
+                      value={inviteFirst}
+                      onChange={(e) => setInviteFirst(e.target.value)}
+                      className="w-full rounded-lg border border-[var(--border-default)] px-3 py-2 text-[14px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Last name"
+                      value={inviteLast}
+                      onChange={(e) => setInviteLast(e.target.value)}
+                      className="w-full rounded-lg border border-[var(--border-default)] px-3 py-2 text-[14px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+                    />
+                  </div>
+                  {inviteResult && !inviteResult.includes('Magic link') && (
+                    <p className={`text-[13px] ${inviteResult.includes('created') ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {inviteResult}
+                    </p>
+                  )}
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowInvite(false)}
+                      className="rounded-lg border border-[var(--border-default)] px-4 py-2 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleInvite()}
+                      disabled={inviting || !inviteEmail.trim()}
+                      className="rounded-lg bg-[var(--accent)] px-4 py-2 text-[13px] font-medium text-white hover:opacity-90 disabled:opacity-50"
+                    >
+                      {inviting ? 'Creating...' : 'Add Coach'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

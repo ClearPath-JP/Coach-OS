@@ -253,7 +253,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               <Settings className="size-4" strokeWidth={1.5} />
               <span>Settings</span>
             </button>
-            <p className="got-menu__footer">Powered by ClearPath</p>
+            <p className="got-menu__footer">Powered by FoundOS</p>
           </div>
         </div>
 

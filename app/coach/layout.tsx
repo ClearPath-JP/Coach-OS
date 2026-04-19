@@ -121,7 +121,7 @@ export default async function CoachLayout({
         </main>
         <footer className="shrink-0 border-t border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-center">
           <p className="text-[11px] tracking-wide text-[var(--text-muted)]">
-            Powered by <span className="font-medium text-[var(--text-secondary)]">ClearPath</span>
+            Powered by <span className="font-medium text-[var(--text-secondary)]">FoundOS</span>
           </p>
         </footer>
       </div>

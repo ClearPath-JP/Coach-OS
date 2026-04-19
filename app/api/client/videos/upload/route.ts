@@ -7,7 +7,7 @@ import { sanitizeFileName, validateVideoMagicBytes } from '@/lib/file-validation
 
 export const dynamic = 'force-dynamic'
 
-const MAX_VIDEO = 100 * 1024 * 1024
+const MAX_VIDEO = 250 * 1024 * 1024
 
 /**
  * POST /api/client/videos/upload — multipart file (video/*). Stores in assignment-submissions bucket; creates videos row for assignment submission.
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File must be a video' }, { status: 400 })
     }
     if (file.size > MAX_VIDEO) {
-      return NextResponse.json({ error: 'Video must be 100MB or smaller' }, { status: 400 })
+      return NextResponse.json({ error: 'Video must be 250MB or smaller' }, { status: 400 })
     }
 
     const buf = await file.arrayBuffer()

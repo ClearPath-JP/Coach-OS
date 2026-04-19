@@ -473,7 +473,7 @@ export function CoachClientsPageContent() {
             <div className="flex size-[72px] items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">👥</div>
             <h2 className="mt-4 text-xl font-bold text-[var(--text-primary)]">Add your first client</h2>
             <p className="mt-2 max-w-[360px] text-[14px] leading-relaxed text-[var(--text-tertiary)]">
-              Invite clients to access their programs, schedule sessions, and message you through ClearPath.
+              Invite clients to access their programs, schedule sessions, and message you through Sensei App.
             </p>
             <Button className="mt-6" onClick={() => setAddModalOpen(true)}>
               Add first client

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     }
 
     const userId = session.metadata?.user_id
-    const plan = (session.metadata?.plan ?? 'starter') as 'starter' | 'pro' | 'scale'
+    const plan = (session.metadata?.plan ?? 'starter') as 'founding' | 'starter' | 'pro' | 'scale'
 
     if (!userId) {
       return NextResponse.redirect(`${baseUrl}/subscribe?error=missing_user`)

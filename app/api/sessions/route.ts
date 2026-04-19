@@ -45,21 +45,15 @@ export async function POST(request: Request) {
     if (!clientRow) {
       return NextResponse.json({ error: 'Client not found or not in your workspace' }, { status: 404 })
     }
-    const scheduled = new Date(`${date}T${startTime}:00`)
+    // Use scheduledIso from client (accounts for browser timezone) or fall back to date+startTime
+    const rawBody = body as Record<string, unknown>
+    const scheduled = typeof rawBody.scheduledIso === 'string'
+      ? new Date(rawBody.scheduledIso as string)
+      : new Date(`${date}T${startTime}:00`)
     const endTime = addMinutes(scheduled, durationMinutes)
 
-    const { data: existing } = await supabase
-      .from('sessions')
-      .select('id, scheduled_time')
-      .eq('coach_id', user.id)
-      .eq('workspace_id', workspaceId)
-      .eq('scheduled_time', scheduled.toISOString())
-      .neq('status', 'cancelled')
-      .maybeSingle()
-
-    if (existing) {
-      return NextResponse.json({ error: 'That time is taken' }, { status: 409 })
-    }
+    // No server-side overlap blocking — coach manages their own schedule.
+    // Client-side UI shows occupied slots visually for guidance.
 
     const { data, error } = await supabase
       .from('sessions')
@@ -70,7 +64,7 @@ export async function POST(request: Request) {
         scheduled_time: scheduled.toISOString(),
         end_time: endTime.toISOString(),
         duration_minutes: durationMinutes,
-        session_type: type ?? 'video',
+        session_type: type ?? 'in_person',
         notes: notes ?? null,
         status: 'confirmed',
       })

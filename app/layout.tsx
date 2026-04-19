@@ -21,7 +21,7 @@ const notoSerifJP = Noto_Serif_JP({
 })
 
 export const metadata: Metadata = {
-  title: 'ClearPath — Coach OS & client portal',
+  title: 'Sensei App — Coach OS & client portal',
   description: 'Coach operating system and client portal',
 }
 

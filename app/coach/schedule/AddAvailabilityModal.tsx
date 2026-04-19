@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { labelForTimeValue } from './sessionFormOptions'
 
 /** Monday = 0 … Sunday = 6 (matches calendar grid). */
 const WEEKDAYS: { value: number; label: string }[] = [
@@ -270,7 +271,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
                         >
                           {THIRTY_MIN_OPTIONS.map((t) => (
                             <option key={t} value={t}>
-                              {t}
+                              {labelForTimeValue(t)}
                             </option>
                           ))}
                         </select>
@@ -282,7 +283,7 @@ export function AddAvailabilityModal({ open, onClose, onSaved }: AddAvailability
                         >
                           {THIRTY_MIN_OPTIONS.map((t) => (
                             <option key={t} value={t}>
-                              {t}
+                              {labelForTimeValue(t)}
                             </option>
                           ))}
                         </select>

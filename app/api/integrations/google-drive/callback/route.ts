@@ -96,7 +96,7 @@ export async function GET(request: Request) {
       appVideosUrl(
         'drive_error=' +
           encodeURIComponent(
-            'No refresh token — revoke ClearPath in Google Account → Security and try again, or use Connect again after removing the app.'
+            'No refresh token — revoke Sensei App in Google Account → Security and try again, or use Connect again after removing the app.'
           )
       )
     )

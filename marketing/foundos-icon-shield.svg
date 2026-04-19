@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#000000"/>
+
+  <!-- Shield shape (trust, protection, building) -->
+  <path d="M540 160 L820 280 L820 580 Q820 780 540 920 Q260 780 260 580 L260 280 Z"
+        fill="none" stroke="#ffffff" stroke-width="5" opacity="0.2"/>
+
+  <!-- Inner F - clean and bold -->
+  <path d="M420 350 L660 350 L660 410 L485 410 L485 510 L620 510 L620 570 L485 570 L485 740 L420 740 Z"
+        fill="#ffffff"/>
+
+  <!-- Subtle base line (foundation) -->
+  <line x1="380" y1="780" x2="700" y2="780" stroke="#ffffff" stroke-width="3" opacity="0.25"/>
+</svg>

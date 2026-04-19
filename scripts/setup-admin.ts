@@ -10,9 +10,15 @@
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { config as loadEnv } from 'dotenv'
 import { loadProjectDotenv } from './load-dotenv'
 
-loadProjectDotenv(import.meta.url)
+if (process.env.DOTENV_PATH) {
+  // override: false so shell env vars take precedence over the file
+  loadEnv({ path: process.env.DOTENV_PATH, override: false })
+} else {
+  loadProjectDotenv(import.meta.url)
+}
 
 const DEFAULT_ADMIN = 'jpotesta15@outlook.com'
 const MIN_PASSWORD_LEN = 8

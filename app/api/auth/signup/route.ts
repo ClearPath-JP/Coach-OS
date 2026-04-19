@@ -5,8 +5,9 @@ import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { signupSchema } from '@/lib/validations'
 
 /**
- * POST /api/auth/signup — coach sign-up, workspace creation, session cookies.
- * Body: signupSchema (firstName, email, password, confirmPassword).
+ * POST /api/auth/signup — coach sign-up with auto-confirm.
+ * Creates the auth user (confirming email automatically via service role),
+ * signs them in, and redirects to /subscribe.
  */
 export async function POST(request: Request) {
   try {
@@ -17,12 +18,12 @@ export async function POST(request: Request) {
         'unknown'
       const { success, retryAfter } = await checkRateLimitAsync(`signup-api:${ip}`, {
         windowMs: 60 * 60 * 1000,
-        max: 3,
+        max: 10,
       })
       if (!success) {
         const res = NextResponse.json(
           { error: 'Too many signup attempts. Please try again in an hour.' },
-          { status: 429 }
+          { status: 429 },
         )
         if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
         return res
@@ -42,101 +43,83 @@ export async function POST(request: Request) {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
 
     const supabase = await createClient()
+    const service = createServiceClient()
+
+    // Try normal signup first (works if email confirmation is disabled)
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: emailLower,
       password,
       options: { data: { full_name: fullName } },
     })
 
-    let sessionUser = signUpData.session?.user ?? null
+    // If we got a session, great — we're done
+    if (signUpData.session?.user) {
+      return NextResponse.json({ data: { redirect: '/subscribe' } })
+    }
 
-    if (signUpError || !signUpData.session) {
-      const errMsg = (signUpError?.message ?? '').toLowerCase()
-      const isAlreadyExists =
-        errMsg.includes('already') || errMsg.includes('registered') || errMsg.includes('exists')
-
-      if (isAlreadyExists) {
+    // Check for "already exists" errors
+    if (signUpError) {
+      const errMsg = (signUpError.message ?? '').toLowerCase()
+      if (errMsg.includes('already') || errMsg.includes('registered') || errMsg.includes('exists')) {
         return NextResponse.json(
           { error: 'An account with this email already exists.' },
-          { status: 400 }
-        )
-      }
-
-      // Email confirmation is required or SMTP not configured.
-      // Only bypass email confirmation if COACH_SIGNUP_SKIP_EMAIL_CONFIRM is explicitly set.
-      // This prevents unverified emails from creating accounts in production.
-      const allowBypass =
-        !!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() &&
-        process.env.COACH_SIGNUP_SKIP_EMAIL_CONFIRM === 'true'
-
-      if (allowBypass) {
-        const service = createServiceClient()
-
-        if (signUpError) {
-          console.warn('[signup] signUp error, attempting admin createUser bypass:', signUpError.message)
-          const { error: adminErr } = await service.auth.admin.createUser({
-            email: emailLower,
-            password,
-            email_confirm: true,
-            user_metadata: { full_name: fullName },
-          })
-          if (adminErr) {
-            const adminLower = (adminErr.message ?? '').toLowerCase()
-            if (adminLower.includes('already') || adminLower.includes('exists')) {
-              return NextResponse.json(
-                { error: 'An account with this email already exists.' },
-                { status: 400 }
-              )
-            }
-            console.error('[signup] admin createUser also failed:', adminErr.message)
-            return NextResponse.json(
-              { error: 'Could not create account. Please try again.' },
-              { status: 400 }
-            )
-          }
-          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-            email: emailLower,
-            password,
-          })
-          if (!signInErr && signInData.user) {
-            sessionUser = signInData.user
-          }
-        } else if (signUpData.user?.id) {
-          const { error: confirmErr } = await service.auth.admin.updateUserById(signUpData.user.id, {
-            email_confirm: true,
-          })
-          if (!confirmErr) {
-            const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-              email: emailLower,
-              password,
-            })
-            if (!signInErr && signInData.user) {
-              sessionUser = signInData.user
-            }
-          }
-        }
-      } else if (signUpError) {
-        console.error('[signup] Supabase signUp error:', signUpError.message)
-        return NextResponse.json(
-          { error: 'Could not create account. Please try again.' },
-          { status: 400 }
+          { status: 400 },
         )
       }
     }
 
-    if (!sessionUser) {
-      console.error('[signup] No session after signup. Email confirmation may be required. SUPABASE_SERVICE_ROLE_KEY set:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+    // No session — email confirmation is likely required.
+    // Use service role to auto-confirm and sign in.
+    if (signUpData.user?.id) {
+      // User was created but not confirmed — confirm them
+      await service.auth.admin.updateUserById(signUpData.user.id, {
+        email_confirm: true,
+      })
+    } else if (signUpError) {
+      // signUp failed entirely — create via admin API
+      console.warn('[signup] signUp failed, using admin createUser:', signUpError.message)
+      const { error: adminErr } = await service.auth.admin.createUser({
+        email: emailLower,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: fullName },
+      })
+      if (adminErr) {
+        const adminLower = (adminErr.message ?? '').toLowerCase()
+        if (adminLower.includes('already') || adminLower.includes('exists')) {
+          return NextResponse.json(
+            { error: 'An account with this email already exists.' },
+            { status: 400 },
+          )
+        }
+        console.error('[signup] admin createUser failed:', adminErr.message)
+        return NextResponse.json(
+          { error: 'Could not create account. Please try again.' },
+          { status: 500 },
+        )
+      }
+    }
+
+    // Sign in to get a session
+    const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+      email: emailLower,
+      password,
+    })
+
+    if (signInErr || !signInData.user) {
+      console.error('[signup] signIn after create failed:', signInErr?.message)
       return NextResponse.json(
-        { error: 'Account created — please check your email to confirm, then sign in.' },
-        { status: 200 }
+        { error: 'Account created but sign-in failed. Please go to login and sign in.' },
+        { status: 200 },
       )
     }
 
     return NextResponse.json({ data: { redirect: '/subscribe' } })
-  } catch {
+  } catch (err) {
+    console.error('[signup] unexpected error:', err instanceof Error ? err.message : err)
     return NextResponse.json(
       { error: 'Something went wrong — check your connection and try again.' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

@@ -24,9 +24,9 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'ClearPath <noreply@clearpath.com>',
+        from: 'FoundOS <noreply@foundos.ai>',
         to: [to],
-        subject: 'ClearPath admin test email',
+        subject: 'FoundOS admin test email',
         html: '<p>Admin test email sent successfully.</p>',
       }),
     })

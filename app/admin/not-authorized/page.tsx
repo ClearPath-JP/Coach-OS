@@ -17,7 +17,7 @@ export default function AdminNotAuthorizedPage() {
           Access restricted
         </h1>
         <p className="mt-2 text-[14px] text-[var(--text-tertiary)]">
-          This area is only accessible to ClearPath administrators.
+          This area is only accessible to FoundOS administrators.
         </p>
         <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
           <Link

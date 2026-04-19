@@ -1,8 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
+import { config as loadEnv } from 'dotenv'
 import { seedDemoWorkspaceContent } from './lib/demo-workspace-seed'
 import { loadProjectDotenv } from './load-dotenv'
 
-loadProjectDotenv(import.meta.url)
+if (process.env.DOTENV_PATH) {
+  loadEnv({ path: process.env.DOTENV_PATH, override: false })
+} else {
+  loadProjectDotenv(import.meta.url)
+}
 
 async function main() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL

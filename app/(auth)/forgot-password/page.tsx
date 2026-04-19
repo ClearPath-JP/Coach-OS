@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
               opacity: 0.5,
             }}
           >
-            Powered by ClearPath
+            Powered by FoundOS
           </p>
         </div>
       </main>

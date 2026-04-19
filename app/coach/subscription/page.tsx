@@ -42,7 +42,7 @@ export default async function SubscriptionPage() {
 
   const subscription = subResult.data
     ? {
-        plan: subResult.data.plan as 'free' | 'starter' | 'pro' | 'scale',
+        plan: subResult.data.plan as 'free' | 'founding' | 'starter' | 'pro' | 'scale',
         status: subResult.data.status as 'trialing' | 'active' | 'past_due' | 'cancelled' | 'paused',
         current_period_end: subResult.data.current_period_end,
         trial_ends_at: subResult.data.trial_ends_at,

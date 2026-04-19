@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#000000"/>
+
+  <!-- Outer ring (OS = operating system, circular) -->
+  <circle cx="540" cy="540" r="340" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.15"/>
+  <circle cx="540" cy="540" r="280" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.08"/>
+
+  <!-- Bold geometric F centered -->
+  <path d="M400 310 L680 310 L680 380 L472 380 L472 505 L640 505 L640 575 L472 575 L472 770 L400 770 Z" fill="#ffffff"/>
+
+  <!-- Accent nodes on the ring (like a system/circuit) -->
+  <circle cx="540" cy="200" r="8" fill="#ffffff" opacity="0.6"/>
+  <circle cx="540" cy="880" r="8" fill="#ffffff" opacity="0.6"/>
+  <circle cx="200" cy="540" r="8" fill="#ffffff" opacity="0.6"/>
+  <circle cx="880" cy="540" r="8" fill="#ffffff" opacity="0.6"/>
+
+  <!-- Corner dots (circuit board feel) -->
+  <circle cx="270" cy="270" r="5" fill="#ffffff" opacity="0.3"/>
+  <circle cx="810" cy="270" r="5" fill="#ffffff" opacity="0.3"/>
+  <circle cx="270" cy="810" r="5" fill="#ffffff" opacity="0.3"/>
+  <circle cx="810" cy="810" r="5" fill="#ffffff" opacity="0.3"/>
+</svg>

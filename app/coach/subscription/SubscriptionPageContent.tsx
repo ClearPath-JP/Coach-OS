@@ -68,7 +68,7 @@ const BENEFITS = [
   { icon: Palette, title: 'White-Label Branding', description: 'Custom colors, logo, branded client portal' },
   { icon: Star, title: 'Testimonials', description: 'Collect and display client testimonials' },
   { icon: FileText, title: 'Assignments', description: 'Send homework with file uploads' },
-  { icon: Shield, title: 'Priority Support', description: 'Direct support from the ClearPath team' },
+  { icon: Shield, title: 'Priority Support', description: 'Direct support from the FoundOS team' },
 ] as const
 
 const FOUNDING_FEATURES = [
@@ -153,7 +153,7 @@ export function SubscriptionPageContent({
 
       {success && (
         <div className="rounded-xl border border-[var(--color-success)] bg-[var(--color-success-light)] px-4 py-3 text-[15px] text-[var(--color-success)]">
-          Your subscription is active. Welcome to ClearPath!
+          Your subscription is active. Welcome to Sensei App!
         </div>
       )}
       {cancelled && (

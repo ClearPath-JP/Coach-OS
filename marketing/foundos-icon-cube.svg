@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0a0a0a"/>
+
+  <!-- 3D isometric cube (building blocks / foundation) -->
+  <!-- Top face -->
+  <path d="M540 240 L780 380 L540 520 L300 380 Z" fill="#ffffff" opacity="0.95"/>
+  <!-- Left face -->
+  <path d="M300 380 L540 520 L540 760 L300 620 Z" fill="#ffffff" opacity="0.55"/>
+  <!-- Right face -->
+  <path d="M780 380 L540 520 L540 760 L780 620 Z" fill="#ffffff" opacity="0.3"/>
+
+  <!-- Subtle "OS" text below cube -->
+  <text x="540" y="870" font-family="'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif"
+        font-size="56" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="14" opacity="1">FOUNDOS</text>
+</svg>

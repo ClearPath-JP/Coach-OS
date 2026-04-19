@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <!-- Dark background -->
+  <rect width="1080" height="1080" rx="220" fill="#0a0a0a"/>
+
+  <!-- F made of stacked foundation blocks -->
+  <!-- Bottom bar (foundation) -->
+  <rect x="300" y="700" width="480" height="72" rx="12" fill="#ffffff"/>
+  <!-- Middle bar -->
+  <rect x="300" y="530" width="360" height="72" rx="12" fill="#ffffff" opacity="0.85"/>
+  <!-- Top bar -->
+  <rect x="300" y="360" width="420" height="72" rx="12" fill="#ffffff" opacity="0.7"/>
+  <!-- Vertical pillar -->
+  <rect x="300" y="260" width="72" height="512" rx="12" fill="#ffffff"/>
+  <!-- Top cap -->
+  <rect x="300" y="260" width="440" height="72" rx="12" fill="#ffffff"/>
+</svg>
