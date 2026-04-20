@@ -479,8 +479,8 @@ export function DualRoleLoginPage() {
                   borderColor: emailInvalid ? 'var(--error)' : 'var(--border-default)',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--got-gold)'
-                  e.target.style.boxShadow = '0 0 0 3px rgba(196,164,74,0.1)'
+                  e.target.style.borderColor = 'var(--accent)'
+                  e.target.style.boxShadow = '0 0 0 3px rgba(159,18,57,0.15)'
                 }}
                 onBlurCapture={(e) => {
                   e.target.style.borderColor = emailInvalid ? 'var(--error)' : 'var(--border-default)'

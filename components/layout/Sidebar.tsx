@@ -200,7 +200,7 @@ function CoachSidebarHeader() {
         <div className="font-display text-[14px] font-medium tracking-[0.02em] text-[var(--text-primary)]">{displayName}</div>
         <div
           className="text-[9px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: 'var(--got-gold-dim)', marginTop: 1 }}
+          style={{ color: 'var(--accent-dark)', marginTop: 1 }}
         >
           Coach OS
         </div>
@@ -308,7 +308,7 @@ function NavRowsCoach({
             className={cn(
               'relative mb-[2px] flex h-[34px] items-center gap-2.5 rounded-[6px] px-2.5 text-[13px] no-underline transition-all duration-[200ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[rgba(196,164,74,0.07)] font-medium text-[var(--got-gold)] [&_svg]:text-[var(--got-gold)]'
+                ? 'nav-item-active-coach bg-[var(--accent-surface)] font-medium text-[var(--accent)] [&_svg]:text-[var(--accent)]'
                 : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--coach-sidebar-icon)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-secondary)]'
             )}
           >
@@ -320,8 +320,8 @@ function NavRowsCoach({
               <span
                 className="badge shrink-0 rounded-full px-1.5 py-px text-center text-[10px] font-semibold transition-[filter] duration-[180ms] hover:brightness-[0.9]"
                 style={{
-                  background: 'var(--got-gold)',
-                  color: 'var(--got-ink)',
+                  background: 'var(--accent)',
+                  color: 'var(--bg-app)',
                   minWidth: '16px',
                 }}
               >
@@ -415,7 +415,7 @@ export function Sidebar({
               href={settingsHref}
               className="mt-2 flex h-10 cursor-pointer items-center gap-2.5 rounded-[8px] px-2 transition-colors duration-[180ms] hover:bg-[var(--coach-sidebar-hover)]"
             >
-              <div className="avatar-hover flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold" style={{ background: 'var(--got-gold)', color: 'var(--got-ink)' }}>
+              <div className="avatar-hover flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold" style={{ background: 'var(--accent)', color: 'var(--bg-app)' }}>
                 {userBar.avatarUrl ? (
                   <Image
                     src={userBar.avatarUrl}

@@ -64,7 +64,7 @@ export function ForgotPasswordForm() {
         <Link
           href="/login"
           className="mt-6 inline-block text-[14px] font-medium no-underline transition-colors duration-150 hover:underline"
-          style={{ color: 'var(--ca-gold)' }}
+          style={{ color: 'var(--accent)' }}
         >
           Back to sign in
         </Link>
@@ -115,8 +115,8 @@ export function ForgotPasswordForm() {
               color: 'var(--text-primary)',
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = 'var(--ca-gold)'
-              e.target.style.boxShadow = '0 0 0 3px rgba(196,164,74,0.1)'
+              e.target.style.borderColor = 'var(--accent)'
+              e.target.style.boxShadow = '0 0 0 3px rgba(159,18,57,0.15)'
             }}
             onBlur={(e) => {
               e.target.style.borderColor = 'var(--border-strong)'
@@ -170,7 +170,7 @@ export function ForgotPasswordForm() {
         <Link
           href="/login"
           className="font-medium no-underline transition-colors duration-150 hover:underline"
-          style={{ color: 'var(--ca-gold)' }}
+          style={{ color: 'var(--accent)' }}
         >
           Back to sign in
         </Link>

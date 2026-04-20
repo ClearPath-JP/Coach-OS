@@ -85,8 +85,8 @@ const variantClasses: Record<
     'active:translate-y-0'
   ),
   accentGhost: cn(
-    'bg-[var(--ca-gold-surface)] text-[var(--ca-gold)] border-transparent shadow-none',
-    'hover:bg-[color-mix(in_srgb,var(--ca-gold)_14%,transparent)]',
+    'bg-[var(--accent-surface)] text-[var(--accent)] border-transparent shadow-none',
+    'hover:bg-[color-mix(in_srgb,var(--accent)_14%,transparent)]',
     'active:translate-y-0'
   ),
   danger: cn(

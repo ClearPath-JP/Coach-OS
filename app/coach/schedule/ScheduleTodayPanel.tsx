@@ -119,7 +119,7 @@ export function ScheduleTodayPanel({
       <div className="mb-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">{format(focusDay, 'EEEE')}</p>
         <p className="text-[28px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{format(focusDay, 'MMMM d')}</p>
-        <p className={cn('mt-1 text-[13px]', daySessions.length ? 'font-medium text-[var(--cp-accent)]' : 'text-[var(--text-tertiary)]')}>
+        <p className={cn('mt-1 text-[13px]', daySessions.length ? 'font-medium text-[var(--accent)]' : 'text-[var(--text-tertiary)]')}>
           {daySessions.length
             ? `${daySessions.length} session${daySessions.length === 1 ? '' : 's'}${isFocusToday ? ' today' : ` on ${format(focusDay, 'MMM d')}`}`
             : 'No sessions today'}
@@ -136,15 +136,15 @@ export function ScheduleTodayPanel({
             type="button"
             onClick={() => onSessionClick(highlight.session)}
             className={cn(
-              'relative w-full rounded-[var(--radius-lg)] border bg-[var(--bg-subtle)] p-4 text-left transition-all duration-200 hover:bg-[var(--bg-muted)] hover:-translate-y-px',
+              'relative w-full rounded-[var(--radius-lg)] border bg-[var(--bg-app)] p-4 text-left transition-all duration-300 hover:-translate-y-0.5',
               highlight.kind === 'in-progress'
-                ? 'border-[var(--success)] ring-2 ring-[var(--success)]/20'
-                : 'border-[var(--cp-accent)] ring-2 ring-[var(--cp-accent)]/20'
+                ? 'border-[var(--success)] shadow-[0_0_20px_rgba(52,211,153,0.12)]'
+                : 'border-[var(--accent)] shadow-[0_0_20px_rgba(159,18,57,0.12)]'
             )}
           >
             <span className={cn(
               'absolute top-3 right-3 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white',
-              highlight.kind === 'in-progress' ? 'bg-[var(--success)]' : 'bg-[var(--cp-accent)]'
+              highlight.kind === 'in-progress' ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'
             )}>
               {highlight.kind === 'in-progress' ? 'Live' : 'Next'}
             </span>
@@ -233,26 +233,26 @@ export function ScheduleTodayPanel({
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">This week</p>
           <div className="grid grid-cols-3 gap-2">
             {/* Sessions */}
-            <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-2.5">
-              <p className="text-[10px] font-medium text-[var(--text-quaternary)]">Sessions</p>
-              <p className="mt-1 text-[20px] font-bold tabular-nums text-[var(--text-primary)]">{dashStats.sessionsThisWeek}</p>
+            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Sessions</p>
+              <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.sessionsThisWeek}</p>
               {dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
-                <p className={cn('text-[10px] font-medium', trendColor(dashStats.trends.sessionsThisWeek.direction))}>
-                  {trendArrow(dashStats.trends.sessionsThisWeek.direction)} {Math.round(dashStats.trends.sessionsThisWeek.percentChange)}% vs last
+                <p className={cn('mt-1 text-[10px] font-medium', trendColor(dashStats.trends.sessionsThisWeek.direction))}>
+                  {trendArrow(dashStats.trends.sessionsThisWeek.direction)} {Math.round(dashStats.trends.sessionsThisWeek.percentChange)}%
                 </p>
-              ) : null}
+              ) : <p className="mt-1 text-[10px] text-[var(--text-quaternary)]">this week</p>}
             </div>
             {/* Revenue */}
-            <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-2.5">
-              <p className="text-[10px] font-medium text-[var(--text-quaternary)]">Revenue</p>
-              <p className="mt-1 text-[20px] font-bold tabular-nums text-[var(--text-primary)]">{formatCents(dashStats.revenueMonthCents)}</p>
-              <p className="text-[10px] font-medium text-[var(--text-quaternary)]">this month</p>
+            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Revenue</p>
+              <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(dashStats.revenueMonthCents)}</p>
+              <p className="mt-1 text-[10px] text-[var(--text-quaternary)]">this month</p>
             </div>
             {/* Clients */}
-            <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-2.5">
-              <p className="text-[10px] font-medium text-[var(--text-quaternary)]">Clients</p>
-              <p className="mt-1 text-[20px] font-bold tabular-nums text-[var(--text-primary)]">{dashStats.activeClientsCount}</p>
-              <p className="text-[10px] font-medium text-[var(--text-quaternary)]">active</p>
+            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Clients</p>
+              <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.activeClientsCount}</p>
+              <p className="mt-1 text-[10px] text-[var(--text-quaternary)]">active</p>
             </div>
           </div>
         </div>
@@ -342,7 +342,7 @@ export function ScheduleTodayPanel({
         <button
           type="button"
           onClick={onViewFullSchedule}
-          className="mt-4 text-left text-[13px] font-medium text-[var(--cp-accent)] hover:underline"
+          className="mt-4 text-left text-[13px] font-medium text-[var(--accent)] hover:underline"
         >
           View full schedule →
         </button>

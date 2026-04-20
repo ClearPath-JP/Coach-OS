@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Check, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const FOUNDING_FEATURES = [
   'Unlimited clients',
@@ -19,39 +21,7 @@ const FOUNDING_FEATURES = [
   'Priority support',
 ]
 
-function CheckIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden
-      style={{ flexShrink: 0, marginTop: 2 }}
-    >
-      <path
-        d="M3 8l3.5 3.5L13 4.5"
-        stroke="var(--accent)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function Spinner() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="animate-spin" aria-hidden>
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
-  )
-}
+const TOTAL_FOUNDING_SPOTS = 10
 
 interface Props {
   userEmail: string
@@ -61,6 +31,23 @@ export function SubscribePageContent({ userEmail }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [claimedSpots, setClaimedSpots] = useState<number | null>(null)
+
+  // Fetch how many founding members have already subscribed
+  useEffect(() => {
+    let cancelled = false
+    void fetch('/api/billing/founding-count', { credentials: 'include' })
+      .then(async (r) => {
+        if (!cancelled && r.ok) {
+          const json = (await r.json().catch(() => ({}))) as { count?: number }
+          if (typeof json.count === 'number') setClaimedSpots(json.count)
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  const spotsLeft = claimedSpots !== null ? Math.max(0, TOTAL_FOUNDING_SPOTS - claimedSpots) : null
 
   async function handleCheckout() {
     setError(null)
@@ -92,56 +79,28 @@ export function SubscribePageContent({ userEmail }: Props) {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--bg-app)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '48px 24px 80px',
-      }}
-    >
+    <div className="flex min-h-[100dvh] flex-col items-center bg-[var(--bg-app)] px-6 pb-20 pt-12">
       {/* Wordmark */}
-      <div style={{ marginBottom: 48, textAlign: 'center' }}>
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 22,
-            fontWeight: 500,
-            letterSpacing: '0.01em',
-            color: 'var(--text-primary)',
-            lineHeight: 1,
-          }}
-        >
-          COACH<span style={{ color: 'var(--accent)' }}>OS</span>
+      <div className="mb-12 text-center">
+        <div className="font-display text-[22px] font-medium leading-none tracking-[0.01em] text-[var(--text-primary)]">
+          SENSEI<span className="text-[var(--accent)]"> APP</span>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 6 }}>
+        <p className="mt-1.5 text-[13px] text-[var(--text-tertiary)]">
           Built for coaches. Designed for growth.
         </p>
       </div>
 
       {/* Heading */}
-      <div style={{ textAlign: 'center', maxWidth: 600, marginBottom: 40 }}>
-        <h1
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(26px, 4vw, 40px)',
-            fontWeight: 500,
-            letterSpacing: '0.01em',
-            color: 'var(--text-primary)',
-            lineHeight: 1.15,
-            margin: '0 0 16px',
-          }}
-        >
+      <div className="mb-10 max-w-[600px] text-center">
+        <h1 className="font-display text-[clamp(26px,4vw,40px)] font-medium leading-[1.15] tracking-[0.01em] text-[var(--text-primary)]">
           Become a Founding Member
         </h1>
-        <p style={{ fontSize: 16, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+        <p className="mt-4 text-[16px] leading-relaxed text-[var(--text-secondary)]">
           Lock in $99/month for life. No setup fee. Full platform access.
         </p>
         {userEmail && (
-          <p style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 8 }}>
-            Signing up as <strong style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{userEmail}</strong>
+          <p className="mt-2 text-[13px] text-[var(--text-tertiary)]">
+            Signing up as <strong className="font-semibold text-[var(--text-secondary)]">{userEmail}</strong>
           </p>
         )}
       </div>
@@ -150,17 +109,7 @@ export function SubscribePageContent({ userEmail }: Props) {
       {error && (
         <div
           role="alert"
-          style={{
-            background: 'color-mix(in srgb, var(--error) 12%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--error) 30%, transparent)',
-            borderRadius: 10,
-            padding: '12px 16px',
-            fontSize: 14,
-            color: 'var(--error)',
-            maxWidth: 480,
-            marginBottom: 32,
-            textAlign: 'center',
-          }}
+          className="mb-8 max-w-[480px] rounded-xl border border-[var(--error-border)] bg-[var(--error-bg)] px-4 py-3 text-center text-[14px] text-[var(--error)]"
         >
           {error}
         </div>
@@ -168,97 +117,64 @@ export function SubscribePageContent({ userEmail }: Props) {
 
       {/* Founding Member Card */}
       <div
-        className="card-glow"
+        className="card-glow relative w-full max-w-[440px] rounded-2xl border-2 border-[var(--accent)] bg-[var(--bg-subtle)] px-8 py-10"
         style={{
-          background: 'var(--bg-subtle)',
-          border: '2px solid var(--accent)',
-          borderRadius: 16,
-          padding: '40px 32px',
-          maxWidth: 440,
-          width: '100%',
-          position: 'relative',
           boxShadow: '0 0 40px rgba(159, 18, 57, 0.1), 0 0 80px rgba(159, 18, 57, 0.05)',
         }}
       >
         {/* Badge */}
-        <div
-          style={{
-            position: 'absolute',
-            top: -14,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'var(--accent)',
-            color: '#fff',
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: '0.06em',
-            padding: '4px 14px',
-            borderRadius: 20,
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[var(--accent)] px-3.5 py-1 text-[11px] font-bold tracking-[0.06em] text-white">
           Founding Member
         </div>
 
         {/* Price */}
-        <div style={{ textAlign: 'center', marginBottom: 8 }}>
-          <span
-            style={{
-              fontSize: 48,
-              fontWeight: 800,
-              letterSpacing: '-0.04em',
-              color: 'var(--text-primary)',
-              lineHeight: 1,
-            }}
-          >
+        <div className="mb-2 text-center">
+          <span className="text-[48px] font-extrabold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
             $99
           </span>
-          <span
-            style={{
-              fontSize: 15,
-              color: 'var(--text-secondary)',
-              fontWeight: 500,
-              paddingBottom: 6,
-            }}
-          >
-            /mo
-          </span>
+          <span className="pb-1.5 text-[15px] font-medium text-[var(--text-secondary)]">/mo</span>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--accent)', margin: '0 0 4px', fontWeight: 500 }}>
+        <p className="mb-1 text-center text-[14px] font-medium text-[var(--accent)]">
           Locked-in rate for life. No setup fee.
         </p>
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-tertiary)', margin: '0 0 28px' }}>
-          Only 10 founding spots available.
-        </p>
+
+        {/* Founding counter */}
+        <div className="mb-7 text-center">
+          {spotsLeft !== null ? (
+            <div className="mt-3 flex flex-col items-center gap-2">
+              <div className="flex w-full max-w-[200px] items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--bg-muted)]">
+                  <div
+                    className="h-full rounded-full bg-[var(--accent)] transition-all duration-700"
+                    style={{ width: `${((claimedSpots ?? 0) / TOTAL_FOUNDING_SPOTS) * 100}%` }}
+                  />
+                </div>
+              </div>
+              <p className={cn(
+                'text-[13px] font-semibold',
+                spotsLeft <= 3 ? 'text-[var(--error)]' : 'text-[var(--text-tertiary)]'
+              )}>
+                {spotsLeft === 0
+                  ? 'All founding spots claimed!'
+                  : `${spotsLeft} of ${TOTAL_FOUNDING_SPOTS} spots left`}
+              </p>
+            </div>
+          ) : (
+            <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+              Only {TOTAL_FOUNDING_SPOTS} founding spots available.
+            </p>
+          )}
+        </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'var(--border-default)', marginBottom: 24 }} />
+        <div className="mb-6 h-px bg-[var(--border-default)]" />
 
         {/* Features */}
-        <ul
-          style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: '0 0 32px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-          }}
-        >
+        <ul className="mb-8 flex flex-col gap-2.5">
           {FOUNDING_FEATURES.map((f) => (
-            <li
-              key={f}
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 10,
-                fontSize: 14,
-                color: 'var(--text-secondary)',
-                lineHeight: 1.4,
-              }}
-            >
-              <CheckIcon />
+            <li key={f} className="flex items-start gap-2.5 text-[14px] leading-snug text-[var(--text-secondary)]">
+              <Check className="mt-0.5 size-3.5 shrink-0 text-[var(--accent)]" strokeWidth={2.5} />
               {f}
             </li>
           ))}
@@ -269,29 +185,17 @@ export function SubscribePageContent({ userEmail }: Props) {
           type="button"
           disabled={loading}
           onClick={handleCheckout}
-          style={{
-            width: '100%',
-            height: 48,
-            borderRadius: 10,
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            background: 'var(--accent)',
-            color: '#fff',
-            border: 'none',
-            transition: 'opacity 0.15s',
-          }}
-          onMouseEnter={(e) => { if (!loading) e.currentTarget.style.opacity = '0.88' }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
+          className={cn(
+            'relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl',
+            'bg-[var(--accent)] text-[15px] font-semibold text-white',
+            'transition-all hover:bg-[var(--accent-hover)]',
+            'disabled:cursor-not-allowed disabled:opacity-50'
+          )}
         >
           {loading ? (
             <>
-              <Spinner />
-              Redirecting…
+              <Loader2 className="size-4 animate-spin" />
+              Redirecting...
             </>
           ) : (
             'Get started — $99/month'
@@ -300,14 +204,7 @@ export function SubscribePageContent({ userEmail }: Props) {
       </div>
 
       {/* Footer note */}
-      <p
-        style={{
-          marginTop: 40,
-          fontSize: 13,
-          color: 'var(--text-tertiary)',
-          textAlign: 'center',
-        }}
-      >
+      <p className="mt-10 text-center text-[13px] text-[var(--text-tertiary)]">
         No setup fees. Cancel anytime. Billed monthly.
       </p>
     </div>

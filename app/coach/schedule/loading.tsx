@@ -1,6 +1,6 @@
 export default function CoachScheduleLoading() {
   return (
-    <div className="got-page">
+    <div className="sensei-page">
       {/* Header skeleton */}
       <div className="mb-6">
         <div className="h-3 w-28 animate-pulse rounded bg-[var(--border-default)]" />

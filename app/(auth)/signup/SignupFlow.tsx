@@ -104,7 +104,7 @@ export function SignupFlow() {
         <h1 className="font-display mb-2 text-[24px] font-medium tracking-[0.01em] text-[var(--text-primary)]">
           Join COACH-OS
         </h1>
-        <p className="section-label-got">
+        <p className="section-label-accent">
           Who are you signing up as?
         </p>
       </motion.div>

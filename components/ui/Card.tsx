@@ -36,7 +36,7 @@ const variantClasses: Record<'default' | 'elevated' | 'ghost' | 'accent' | 'glow
   ),
   accent: cn(
     'rounded-[10px] border border-[var(--accent)] bg-[var(--bg-subtle)]',
-    'shadow-[0_0_0_1px_var(--ca-gold-surface)] text-[var(--text-primary)]'
+    'shadow-[0_0_0_1px_var(--accent-surface)] text-[var(--text-primary)]'
   ),
   glow: cn(
     'rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)]',

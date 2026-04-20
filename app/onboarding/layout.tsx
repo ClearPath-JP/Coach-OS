@@ -59,7 +59,7 @@ export default function OnboardingLayout({ children }: { children: ReactNode }) 
           <header className="hidden border-b border-[var(--border-subtle)] bg-[var(--cp-offwhite)] lg:block">
             <div className="flex items-center justify-between gap-4 px-10 pb-4 pt-10">
               <div className="min-w-0">
-                <p className="section-label-got">
+                <p className="section-label-accent">
                   Getting started
                 </p>
                 <p className="mt-1 font-display text-[16px] font-medium tracking-[0.01em] text-[var(--text-primary)]">

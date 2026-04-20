@@ -1,11 +1,11 @@
-/* === CLEARPATH DESIGN SYSTEM === */
+/* === SENSEI APP DESIGN SYSTEM — by FoundOS === */
 
 /* Fonts: DM Sans (body) + Noto Serif JP (display) loaded via next/font/google in layout.tsx */
 
 @import 'tailwindcss';
 @config '../tailwind.config.ts';
 
-/* ClearPath Coaching OS — brand tokens (design system PDF §04) + Tailwind utilities */
+/* Sensei App — brand tokens + Tailwind utilities */
 @theme {
   --color-cp-navy: var(--cp-navy);
   --color-cp-slate: var(--cp-slate);
@@ -214,7 +214,7 @@
   --shadow-card: var(--shadow-xs);
   --shadow-card-raised: var(--shadow-sm);
 
-  /* ClearPath Solutions — Coaching OS palette (--cp-*); coach accent via --cp-accent */
+  /* FoundOS — legacy palette aliases (--cp-*); coach accent via --cp-accent */
   --cp-navy: #0f172a;
   --cp-navy-light: #1e3a5f; /* active nav row, between navy + sapphire */
   --cp-slate: #1e293b;
@@ -246,22 +246,6 @@
   /* ── Nav surface ── */
   --cp-nav-surface: #0f172a;
 
-  /* ── Legacy bridges (Phase 3 cleanup) ──────────────────── */
-  --cp-offwhite: #f7f7f7;
-  --cp-white: #ffffff;
-  --accent: var(--cp-accent);
-  --accent-hover: var(--cp-accent-hover);
-
-  /* Ghost of Tsushima — shared design tokens */
-  --got-ink: #1C1816;
-  --got-parchment: #E8E0D0;
-  --got-gold: #C4A44A;
-  --got-gold-dim: #A08838;
-  --got-gold-rgb: 196, 164, 74;
-  --got-crimson: #8B2B2B;
-  --got-steel: #4A6B8A;
-  --got-bamboo: #4A6B3A;
-  --got-frost: #8AA4B8;
 }
 
 html[data-theme='dark'] {
@@ -371,22 +355,10 @@ html[data-theme='dark'] {
   --cp-focus-ring: color-mix(in srgb, var(--accent) 25%, transparent);
   --cp-nav-surface: #0C0C0F;
 
-  /* Combative Alchemy — brand tokens (burgundy) */
-  --ca-gold: #9f1239;
-  --ca-gold-dim: #7f1d1d;
-  --ca-gold-rgb: 159, 18, 57;
-  --ca-gold-surface: rgba(159, 18, 57, 0.08);
-
-  /* GoT aliases — backward compat, point to CA palette */
-  --got-ink: #0E0E11;
-  --got-parchment: #EDEDEF;
-  --got-gold: var(--ca-gold);
-  --got-gold-dim: var(--ca-gold-dim);
-  --got-gold-rgb: var(--ca-gold-rgb);
-  --got-crimson: #8B2B2B;
-  --got-steel: #60a5fa;
-  --got-bamboo: #34d399;
-  --got-frost: #A1A1AA;
+  /* Accent surface tokens — for cards, badges, active states */
+  --accent-surface: rgba(159, 18, 57, 0.08);
+  --accent-glow: rgba(159, 18, 57, 0.15);
+  --accent-border: rgba(159, 18, 57, 0.3);
 }
 
 *,
@@ -596,7 +568,7 @@ html[data-theme='dark'] .empty-state-coach__icon {
 }
 
 .link-nav {
-  color: var(--ca-gold);
+  color: var(--accent);
   text-decoration: none;
   text-underline-offset: 2px;
   transition:
@@ -958,11 +930,11 @@ html[data-theme='dark'] .section-header-glow::before {
   pointer-events: none;
 }
 
-/* Coach shell — warm dark sidebar chrome (GoT) */
+/* Coach shell — dark sidebar chrome */
 .coach-sidebar-dark {
   --coach-sidebar-bg: #0D0B08;
   --coach-sidebar-border: #1A1612;
-  --coach-sidebar-hover: rgba(196, 164, 74, 0.06);
+  --coach-sidebar-hover: rgba(159, 18, 57, 0.06);
   --coach-sidebar-muted: #5A5040;
   --coach-sidebar-icon: #6A5E4E;
   --coach-sidebar-label: #A08838;
@@ -992,7 +964,7 @@ html[data-theme='dark'] .section-header-glow::before {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--ca-gold);
+  background: var(--accent);
   border-radius: 0 2px 2px 0;
 }
 
@@ -1021,7 +993,7 @@ html[data-theme='dark'] .section-header-glow::before {
   overflow: hidden;
 }
 
-/* GoT — stagger reveal animation for dashboard sections */
+/*stagger reveal animation for dashboard sections */
 @keyframes coachDashLift {
   from {
     opacity: 0;
@@ -1045,7 +1017,7 @@ html[data-theme='dark'] .section-header-glow::before {
 .coach-dash-stagger > *:nth-child(7) { animation-delay: 0.39s; }
 .coach-dash-stagger > *:nth-child(8) { animation-delay: 0.45s; }
 
-/* GoT — stagger for list items (conversations, activity, etc.) */
+/*stagger for list items (conversations, activity, etc.) */
 @keyframes coachListFade {
   from {
     opacity: 0;
@@ -1077,7 +1049,7 @@ html[data-theme='dark'] .section-header-glow::before {
   }
 }
 
-/* GoT — game-menu page wrapper */
+/*game-menu page wrapper */
 .coach-page {
   padding: var(--coach-content-px-mobile);
   padding-bottom: 80px;
@@ -1095,7 +1067,7 @@ html[data-theme='dark'] .section-header-glow::before {
   width: 100%;
 }
 
-/* GoT — game-menu panel (card replacement for dashboard sections) */
+/*game-menu panel (card replacement for dashboard sections) */
 .game-panel {
   background: var(--bg-subtle);
   border: 1px solid var(--border-subtle);
@@ -1122,13 +1094,13 @@ html[data-theme='dark'] .game-panel:hover {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ca-gold-dim);
+  color: var(--accent-dark);
 }
 .game-panel-body {
   padding: 4px 0;
 }
 
-/* GoT — stat card (game HUD style) */
+/*stat card (game HUD style) */
 .game-stat {
   display: flex;
   flex-direction: column;
@@ -1158,14 +1130,14 @@ html[data-theme='dark'] .game-panel:hover {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ca-gold-dim);
+  color: var(--accent-dark);
 }
 .game-stat__sub {
   font-size: 11px;
   color: var(--text-tertiary);
 }
 
-/* GoT — page title */
+/*page title */
 .game-page-title {
   font-family: var(--font-display);
   font-size: 22px;
@@ -1178,7 +1150,7 @@ html[data-theme='dark'] .game-panel:hover {
   .game-page-title { font-size: 26px; }
 }
 
-/* GoT — session row (mission-list style) */
+/*session row (mission-list style) */
 .game-session-row {
   display: flex;
   align-items: center;
@@ -1192,7 +1164,7 @@ html[data-theme='dark'] .game-panel:hover {
   background: var(--bg-muted);
 }
 
-/* GoT — attention row */
+/*attention row */
 .game-attention-row {
   display: flex;
   align-items: center;
@@ -1201,7 +1173,7 @@ html[data-theme='dark'] .game-panel:hover {
   min-height: 44px;
 }
 
-/* GoT — primary button gold shimmer on hover */
+/*primary button gold shimmer on hover */
 .btn-shimmer::after {
   content: '';
   position: absolute;
@@ -1217,7 +1189,7 @@ html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
   box-shadow: 0 0 20px rgba(159, 18, 57, 0.3), 0 0 4px rgba(159, 18, 57, 0.2);
 }
 
-/* GoT — gradient divider (replaces hard border-b lines) */
+/*gradient divider (replaces hard border-b lines) */
 .divider-fade {
   height: 1px;
   background: linear-gradient(
@@ -1229,7 +1201,7 @@ html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
   );
 }
 
-/* GoT — organic list dividers (auto-applied between children) */
+/*organic list dividers (auto-applied between children) */
 .coach-list-organic > :not(:first-child)::before {
   content: '';
   display: block;
@@ -1238,20 +1210,20 @@ html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
   background: linear-gradient(90deg, transparent, var(--border-default), transparent);
 }
 
-/* GoT — display heading utility */
+/*display heading utility */
 .heading-display {
   font-family: var(--font-display);
   font-weight: 500;
   letter-spacing: 0.02em;
 }
 
-/* GoT — section label (gold uppercase small text) */
-.section-label-got {
+/*section label (gold uppercase small text) */
+.section-label-accent {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ca-gold-dim);
+  color: var(--accent-dark);
 }
 
 /* ═══════════════════════════════════════════════
@@ -1344,13 +1316,13 @@ html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
   background: var(--bg-muted);
 }
 .coach-nav__link--active {
-  color: var(--ca-gold);
-  background: var(--ca-gold-surface);
-  box-shadow: inset 0 -2px 0 0 var(--ca-gold);
+  color: var(--accent);
+  background: var(--accent-surface);
+  box-shadow: inset 0 -2px 0 0 var(--accent);
 }
 html[data-theme='dark'] .coach-nav__link--active {
   box-shadow:
-    inset 0 -2px 0 0 var(--ca-gold),
+    inset 0 -2px 0 0 var(--accent),
     0 0 12px rgba(159, 18, 57, 0.08);
 }
 .coach-nav__link-icon {
@@ -1375,7 +1347,7 @@ html[data-theme='dark'] .coach-nav__link--active {
   background: var(--bg-muted);
 }
 .coach-nav__settings.coach-nav__link--active {
-  color: var(--ca-gold);
+  color: var(--accent);
 }
 @media (min-width: 1024px) {
   .coach-nav__settings { display: flex; }
@@ -1411,7 +1383,7 @@ html[data-theme='dark'] .coach-nav__link--active {
   transition: color 200ms;
 }
 .coach-nav__mobile-link--active {
-  color: var(--ca-gold);
+  color: var(--accent);
 }
 html[data-theme='dark'] .coach-nav__mobile-link--active {
   text-shadow: 0 0 12px rgba(159, 18, 57, 0.4);
@@ -1423,7 +1395,7 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* ═══════════════════════════════════════════════
-   GAME BAR — slim navigation bar for inner pages (legacy V2)
+   GAME BAR — slim navigation bar for inner pages
    ═══════════════════════════════════════════════ */
 
 .game-bar {
@@ -1454,7 +1426,7 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   cursor: pointer;
 }
 .game-bar__home:hover {
-  color: var(--ca-gold);
+  color: var(--accent);
   background: var(--bg-muted);
 }
 
@@ -1488,25 +1460,25 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* ═══════════════════════════════════════════════
-   GOT MENU — Ghost of Tsushima Legends-style
+   MENU — Full-screen navigation overlay
    ═══════════════════════════════════════════════ */
 
 /* Root container — full viewport */
-.got-menu {
+.sensei-menu {
   position: relative;
   min-height: 100dvh;
   overflow: hidden;
 }
 
 /* ── Background layers ── */
-.got-menu__bg {
+.sensei-menu__bg {
   position: fixed;
   inset: 0;
   z-index: 0;
 }
 
 /* Base gradient — deep warm black to dark crimson edge */
-.got-menu__bg-gradient {
+.sensei-menu__bg-gradient {
   position: absolute;
   inset: 0;
   background:
@@ -1516,7 +1488,7 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* Mist / fog layer — animated drift */
-.got-menu__bg-mist {
+.sensei-menu__bg-mist {
   position: absolute;
   inset: -50%;
   width: 200%;
@@ -1532,14 +1504,14 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* Vignette — dark edges */
-.got-menu__bg-vignette {
+.sensei-menu__bg-vignette {
   position: absolute;
   inset: 0;
   background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 20%, rgba(5, 3, 2, 0.7) 100%);
 }
 
 /* ── Content layout ── */
-.got-menu__content {
+.sensei-menu__content {
   position: relative;
   z-index: 1;
   display: flex;
@@ -1547,7 +1519,7 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* Left column — menu */
-.got-menu__left {
+.sensei-menu__left {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1558,17 +1530,17 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* Right column — empty atmospheric space (bg shows through) */
-.got-menu__right {
+.sensei-menu__right {
   display: none;
 }
 
 @media (min-width: 1024px) {
-  .got-menu__left {
+  .sensei-menu__left {
     width: 45%;
     max-width: 520px;
     padding: 48px 48px 48px 56px;
   }
-  .got-menu__right {
+  .sensei-menu__right {
     display: block;
     flex: 1;
   }
@@ -1580,10 +1552,10 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* ── Brand ── */
-.got-menu__brand {
+.sensei-menu__brand {
   margin-bottom: 40px;
 }
-.got-menu__brand-name {
+.sensei-menu__brand-name {
   font-family: var(--font-display);
   font-size: 26px;
   font-weight: 500;
@@ -1592,13 +1564,13 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   color: var(--text-primary);
   line-height: 1.1;
 }
-.got-menu__brand-rule {
+.sensei-menu__brand-rule {
   margin-top: 14px;
   height: 2px;
   width: 40px;
-  background: linear-gradient(90deg, var(--got-gold), transparent);
+  background: linear-gradient(90deg, var(--accent), transparent);
 }
-.got-menu__greeting {
+.sensei-menu__greeting {
   margin-top: 20px;
   font-family: var(--font-display);
   font-size: 17px;
@@ -1606,38 +1578,38 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   color: var(--text-secondary);
   letter-spacing: 0.01em;
 }
-.got-menu__date {
+.sensei-menu__date {
   margin-top: 6px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ca-gold-dim);
+  color: var(--accent-dark);
 }
-.got-menu__next {
+.sensei-menu__next {
   margin-top: 14px;
   font-size: 13px;
   color: var(--text-tertiary);
 }
-.got-menu__next strong {
+.sensei-menu__next strong {
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 @media (min-width: 1024px) {
-  .got-menu__brand { margin-bottom: 48px; }
-  .got-menu__brand-name { font-size: 32px; }
-  .got-menu__greeting { font-size: 19px; }
+  .sensei-menu__brand { margin-bottom: 48px; }
+  .sensei-menu__brand-name { font-size: 32px; }
+  .sensei-menu__greeting { font-size: 19px; }
 }
 
 /* ── Navigation — Legends-style buttons ── */
-.got-menu__nav {
+.sensei-menu__nav {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.got-menu__btn {
+.sensei-menu__btn {
   position: relative;
   display: flex;
   align-items: center;
@@ -1649,12 +1621,12 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   border-bottom: 1px solid var(--border-subtle);
   transition: none;
 }
-.got-menu__btn:first-child {
+.sensei-menu__btn:first-child {
   border-top: 1px solid var(--border-subtle);
 }
 
 /* Red/crimson wash on hover — like GoT Legends active state */
-.got-menu__btn-wash {
+.sensei-menu__btn-wash {
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, rgba(140, 20, 20, 0.25) 0%, rgba(140, 20, 20, 0.08) 60%, transparent 100%);
@@ -1662,31 +1634,31 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   transition: opacity 350ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
-.got-menu__btn--active .got-menu__btn-wash {
+.sensei-menu__btn--active .sensei-menu__btn-wash {
   opacity: 1;
 }
 
 /* Left accent bar — crimson on hover */
-.got-menu__btn-accent {
+.sensei-menu__btn-accent {
   position: absolute;
   left: 0;
   top: 8px;
   bottom: 8px;
   width: 3px;
   border-radius: 0 2px 2px 0;
-  background: var(--ca-gold);
+  background: var(--accent);
   opacity: 0;
   transform: scaleY(0.4);
   transition: opacity 300ms, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
-.got-menu__btn--active .got-menu__btn-accent {
+.sensei-menu__btn--active .sensei-menu__btn-accent {
   opacity: 1;
   transform: scaleY(1);
 }
 
 /* Icon */
-.got-menu__btn-icon {
+.sensei-menu__btn-icon {
   position: relative;
   z-index: 1;
   width: 20px;
@@ -1695,12 +1667,12 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   flex-shrink: 0;
   transition: color 300ms;
 }
-.got-menu__btn--active .got-menu__btn-icon {
+.sensei-menu__btn--active .sensei-menu__btn-icon {
   color: rgba(255, 220, 200, 0.9);
 }
 
 /* Label */
-.got-menu__btn-label {
+.sensei-menu__btn-label {
   position: relative;
   z-index: 1;
   font-family: var(--font-display);
@@ -1712,29 +1684,29 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   transition: color 300ms, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
   min-width: 110px;
 }
-.got-menu__btn--active .got-menu__btn-label {
+.sensei-menu__btn--active .sensei-menu__btn-label {
   color: #fff;
   transform: translateX(4px);
 }
 
 /* Stat badge */
-.got-menu__btn-stat {
+.sensei-menu__btn-stat {
   position: relative;
   z-index: 1;
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 500;
-  color: var(--ca-gold);
+  color: var(--accent);
   margin-left: auto;
   opacity: 0.7;
   transition: opacity 300ms;
 }
-.got-menu__btn--active .got-menu__btn-stat {
+.sensei-menu__btn--active .sensei-menu__btn-stat {
   opacity: 1;
 }
 
 /* Sub text */
-.got-menu__btn-sub {
+.sensei-menu__btn-sub {
   position: relative;
   z-index: 1;
   font-size: 11px;
@@ -1743,20 +1715,20 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   white-space: nowrap;
   transition: color 300ms;
 }
-.got-menu__btn--active .got-menu__btn-sub {
+.sensei-menu__btn--active .sensei-menu__btn-sub {
   color: rgba(255, 200, 180, 0.6);
 }
 
 /* Stagger entrance */
-.got-menu__btn {
+.sensei-menu__btn {
   animation: gotBtnSlide 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.got-menu__btn:nth-child(1) { animation-delay: 250ms; }
-.got-menu__btn:nth-child(2) { animation-delay: 320ms; }
-.got-menu__btn:nth-child(3) { animation-delay: 390ms; }
-.got-menu__btn:nth-child(4) { animation-delay: 460ms; }
-.got-menu__btn:nth-child(5) { animation-delay: 530ms; }
-.got-menu__btn:nth-child(6) { animation-delay: 600ms; }
+.sensei-menu__btn:nth-child(1) { animation-delay: 250ms; }
+.sensei-menu__btn:nth-child(2) { animation-delay: 320ms; }
+.sensei-menu__btn:nth-child(3) { animation-delay: 390ms; }
+.sensei-menu__btn:nth-child(4) { animation-delay: 460ms; }
+.sensei-menu__btn:nth-child(5) { animation-delay: 530ms; }
+.sensei-menu__btn:nth-child(6) { animation-delay: 600ms; }
 
 @keyframes gotBtnSlide {
   from { opacity: 0; transform: translateX(-12px); }
@@ -1764,20 +1736,20 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 @media (min-width: 1024px) {
-  .got-menu__btn { padding: 18px 20px; gap: 18px; }
-  .got-menu__btn-label { font-size: 16px; min-width: 130px; }
-  .got-menu__btn-icon { width: 22px; height: 22px; }
-  .got-menu__btn-stat { font-size: 20px; }
+  .sensei-menu__btn { padding: 18px 20px; gap: 18px; }
+  .sensei-menu__btn-label { font-size: 16px; min-width: 130px; }
+  .sensei-menu__btn-icon { width: 22px; height: 22px; }
+  .sensei-menu__btn-stat { font-size: 20px; }
 }
 
 /* ── Bottom — settings + footer ── */
-.got-menu__bottom {
+.sensei-menu__bottom {
   margin-top: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.got-menu__settings {
+.sensei-menu__settings {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1791,11 +1763,11 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   transition: color 300ms, background 300ms;
   cursor: pointer;
 }
-.got-menu__settings:hover {
+.sensei-menu__settings:hover {
   color: var(--text-primary);
   background: var(--bg-muted);
 }
-.got-menu__footer {
+.sensei-menu__footer {
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1804,9 +1776,9 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .got-menu__left,
-  .got-menu__btn,
-  .got-menu__bg-mist {
+  .sensei-menu__left,
+  .sensei-menu__btn,
+  .sensei-menu__bg-mist {
     animation: none !important;
   }
 }
@@ -1815,7 +1787,7 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
    GOT PAGE — inner page layout (under GameBar)
    ═══════════════════════════════════════════════ */
 
-.got-page {
+.sensei-page {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -1828,11 +1800,11 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   to   { opacity: 1; transform: translateY(0); }
 }
 @media (min-width: 1024px) {
-  .got-page { padding: 28px 32px 48px; }
+  .sensei-page { padding: 28px 32px 48px; }
 }
 
 /* Section label — small, muted, functional */
-.got-page__label {
+.sensei-page__label {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -1841,30 +1813,30 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* Section heading — clean, modern */
-.got-page__heading {
+.sensei-page__heading {
   font-size: 22px;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 @media (min-width: 1024px) {
-  .got-page__heading { font-size: 24px; }
+  .sensei-page__heading { font-size: 24px; }
 }
 
 /* Card surface — layered, restrained */
-.got-page__card {
+.sensei-page__card {
   background: var(--bg-subtle);
   border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px;
   transition: border-color 200ms;
 }
-.got-page__card:hover {
+.sensei-page__card:hover {
   border-color: var(--border-strong);
 }
 
 /* Toolbar — sticky actions bar */
-.got-page__toolbar {
+.sensei-page__toolbar {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1872,13 +1844,13 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* View toggle group */
-.got-page__toggle-group {
+.sensei-page__toggle-group {
   display: flex;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border-default);
 }
-.got-page__toggle-btn {
+.sensei-page__toggle-btn {
   height: 36px;
   padding: 0 14px;
   font-size: 12px;
@@ -1891,15 +1863,15 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   transition: color 200ms, background 200ms;
   cursor: pointer;
 }
-.got-page__toggle-btn:last-child { border-right: none; }
-.got-page__toggle-btn:hover { color: var(--text-secondary); background: var(--bg-muted); }
-.got-page__toggle-btn--active {
-  color: var(--ca-gold);
-  background: var(--ca-gold-surface);
+.sensei-page__toggle-btn:last-child { border-right: none; }
+.sensei-page__toggle-btn:hover { color: var(--text-secondary); background: var(--bg-muted); }
+.sensei-page__toggle-btn--active {
+  color: var(--accent);
+  background: var(--accent-surface);
 }
 
 /* Nav arrow button */
-.got-page__nav-btn {
+.sensei-page__nav-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1910,29 +1882,29 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   transition: color 250ms, background 250ms;
   cursor: pointer;
 }
-.got-page__nav-btn:hover {
+.sensei-page__nav-btn:hover {
   color: var(--text-primary);
   background: var(--bg-muted);
 }
 
 /* Primary action button — gold accent */
-.got-page__action-btn {
+.sensei-page__action-btn {
   height: 36px;
   padding: 0 18px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-on-accent);
-  background: var(--ca-gold);
+  background: var(--accent);
   transition: background 200ms;
   cursor: pointer;
 }
-.got-page__action-btn:hover {
+.sensei-page__action-btn:hover {
   background: var(--accent-hover);
 }
 
 /* Empty state */
-.got-page__empty {
+.sensei-page__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1942,13 +1914,13 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   border-radius: 12px;
   text-align: center;
 }
-.got-page__empty-title {
+.sensei-page__empty-title {
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
   margin-top: 12px;
 }
-.got-page__empty-sub {
+.sensei-page__empty-sub {
   font-size: 13px;
   color: var(--text-tertiary);
   margin-top: 8px;
@@ -1956,13 +1928,13 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* Mobile tab bar */
-.got-page__tabs {
+.sensei-page__tabs {
   display: flex;
   border-bottom: 1px solid var(--border-subtle);
   margin: 0 -16px;
   padding: 0 16px;
 }
-.got-page__tab {
+.sensei-page__tab {
   flex: 1;
   padding: 12px 0;
   font-size: 12px;
@@ -1975,14 +1947,14 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   transition: color 200ms, border-color 200ms;
   cursor: pointer;
 }
-.got-page__tab:hover { color: var(--text-secondary); }
-.got-page__tab--active {
+.sensei-page__tab:hover { color: var(--text-secondary); }
+.sensei-page__tab--active {
   color: var(--text-primary);
-  border-bottom-color: var(--ca-gold);
+  border-bottom-color: var(--accent);
 }
 
 /* Date range display */
-.got-page__date-range {
+.sensei-page__date-range {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -1991,13 +1963,13 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 }
 
 /* Calendar subscribe collapsible */
-.got-page__collapsible {
+.sensei-page__collapsible {
   border: 1px solid var(--border-default);
   border-radius: 12px;
   background: var(--bg-subtle);
   margin-top: 16px;
 }
-.got-page__collapsible summary {
+.sensei-page__collapsible summary {
   cursor: pointer;
   padding: 12px 16px;
   font-size: 13px;
@@ -2005,11 +1977,11 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   color: var(--text-secondary);
   list-style: none;
 }
-.got-page__collapsible summary::-webkit-details-marker { display: none; }
-.got-page__collapsible[open] summary {
+.sensei-page__collapsible summary::-webkit-details-marker { display: none; }
+.sensei-page__collapsible[open] summary {
   border-bottom: 1px solid var(--border-subtle);
 }
-.got-page__collapsible-body {
+.sensei-page__collapsible-body {
   padding: 12px 16px 16px;
 }
 

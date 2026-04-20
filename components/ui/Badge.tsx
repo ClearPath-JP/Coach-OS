@@ -48,7 +48,7 @@ const variantClasses: Record<
     'transition-shadow duration-200'
   ),
   accent: cn(
-    'bg-[var(--ca-gold-surface)] text-[var(--ca-gold)] border-[color-mix(in_srgb,var(--ca-gold)_18%,transparent)]',
+    'bg-[var(--accent-surface)] text-[var(--accent)] border-[color-mix(in_srgb,var(--accent)_18%,transparent)]',
     'transition-shadow duration-200 hover:shadow-[0_0_8px_rgba(159,18,57,0.2)]'
   ),
 }

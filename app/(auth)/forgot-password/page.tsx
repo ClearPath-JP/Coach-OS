@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
               fontSize: 10,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              color: 'var(--got-gold-dim)',
+              color: 'var(--accent-dark)',
               opacity: 0.5,
             }}
           >

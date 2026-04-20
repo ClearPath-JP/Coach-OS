@@ -394,14 +394,14 @@ export function Nav({
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
-                  {unreadCount > 0 ? <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold" style={{ background: 'var(--got-gold)', color: 'var(--got-ink)' }}>{unreadCount > 9 ? '9+' : unreadCount}</span> : null}
+                  {unreadCount > 0 ? <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full text-[10px] font-semibold" style={{ background: 'var(--accent)', color: 'var(--bg-app)' }}>{unreadCount > 9 ? '9+' : unreadCount}</span> : null}
                 </button>
               </Tooltip>
               {notifOpen ? (
                 <div className="absolute right-2 top-11 z-[110] w-[320px] animate-in fade-in-0 slide-in-from-top-2 duration-150 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)]">
                   <div className="flex items-center justify-between border-b border-[var(--border-subtle)] px-4 py-3">
                     <p className="text-[14px] font-semibold text-[var(--text-primary)]">Notifications</p>
-                    <button type="button" className="text-[12px] text-[var(--got-gold)]" onClick={() => { setNotifications((prev) => prev.map((n) => ({ ...n, unread: false }))); setUnreadCount(0) }}>Mark all read</button>
+                    <button type="button" className="text-[12px] text-[var(--accent)]" onClick={() => { setNotifications((prev) => prev.map((n) => ({ ...n, unread: false }))); setUnreadCount(0) }}>Mark all read</button>
                   </div>
                   <div className="max-h-[360px] overflow-y-auto">
                     {notifications.length === 0 ? (
@@ -412,7 +412,7 @@ export function Nav({
                       </div>
                     ) : notifications.map((n) => (
                       <button key={n.id} type="button" className={`group relative flex w-full gap-2 border-b border-[var(--border-subtle)] px-4 py-3 text-left hover:bg-[var(--bg-subtle)] ${n.unread ? 'bg-[var(--accent-light)]' : ''}`}>
-                        {n.unread ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[var(--got-gold)]" aria-hidden /> : null}
+                        {n.unread ? <span className="absolute inset-y-0 left-0 w-[3px] bg-[var(--accent)]" aria-hidden /> : null}
                         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[14px]">{n.type === 'message' ? '💬' : n.type === 'session' ? '📅' : n.type === 'payment' ? '💰' : '📚'}</span>
                         <span className="min-w-0">
                           <span className="block text-[13px] font-medium text-[var(--text-primary)]">{n.title}</span>
@@ -422,7 +422,7 @@ export function Nav({
                       </button>
                     ))}
                   </div>
-                  <button type="button" className="w-full border-t border-[var(--border-subtle)] px-3 py-3 text-[13px] text-[var(--got-gold)]">View all notifications</button>
+                  <button type="button" className="w-full border-t border-[var(--border-subtle)] px-3 py-3 text-[13px] text-[var(--accent)]">View all notifications</button>
                 </div>
               ) : null}
               <div className="shrink-0 lg:hidden">

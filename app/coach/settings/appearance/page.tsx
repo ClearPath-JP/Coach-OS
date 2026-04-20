@@ -171,8 +171,8 @@ export default function CoachAppearancePage() {
     root.style.setProperty('--accent-muted', stance.accentMuted)
     root.style.setProperty('--text-on-accent', stance.textOnAccent)
     root.style.setProperty('--cp-accent', stance.accent)
-    root.style.setProperty('--got-gold', stance.accent)
-    root.style.setProperty('--got-gold-dim', stance.sectionLabelColor)
+    root.style.setProperty('--accent', stance.accent)
+    root.style.setProperty('--accent-dim', stance.sectionLabelColor)
     root.style.setProperty('--coach-sidebar-bg', stance.sidebarBg)
     root.style.setProperty('--coach-sidebar-border', stance.sidebarBorder)
     root.style.setProperty('--coach-sidebar-hover', stance.sidebarHover)
@@ -210,7 +210,7 @@ export default function CoachAppearancePage() {
         <nav className="mb-6">
           <Link
             href="/coach/settings"
-            className="text-[13px] text-[var(--got-gold)] hover:underline underline-offset-2"
+            className="text-[13px] text-[var(--accent)] hover:underline underline-offset-2"
           >
             ← Settings
           </Link>
@@ -245,7 +245,7 @@ export default function CoachAppearancePage() {
                     className={[
                       'group relative flex flex-col overflow-hidden rounded-[12px] border-2 text-left transition-all duration-300',
                       isSelected
-                        ? 'border-[var(--got-gold)] shadow-[0_0_0_1px_rgba(196,164,74,0.2)]'
+                        ? 'border-[var(--accent)] shadow-[0_0_0_1px_rgba(159,18,57,0.2)]'
                         : 'border-[var(--border-default)] hover:border-[var(--border-strong)]',
                       stanceSaving ? 'opacity-70 pointer-events-none' : '',
                     ].join(' ')}
@@ -305,13 +305,13 @@ export default function CoachAppearancePage() {
               aria-checked={ambientEnabled}
               className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200"
               style={{
-                background: ambientEnabled ? 'var(--got-gold)' : 'var(--bg-emphasis)',
+                background: ambientEnabled ? 'var(--accent)' : 'var(--bg-emphasis)',
               }}
             >
               <span
                 className="pointer-events-none inline-block size-4 rounded-full shadow-sm transition-transform duration-200"
                 style={{
-                  background: ambientEnabled ? 'var(--got-ink)' : 'var(--text-tertiary)',
+                  background: ambientEnabled ? 'var(--bg-app)' : 'var(--text-tertiary)',
                   transform: ambientEnabled ? 'translateX(22px)' : 'translateX(2px)',
                 }}
               />

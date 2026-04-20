@@ -216,18 +216,18 @@ export function CoachScheduleWorkspace() {
   const headerDatePill = format(new Date(), 'EEEE, MMMM d')
 
   return (
-    <div className="got-page">
+    <div className="sensei-page">
 
       {/* ── Header: label + date nav + actions ── */}
       <header className="mb-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="got-page__label">Training Calendar</p>
-            <h2 className="got-page__heading mt-1">{headerDatePill}</h2>
+            <p className="sensei-page__label">Training Calendar</p>
+            <h2 className="sensei-page__heading mt-1">{headerDatePill}</h2>
           </div>
           <button
             type="button"
-            className="got-page__action-btn"
+            className="sensei-page__action-btn"
             onClick={() => openBookModal(null, null)}
           >
             Book Session
@@ -235,10 +235,10 @@ export function CoachScheduleWorkspace() {
         </div>
 
         {/* Navigation + view toggle */}
-        <div className="got-page__toolbar mt-5">
+        <div className="sensei-page__toolbar mt-5">
           <button
             type="button"
-            className="got-page__nav-btn"
+            className="sensei-page__nav-btn"
             aria-label="Previous"
             onClick={() => {
               if (desktopView === 'week') setWeekStart((d) => addDays(d, -7))
@@ -252,8 +252,8 @@ export function CoachScheduleWorkspace() {
           <button
             type="button"
             className={cn(
-              'got-page__toggle-btn rounded-lg border border-[var(--border-default)]',
-              isCurrentWeek ? 'opacity-40' : 'got-page__toggle-btn--active'
+              'sensei-page__toggle-btn rounded-lg border border-[var(--border-default)]',
+              isCurrentWeek ? 'opacity-40' : 'sensei-page__toggle-btn--active'
             )}
             onClick={goToday}
           >
@@ -262,7 +262,7 @@ export function CoachScheduleWorkspace() {
 
           <button
             type="button"
-            className="got-page__nav-btn"
+            className="sensei-page__nav-btn"
             aria-label="Next"
             onClick={() => {
               if (desktopView === 'week') setWeekStart((d) => addDays(d, 7))
@@ -273,19 +273,19 @@ export function CoachScheduleWorkspace() {
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          <span className="got-page__date-range ml-1">
+          <span className="sensei-page__date-range ml-1">
             {desktopView === 'month'
               ? format(monthDate, 'MMMM yyyy')
               : `${format(weekStart, 'MMM d')} \u2014 ${format(addDays(weekStart, 6), 'MMM d, yyyy')}`}
           </span>
 
           <div className="ml-auto hidden lg:block">
-            <div className="got-page__toggle-group">
+            <div className="sensei-page__toggle-group">
               {(['week', 'month', 'agenda'] as const).map((v) => (
                 <button
                   key={v}
                   type="button"
-                  className={cn('got-page__toggle-btn', desktopView === v && 'got-page__toggle-btn--active')}
+                  className={cn('sensei-page__toggle-btn', desktopView === v && 'sensei-page__toggle-btn--active')}
                   onClick={() => setDesktopView(v)}
                 >
                   {v}
@@ -297,12 +297,12 @@ export function CoachScheduleWorkspace() {
       </header>
 
       {/* ── Mobile tabs ── */}
-      <div className="got-page__tabs lg:hidden">
+      <div className="sensei-page__tabs lg:hidden">
         {(['today', 'week', 'agenda'] as const).map((tab) => (
           <button
             key={tab}
             type="button"
-            className={cn('got-page__tab', mobileTab === tab && 'got-page__tab--active')}
+            className={cn('sensei-page__tab', mobileTab === tab && 'sensei-page__tab--active')}
             onClick={() => setMobileTab(tab)}
           >
             {tab}
@@ -311,12 +311,12 @@ export function CoachScheduleWorkspace() {
       </div>
 
       {/* ── Calendar subscribe ── */}
-      <details className="got-page__collapsible">
+      <details className="sensei-page__collapsible">
         <summary>
           Subscribe in Google Calendar or Apple Calendar
           <span className="ml-2 text-[11px] text-[var(--text-quaternary)]">(optional)</span>
         </summary>
-        <div className="got-page__collapsible-body">
+        <div className="sensei-page__collapsible-body">
           {calendarUrlLoading ? (
             <p className="text-[13px] text-[var(--text-tertiary)]">Loading subscribe link&hellip;</p>
           ) : calendarSubscribeUrl ? (
@@ -333,7 +333,7 @@ export function CoachScheduleWorkspace() {
                 />
                 <button
                   type="button"
-                  className="got-page__action-btn"
+                  className="sensei-page__action-btn"
                   onClick={() => {
                     void navigator.clipboard.writeText(calendarSubscribeUrl).then(() => {
                       addToast('Calendar link copied', 'success')
@@ -345,7 +345,7 @@ export function CoachScheduleWorkspace() {
               </div>
               <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
                 Next 90 days of sessions.{' '}
-                <a href="/api/calendar/feed/coach" className="font-medium text-[var(--ca-gold-dim)] hover:text-[var(--ca-gold)]">
+                <a href="/api/calendar/feed/coach" className="font-medium text-[var(--accent-dark)] hover:text-[var(--accent)]">
                   Download .ics
                 </a>
               </p>
@@ -353,7 +353,7 @@ export function CoachScheduleWorkspace() {
           ) : (
             <p className="text-[13px] text-[var(--text-tertiary)]">
               Could not load a subscribe link.{' '}
-              <a href="/api/calendar/feed/coach" className="font-medium text-[var(--ca-gold-dim)] hover:text-[var(--ca-gold)]">
+              <a href="/api/calendar/feed/coach" className="font-medium text-[var(--accent-dark)] hover:text-[var(--accent)]">
                 Download .ics
               </a>
             </p>
@@ -363,19 +363,19 @@ export function CoachScheduleWorkspace() {
 
       {/* ── Empty state ── */}
       {!calendarLoading && sessions.length === 0 && (
-        <div className="got-page__empty mt-6">
-          <CalendarDays className="h-10 w-10 text-[var(--ca-gold-dim)]" strokeWidth={1} />
-          <p className="got-page__empty-title">No sessions this week</p>
-          <p className="got-page__empty-sub">
+        <div className="sensei-page__empty mt-6">
+          <CalendarDays className="h-10 w-10 text-[var(--accent-dark)]" strokeWidth={1} />
+          <p className="sensei-page__empty-title">No sessions this week</p>
+          <p className="sensei-page__empty-sub">
             Book your first session or set your availability so clients know when you&apos;re free.
           </p>
           <div className="mt-6 flex gap-3">
-            <button type="button" className="got-page__action-btn" onClick={() => openBookModal(null, null)}>
+            <button type="button" className="sensei-page__action-btn" onClick={() => openBookModal(null, null)}>
               Book Session
             </button>
             <button
               type="button"
-              className="got-page__toggle-btn rounded-lg border border-[var(--border-default)] px-4"
+              className="sensei-page__toggle-btn rounded-lg border border-[var(--border-default)] px-4"
               onClick={() => setAvailabilityOpen(true)}
             >
               Set Availability
@@ -418,7 +418,7 @@ export function CoachScheduleWorkspace() {
             ) : (
               <ErrorBoundary
                 fallback={
-                  <div className="got-page__card px-6 py-10 text-center">
+                  <div className="sensei-page__card px-6 py-10 text-center">
                     <p className="font-medium text-[var(--text-primary)]">Calendar could not be displayed</p>
                     <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Try again or refresh the page.</p>
                   </div>
@@ -442,7 +442,7 @@ export function CoachScheduleWorkspace() {
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((name) => (
                       <div
                         key={name}
-                        className="got-page__label bg-[var(--bg-subtle)] py-2.5 text-center"
+                        className="sensei-page__label bg-[var(--bg-subtle)] py-2.5 text-center"
                       >
                         {name}
                       </div>
@@ -458,7 +458,7 @@ export function CoachScheduleWorkspace() {
                           className={cn(
                             'flex min-h-[88px] flex-col bg-[var(--bg-subtle)] p-2 text-left transition-colors hover:bg-[var(--bg-muted)]',
                             !inMonth && 'opacity-30',
-                            today && 'ring-1 ring-inset ring-[var(--ca-gold)]'
+                            today && 'ring-1 ring-inset ring-[var(--accent)]'
                           )}
                           onClick={() => {
                             setWeekStart(startOfWeek(day, { weekStartsOn: 1 }))
@@ -470,7 +470,7 @@ export function CoachScheduleWorkspace() {
                             className={cn(
                               'self-end text-[14px] font-medium tabular-nums',
                               today
-                                ? 'flex h-7 w-7 items-center justify-center rounded-full bg-[var(--ca-gold)] text-[13px] text-[var(--text-on-accent)]'
+                                ? 'flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-[13px] text-[var(--text-on-accent)]'
                                 : 'text-[var(--text-primary)]'
                             )}
                           >
@@ -491,7 +491,7 @@ export function CoachScheduleWorkspace() {
                               )
                             })}
                             {daySessions.length > 2 && (
-                              <span className="text-[11px] font-medium text-[var(--ca-gold-dim)]">
+                              <span className="text-[11px] font-medium text-[var(--accent-dark)]">
                                 +{daySessions.length - 2} more
                               </span>
                             )}
@@ -513,7 +513,7 @@ export function CoachScheduleWorkspace() {
                           isSameDay(d0, new Date()) ? `Today \u2014 ${format(d0, 'EEEE, MMMM d')}` : format(d0, 'EEEE, MMMM d')
                         return (
                           <div key={date}>
-                            <h3 className="got-page__label mb-3">{label}</h3>
+                            <h3 className="sensei-page__label mb-3">{label}</h3>
                             <ul className="space-y-2">
                               {list.map((s) => {
                                 const st = parseISO(s.scheduled_time)
@@ -523,7 +523,7 @@ export function CoachScheduleWorkspace() {
                                   <li key={s.id}>
                                     <button
                                       type="button"
-                                      className="got-page__card flex w-full items-start gap-4 text-left"
+                                      className="sensei-page__card flex w-full items-start gap-4 text-left"
                                       onClick={() => setDetailSession(s)}
                                     >
                                       <span className="w-[72px] shrink-0 text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">
@@ -585,16 +585,16 @@ export function CoachScheduleWorkspace() {
             <div className="my-3 flex items-center justify-between">
               <button
                 type="button"
-                className="got-page__nav-btn"
+                className="sensei-page__nav-btn"
                 aria-label="Previous days"
                 onClick={() => setMobileAnchor((d) => addDays(d, -1))}
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <span className="got-page__label">3-day view</span>
+              <span className="sensei-page__label">3-day view</span>
               <button
                 type="button"
-                className="got-page__nav-btn"
+                className="sensei-page__nav-btn"
                 aria-label="Next days"
                 onClick={() => setMobileAnchor((d) => addDays(d, 1))}
               >
@@ -629,7 +629,7 @@ export function CoachScheduleWorkspace() {
                     isSameDay(d0, new Date()) ? `Today \u2014 ${format(d0, 'EEEE, MMMM d')}` : format(d0, 'EEEE, MMMM d')
                   return (
                     <div key={date}>
-                      <h3 className="got-page__label mb-3">{label}</h3>
+                      <h3 className="sensei-page__label mb-3">{label}</h3>
                       <ul className="space-y-2">
                         {list.map((s) => {
                           const st = parseISO(s.scheduled_time)
@@ -638,10 +638,10 @@ export function CoachScheduleWorkspace() {
                             <li key={s.id}>
                               <button
                                 type="button"
-                                className="got-page__card flex w-full flex-col text-left"
+                                className="sensei-page__card flex w-full flex-col text-left"
                                 onClick={() => setDetailSession(s)}
                               >
-                                <span className="text-[13px] font-semibold text-[var(--ca-gold-dim)]">{format(st, 'h:mm a')}</span>
+                                <span className="text-[13px] font-semibold text-[var(--accent-dark)]">{format(st, 'h:mm a')}</span>
                                 <span className="mt-1 text-[14px] font-medium text-[var(--text-primary)]">{name}</span>
                               </button>
                             </li>
@@ -722,7 +722,7 @@ export function CoachScheduleWorkspace() {
       <button
         type="button"
         className="fixed bottom-24 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-xl)] lg:bottom-8 lg:hidden"
-        style={{ background: 'var(--ca-gold)', color: 'var(--text-on-accent)' }}
+        style={{ background: 'var(--accent)', color: 'var(--text-on-accent)' }}
         aria-label="Book session"
         onClick={() => openBookModal(null, null)}
       >

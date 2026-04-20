@@ -174,44 +174,44 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
   ]
 
   return (
-    <div className="got-menu">
+    <div className="sensei-menu">
       {/* Atmospheric background */}
-      <div className="got-menu__bg" aria-hidden>
-        <div className="got-menu__bg-gradient" />
-        <div className="got-menu__bg-mist" />
-        <div className="got-menu__bg-vignette" />
+      <div className="sensei-menu__bg" aria-hidden>
+        <div className="sensei-menu__bg-gradient" />
+        <div className="sensei-menu__bg-mist" />
+        <div className="sensei-menu__bg-vignette" />
       </div>
 
       {/* Content */}
-      <div className="got-menu__content">
+      <div className="sensei-menu__content">
 
         {/* Left column — brand + menu */}
-        <div className="got-menu__left">
+        <div className="sensei-menu__left">
 
           {/* Brand */}
-          <div className="got-menu__brand">
-            <h1 className="got-menu__brand-name">{brandName}</h1>
-            <div className="got-menu__brand-rule" />
-            <p className="got-menu__greeting">
+          <div className="sensei-menu__brand">
+            <h1 className="sensei-menu__brand-name">{brandName}</h1>
+            <div className="sensei-menu__brand-rule" />
+            <p className="sensei-menu__greeting">
               {loading ? '\u2026' : `${greeting}, ${coachFirst}`}
             </p>
-            <p className="got-menu__date">{dateLine}</p>
+            <p className="sensei-menu__date">{dateLine}</p>
             {nextSession && (
-              <p className="got-menu__next">
+              <p className="sensei-menu__next">
                 Next: <strong>{nextSession.name}</strong> at {nextSession.time}
               </p>
             )}
           </div>
 
           {/* Menu items — GoT Legends style */}
-          <nav className="got-menu__nav" aria-label="Main menu">
+          <nav className="sensei-menu__nav" aria-label="Main menu">
             {menuItems.map((item, i) => (
               <button
                 key={item.href}
                 type="button"
                 className={cn(
-                  'got-menu__btn',
-                  activeIdx === i && 'got-menu__btn--active'
+                  'sensei-menu__btn',
+                  activeIdx === i && 'sensei-menu__btn--active'
                 )}
                 onClick={() => { playSelect(); router.push(item.href) }}
                 onMouseEnter={() => { setActiveIdx(i); playHover() }}
@@ -220,45 +220,45 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
                 onBlur={() => setActiveIdx(null)}
               >
                 {/* Red wash overlay on hover */}
-                <div className="got-menu__btn-wash" aria-hidden />
+                <div className="sensei-menu__btn-wash" aria-hidden />
 
                 {/* Left accent bar */}
-                <div className="got-menu__btn-accent" aria-hidden />
+                <div className="sensei-menu__btn-accent" aria-hidden />
 
                 {/* Icon */}
-                <item.icon className="got-menu__btn-icon" strokeWidth={1.5} />
+                <item.icon className="sensei-menu__btn-icon" strokeWidth={1.5} />
 
                 {/* Label */}
-                <span className="got-menu__btn-label">{item.label}</span>
+                <span className="sensei-menu__btn-label">{item.label}</span>
 
                 {/* Stat badge */}
                 {item.stat && (
-                  <span className="got-menu__btn-stat">{item.stat}</span>
+                  <span className="sensei-menu__btn-stat">{item.stat}</span>
                 )}
 
                 {/* Sub text */}
-                <span className="got-menu__btn-sub">{item.sub}</span>
+                <span className="sensei-menu__btn-sub">{item.sub}</span>
               </button>
             ))}
           </nav>
 
           {/* Bottom — settings + footer */}
-          <div className="got-menu__bottom">
+          <div className="sensei-menu__bottom">
             <button
               type="button"
-              className="got-menu__settings"
+              className="sensei-menu__settings"
               onClick={() => { playSelect(); router.push('/coach/settings') }}
               onMouseEnter={playHover}
             >
               <Settings className="size-4" strokeWidth={1.5} />
               <span>Settings</span>
             </button>
-            <p className="got-menu__footer">Powered by FoundOS</p>
+            <p className="sensei-menu__footer">Powered by FoundOS</p>
           </div>
         </div>
 
         {/* Right column — atmospheric space (background shows through) */}
-        <div className="got-menu__right" aria-hidden />
+        <div className="sensei-menu__right" aria-hidden />
       </div>
     </div>
   )

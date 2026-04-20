@@ -26,8 +26,8 @@ export function StanceInjector({ stanceId, accentOverride }: StanceInjectorProps
     root.style.setProperty('--text-on-accent', stance.textOnAccent)
     root.style.setProperty('--cp-accent', accent)
 
-    root.style.setProperty('--got-gold', stance.accent)
-    root.style.setProperty('--got-gold-dim', stance.sectionLabelColor)
+    root.style.setProperty('--accent', stance.accent)
+    root.style.setProperty('--accent-dark', stance.sectionLabelColor)
 
     root.style.setProperty('--coach-sidebar-bg', stance.sidebarBg)
     root.style.setProperty('--coach-sidebar-border', stance.sidebarBorder)
