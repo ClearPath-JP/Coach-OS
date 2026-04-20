@@ -313,7 +313,7 @@ export function ProgramsPageContent() {
           {filtered.map((prog) => (
             <div
               key={prog.id}
-              className="card-interactive group relative flex w-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-left shadow-[var(--shadow-xs)]"
+              className="card-interactive card-glow group relative flex w-full min-w-0 cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] text-left shadow-[var(--shadow-xs)]"
               onClick={() => router.push(`/coach/programs/${prog.id}`)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {

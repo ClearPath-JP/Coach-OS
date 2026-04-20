@@ -537,9 +537,9 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
       </div>
 
       {/* ── Profile Header Banner ── */}
-      <Card variant="elevated" padding="lg" className="overflow-hidden !p-0">
+      <Card variant="elevated" padding="lg" className="card-glow overflow-hidden !p-0">
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[20px] font-bold text-white">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[20px] font-bold text-white ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]">
             {(client.first_name?.[0] ?? '').toUpperCase()}{(client.last_name?.[0] ?? '').toUpperCase() || ''}
           </div>
           <div className="min-w-0 flex-1">
@@ -569,78 +569,52 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
 
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
-          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">Total Sessions</p>
-          <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--text-primary)]">{client.rewards?.assignments_total != null ? daysAsClient : '—'}</p>
+        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Sessions</p>
+          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{client.rewards?.assignments_total != null ? daysAsClient : '—'}</p>
+          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">total</p>
         </div>
-        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
-          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">Assignments Done</p>
-          <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--text-primary)]">{client.rewards?.assignments_completed ?? 0}/{client.rewards?.assignments_total ?? 0}</p>
+        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Assignments</p>
+          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{client.rewards?.assignments_completed ?? 0}<span className="text-[14px] font-medium text-[var(--text-tertiary)]">/{client.rewards?.assignments_total ?? 0}</span></p>
+          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">completed</p>
         </div>
-        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
-          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">Active Program</p>
-          <p className="mt-1 truncate text-[14px] font-semibold text-[var(--text-primary)]">{clientPrograms[0]?.title ?? '—'}</p>
+        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Program</p>
+          <p className="mt-1.5 truncate text-[14px] font-semibold text-[var(--text-primary)]">{clientPrograms[0]?.title ?? '—'}</p>
+          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">{clientPrograms.length > 0 ? 'active' : 'none assigned'}</p>
         </div>
-        <div className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-subtle)] p-3">
-          <p className="text-[11px] font-medium text-[var(--text-quaternary)]">XP / Level</p>
-          <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</p>
-          <p className="text-[11px] text-[var(--text-tertiary)]">Level {client.rewards?.level ?? 1}</p>
+        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">XP / Level</p>
+          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</p>
+          <div className="mt-1 flex items-center gap-1.5">
+            <p className="text-[11px] text-[var(--text-quaternary)]">Level {client.rewards?.level ?? 1}</p>
+            {(client.rewards?.current_streak_days ?? 0) > 0 && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-[var(--accent-surface)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)]">
+                🔥 {client.rewards?.current_streak_days}d
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-[var(--color-border)] pb-2" role="tablist" aria-label="Client sections">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'overview'}
-          onClick={() => setTab('overview')}
-          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
-            tab === 'overview'
-              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
-              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
-          }`}
-        >
-          Overview
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'goals'}
-          onClick={() => setTab('goals')}
-          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
-            tab === 'goals'
-              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
-              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
-          }`}
-        >
-          Goals
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'payments'}
-          onClick={() => setTab('payments')}
-          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
-            tab === 'payments'
-              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
-              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
-          }`}
-        >
-          Payments
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'progress'}
-          onClick={() => setTab('progress')}
-          className={`rounded-full px-4 py-2 text-[14px] font-medium min-h-[44px] ${
-            tab === 'progress'
-              ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
-              : 'text-[var(--color-muted)] hover:text-[var(--color-ink)]'
-          }`}
-        >
-          Progress
-        </button>
+      <div className="flex items-center gap-1 border-b border-[var(--border-subtle)] pb-px" role="tablist" aria-label="Client sections">
+        {(['overview', 'goals', 'payments', 'progress'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={tab === t}
+            onClick={() => setTab(t)}
+            className={`relative px-4 py-2.5 text-[14px] font-medium transition-colors ${
+              tab === t
+                ? 'text-[var(--accent)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+            }`}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
+        ))}
       </div>
 
       {tab === 'goals' && client && (

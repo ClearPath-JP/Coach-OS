@@ -492,7 +492,7 @@ export function CoachClientsPageContent() {
               return (
                 <div
                   key={client.id}
-                  className="card-interactive group relative flex cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]"
+                  className="card-interactive card-glow group relative flex cursor-pointer flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)]"
                   onClick={() => router.push(`/coach/clients/${client.id}`)}
                   onKeyDown={(ev) => {
                     if (ev.key === 'Enter' || ev.key === ' ') {
@@ -504,7 +504,7 @@ export function CoachClientsPageContent() {
                   tabIndex={0}
                 >
                   <div className="relative flex h-20 min-h-[80px] items-center justify-center bg-[var(--bg-muted)]">
-                    <div className="relative flex size-12 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[15px] font-bold text-white">
+                    <div className="relative flex size-12 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[15px] font-bold text-white ring-2 ring-transparent transition-all duration-300 group-hover:ring-[var(--accent)] group-hover:ring-offset-2 group-hover:ring-offset-[var(--bg-muted)]">
                       {getInitials(client.first_name, client.last_name, client.email)}
                       <span
                         className={cn(
@@ -589,11 +589,18 @@ export function CoachClientsPageContent() {
                         )
                       })()}
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-3 text-[12px] text-[var(--text-tertiary)]">
-                      <span title="Sessions completed">
-                        📅 {sessionsN} {sessionsN === 1 ? 'session' : 'sessions'}
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-[var(--text-tertiary)]">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2 py-0.5" title="Sessions completed">
+                        📅 {sessionsN}
                       </span>
-                      <span title="Total XP">⭐ {client.rewards?.total_xp ?? 0} XP</span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2 py-0.5" title="Total XP">
+                        ⭐ {client.rewards?.total_xp ?? 0}
+                      </span>
+                      {(client.rewards?.current_streak_days ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-surface)] px-2 py-0.5 text-[var(--accent)]" title="Current streak">
+                          🔥 {client.rewards?.current_streak_days}d
+                        </span>
+                      )}
                     </div>
                     <p className={cn('mt-1 text-[12px]', lastActiveTextClass(lastActivityIso(client)))}>
                       {formatLastActiveLine(lastActivityIso(client))}

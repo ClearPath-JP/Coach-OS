@@ -366,18 +366,18 @@ export function PaymentsPageContent() {
       </Card>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        <Card variant="raised" padding="lg" className="border border-[var(--border-default)] shadow-[var(--shadow-xs)]">
-          <p className="text-[13px] text-[var(--text-tertiary)]">This week</p>
-          <p className="mt-1 text-[20px] font-semibold text-[var(--text-primary)]">{formatCents(kpiWeek)}</p>
+        <Card variant="raised" padding="lg" className="card-glow border border-[var(--border-subtle)] shadow-[var(--shadow-xs)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">This week</p>
+          <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(kpiWeek)}</p>
         </Card>
-        <Card variant="raised" padding="lg" className="border border-[var(--border-default)] shadow-[var(--shadow-xs)]">
-          <p className="text-[13px] text-[var(--text-tertiary)]">Total all time</p>
-          <p className="mt-1 text-[20px] font-semibold text-[var(--text-primary)]">{formatCents(kpiAll)}</p>
+        <Card variant="raised" padding="lg" className="card-glow border border-[var(--border-subtle)] shadow-[var(--shadow-xs)]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">All time</p>
+          <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(kpiAll)}</p>
         </Card>
-        <Link href="/coach/invoices" className="block h-full min-h-[44px] hover:opacity-95 md:col-span-1">
-          <Card variant="raised" padding="lg" className="h-full border border-[var(--border-default)] shadow-[var(--shadow-xs)]">
-            <p className="text-[13px] text-[var(--text-tertiary)]">Pending invoices</p>
-            <p className="mt-1 text-[20px] font-semibold text-[var(--cp-accent)]">{formatCents(pendingCents)}</p>
+        <Link href="/coach/invoices" className="block h-full min-h-[44px] md:col-span-1">
+          <Card variant="raised" padding="lg" className="card-glow h-full border border-[var(--border-subtle)] shadow-[var(--shadow-xs)]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Pending</p>
+            <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--accent)]">{formatCents(pendingCents)}</p>
           </Card>
         </Link>
       </div>
