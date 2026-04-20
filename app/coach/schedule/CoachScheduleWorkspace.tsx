@@ -244,7 +244,7 @@ export function CoachScheduleWorkspace() {
             <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
               <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Sessions</p>
               <p className="mt-1 text-[28px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.sessionsThisWeek}</p>
-              {dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
+              {dashStats.trends?.sessionsThisWeek?.percentChange != null && dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
                 <p className={cn('mt-1 text-[11px] font-medium', dashStats.trends.sessionsThisWeek.direction === 'up' ? 'text-[var(--success)]' : dashStats.trends.sessionsThisWeek.direction === 'down' ? 'text-[var(--error)]' : 'text-[var(--text-tertiary)]')}>
                   {dashStats.trends.sessionsThisWeek.direction === 'up' ? '↑' : '↓'} {Math.round(dashStats.trends.sessionsThisWeek.percentChange)}% vs last week
                 </p>
