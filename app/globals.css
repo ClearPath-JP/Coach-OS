@@ -2802,3 +2802,168 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   transform: scale(0.96);
   transition: transform 80ms ease-in;
 }
+
+/* ═══════════════════════════════════════════════
+   KATANA OPENING — Sensei App intro animation
+   ═══════════════════════════════════════════════ */
+
+.katana-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0a0b;
+  overflow: hidden;
+}
+
+/* Film grain */
+.katana-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* Vertical guide line — fades in during stillness */
+.katana-guide {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-0.5px);
+  background: linear-gradient(to bottom, transparent 20%, rgba(255,255,255,0.05) 50%, transparent 80%);
+  animation: katanaGuideIn 400ms ease-out both;
+}
+
+@keyframes katanaGuideIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* The blade — descends from top */
+.katana-blade {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 140px;
+  transform: translate(-1px, -120%) translateY(-100vh);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(232,232,236,0.3) 15%,
+    #e8e8ec 45%,
+    #ffffff 60%,
+    rgba(255,255,255,0.7) 85%,
+    rgba(255,255,255,0.2) 100%
+  );
+  border-radius: 0 0 1px 1px;
+  box-shadow:
+    0 0 8px 1px rgba(255,255,255,0.15),
+    0 0 30px 2px rgba(159,18,57,0.08);
+  animation:
+    katanaDescent 600ms cubic-bezier(0.33, 0, 0.2, 1) 300ms both,
+    katanaElementFade 400ms ease-out 1300ms both;
+}
+
+@keyframes katanaDescent {
+  0%   { transform: translate(-1px, -120%) translateY(-100vh); opacity: 0; }
+  8%   { opacity: 1; }
+  100% { transform: translate(-1px, -50%); opacity: 1; }
+}
+
+/* Horizontal slash — erupts from impact point */
+.katana-slash {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 1px;
+  width: 0;
+  transform: translate(-50%, -0.5px);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.15) 15%,
+    rgba(255,255,255,0.6) 40%,
+    #ffffff 50%,
+    rgba(255,255,255,0.6) 60%,
+    rgba(255,255,255,0.15) 85%,
+    transparent 100%
+  );
+  box-shadow: 0 0 20px 2px rgba(255,255,255,0.1);
+  animation:
+    katanaSlash 400ms cubic-bezier(0.16, 1, 0.3, 1) 900ms both,
+    katanaElementFade 600ms ease-out 1400ms both;
+}
+
+@keyframes katanaSlash {
+  0%   { width: 0; opacity: 1; }
+  60%  { width: 110vw; opacity: 1; }
+  100% { width: 110vw; opacity: 0.6; }
+}
+
+/* Burgundy impact glow */
+.katana-impact {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(159,18,57,0.6);
+  box-shadow:
+    0 0 20px 6px rgba(159,18,57,0.3),
+    0 0 60px 12px rgba(159,18,57,0.12);
+  animation: katanaImpact 500ms ease-out 880ms both;
+}
+
+@keyframes katanaImpact {
+  0%   { transform: translate(-50%,-50%) scale(0.5); opacity: 0; }
+  30%  { transform: translate(-50%,-50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%,-50%) scale(2); opacity: 0; }
+}
+
+/* Screen split panels */
+.katana-split {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #0a0a0b;
+}
+
+.katana-split--top {
+  top: 0;
+  height: 50%;
+  animation: katanaSplitTop 800ms cubic-bezier(0.22, 1, 0.36, 1) 1200ms both;
+}
+
+.katana-split--bottom {
+  bottom: 0;
+  height: 50%;
+  animation: katanaSplitBottom 800ms cubic-bezier(0.22, 1, 0.36, 1) 1200ms both;
+}
+
+@keyframes katanaSplitTop {
+  0%   { clip-path: inset(0 0 0 0); opacity: 1; }
+  70%  { opacity: 0.7; }
+  100% { clip-path: inset(0 0 100% 0); opacity: 0; }
+}
+
+@keyframes katanaSplitBottom {
+  0%   { clip-path: inset(0 0 0 0); opacity: 1; }
+  70%  { opacity: 0.7; }
+  100% { clip-path: inset(100% 0 0 0); opacity: 0; }
+}
+
+@keyframes katanaElementFade {
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .katana-overlay,
+  .katana-overlay * {
+    animation: none !important;
+  }
+}

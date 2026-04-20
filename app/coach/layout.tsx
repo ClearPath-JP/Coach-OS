@@ -100,7 +100,7 @@ export default async function CoachLayout({
 
   const brandName = initialWorkspaceSettings.brandName
     || initialWorkspaceSettings.workspaceDisplayName
-    || 'COACH-OS'
+    || 'Sensei App'
 
   const accentStyle = `:root { --cp-accent: ${resolvedCpAccent}; --accent: ${resolvedCpAccent}; }`
 

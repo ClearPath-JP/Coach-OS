@@ -315,7 +315,7 @@ export function DualRoleLoginPage() {
                 lineHeight: 1,
               }}
             >
-              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
+              SENSEI<span style={{ color: 'var(--accent)' }}> APP</span>
             </div>
           </div>
 
@@ -393,7 +393,7 @@ export function DualRoleLoginPage() {
                 lineHeight: 1,
               }}
             >
-              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
+              SENSEI<span style={{ color: 'var(--accent)' }}> APP</span>
             </div>
           </div>
 

@@ -121,7 +121,7 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const coachFirst = coachDisplayName.trim().split(/\s+/)[0] || 'Coach'
   const dateLine = format(new Date(), 'EEEE, MMMM d')
-  const brandName = settings.brandName || settings.workspaceDisplayName || 'COACH-OS'
+  const brandName = settings.brandName || settings.workspaceDisplayName || 'Sensei App'
 
   const totalClients = summary?.activeClientsCount ?? 0
   const sessionsToday = todaySessions.length

@@ -5,6 +5,7 @@ import { DM_Sans, Noto_Serif_JP } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { AppLoadingScreen } from '@/components/layout/AppLoadingScreen'
+import { KatanaOpening } from '@/components/opening/KatanaOpening'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -41,6 +42,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-theme="dark" className={`${dmSans.variable} ${notoSerifJP.variable}`}>
       <body className="antialiased">
         <ThemeProvider>
+          <KatanaOpening />
           <AppLoadingScreen />
           <div className="page-enter min-h-screen">{children}</div>
         </ThemeProvider>

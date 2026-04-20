@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { SubscribePageContent } from './SubscribePageContent'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Choose Your Plan — COACH-OS' }
+export const metadata = { title: 'Choose Your Plan — Sensei App' }
 
 export default async function SubscribePage() {
   const supabase = await createClient()
