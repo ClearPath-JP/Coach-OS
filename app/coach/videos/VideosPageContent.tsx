@@ -219,24 +219,54 @@ export function VideosPageContent() {
         </PageHeader>
 
         {!error && videos.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3">
-            <label className="shrink-0 text-[13px] text-[var(--text-tertiary)]" htmlFor="video-cat-filter">
-              Category
-            </label>
-            <select
-              id="video-cat-filter"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 min-h-9 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--cp-accent)] focus:shadow-[var(--focus-ring)]"
+          <>
+          {/* ── Category Tabs ── */}
+          <div className="flex items-center gap-1 overflow-x-auto border-b border-[var(--border-subtle)] pb-px">
+            <button
+              type="button"
+              onClick={() => setCategoryFilter('all')}
+              className={`relative shrink-0 px-3.5 py-2 text-[13px] font-medium transition-colors ${
+                categoryFilter === 'all'
+                  ? 'text-[var(--accent)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                  : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+              }`}
             >
-              <option value="all">All videos</option>
-              <option value="__none__">Uncategorized</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              All ({videos.length})
+            </button>
+            {categories.map((c) => {
+              const count = videos.filter((v) => v.category_id === c.id).length
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCategoryFilter(c.id)}
+                  className={`relative shrink-0 px-3.5 py-2 text-[13px] font-medium transition-colors ${
+                    categoryFilter === c.id
+                      ? 'text-[var(--accent)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                      : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                  }`}
+                >
+                  {c.name} ({count})
+                </button>
+              )
+            })}
+            {videos.filter((v) => !v.category_id).length > 0 && (
+              <button
+                type="button"
+                onClick={() => setCategoryFilter('__none__')}
+                className={`relative shrink-0 px-3.5 py-2 text-[13px] font-medium transition-colors ${
+                  categoryFilter === '__none__'
+                    ? 'text-[var(--accent)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
+                    : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                }`}
+              >
+                Uncategorized ({videos.filter((v) => !v.category_id).length})
+              </button>
+            )}
+          </div>
+
+          {/* ── Actions Bar ── */}
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="ghost"
@@ -245,7 +275,7 @@ export function VideosPageContent() {
               onClick={() => setCategoryManagerOpen(true)}
             >
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-              Manage
+              Manage Categories
             </Button>
             <Button
               type="button"
@@ -273,6 +303,7 @@ export function VideosPageContent() {
               </>
             )}
           </div>
+          </>
         )}
 
         {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
