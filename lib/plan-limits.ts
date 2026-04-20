@@ -3,10 +3,10 @@ import { createServiceClient } from '@/lib/supabase/service'
 /** Per-plan caps: clients, storage pools, assignment count per client. */
 export const PLAN_LIMITS = {
   free: {
-    maxClients: 3,
-    maxVideoStorageGb: 1,
-    maxAssignmentStorageGb: 0.5,
-    maxAssignmentsPerClient: 5,
+    maxClients: 30,
+    maxVideoStorageGb: 5,
+    maxAssignmentStorageGb: 2,
+    maxAssignmentsPerClient: 50,
   },
   founding: {
     maxClients: null as number | null, // unlimited — same as pro
@@ -38,7 +38,7 @@ export type StorageKind = 'video' | 'assignment_file'
 
 /** Default client caps by plan when workspace.max_clients is unset. */
 export const DEFAULT_MAX_CLIENTS_BY_PLAN = {
-  free: PLAN_LIMITS.free.maxClients,
+  free: 30,
   founding: 999999, // unlimited
   starter: PLAN_LIMITS.starter.maxClients,
   pro: 999999,  // unlimited

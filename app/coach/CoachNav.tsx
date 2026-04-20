@@ -3,10 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { CalendarDays, CreditCard, LogOut, Swords, Users, Video, Settings, Volume2, VolumeX } from 'lucide-react'
+import { CalendarDays, CreditCard, LogOut, Swords, Users, Video, Settings } from 'lucide-react'
 import { SignOutButton } from '@/components/layout/SignOutButton'
-import { playHover, playSelect, isSoundEnabled, setSoundEnabled } from '@/lib/game-sounds'
 
 const NAV_ITEMS = [
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarDays },
@@ -16,8 +14,6 @@ const NAV_ITEMS = [
   { href: '/coach/programs', label: 'Programs', icon: Swords },
 ] as const
 
-const MOBILE_NAV_ITEMS = NAV_ITEMS
-
 type CoachNavProps = {
   brandName: string
   coachName: string | null
@@ -26,11 +22,6 @@ type CoachNavProps = {
 
 export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps) {
   const pathname = usePathname()
-  const [soundOn, setSoundOn] = useState(false)
-
-  useEffect(() => {
-    setSoundOn(isSoundEnabled())
-  }, [])
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + '/')
@@ -49,20 +40,21 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps
             <Image
               src={coachAvatarUrl}
               alt=""
-              width={28}
-              height={28}
-              className="coach-nav__avatar"
+              width={32}
+              height={32}
+              className="rounded-lg object-cover"
+              style={{ width: 32, height: 32 }}
             />
           ) : (
-            <span className="coach-nav__avatar-fallback">{initials}</span>
-          )}
-          <span className="coach-nav__brand">{brandName}</span>
-          {coachName && (
-            <span className="hidden text-[11px] text-[var(--text-muted)] lg:inline">
-              {coachName}
+            <span className="flex size-8 items-center justify-center rounded-lg bg-[var(--accent)] text-[12px] font-bold text-white">
+              {initials}
             </span>
           )}
+          <span className="coach-nav__brand">{brandName}</span>
         </Link>
+
+        {/* Separator */}
+        <div className="mx-2 hidden h-5 w-px bg-[var(--border-default)] lg:block" aria-hidden />
 
         {/* Nav links — desktop */}
         <nav className="coach-nav__links" aria-label="Main navigation">
@@ -71,8 +63,6 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps
               key={href}
               href={href}
               className={`coach-nav__link ${isActive(href) ? 'coach-nav__link--active' : ''}`}
-              onMouseEnter={playHover}
-              onClick={playSelect}
             >
               <Icon className="coach-nav__link-icon" strokeWidth={1.5} />
               <span>{label}</span>
@@ -80,22 +70,8 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps
           ))}
         </nav>
 
-        {/* Sound toggle + Settings + Log out */}
+        {/* Settings + Log out */}
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => {
-              const next = !soundOn
-              setSoundOn(next)
-              setSoundEnabled(next)
-              if (next) playSelect()
-            }}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-tertiary)] transition-colors hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
-            aria-label={soundOn ? 'Mute sounds' : 'Enable sounds'}
-            title={soundOn ? 'Sound on' : 'Sound off'}
-          >
-            {soundOn ? <Volume2 className="size-4" strokeWidth={1.5} /> : <VolumeX className="size-4" strokeWidth={1.5} />}
-          </button>
           <Link
             href="/coach/settings"
             className={`coach-nav__settings ${isActive('/coach/settings') ? 'coach-nav__link--active' : ''}`}
@@ -112,7 +88,7 @@ export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps
 
       {/* Mobile bottom dock */}
       <nav className="coach-nav__mobile" aria-label="Navigation">
-        {MOBILE_NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
