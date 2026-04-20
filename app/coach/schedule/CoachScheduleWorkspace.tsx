@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { formatCents } from '@/lib/format-currency'
 import {
   addDays,
   addMonths,
@@ -215,6 +217,8 @@ export function CoachScheduleWorkspace() {
 
   const headerDatePill = format(new Date(), 'EEEE, MMMM d')
 
+  const attentionCount = (attention?.inactive?.length ?? 0) + (attention?.overdue?.length ?? 0) + (attention?.unpaidInvoices?.length ?? 0)
+
   return (
     <div className="sensei-page">
 
@@ -222,7 +226,7 @@ export function CoachScheduleWorkspace() {
       <header className="mb-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="sensei-page__label">Training Calendar</p>
+            <p className="sensei-page__label">Command Center</p>
             <h2 className="sensei-page__heading mt-1">{headerDatePill}</h2>
           </div>
           <button
@@ -233,6 +237,36 @@ export function CoachScheduleWorkspace() {
             Book Session
           </button>
         </div>
+
+        {/* ── Quick Stats — always visible at top ── */}
+        {dashStats && (
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Sessions</p>
+              <p className="mt-1 text-[28px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.sessionsThisWeek}</p>
+              {dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
+                <p className={cn('mt-1 text-[11px] font-medium', dashStats.trends.sessionsThisWeek.direction === 'up' ? 'text-[var(--success)]' : dashStats.trends.sessionsThisWeek.direction === 'down' ? 'text-[var(--error)]' : 'text-[var(--text-tertiary)]')}>
+                  {dashStats.trends.sessionsThisWeek.direction === 'up' ? '↑' : '↓'} {Math.round(dashStats.trends.sessionsThisWeek.percentChange)}% vs last week
+                </p>
+              ) : <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">this week</p>}
+            </div>
+            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Revenue</p>
+              <p className="mt-1 text-[28px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(dashStats.revenueMonthCents)}</p>
+              <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">this month</p>
+            </div>
+            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Clients</p>
+              <p className="mt-1 text-[28px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.activeClientsCount}</p>
+              <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">active</p>
+            </div>
+            <div className={cn('card-glow rounded-[var(--radius-lg)] border bg-[var(--bg-subtle)] p-4', attentionCount > 0 ? 'border-[var(--warning-border)]' : 'border-[var(--border-subtle)]')}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Attention</p>
+              <p className={cn('mt-1 text-[28px] font-bold tabular-nums leading-none', attentionCount > 0 ? 'text-[var(--warning)]' : 'text-[var(--text-primary)]')}>{attentionCount}</p>
+              <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">{attentionCount > 0 ? 'needs action' : 'all clear'}</p>
+            </div>
+          </div>
+        )}
 
         {/* Navigation + view toggle */}
         <div className="sensei-page__toolbar mt-5">
@@ -360,6 +394,34 @@ export function CoachScheduleWorkspace() {
           )}
         </div>
       </details>
+
+      {/* ── Quick Actions Row ── */}
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+        <button type="button" onClick={() => openBookModal(null, null)} className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <span className="text-[18px]">📅</span>
+          Book Session
+        </button>
+        <Link href="/coach/clients" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <span className="text-[18px]">👤</span>
+          Clients
+        </Link>
+        <Link href="/coach/videos" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <span className="text-[18px]">📹</span>
+          Videos
+        </Link>
+        <Link href="/coach/programs" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <span className="text-[18px]">📋</span>
+          Programs
+        </Link>
+        <Link href="/coach/payments" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <span className="text-[18px]">💰</span>
+          Payments
+        </Link>
+        <button type="button" onClick={() => setAvailabilityOpen(true)} className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <span className="text-[18px]">⚙️</span>
+          Availability
+        </button>
+      </div>
 
       {/* ── Empty state ── */}
       {!calendarLoading && sessions.length === 0 && (
