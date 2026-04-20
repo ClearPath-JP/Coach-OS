@@ -1260,8 +1260,8 @@ function VideoCard({
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-200 ${
-        selected ? 'ring-2 ring-[var(--color-accent)]' : 'hover:shadow-md hover:-translate-y-0.5 hover:border-[var(--border-strong)]'
+      className={`card-glow group relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-300 ${
+        selected ? 'ring-2 ring-[var(--color-accent)]' : 'hover:shadow-lg hover:-translate-y-1 hover:border-[rgba(159,18,57,0.2)]'
       }`}
     >
       {/* Thumbnail / Preview */}

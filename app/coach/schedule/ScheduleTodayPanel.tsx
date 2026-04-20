@@ -311,6 +311,37 @@ export function ScheduleTodayPanel({
         </div>
       ) : null}
 
+      {/* ── Quick Actions ── */}
+      <div className="mb-4">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">Quick actions</p>
+        <div className="grid grid-cols-2 gap-1.5">
+          <Link
+            href="/coach/clients"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+          >
+            <span className="text-[14px]">👤</span> Add Client
+          </Link>
+          <Link
+            href="/coach/videos"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+          >
+            <span className="text-[14px]">📹</span> Upload Video
+          </Link>
+          <Link
+            href="/coach/programs"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+          >
+            <span className="text-[14px]">📋</span> New Program
+          </Link>
+          <Link
+            href="/coach/payments"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+          >
+            <span className="text-[14px]">💰</span> Send Invoice
+          </Link>
+        </div>
+      </div>
+
       {/* ── Availability ── */}
       <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">My availability</p>
       {dayRules.length === 0 ? (
