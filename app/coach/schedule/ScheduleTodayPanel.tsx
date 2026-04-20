@@ -236,7 +236,7 @@ export function ScheduleTodayPanel({
             <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Sessions</p>
               <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.sessionsThisWeek}</p>
-              {dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
+              {dashStats.trends?.sessionsThisWeek?.percentChange != null && dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
                 <p className={cn('mt-1 text-[10px] font-medium', trendColor(dashStats.trends.sessionsThisWeek.direction))}>
                   {trendArrow(dashStats.trends.sessionsThisWeek.direction)} {Math.round(dashStats.trends.sessionsThisWeek.percentChange)}%
                 </p>
