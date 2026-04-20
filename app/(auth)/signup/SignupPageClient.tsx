@@ -165,7 +165,7 @@ export function SignupPageClient() {
               fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500,
               letterSpacing: '0.04em', color: 'rgba(237,237,239,0.7)', lineHeight: 1,
             }}>
-              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
+              SENSEI <span style={{ color: 'var(--accent)' }}>APP</span>
             </div>
           </div>
 
@@ -233,7 +233,7 @@ export function SignupPageClient() {
               fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500,
               letterSpacing: '0.04em', color: 'var(--text-primary)', lineHeight: 1,
             }}>
-              COACH<span style={{ color: 'var(--accent)' }}>OS</span>
+              SENSEI <span style={{ color: 'var(--accent)' }}>APP</span>
             </div>
           </div>
 

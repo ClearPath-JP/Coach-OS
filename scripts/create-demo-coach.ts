@@ -22,7 +22,7 @@ async function main() {
   const password = 'Demo123!'
   const firstName = 'Alex'
   const lastName = 'Rivera'
-  const workspaceName = 'Peak Performance Coaching'
+  const workspaceName = 'Rivera Combat Athletics'
 
   const { data: users } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
   const existing = users.users.find((u) => u.email?.toLowerCase() === email)
@@ -67,7 +67,7 @@ async function main() {
         name: workspaceName,
         owner_id: userId,
         brand_name: workspaceName,
-        accent_color: '#3B9EE8',
+        accent_color: '#9F1239',
         completed_onboarding: true,
       })
       .select('id')

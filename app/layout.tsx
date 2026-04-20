@@ -22,8 +22,8 @@ const notoSerifJP = Noto_Serif_JP({
 })
 
 export const metadata: Metadata = {
-  title: 'Sensei App — Coach OS & client portal',
-  description: 'Coach operating system and client portal',
+  title: 'Sensei App — Coaching platform & client portal',
+  description: 'The coaching platform for martial arts and strength conditioning.',
 }
 
 export const viewport: Viewport = {
