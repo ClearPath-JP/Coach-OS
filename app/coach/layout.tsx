@@ -7,6 +7,7 @@ import { WorkspaceProvider } from '@/lib/workspace-context'
 import { workspaceProviderKey } from '@/lib/workspace-settings'
 import { CoachClientErrorReportingShell } from '@/components/shared/CoachClientErrorReporting'
 import { CoachNav } from './CoachNav'
+import { CoachSidebarShell } from './CoachSidebarShell'
 
 export const dynamic = 'force-dynamic'
 
@@ -109,8 +110,15 @@ export default async function CoachLayout({
       key={workspaceProviderKey(initialWorkspaceSettings)}
       initialSettings={initialWorkspaceSettings}
     >
-      <div className="flex min-h-[100dvh] flex-col bg-[var(--bg-app)]">
-        <style>{accentStyle}</style>
+      <style>{accentStyle}</style>
+      {/* Desktop: sidebar + content grid  |  Mobile: bottom dock + content */}
+      <div className="flex min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+        {/* Sidebar — desktop only */}
+        <CoachSidebarShell
+          coachName={profile?.full_name ?? null}
+          coachAvatarUrl={profile?.logo_url ?? initialWorkspaceSettings.logoUrl ?? null}
+        />
+        {/* Mobile bottom dock */}
         <CoachNav
           brandName={brandName}
           coachName={profile?.full_name ?? null}
@@ -119,11 +127,6 @@ export default async function CoachLayout({
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
         </main>
-        <footer className="shrink-0 border-t border-[var(--border-default)] bg-[var(--bg-app)] px-4 py-3 text-center">
-          <p className="text-[11px] tracking-wide text-[var(--text-muted)]">
-            Powered by <span className="font-medium text-[var(--text-secondary)]">FoundOS</span>
-          </p>
-        </footer>
       </div>
     </WorkspaceProvider>
   )

@@ -464,20 +464,22 @@ export function CoachClientsPageContent() {
           </Card>
         )}
         {!loading && !error && clients.length === 0 && (
-          <div className="flex flex-col items-center px-6 py-20 text-center">
-            <div className="mb-6 grid grid-cols-2 gap-2 opacity-30 sm:grid-cols-4" aria-hidden>
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-24 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--bg-muted)]" />
-              ))}
-            </div>
-            <div className="flex size-[72px] items-center justify-center rounded-full bg-[var(--bg-muted)] text-[36px]">👥</div>
-            <h2 className="mt-4 text-xl font-bold text-[var(--text-primary)]">Add your first client</h2>
-            <p className="mt-2 max-w-[360px] text-[14px] leading-relaxed text-[var(--text-tertiary)]">
-              Invite clients to access their programs, schedule sessions, and message you through Sensei App.
+          <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+            <div className="empty-state-coach__icon" aria-hidden>👥</div>
+            <p className="empty-state-coach__title">Add your first client</p>
+            <p className="empty-state-coach__desc">
+              Invite clients to access their programs, schedule sessions, and track progress through Sensei App.
             </p>
-            <Button className="mt-6" onClick={() => setAddModalOpen(true)}>
+            <Button className="empty-state-coach__cta" onClick={() => setAddModalOpen(true)}>
               Add first client
             </Button>
+            <div className="mt-6 flex flex-wrap justify-center gap-4 text-[12px] text-[var(--text-quaternary)]">
+              <span>Track progress</span>
+              <span aria-hidden>·</span>
+              <span>Schedule sessions</span>
+              <span aria-hidden>·</span>
+              <span>Send assignments</span>
+            </div>
           </div>
         )}
         {!loading && !error && clients.length > 0 && view === 'grid' && (
@@ -503,22 +505,27 @@ export function CoachClientsPageContent() {
                   role="link"
                   tabIndex={0}
                 >
-                  <div className="relative flex h-20 min-h-[80px] items-center justify-center bg-[var(--bg-muted)]">
-                    <div className="relative flex size-12 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[15px] font-bold text-white ring-2 ring-transparent transition-all duration-300 group-hover:ring-[var(--accent)] group-hover:ring-offset-2 group-hover:ring-offset-[var(--bg-muted)]">
+                  <div className="flex items-center gap-3 px-4 pt-4">
+                    <div className="relative flex size-10 flex-shrink-0 items-center justify-center rounded-full text-[14px] font-bold text-white" style={{ background: 'linear-gradient(135deg, var(--cp-accent), var(--accent-dark))' }}>
                       {getInitials(client.first_name, client.last_name, client.email)}
                       <span
                         className={cn(
-                          'absolute bottom-0 right-0 size-2 rounded-full border-2 border-[var(--cp-offwhite)] ring-1 ring-[var(--cp-offwhite)]',
+                          'absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-[var(--cp-offwhite)]',
                           statusDotClass(client.status)
                         )}
-                        style={{ width: 8, height: 8 }}
                         aria-hidden
                       />
                     </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[15px] font-semibold text-[var(--text-primary)]">{name}</p>
+                      <p className="flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
+                        <StatusDot tone={statusTone(client.status)} />
+                        {client.status}
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-[var(--text-primary)]">{name}</p>
+                  <div className="px-4 pt-3">
+                    <div className="flex items-start justify-end">
                       <div
                         className={cn(
                           'relative opacity-0 transition-opacity duration-150 group-hover:opacity-100',
@@ -563,10 +570,6 @@ export function CoachClientsPageContent() {
                         </details>
                       </div>
                     </div>
-                    <p className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
-                      <StatusDot tone={statusTone(client.status)} />
-                      {client.status}
-                    </p>
                     <div className="mt-3">
                       {(() => {
                         const p = programProgressParts(client)

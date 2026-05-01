@@ -17,13 +17,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark')
 
   useEffect(() => {
-    let saved: Theme = 'dark'
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored === 'light' || stored === 'dark') saved = stored
-    } catch { /* ignore */ }
-    setThemeState(saved)
-    document.documentElement.setAttribute('data-theme', saved)
+    // Force dark mode — dojo aesthetic
+    document.documentElement.setAttribute('data-theme', 'dark')
+    try { localStorage.setItem(STORAGE_KEY, 'dark') } catch { /* ignore */ }
   }, [])
 
   const setTheme = useCallback((next: Theme) => {

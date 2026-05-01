@@ -4,10 +4,12 @@
  * Includes both legacy presets and stance-derived accent colors.
  */
 
-export const PHASE4_DEFAULT_COACH_ACCENT = '#9F1239' as const
+export const PHASE4_DEFAULT_COACH_ACCENT = '#E8A948' as const
 
 export const ALLOWED_COACH_ACCENT_HEXES = [
-  // Combat Light default
+  // Ember default (matches login page)
+  '#E8A948', // Ember Gold
+  // Legacy defaults
   '#9F1239', // Burgundy Rose
   // Legacy presets
   '#1D4ED8', // Sapphire

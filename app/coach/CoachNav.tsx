@@ -1,10 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, CreditCard, LogOut, Swords, Users, Video, Settings } from 'lucide-react'
-import { SignOutButton } from '@/components/layout/SignOutButton'
+import { CalendarDays, CreditCard, Swords, Users, Video, Settings } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarDays },
@@ -20,92 +18,32 @@ type CoachNavProps = {
   coachAvatarUrl: string | null
 }
 
-export function CoachNav({ brandName, coachName, coachAvatarUrl }: CoachNavProps) {
+/** Mobile-only bottom dock. Desktop navigation lives in CoachSidebarShell. */
+export function CoachNav({ brandName }: CoachNavProps) {
   const pathname = usePathname()
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + '/')
 
-  const initials = coachName
-    ? coachName.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : 'C'
-
   return (
-    <>
-      {/* Desktop top bar */}
-      <header className="coach-nav">
-        {/* Avatar + Brand */}
-        <Link href="/coach/settings" className="coach-nav__profile" aria-label="Settings">
-          {coachAvatarUrl ? (
-            <Image
-              src={coachAvatarUrl}
-              alt=""
-              width={32}
-              height={32}
-              className="rounded-lg object-cover"
-              style={{ width: 32, height: 32 }}
-            />
-          ) : (
-            <span className="flex size-8 items-center justify-center rounded-lg bg-[var(--accent)] text-[12px] font-bold text-white">
-              {initials}
-            </span>
-          )}
-          <span className="coach-nav__brand">{brandName}</span>
-        </Link>
-
-        {/* Separator */}
-        <div className="mx-2 hidden h-5 w-px bg-[var(--border-default)] lg:block" aria-hidden />
-
-        {/* Nav links — desktop */}
-        <nav className="coach-nav__links" aria-label="Main navigation">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`coach-nav__link ${isActive(href) ? 'coach-nav__link--active' : ''}`}
-            >
-              <Icon className="coach-nav__link-icon" strokeWidth={1.5} />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        {/* Settings + Log out */}
-        <div className="flex items-center gap-1">
-          <Link
-            href="/coach/settings"
-            className={`coach-nav__settings ${isActive('/coach/settings') ? 'coach-nav__link--active' : ''}`}
-            aria-label="Settings"
-          >
-            <Settings className="size-[18px]" strokeWidth={1.5} />
-          </Link>
-          <SignOutButton
-            variant="nav"
-            className="!min-h-[36px] !px-2 !text-[12px] text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
-          />
-        </div>
-      </header>
-
-      {/* Mobile bottom dock */}
-      <nav className="coach-nav__mobile" aria-label="Navigation">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`coach-nav__mobile-link ${isActive(href) ? 'coach-nav__mobile-link--active' : ''}`}
-          >
-            <Icon className="size-5" strokeWidth={1.5} />
-            <span className="coach-nav__mobile-label">{label}</span>
-          </Link>
-        ))}
+    <nav className="coach-nav__mobile" aria-label="Navigation">
+      {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
         <Link
-          href="/coach/settings"
-          className={`coach-nav__mobile-link ${isActive('/coach/settings') ? 'coach-nav__mobile-link--active' : ''}`}
+          key={href}
+          href={href}
+          className={`coach-nav__mobile-link ${isActive(href) ? 'coach-nav__mobile-link--active' : ''}`}
         >
-          <Settings className="size-5" strokeWidth={1.5} />
-          <span className="coach-nav__mobile-label">Settings</span>
+          <Icon className="size-5" strokeWidth={1.5} />
+          <span className="coach-nav__mobile-label">{label}</span>
         </Link>
-      </nav>
-    </>
+      ))}
+      <Link
+        href="/coach/settings"
+        className={`coach-nav__mobile-link ${isActive('/coach/settings') ? 'coach-nav__mobile-link--active' : ''}`}
+      >
+        <Settings className="size-5" strokeWidth={1.5} />
+        <span className="coach-nav__mobile-label">Settings</span>
+      </Link>
+    </nav>
   )
 }

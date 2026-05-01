@@ -79,6 +79,16 @@ export const COACH_THEME_PRESETS: readonly CoachThemePreset[] = [
     muted: '#DDD6FE',
   },
   {
+    id: 'crimson',
+    label: 'Crimson',
+    accent: '#9F1239',
+    accentDark: '#7F1D1D',
+    hover: '#BE123C',
+    light: '#FFF1F2',
+    muted: '#FECDD3',
+    accentAliases: ['#881337'],
+  },
+  {
     id: 'slate',
     label: 'Slate',
     accent: `#${'64748B'}`,
@@ -89,7 +99,7 @@ export const COACH_THEME_PRESETS: readonly CoachThemePreset[] = [
   },
 ] as const
 
-export const DEFAULT_COACH_ACCENT = '#3B9EE8'
+export const DEFAULT_COACH_ACCENT = '#9F1239'
 
 export function normalizeHex6(hex: string): string {
   return hex.replace('#', '').toUpperCase()

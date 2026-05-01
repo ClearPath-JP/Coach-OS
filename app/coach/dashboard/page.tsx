@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation'
+import { CoachDashboardHome } from './CoachDashboardHome'
 
-/** Schedule IS the home screen. Redirect any dashboard hits. */
 export default function CoachDashboardPage() {
-  redirect('/coach/schedule')
+  return <CoachDashboardHome />
 }

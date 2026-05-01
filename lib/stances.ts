@@ -24,10 +24,26 @@ export interface StanceTheme {
 
 export const STANCES: readonly StanceTheme[] = [
   {
+    id: 'ember',
+    label: 'Ember',
+    region: 'The Campfire',
+    description: 'Warm amber and firelight — the default stance',
+    accent: '#e8a948',
+    accentHover: '#f0c060',
+    accentLight: '#1A1508',
+    accentMuted: '#2A2010',
+    cardTint: 'rgba(232, 169, 72, 0.04)',
+    sidebarBg: '#0C0A06',
+    sidebarBorder: '#1A1610',
+    sidebarHover: 'rgba(232, 169, 72, 0.06)',
+    sectionLabelColor: '#c89030',
+    textOnAccent: '#0F0D0B',
+  },
+  {
     id: 'izuhara',
     label: 'Golden Fields',
     region: 'Izuhara',
-    description: 'Warm gold and amber — the default stance',
+    description: 'Warm gold and amber — classic stance',
     accent: '#C4A44A',
     accentHover: '#D4B45A',
     accentLight: '#1E1A10',
@@ -106,7 +122,7 @@ export const STANCES: readonly StanceTheme[] = [
 ] as const
 
 export type StanceId = (typeof STANCES)[number]['id']
-export const DEFAULT_STANCE_ID: StanceId = 'izuhara'
+export const DEFAULT_STANCE_ID: StanceId = 'ember'
 
 export function findStance(id: string | null | undefined): StanceTheme {
   return STANCES.find((s) => s.id === id) ?? STANCES[0]!

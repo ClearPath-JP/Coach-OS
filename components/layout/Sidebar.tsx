@@ -88,21 +88,18 @@ function SearchIcon() {
 }
 
 function useCoachSidebarBadges() {
-  const [badges, setBadges] = useState({ messages: 0, assignments: 0 })
+  const [badges, setBadges] = useState({ assignments: 0 })
   const refresh = useCallback(() => {
-    void Promise.all([
-      fetch('/api/messages/unread-count', { credentials: 'include' }).then((r) => r.json()),
-      fetch('/api/assignments/overview', { credentials: 'include' }).then((r) => r.json()),
-    ])
-      .then(([msgJson, asgJson]) => {
-        const msg = typeof msgJson?.data?.count === 'number' ? msgJson.data.count : 0
+    fetch('/api/assignments/overview', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((asgJson) => {
         let asg = 0
         if (asgJson?.data) {
           const pr = typeof asgJson.data.pendingReviewCount === 'number' ? asgJson.data.pendingReviewCount : 0
           const ov = typeof asgJson.data.overdueCount === 'number' ? asgJson.data.overdueCount : 0
           asg = pr + ov
         }
-        setBadges({ messages: msg, assignments: asg })
+        setBadges({ assignments: asg })
       })
       .catch(() => {})
   }, [])
@@ -200,9 +197,9 @@ function CoachSidebarHeader() {
         <div className="font-display text-[14px] font-medium tracking-[0.02em] text-[var(--text-primary)]">{displayName}</div>
         <div
           className="text-[9px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: 'var(--accent-dark)', marginTop: 1 }}
+          style={{ color: 'var(--coach-sidebar-muted)', marginTop: 1 }}
         >
-          Coach OS
+          Sensei App
         </div>
       </div>
     </div>
@@ -284,7 +281,7 @@ function NavRowsCoach({
 }: {
   items: SidebarNavItem[]
   pathname: string | null
-  badges: { messages: number; assignments: number }
+  badges: { assignments: number }
   navFilter: string
 }) {
   const q = navFilter.trim().toLowerCase()
@@ -295,12 +292,7 @@ function NavRowsCoach({
         const isActive =
           pathname === item.href ||
           (item.href !== '/' && pathname != null && pathname.startsWith(item.href + '/'))
-        const badge =
-          item.href === '/coach/messages'
-            ? badges.messages
-            : item.href === '/coach/assignments'
-              ? badges.assignments
-              : 0
+        const badge = item.href === '/coach/assignments' ? badges.assignments : 0
         return (
           <Link
             key={item.href}
@@ -308,8 +300,8 @@ function NavRowsCoach({
             className={cn(
               'relative mb-[2px] flex h-[34px] items-center gap-2.5 rounded-[6px] px-2.5 text-[13px] no-underline transition-all duration-[200ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[var(--accent-surface)] font-medium text-[var(--accent)] [&_svg]:text-[var(--accent)]'
-                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--coach-sidebar-icon)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-secondary)]'
+                ? 'nav-item-active-coach bg-[var(--accent-surface)] font-medium text-[var(--text-primary)] [&_svg]:text-[var(--accent)]'
+                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--coach-sidebar-icon)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-secondary)] [&:hover_svg]:text-[var(--text-tertiary)]'
             )}
           >
             {item.icon ? (

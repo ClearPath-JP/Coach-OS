@@ -394,14 +394,21 @@ export function PackagesPageContent() {
 
       {!loading && !error && packages.length === 0 && (
         <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
-          <div className="empty-state-coach__icon mb-0 flex h-12 w-12 items-center justify-center bg-[var(--accent-light)] text-xl" aria-hidden>
-            📦
-          </div>
+          <div className="empty-state-coach__icon" aria-hidden>📦</div>
           <p className="empty-state-coach__title">No packages yet</p>
-          <p className="empty-state-coach__desc mt-1">Create a session package to send invoices to clients.</p>
-          <Button className="empty-state-coach__cta mt-4" onClick={() => setCreateOpen(true)}>
+          <p className="empty-state-coach__desc">
+            Create session packages with set pricing and session counts. Send invoices to clients and track payments automatically.
+          </p>
+          <Button className="empty-state-coach__cta" onClick={() => setCreateOpen(true)}>
             Create package
           </Button>
+          <div className="mt-6 flex flex-wrap justify-center gap-4 text-[12px] text-[var(--text-quaternary)]">
+            <span>Set pricing</span>
+            <span aria-hidden>·</span>
+            <span>Track sessions</span>
+            <span aria-hidden>·</span>
+            <span>Send invoices</span>
+          </div>
         </div>
       )}
 

@@ -249,36 +249,37 @@
 }
 
 html[data-theme='dark'] {
-  /* ═══ Combative Alchemy — disciplined dark palette ═══ */
+  /* ═══ Dojo Dark — charred wood, ember glow ═══ */
 
-  /* Surfaces — cool charcoal, layered depth */
-  --bg-app: #0E0E11;
-  --bg-app-rgb: 14, 14, 17;
-  --bg-subtle: #18181B;
-  --bg-muted: #222225;
-  --bg-emphasis: #2C2C30;
+  /* Surfaces — warm-black, like charcoal with faint wood undertone */
+  --bg-app: #0C0B0A;
+  --bg-app-rgb: 12, 11, 10;
+  --bg-subtle: #141312;
+  --bg-muted: #1C1B19;
+  --bg-emphasis: #252320;
 
-  /* Accent — deep burgundy/maroon combat red */
-  --accent: #9f1239;
-  --accent-rgb: 159, 18, 57;
-  --accent-dark: #7f1d1d;
-  --accent-light: #1a0a0e;
-  --accent-muted: #2a1015;
-  --accent-hover: #be123c;
+  /* Accent — ember gold, used surgically (active nav, key CTA only) */
+  --accent: #D4943C;
+  --accent-rgb: 212, 148, 60;
+  --accent-dark: #B07828;
+  --accent-light: #161008;
+  --accent-muted: #1E1710;
+  --accent-hover: #E0A850;
+  --accent-surface: rgba(212, 148, 60, 0.06);
 
-  /* Text — clean, high contrast, no warmth */
-  --text-primary: #EDEDEF;
-  --text-secondary: #A1A1AA;
-  --text-tertiary: #63636B;
-  --text-quaternary: #3F3F46;
-  --text-placeholder: #2E2E33;
-  --text-on-accent: #ffffff;
+  /* Text — warm silver, not cold zinc */
+  --text-primary: #E8E6E3;
+  --text-secondary: #9C9890;
+  --text-tertiary: #6B6660;
+  --text-quaternary: #403C38;
+  --text-placeholder: #2A2825;
+  --text-on-accent: #0C0B0A;
 
-  /* Borders — barely there, zinc-based */
-  --border-subtle: #1F1F23;
-  --border-default: #27272A;
-  --border-strong: #3F3F46;
-  --border-accent: #9f1239;
+  /* Borders — warm, barely there, like charcoal grain */
+  --border-subtle: #1E1C19;
+  --border-default: #28261F;
+  --border-strong: #3A3730;
+  --border-accent: var(--accent);
 
   /* Semantic — restrained, functional */
   --success: #34d399;
@@ -294,12 +295,12 @@ html[data-theme='dark'] {
   --info-bg: #0C1424;
   --info-border: #1E2D4A;
 
-  /* Shadows — cool, not warm */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  /* Shadows — deep, warm-black */
+  --shadow-xs: 0 1px 2px 0 rgba(5, 4, 3, 0.5);
+  --shadow-sm: 0 1px 3px 0 rgba(5, 4, 3, 0.5), 0 1px 2px -1px rgba(5, 4, 3, 0.35);
+  --shadow-md: 0 4px 6px -1px rgba(5, 4, 3, 0.55), 0 2px 4px -2px rgba(5, 4, 3, 0.35);
+  --shadow-lg: 0 10px 15px -3px rgba(5, 4, 3, 0.6), 0 4px 6px -4px rgba(5, 4, 3, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(5, 4, 3, 0.65), 0 8px 10px -6px rgba(5, 4, 3, 0.45);
 
   /* Semantic aliases — components reference these */
   --color-bg: var(--bg-app);
@@ -353,12 +354,12 @@ html[data-theme='dark'] {
   --cp-btn-bg: var(--accent);
   --cp-btn-hover: var(--accent-hover);
   --cp-focus-ring: color-mix(in srgb, var(--accent) 25%, transparent);
-  --cp-nav-surface: #0C0C0F;
+  --cp-nav-surface: #0A0908;
 
-  /* Accent surface tokens — for cards, badges, active states */
-  --accent-surface: rgba(159, 18, 57, 0.08);
-  --accent-glow: rgba(159, 18, 57, 0.15);
-  --accent-border: rgba(159, 18, 57, 0.3);
+  /* Accent surface tokens — restrained, barely visible warmth */
+  --accent-surface: rgba(var(--accent-rgb), 0.05);
+  --accent-glow: rgba(var(--accent-rgb), 0.10);
+  --accent-border: rgba(var(--accent-rgb), 0.18);
 }
 
 *,
@@ -394,7 +395,7 @@ body {
 }
 
 html[data-theme='dark'] ::selection {
-  background: rgba(159, 18, 57, 0.35);
+  background: rgba(var(--accent-rgb), 0.35);
   color: var(--text-primary);
 }
 
@@ -486,10 +487,10 @@ html[data-theme='dark'] ::selection {
   transition: box-shadow var(--duration-slow) var(--ease-default);
 }
 html[data-theme='dark'] .empty-state-coach__icon {
-  background: rgba(159, 18, 57, 0.06);
-  border-color: rgba(159, 18, 57, 0.12);
+  background: rgba(var(--accent-rgb), 0.06);
+  border-color: rgba(var(--accent-rgb), 0.12);
   color: var(--accent);
-  box-shadow: 0 0 32px rgba(159, 18, 57, 0.08);
+  box-shadow: 0 0 32px rgba(var(--accent-rgb), 0.08);
 }
 .empty-state-coach__title {
   margin-top: 16px;
@@ -861,15 +862,15 @@ html[data-theme='dark'] .glass-modal {
   transform: translateY(-3px);
   box-shadow:
     0 12px 32px rgba(12, 8, 4, 0.15),
-    0 0 0 1px rgba(159, 18, 57, 0.1);
-  border-color: rgba(159, 18, 57, 0.2);
+    0 0 0 1px rgba(var(--accent-rgb), 0.1);
+  border-color: rgba(var(--accent-rgb), 0.2);
 }
 html[data-theme='dark'] .card-interactive:hover {
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.4),
-    0 0 24px rgba(159, 18, 57, 0.1),
-    0 0 0 1px rgba(159, 18, 57, 0.15);
-  border-color: rgba(159, 18, 57, 0.25);
+    0 0 24px rgba(var(--accent-rgb), 0.1),
+    0 0 0 1px rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.25);
 }
 
 /* Accent glow on hover — for stat cards and primary cards */
@@ -881,10 +882,10 @@ html[data-theme='dark'] .card-glow {
 }
 html[data-theme='dark'] .card-glow:hover {
   box-shadow:
-    0 0 24px rgba(159, 18, 57, 0.18),
-    0 0 64px rgba(159, 18, 57, 0.06),
-    0 0 0 1px rgba(159, 18, 57, 0.15);
-  border-color: rgba(159, 18, 57, 0.3);
+    0 0 24px rgba(var(--accent-rgb), 0.18),
+    0 0 64px rgba(var(--accent-rgb), 0.06),
+    0 0 0 1px rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.3);
   transform: translateY(-1px);
 }
 
@@ -912,12 +913,12 @@ html[data-theme='dark'] .card-gradient-border::before {
 }
 html[data-theme='dark'] .card-gradient-border:hover::before {
   opacity: 1;
-  background: linear-gradient(135deg, #9f1239, rgba(159, 18, 57, 0.1), #be123c);
+  background: linear-gradient(135deg, var(--accent), rgba(var(--accent-rgb), 0.1), var(--accent-hover));
 }
 html[data-theme='dark'] .card-gradient-border:hover {
   box-shadow:
-    0 0 24px rgba(159, 18, 57, 0.1),
-    0 0 48px rgba(159, 18, 57, 0.04);
+    0 0 24px rgba(var(--accent-rgb), 0.1),
+    0 0 48px rgba(var(--accent-rgb), 0.04);
 }
 
 /* Section header with accent gradient wash */
@@ -931,21 +932,21 @@ html[data-theme='dark'] .section-header-glow::before {
   top: -4px;
   bottom: -4px;
   width: 200px;
-  background: linear-gradient(90deg, rgba(159, 18, 57, 0.06), transparent);
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.06), transparent);
   border-radius: var(--radius-md);
   pointer-events: none;
 }
 
 /* Coach shell — dark sidebar chrome */
 .coach-sidebar-dark {
-  --coach-sidebar-bg: #0D0B08;
-  --coach-sidebar-border: #1A1612;
-  --coach-sidebar-hover: rgba(159, 18, 57, 0.06);
-  --coach-sidebar-muted: #5A5040;
-  --coach-sidebar-icon: #6A5E4E;
-  --coach-sidebar-label: #A08838;
-  --coach-sidebar-input-bg: #120F0C;
-  --coach-sidebar-input-border: #1E1A14;
+  --coach-sidebar-bg: #0A0908;
+  --coach-sidebar-border: #16140F;
+  --coach-sidebar-hover: rgba(255, 255, 255, 0.04);
+  --coach-sidebar-muted: #4A4540;
+  --coach-sidebar-icon: #5A554E;
+  --coach-sidebar-label: #7A7268;
+  --coach-sidebar-input-bg: #0F0E0C;
+  --coach-sidebar-input-border: #1A1814;
 }
 
 .panel-body-scroll {
@@ -1085,7 +1086,7 @@ html[data-theme='dark'] .section-header-glow::before {
   border-color: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 html[data-theme='dark'] .game-panel:hover {
-  box-shadow: 0 0 24px rgba(159, 18, 57, 0.06);
+  box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.06);
 }
 .game-panel-header {
   display: flex;
@@ -1192,7 +1193,7 @@ html[data-theme='dark'] .game-panel:hover {
   animation: login-btn-shimmer 600ms ease;
 }
 html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
-  box-shadow: 0 0 20px rgba(159, 18, 57, 0.3), 0 0 4px rgba(159, 18, 57, 0.2);
+  box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.3), 0 0 4px rgba(var(--accent-rgb), 0.2);
 }
 
 /*gradient divider (replaces hard border-b lines) */
@@ -1339,7 +1340,7 @@ html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
   background: var(--accent);
 }
 html[data-theme='dark'] .coach-nav__link--active {
-  box-shadow: 0 0 16px rgba(159, 18, 57, 0.1);
+  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.1);
 }
 .coach-nav__link-icon {
   width: 16px;
@@ -1402,7 +1403,7 @@ html[data-theme='dark'] .coach-nav__link--active {
   color: var(--accent);
 }
 html[data-theme='dark'] .coach-nav__mobile-link--active {
-  text-shadow: 0 0 12px rgba(159, 18, 57, 0.4);
+  text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.25);
 }
 .coach-nav__mobile-label {
   font-size: 10px;
@@ -2823,8 +2824,8 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
 html[data-theme='dark'] button[class*="bg-[var(--accent)]"]:hover:not(:disabled),
 html[data-theme='dark'] .btn-accent-glow:hover:not(:disabled) {
   box-shadow:
-    0 0 20px rgba(159, 18, 57, 0.35),
-    0 0 6px rgba(159, 18, 57, 0.2);
+    0 0 20px rgba(var(--accent-rgb), 0.35),
+    0 0 6px rgba(var(--accent-rgb), 0.2);
 }
 
 /* ── Input accent focus ring (global) ── */
@@ -2832,7 +2833,7 @@ html[data-theme='dark'] input:focus,
 html[data-theme='dark'] textarea:focus,
 html[data-theme='dark'] select:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(159, 18, 57, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15) !important;
   outline: none;
 }
 
@@ -2894,7 +2895,7 @@ html[data-theme='dark'] select:focus {
   border-radius: 0 0 1px 1px;
   box-shadow:
     0 0 8px 1px rgba(255,255,255,0.15),
-    0 0 30px 2px rgba(159,18,57,0.08);
+    0 0 30px 2px rgba(var(--accent-rgb),0.08);
   animation:
     katanaDescent 600ms cubic-bezier(0.33, 0, 0.2, 1) 300ms both,
     katanaElementFade 400ms ease-out 1300ms both;
@@ -2945,10 +2946,10 @@ html[data-theme='dark'] select:focus {
   height: 4px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: rgba(159,18,57,0.6);
+  background: rgba(var(--accent-rgb),0.6);
   box-shadow:
-    0 0 20px 6px rgba(159,18,57,0.3),
-    0 0 60px 12px rgba(159,18,57,0.12);
+    0 0 20px 6px rgba(var(--accent-rgb),0.3),
+    0 0 60px 12px rgba(var(--accent-rgb),0.12);
   animation: katanaImpact 500ms ease-out 880ms both;
 }
 

@@ -21,7 +21,7 @@ const DEMO_COACH = {
   workspaceName: 'Peak Performance Coaching',
   brandName: 'Peak Performance Coaching',
   brandTagline: 'Transform your performance',
-  accentColor: '#2D7A6F',
+  accentColor: '#9F1239',
 }
 
 async function main() {

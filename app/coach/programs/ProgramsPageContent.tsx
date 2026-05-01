@@ -294,17 +294,22 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && !error && programs.length === 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-12 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent-light)] text-xl" aria-hidden>
-            📚
-          </div>
-          <p className="text-xl font-bold tracking-[-0.03em] text-[var(--text-primary)]">Build your signature program</p>
-          <p className="mx-auto mt-2 max-w-[420px] text-[14px] leading-relaxed text-[var(--text-tertiary)]">
+        <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
+          <div className="empty-state-coach__icon" aria-hidden>📚</div>
+          <p className="empty-state-coach__title">Build your signature program</p>
+          <p className="empty-state-coach__desc">
             Create a structured program for your clients with videos, notes, and assignments. Assign it once, use it forever.
           </p>
-          <Button className="mt-8" onClick={() => setCreateOpen(true)}>
+          <Button className="empty-state-coach__cta" onClick={() => setCreateOpen(true)}>
             Create a program
           </Button>
+          <div className="mt-6 flex flex-wrap justify-center gap-4 text-[12px] text-[var(--text-quaternary)]">
+            <span>Videos &amp; notes</span>
+            <span aria-hidden>·</span>
+            <span>Structured modules</span>
+            <span aria-hidden>·</span>
+            <span>Assign to clients</span>
+          </div>
         </div>
       )}
 
