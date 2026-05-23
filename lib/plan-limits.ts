@@ -1,36 +1,41 @@
 import { createServiceClient } from '@/lib/supabase/service'
 
-/** Per-plan caps: clients, storage pools, assignment count per client. */
+/** Per-plan caps: clients, storage pools, assignment count per client, monthly lead searches. */
 export const PLAN_LIMITS = {
   free: {
     maxClients: 30,
     maxVideoStorageGb: 5,
     maxAssignmentStorageGb: 2,
     maxAssignmentsPerClient: 50,
+    maxLeadSearchesPerMonth: 0,
   },
   founding: {
     maxClients: null as number | null, // unlimited — same as pro
     maxVideoStorageGb: 50,
     maxAssignmentStorageGb: 20,
     maxAssignmentsPerClient: 999,
+    maxLeadSearchesPerMonth: 50,
   },
   starter: {
     maxClients: 15,
     maxVideoStorageGb: 10,
     maxAssignmentStorageGb: 5,
     maxAssignmentsPerClient: 50,
+    maxLeadSearchesPerMonth: 5,
   },
   pro: {
     maxClients: null as number | null, // unlimited
     maxVideoStorageGb: 50,
     maxAssignmentStorageGb: 20,
     maxAssignmentsPerClient: 999,
+    maxLeadSearchesPerMonth: 20,
   },
   scale: {
     maxClients: null as number | null, // unlimited
     maxVideoStorageGb: 200,
     maxAssignmentStorageGb: 100,
     maxAssignmentsPerClient: 999,
+    maxLeadSearchesPerMonth: 50,
   },
 } as const
 
@@ -150,6 +155,38 @@ export async function checkStorageLimit(
     usedGb,
     maxGb,
   }
+}
+
+/**
+ * Returns the coach's monthly lead-search usage + limit for the current calendar month.
+ * Used by /api/coach/leads/search to enforce caps before calling Claude API.
+ */
+export async function checkLeadSearchLimit(
+  workspaceId: string
+): Promise<{ allowed: boolean; used: number; max: number }> {
+  const service = createServiceClient()
+  const { data: sub } = await service
+    .from('subscriptions')
+    .select('plan')
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+  const plan = sub?.plan ?? 'free'
+  const max = planLimitsFor(plan).maxLeadSearchesPerMonth
+
+  const monthStart = new Date()
+  monthStart.setDate(1)
+  monthStart.setHours(0, 0, 0, 0)
+
+  const { count, error } = await service
+    .from('lead_searches')
+    .select('id', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId)
+    .gte('created_at', monthStart.toISOString())
+  if (error) {
+    return { allowed: false, used: 0, max }
+  }
+  const used = count ?? 0
+  return { allowed: used < max, used, max }
 }
 
 export async function checkAssignmentsPerClientLimit(

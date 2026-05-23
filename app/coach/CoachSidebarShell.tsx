@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CreditCard,
   LayoutDashboard,
+  Sparkles,
   Swords,
   Ticket,
   Users,
@@ -27,6 +28,7 @@ const SECTIONS: SidebarNavSection[] = [
     title: 'Clients',
     items: [
       { href: '/coach/clients', label: 'Clients', icon: <Users size={16} strokeWidth={1.5} /> },
+      { href: '/coach/leads', label: 'Lead research', icon: <Sparkles size={16} strokeWidth={1.5} /> },
       { href: '/coach/assignments', label: 'Assignments', icon: <ClipboardCheck size={16} strokeWidth={1.5} /> },
     ],
   },
