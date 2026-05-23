@@ -7,7 +7,7 @@ import { Check } from 'lucide-react'
 const plans = [
   {
     name: 'Starter',
-    price: 69,
+    price: 49,
     description: 'For coaches just getting started online.',
     features: [
       'Up to 10 students',
@@ -19,7 +19,7 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: 129,
+    price: 99,
     description: 'For coaches ready to grow their dojo.',
     popular: true,
     features: [
@@ -34,7 +34,7 @@ const plans = [
   },
   {
     name: 'Scale',
-    price: 199,
+    price: 149,
     description: 'For coaches building a training empire.',
     features: [
       'Unlimited students',

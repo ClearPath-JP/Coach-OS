@@ -17,8 +17,8 @@ export function AppLoadingScreen() {
       <div className="app-logo-pulse">
         <ClearPathLogo size={40} />
       </div>
-      <p className="mt-3 text-[15px] font-semibold tracking-wide text-[var(--text-primary)]">
-        SENSEI<span className="text-[var(--accent)]"> APP</span>
+      <p className="mt-3 text-[15px] font-semibold tracking-[0.12em] text-[var(--text-primary)]">
+        KIN<span style={{ color: '#e8943a' }}>DO</span>
       </p>
     </div>
   )

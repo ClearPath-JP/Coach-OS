@@ -14,9 +14,9 @@ function isValidEmail(v: string) {
 type LoginRole = 'coach' | 'student'
 type ViewState = 'select' | 'form'
 
-/* ───────────────── Cinematic Canvas Overlay ───────────────── */
+/* ───────────────── Dawn Dojo Canvas — calm dust motes only ───────────────── */
 
-function CinematicCanvas() {
+function DawnDojoCanvas() {
   const ref = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -29,15 +29,8 @@ function CinematicCanvas() {
     let w = window.innerWidth
     let h = window.innerHeight
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvas.width = w * dpr
-    canvas.height = h * dpr
-    canvas.style.width = w + 'px'
-    canvas.style.height = h + 'px'
-    ctx.scale(dpr, dpr)
 
-    const handleResize = () => {
-      w = window.innerWidth
-      h = window.innerHeight
+    const sizeCanvas = () => {
       canvas.width = w * dpr
       canvas.height = h * dpr
       canvas.style.width = w + 'px'
@@ -45,107 +38,33 @@ function CinematicCanvas() {
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.scale(dpr, dpr)
     }
+    sizeCanvas()
+
+    const handleResize = () => {
+      w = window.innerWidth
+      h = window.innerHeight
+      sizeCanvas()
+    }
     window.addEventListener('resize', handleResize, { passive: true })
 
-    /* ── Fire zone — matched to the campfire in the image ── */
-    const fireX = () => w * 0.53
-    const fireY = () => h * 0.48
-
-    /* ── Embers — rise from fire zone ── */
-    type Ember = {
+    type Mote = {
       x: number; y: number; r: number; speed: number
-      opacity: number; phase: number; life: number; maxLife: number
-      drift: number; color: [number, number, number]
+      drift: number; phase: number; opacity: number
     }
 
-    function spawnEmber(): Ember {
-      const angle = (Math.random() - 0.5) * 0.8
-      return {
-        x: fireX() + (Math.random() - 0.5) * w * 0.08,
-        y: fireY() + (Math.random() - 0.5) * h * 0.04,
-        r: 0.6 + Math.random() * 2,
-        speed: 0.25 + Math.random() * 0.7,
-        opacity: 0.35 + Math.random() * 0.55,
-        phase: Math.random() * Math.PI * 2,
-        life: 0,
-        maxLife: 200 + Math.random() * 300,
-        drift: Math.sin(angle) * 0.35,
-        color: Math.random() > 0.35
-          ? [255, 130 + Math.random() * 70, 20 + Math.random() * 40]
-          : [255, 190 + Math.random() * 55, 60 + Math.random() * 50],
-      }
-    }
-
-    const embers: Ember[] = Array.from({ length: 50 }, spawnEmber)
-
-    /* ── Fireflies — glow in the grass (lower 40%) ── */
-    type Firefly = {
-      x: number; y: number; baseX: number; baseY: number
-      r: number; phase: number; speed: number; brightness: number
-    }
-
-    const fireflies: Firefly[] = Array.from({ length: 22 }, () => {
-      const x = Math.random() * w
-      const y = h * 0.6 + Math.random() * h * 0.35
-      return {
-        x, y, baseX: x, baseY: y,
-        r: 1 + Math.random() * 1.2,
-        phase: Math.random() * Math.PI * 2,
-        speed: 0.25 + Math.random() * 0.6,
-        brightness: 0.15 + Math.random() * 0.4,
-      }
-    })
-
-    /* ── Floating ash ── */
-    type Ash = {
-      x: number; y: number; r: number; speed: number
-      opacity: number; rotation: number; rotSpeed: number; phase: number
-    }
-
-    const ashes: Ash[] = Array.from({ length: 12 }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: 1 + Math.random() * 2,
-      speed: 0.08 + Math.random() * 0.2,
-      opacity: 0.04 + Math.random() * 0.08,
-      rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.015,
-      phase: Math.random() * Math.PI * 2,
-    }))
-
-    /* ── Fog layers ── */
-    type Fog = { x: number; y: number; width: number; height: number; speed: number; opacity: number }
-
-    const fogLayers: Fog[] = Array.from({ length: 5 }, (_, i) => ({
-      x: Math.random() * w * 2 - w * 0.5,
-      y: h * 0.18 + (i / 5) * h * 0.35,
-      width: w * 0.5 + Math.random() * w * 0.4,
-      height: h * 0.06 + Math.random() * h * 0.05,
-      speed: 0.06 + Math.random() * 0.12,
-      opacity: 0.012 + Math.random() * 0.02,
-    }))
-
-    /* ── Grass blades — animated SVG-style blades at the bottom ── */
-    type Blade = {
-      x: number; baseY: number; height: number; width: number
-      phase: number; swayAmount: number; color: string
-    }
-
-    const grassBlades: Blade[] = Array.from({ length: 80 }, () => {
-      const brightness = 20 + Math.random() * 40
-      const greenShift = Math.random() > 0.5
+    function spawnMote(initial = false): Mote {
       return {
         x: Math.random() * w,
-        baseY: h * 0.78 + Math.random() * h * 0.22,
-        height: 12 + Math.random() * 35,
-        width: 1 + Math.random() * 2,
+        y: initial ? Math.random() * h : h + Math.random() * 40,
+        r: 0.5 + Math.random() * 1.4,
+        speed: 0.08 + Math.random() * 0.25,
+        drift: (Math.random() - 0.5) * 0.15,
         phase: Math.random() * Math.PI * 2,
-        swayAmount: 2 + Math.random() * 5,
-        color: greenShift
-          ? `rgba(${40 + Math.random() * 30}, ${brightness + 30}, ${20 + Math.random() * 15}, ${0.15 + Math.random() * 0.2})`
-          : `rgba(${brightness}, ${brightness + 10}, ${15 + Math.random() * 10}, ${0.1 + Math.random() * 0.15})`,
+        opacity: 0.15 + Math.random() * 0.35,
       }
-    })
+    }
+
+    const motes: Mote[] = Array.from({ length: 22 }, () => spawnMote(true))
 
     let animId: number
     let last = 0
@@ -161,109 +80,25 @@ function CinematicCanvas() {
 
       ctx!.clearRect(0, 0, w, h)
 
-      /* ── Fire glow — pulsing ── */
-      const glowPulse = 0.07 + Math.sin(t * 0.0018) * 0.025 + Math.sin(t * 0.004) * 0.015
-      const glowGrad = ctx!.createRadialGradient(fireX(), fireY(), 0, fireX(), fireY(), w * 0.22)
-      glowGrad.addColorStop(0, `rgba(255, 140, 40, ${glowPulse})`)
-      glowGrad.addColorStop(0.35, `rgba(255, 90, 15, ${glowPulse * 0.35})`)
-      glowGrad.addColorStop(1, 'rgba(255, 60, 0, 0)')
-      ctx!.fillStyle = glowGrad
-      ctx!.fillRect(0, 0, w, h)
+      for (let i = 0; i < motes.length; i++) {
+        const m = motes[i]
+        if (!m) continue
+        m.y -= m.speed
+        m.x += m.drift + Math.sin(t * 0.0006 + m.phase) * 0.2
 
-      /* ── Fog ── */
-      for (const fog of fogLayers) {
-        fog.x += fog.speed
-        if (fog.x > w + fog.width * 0.5) fog.x = -fog.width
-        const fogGrad = ctx!.createRadialGradient(
-          fog.x + fog.width / 2, fog.y, 0,
-          fog.x + fog.width / 2, fog.y, fog.width / 2,
-        )
-        fogGrad.addColorStop(0, `rgba(160, 140, 100, ${fog.opacity})`)
-        fogGrad.addColorStop(1, 'rgba(160, 140, 100, 0)')
-        ctx!.fillStyle = fogGrad
-        ctx!.fillRect(fog.x, fog.y - fog.height, fog.width, fog.height * 2)
-      }
+        if (m.y < -10) { motes[i] = spawnMote(); continue }
 
-      /* ── Grass blades — sway in wind ── */
-      const windCycle = Math.sin(t * 0.0008) * 0.6 + Math.sin(t * 0.0013) * 0.4
-      for (const blade of grassBlades) {
-        const sway = Math.sin(t * 0.0015 + blade.phase) * blade.swayAmount * windCycle
-        ctx!.beginPath()
-        ctx!.moveTo(blade.x, blade.baseY)
-        // Quadratic curve — base stays fixed, tip sways
-        ctx!.quadraticCurveTo(
-          blade.x + sway * 0.5, blade.baseY - blade.height * 0.6,
-          blade.x + sway, blade.baseY - blade.height,
-        )
-        ctx!.strokeStyle = blade.color
-        ctx!.lineWidth = blade.width
-        ctx!.lineCap = 'round'
-        ctx!.stroke()
-      }
-
-      /* ── Embers ── */
-      for (let i = 0; i < embers.length; i++) {
-        const e = embers[i]
-        if (!e) continue
-        e.life++
-        e.y -= e.speed
-        e.x += e.drift + Math.sin(t * 0.0012 + e.phase) * 0.35
-
-        const lifeFrac = e.life / e.maxLife
-        const fadeIn = Math.min(lifeFrac * 6, 1)
-        const fadeOut = lifeFrac > 0.65 ? 1 - (lifeFrac - 0.65) / 0.35 : 1
-        const alpha = e.opacity * fadeIn * fadeOut
-
-        if (e.life > e.maxLife) { embers[i] = spawnEmber(); continue }
-
-        const glowR = e.r * 3.5
-        const emberGlow = ctx!.createRadialGradient(e.x, e.y, 0, e.x, e.y, glowR)
-        emberGlow.addColorStop(0, `rgba(${e.color[0]!}, ${e.color[1]!}, ${e.color[2]!}, ${alpha * 0.35})`)
-        emberGlow.addColorStop(1, `rgba(${e.color[0]!}, ${e.color[1]!}, ${e.color[2]!}, 0)`)
-        ctx!.fillStyle = emberGlow
-        ctx!.fillRect(e.x - glowR, e.y - glowR, glowR * 2, glowR * 2)
+        const glowR = m.r * 4
+        const grad = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, glowR)
+        grad.addColorStop(0, `rgba(245, 230, 200, ${m.opacity * 0.25})`)
+        grad.addColorStop(1, 'rgba(245, 230, 200, 0)')
+        ctx!.fillStyle = grad
+        ctx!.fillRect(m.x - glowR, m.y - glowR, glowR * 2, glowR * 2)
 
         ctx!.beginPath()
-        ctx!.arc(e.x, e.y, e.r, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${e.color[0]!}, ${e.color[1]!}, ${e.color[2]!}, ${alpha})`
+        ctx!.arc(m.x, m.y, m.r, 0, Math.PI * 2)
+        ctx!.fillStyle = `rgba(248, 238, 215, ${m.opacity})`
         ctx!.fill()
-      }
-
-      /* ── Fireflies ── */
-      for (const f of fireflies) {
-        const pulse = (Math.sin(t * 0.001 * f.speed + f.phase) + 1) / 2
-        const alpha = f.brightness * pulse
-        f.x = f.baseX + Math.sin(t * 0.0004 + f.phase) * 18
-        f.y = f.baseY + Math.cos(t * 0.0006 + f.phase * 1.3) * 10
-
-        const gR = f.r * 5
-        const ffGlow = ctx!.createRadialGradient(f.x, f.y, 0, f.x, f.y, gR)
-        ffGlow.addColorStop(0, `rgba(190, 240, 90, ${alpha * 0.25})`)
-        ffGlow.addColorStop(1, 'rgba(190, 240, 90, 0)')
-        ctx!.fillStyle = ffGlow
-        ctx!.fillRect(f.x - gR, f.y - gR, gR * 2, gR * 2)
-
-        ctx!.beginPath()
-        ctx!.arc(f.x, f.y, f.r, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(210, 250, 130, ${alpha})`
-        ctx!.fill()
-      }
-
-      /* ── Floating ash ── */
-      for (const a of ashes) {
-        a.y -= a.speed
-        a.x += Math.sin(t * 0.0007 + a.phase) * 0.25 + windCycle * 0.15
-        a.rotation += a.rotSpeed
-        if (a.y < -20) { a.y = h + 20; a.x = Math.random() * w }
-
-        ctx!.save()
-        ctx!.translate(a.x, a.y)
-        ctx!.rotate(a.rotation)
-        ctx!.beginPath()
-        ctx!.ellipse(0, 0, a.r, a.r * 0.35, 0, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(160, 140, 110, ${a.opacity})`
-        ctx!.fill()
-        ctx!.restore()
       }
     }
 
@@ -289,7 +124,7 @@ function CinematicCanvas() {
 /** Katana icon for Sensei role */
 function KatanaIcon({ glow }: { glow?: boolean }) {
   return (
-    <svg viewBox="0 0 64 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 48, height: 90 }}>
+    <svg viewBox="0 0 64 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 58, height: 108 }}>
       <defs>
         <linearGradient id="katana-blade" x1="32" y1="8" x2="32" y2="75" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor={glow ? 'rgba(240,230,200,0.9)' : 'rgba(200,195,180,0.5)'} />
@@ -326,7 +161,7 @@ function KatanaIcon({ glow }: { glow?: boolean }) {
 /** Shield / fist icon for Student role */
 function StudentIcon({ glow }: { glow?: boolean }) {
   return (
-    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 56, height: 56 }}>
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 68, height: 68 }}>
       <defs>
         {glow && (
           <filter id="student-glow">
@@ -381,23 +216,23 @@ function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
   const [hovered, setHovered] = useState<LoginRole | null>(null)
 
   const cardStyle = (r: LoginRole): React.CSSProperties => ({
-    background: hovered === r ? 'rgba(8,8,10,0.75)' : 'rgba(8,8,10,0.65)',
-    backdropFilter: 'blur(24px) saturate(1.3)',
-    WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
-    border: `1px solid ${hovered === r ? 'rgba(232,168,72,0.4)' : 'rgba(200,170,100,0.15)'}`,
-    borderRadius: 16,
-    padding: '32px 28px 24px',
+    background: hovered === r ? 'rgba(15,15,18,0.55)' : 'rgba(15,15,18,0.42)',
+    backdropFilter: 'blur(24px) saturate(1.4)',
+    WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+    border: `1px solid ${hovered === r ? 'rgba(232,168,72,0.55)' : 'rgba(220,190,120,0.28)'}`,
+    borderRadius: 18,
+    padding: '40px 32px 30px',
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
     transition: 'all 0.35s ease',
     transform: hovered === r ? 'translateY(-6px) scale(1.02)' : 'translateY(0) scale(1)',
     boxShadow: hovered === r
-      ? '0 0 40px rgba(232,168,72,0.12), 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)'
-      : '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02)',
-    width: 'clamp(140px, 18vw, 180px)',
+      ? '0 0 50px rgba(232,168,72,0.18), 0 14px 50px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)'
+      : '0 10px 36px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04)',
+    width: 'clamp(180px, 22vw, 230px)',
   })
 
   return (
@@ -412,32 +247,6 @@ function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
         animationDelay: '0.3s',
       }}
     >
-      {/* Title */}
-      <div style={{ textAlign: 'center' }}>
-        <h1
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(24px, 3.5vw, 36px)',
-            fontWeight: 500,
-            letterSpacing: '0.04em',
-            color: 'rgba(240,237,232,0.95)',
-            margin: 0,
-            textShadow: '0 2px 16px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.3)',
-          }}
-        >
-          Choose Your Path
-        </h1>
-        <div
-          aria-hidden
-          style={{
-            height: 1,
-            width: 140,
-            margin: '16px auto 0',
-            background: 'linear-gradient(90deg, transparent, rgba(232,168,72,0.35), transparent)',
-          }}
-        />
-      </div>
-
       {/* Two role cards */}
       <div style={{ display: 'flex', gap: 'clamp(20px, 4vw, 48px)', alignItems: 'center' }}>
         {/* Sensei card */}
@@ -449,7 +258,7 @@ function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
           style={cardStyle('coach')}
           aria-label="Sign in as Sensei (Coach)"
         >
-          <div style={{ height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <KatanaIcon glow={hovered === 'coach'} />
           </div>
           <div
@@ -502,7 +311,7 @@ function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
           style={cardStyle('student')}
           aria-label="Sign in as Student (Client)"
         >
-          <div style={{ height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <StudentIcon glow={hovered === 'student'} />
           </div>
           <div
@@ -867,26 +676,26 @@ export function DualRoleLoginPage() {
         aria-hidden
         style={{
           position: 'absolute', inset: 0, zIndex: 0,
-          backgroundImage: 'url(/images/login-hero.jpg)',
+          backgroundImage: 'url(/images/newlogin.jpg)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center 40%',
+          backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
         }}
       />
 
-      {/* Dark overlay */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'linear-gradient(180deg, rgba(5,5,5,0.45) 0%, rgba(5,5,5,0.3) 30%, rgba(5,5,5,0.35) 55%, rgba(5,5,5,0.7) 100%)' }} />
+      {/* Soft overlay — lets the warm dojo light breathe through */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'linear-gradient(180deg, rgba(8,8,10,0.35) 0%, rgba(8,8,10,0.18) 45%, rgba(5,5,8,0.45) 100%)' }} />
 
-      {/* Vignette */}
-      <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.55) 100%)' }} />
+      {/* Subtle vignette */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%)' }} />
 
-      {/* ═══ CINEMATIC CANVAS ═══ */}
-      <CinematicCanvas />
+      {/* ═══ DUST MOTES ═══ */}
+      <DawnDojoCanvas />
 
       {/* ═══ TOP BAR ═══ */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 500, letterSpacing: '0.06em', color: 'rgba(240,237,232,0.92)', lineHeight: 1, textShadow: '0 2px 10px rgba(0,0,0,0.6)' }}>
-          SENSEI<span style={{ color: '#e8943a' }}> APP</span>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500, letterSpacing: '0.12em', color: 'rgba(240,237,232,0.95)', lineHeight: 1, textShadow: '0 2px 10px rgba(0,0,0,0.6)' }}>
+          KIN<span style={{ color: '#e8943a' }}>DO</span>
         </div>
         <p style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(200,190,170,0.5)', textShadow: '0 1px 6px rgba(0,0,0,0.6)', margin: 0 }}>
           FOCUS. TRAIN. EVOLVE.

@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       NextResponse.json(
         {
           error:
-            'This account is not a coach account. Client? Use “Client sign-in” below or /client-login.',
+            'This account is not a coach account. Please use the Student option on the sign-in page.',
         },
         { status: 403 }
       )

@@ -153,7 +153,7 @@ export function SubscriptionPageContent({
 
       {success && (
         <div className="rounded-xl border border-[var(--color-success)] bg-[var(--color-success-light)] px-4 py-3 text-[15px] text-[var(--color-success)]">
-          Your subscription is active. Welcome to Sensei App!
+          Your subscription is active. Welcome to Kindo!
         </div>
       )}
       {cancelled && (

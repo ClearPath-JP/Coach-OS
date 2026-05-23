@@ -21,14 +21,16 @@ export function Footer() {
     <footer className="border-t border-[var(--border-subtle)] bg-[var(--bg-app)]">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Brand col */}
+          {/* Brand col — KINDO wordmark */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center">
-                <span className="text-[var(--text-on-accent)] font-bold text-sm">S</span>
-              </div>
-              <span className="font-[family-name:var(--font-display)] text-lg font-medium text-[var(--text-primary)]">
-                Sensei App
+            <div className="mb-4">
+              <span
+                className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-[0.12em]"
+                style={{ lineHeight: 1 }}
+                aria-label="Kindo"
+              >
+                <span className="text-[var(--text-primary)]">KIN</span>
+                <span style={{ color: '#e8943a' }}>DO</span>
               </span>
             </div>
             <p className="text-sm text-[var(--text-tertiary)] max-w-xs leading-relaxed">
@@ -60,7 +62,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-[var(--border-subtle)] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[var(--text-quaternary)]">
-            &copy; {new Date().getFullYear()} Sensei App. All rights reserved.
+            &copy; {new Date().getFullYear()} Kindo. All rights reserved.
           </p>
           <p className="text-xs text-[var(--text-quaternary)]">
             Built by FoundOS

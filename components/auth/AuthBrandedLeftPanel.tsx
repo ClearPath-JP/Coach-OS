@@ -117,7 +117,7 @@ export function AuthBrandedLeftPanel({
           }}
         >
           <p className="text-[15px] italic leading-[1.65] text-white/90">
-            &ldquo;ClearPath changed how I run my business. My clients feel more supported than ever.&rdquo;
+            &ldquo;Kindo changed how I run my business. My clients feel more supported than ever.&rdquo;
           </p>
           <p className="mt-3 text-[13px] font-medium text-white/70">— Sarah M., Performance Coach</p>
         </div>
@@ -167,7 +167,7 @@ export function AuthBrandedLeftPanel({
         }}
       >
         <p className="text-[14px] italic leading-[1.6] text-white/90">
-          &ldquo;ClearPath changed how I run my business. My clients feel more supported than ever.&rdquo;
+          &ldquo;Kindo changed how I run my business. My clients feel more supported than ever.&rdquo;
         </p>
         <p className="mt-2 text-[12px] text-white/70">— Sarah M., Performance Coach</p>
       </div>

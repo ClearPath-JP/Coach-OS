@@ -1,10 +1,7 @@
 # Supabase project config — run `supabase link --project-ref YOUR_REF` to connect.
 # See: https://supabase.com/docs/guides/cli/managing-environments
 
-[project]
-# Set automatically when you run: supabase link --project-ref <project-ref>
-# Find your project ref in the dashboard URL: https://supabase.com/dashboard/project/<project-ref>
-# project_id = ""
+project_id = "owiqourfyjxwveopijrg"
 
 [api]
 enabled = true

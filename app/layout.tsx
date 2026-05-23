@@ -22,7 +22,7 @@ const notoSerifJP = Noto_Serif_JP({
 })
 
 export const metadata: Metadata = {
-  title: 'Sensei App — Coaching platform & client portal',
+  title: 'Kindo — Coaching platform & client portal',
   description: 'The coaching platform for martial arts and strength conditioning.',
 }
 

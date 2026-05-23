@@ -5,11 +5,14 @@ import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { signupSchema } from '@/lib/validations'
 
 /**
- * POST /api/auth/signup — coach sign-up with auto-confirm.
- * Creates the auth user (confirming email automatically via service role),
- * signs them in, and redirects to /subscribe.
+ * POST /api/auth/signup — coach sign-up.
+ * In dev or when no email provider is configured, auto-confirms and signs in.
+ * In prod with RESEND_API_KEY set, requires email verification before sign-in.
  */
 export async function POST(request: Request) {
+  // Auto-confirm only when we can't send a verification email (dev or no Resend in prod)
+  const shouldAutoConfirm =
+    process.env.NODE_ENV === 'development' || !process.env.RESEND_API_KEY
   try {
     if (process.env.NODE_ENV !== 'development') {
       const ip =
@@ -68,10 +71,19 @@ export async function POST(request: Request) {
       }
     }
 
-    // No session — email confirmation is likely required.
-    // Use service role to auto-confirm and sign in.
+    // No session — email confirmation is required.
+    // If we can't send a verification email, fall back to auto-confirm so signup isn't broken.
+    if (!shouldAutoConfirm && signUpData.user?.id) {
+      // Production with Resend: verification email already sent by Supabase. Tell user to check email.
+      return NextResponse.json({
+        data: {
+          redirect: '/login?verify=1',
+          message: 'Check your email to confirm your account, then sign in.',
+        },
+      })
+    }
     if (signUpData.user?.id) {
-      // User was created but not confirmed — confirm them
+      // Dev / no-Resend prod: auto-confirm and sign in
       await service.auth.admin.updateUserById(signUpData.user.id, {
         email_confirm: true,
       })
@@ -81,7 +93,7 @@ export async function POST(request: Request) {
       const { error: adminErr } = await service.auth.admin.createUser({
         email: emailLower,
         password,
-        email_confirm: true,
+        email_confirm: shouldAutoConfirm,
         user_metadata: { full_name: fullName },
       })
       if (adminErr) {

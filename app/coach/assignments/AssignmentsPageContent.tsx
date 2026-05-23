@@ -326,7 +326,7 @@ export function AssignmentsPageContent() {
             </p>
           </div>
           {queueRows.length === 0 ? (
-            <Card className="border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-10 text-center shadow-[var(--shadow-xs)]">
+            <Card className="border border-[var(--border-default)] bg-[var(--bg-subtle)] p-10 text-center shadow-[var(--shadow-xs)]">
               <p className="text-[20px]" aria-hidden>
                 🎉
               </p>

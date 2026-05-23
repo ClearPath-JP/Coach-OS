@@ -25,7 +25,6 @@ const AUTH_PUBLIC_PATHS = [
   '/login',
   '/forgot-password',
   '/signup',
-  '/client-login',
   '/privacy',
   '/terms',
 ] as const
@@ -39,7 +38,8 @@ function isLegalStaticPath(p: string): boolean {
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  // Root: send guests to login immediately (same as app/page.tsx; avoids extra RSC work).
+  // Root: anonymous visitors see the public landing page (app/page.tsx).
+  // Authenticated users get sent to their portal.
   if (pathname === '/' && request.method === 'GET') {
     const response = nextWithPathname(request)
     let supabase
@@ -53,11 +53,25 @@ export async function proxy(request: NextRequest) {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
+    // Anonymous → serve the public landing page
     if (!user || authError) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      return response
     }
+    // Admin → admin overview
     if (await isPlatformAdmin(supabase, user)) {
       return NextResponse.redirect(new URL('/admin/overview', request.url))
+    }
+    // Coach or client → their respective portal
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role === 'coach') {
+      return NextResponse.redirect(new URL('/coach/dashboard', request.url))
+    }
+    if (profile?.role === 'client') {
+      return NextResponse.redirect(new URL('/client/portal', request.url))
     }
     return response
   }
@@ -74,7 +88,7 @@ export async function proxy(request: NextRequest) {
       let key: string
       let windowMs: number
       let max: number
-      if (pathname === '/login' || pathname === '/client-login') {
+      if (pathname === '/login') {
         key = `auth-page-login:v2:${ip}`
         windowMs = 15 * 60_000
         max = 120
@@ -123,15 +137,6 @@ export async function proxy(request: NextRequest) {
       }
 
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-
-      if (pathname === '/client-login') {
-        if (profile?.role === 'client') {
-          return NextResponse.redirect(new URL('/client/portal', request.url))
-        }
-        if (profile?.role === 'coach') {
-          return NextResponse.redirect(new URL('/coach/dashboard', request.url))
-        }
-      }
 
       if (pathname === '/login' || pathname === '/signup') {
         if (profile?.role === 'client') {
@@ -424,7 +429,6 @@ export const config = {
     '/login',
     '/forgot-password',
     '/signup',
-    '/client-login',
     '/privacy',
     '/terms',
     '/subscribe',

@@ -482,9 +482,9 @@ export function PaymentsPageContent() {
                     key: 'actions',
                     header: 'Actions',
                     render: (p) => (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-center">
                         <Button variant="secondary" size="xs" onClick={() => openEdit(p)}>Edit</Button>
-                        <Button variant="destructive-secondary" size="xs" onClick={() => handleDelete(p)}>Delete</Button>
+                        <button type="button" onClick={() => handleDelete(p)} className="text-[12px] text-[var(--text-quaternary)] hover:text-red-400 transition-colors px-1">Delete</button>
                       </div>
                     ),
                   },
@@ -513,13 +513,11 @@ export function PaymentsPageContent() {
                     <p className="mt-1 text-[13px] text-[var(--color-muted)]">Ref: {p.payment_reference}</p>
                   ) : null}
                   {p.notes ? <p className="mt-1 text-[13px] text-[var(--color-muted)]">{p.notes}</p> : null}
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3 flex gap-2 items-center">
                     <Button variant="secondary" type="button" className="min-h-[44px] flex-1" onClick={() => openEdit(p)}>
                       Edit
                     </Button>
-                    <Button variant="destructive-secondary" type="button" className="min-h-[44px] flex-1" onClick={() => handleDelete(p)}>
-                      Delete
-                    </Button>
+                    <button type="button" onClick={() => handleDelete(p)} className="text-[13px] text-[var(--text-quaternary)] hover:text-red-400 transition-colors px-3 min-h-[44px]">Delete</button>
                   </div>
                 </li>
               ))}

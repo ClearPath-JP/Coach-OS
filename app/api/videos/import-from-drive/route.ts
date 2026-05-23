@@ -52,7 +52,7 @@ function n8nAuth(request: Request): boolean {
  * - **Coach session:** no secret; uses workspace’s saved `google_drive_import_folder_id`.
  * - **n8n / automation:** header `X-Clearpath-Secret` = `N8N_CALLBACK_SECRET`; body must include `folderId`
  *   (the Drive folder the file lives in, usually `parents[0]`). Resolves workspace + coach so one workflow
- *   can serve many coaches, each with their own folder ID saved in Sensei App.
+ *   can serve many coaches, each with their own folder ID saved in Kindo.
  */
 export async function POST(request: Request) {
   try {
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       const resolved = await resolveWorkspaceForDriveFolder(service, fid)
       if (!resolved) {
         return NextResponse.json(
-          { error: 'No workspace registered for this Drive folder — coach must save folder ID in Sensei App first' },
+          { error: 'No workspace registered for this Drive folder — coach must save folder ID in Kindo first' },
           { status: 404 }
         )
       }

@@ -101,9 +101,9 @@ export default async function CoachLayout({
 
   const brandName = initialWorkspaceSettings.brandName
     || initialWorkspaceSettings.workspaceDisplayName
-    || 'Sensei App'
+    || 'Kindo'
 
-  const accentStyle = `:root { --cp-accent: ${resolvedCpAccent}; --accent: ${resolvedCpAccent}; }`
+  const accentStyle = `:root, html[data-theme='dark'], html[data-theme='light'] { --cp-accent: ${resolvedCpAccent}; --accent: ${resolvedCpAccent}; }`
 
   return (
     <WorkspaceProvider

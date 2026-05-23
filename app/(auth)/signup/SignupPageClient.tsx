@@ -163,9 +163,9 @@ export function SignupPageClient() {
           <div>
             <div style={{
               fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500,
-              letterSpacing: '0.04em', color: 'rgba(237,237,239,0.7)', lineHeight: 1,
+              letterSpacing: '0.12em', color: 'rgba(237,237,239,0.7)', lineHeight: 1,
             }}>
-              SENSEI <span style={{ color: 'var(--accent)' }}>APP</span>
+              KIN<span style={{ color: '#e8943a' }}>DO</span>
             </div>
           </div>
 
@@ -231,9 +231,9 @@ export function SignupPageClient() {
           <div className="mb-6 text-center lg:hidden">
             <div style={{
               fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500,
-              letterSpacing: '0.04em', color: 'var(--text-primary)', lineHeight: 1,
+              letterSpacing: '0.12em', color: 'var(--text-primary)', lineHeight: 1,
             }}>
-              SENSEI <span style={{ color: 'var(--accent)' }}>APP</span>
+              KIN<span style={{ color: '#e8943a' }}>DO</span>
             </div>
           </div>
 

@@ -17,13 +17,14 @@ export function PublicNav() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-app)]/80 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl flex items-center justify-between px-6 h-16">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center">
-            <span className="text-[var(--text-on-accent)] font-bold text-sm">S</span>
-          </div>
-          <span className="font-[family-name:var(--font-display)] text-lg font-medium text-[var(--text-primary)] tracking-tight">
-            Sensei App
+        {/* Logo — KINDO wordmark */}
+        <Link href="/" className="flex items-center group" aria-label="Kindo home">
+          <span
+            className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-[0.12em]"
+            style={{ lineHeight: 1 }}
+          >
+            <span className="text-[var(--text-primary)]">KIN</span>
+            <span style={{ color: '#e8943a' }}>DO</span>
           </span>
         </Link>
 

@@ -23,8 +23,8 @@ export function AuthMarketingHeroPanel() {
             className="login-hero-fade-up mb-10 text-left text-[clamp(15px,1.2vw,18px)] tracking-[-0.02em]"
             style={{ animationDelay: '0.05s' }}
           >
-            <span className="font-bold text-white">ClearPath</span>
-            <span className="font-light text-cp-sky"> Solutions</span>
+            <span className="font-bold text-white">Sensei</span>
+            <span className="font-light text-cp-sky"> App</span>
           </p>
 
           <h2
@@ -64,26 +64,10 @@ export function AuthMarketingHeroPanel() {
         </div>
 
         <div
-          className="login-hero-fade-up mt-10 flex flex-wrap items-center gap-4 text-[13px] text-white/60"
+          className="login-hero-fade-up mt-10 text-[13px] text-white/60"
           style={{ animationDelay: '0.65s' }}
         >
-          <div className="flex items-center">
-            {AVATAR_INITIALS.map((initials, i) => (
-              <span
-                key={initials}
-                className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-[#0d2444] bg-white/20 text-[11px] font-semibold text-white/90"
-                style={{ marginLeft: i === 0 ? 0 : -8 }}
-                aria-hidden
-              >
-                {initials}
-              </span>
-            ))}
-          </div>
-          <span className="min-w-0">Trusted by 2,400+ coaches worldwide</span>
-          <span className="flex items-center gap-1.5 whitespace-nowrap" aria-hidden>
-            <span className="text-amber-300">★★★★★</span>
-            <span>4.9/5</span>
-          </span>
+          <span className="min-w-0">Built for coaches who train champions</span>
         </div>
       </div>
     </div>

@@ -468,7 +468,7 @@ export function CoachClientsPageContent() {
             <div className="empty-state-coach__icon" aria-hidden>👥</div>
             <p className="empty-state-coach__title">Add your first client</p>
             <p className="empty-state-coach__desc">
-              Invite clients to access their programs, schedule sessions, and track progress through Sensei App.
+              Invite clients to access their programs, schedule sessions, and track progress through Kindo.
             </p>
             <Button className="empty-state-coach__cta" onClick={() => setAddModalOpen(true)}>
               Add first client

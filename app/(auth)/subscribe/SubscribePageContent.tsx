@@ -82,8 +82,8 @@ export function SubscribePageContent({ userEmail }: Props) {
     <div className="flex min-h-[100dvh] flex-col items-center bg-[var(--bg-app)] px-6 pb-20 pt-12">
       {/* Wordmark */}
       <div className="mb-12 text-center">
-        <div className="font-display text-[22px] font-medium leading-none tracking-[0.01em] text-[var(--text-primary)]">
-          SENSEI<span className="text-[var(--accent)]"> APP</span>
+        <div className="font-display text-[22px] font-medium leading-none tracking-[0.12em] text-[var(--text-primary)]">
+          KIN<span style={{ color: '#e8943a' }}>DO</span>
         </div>
         <p className="mt-1.5 text-[13px] text-[var(--text-tertiary)]">
           Built for coaches. Designed for growth.

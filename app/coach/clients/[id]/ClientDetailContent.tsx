@@ -570,9 +570,9 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Sessions</p>
-          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{client.rewards?.assignments_total != null ? daysAsClient : '—'}</p>
-          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">total</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Member</p>
+          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{daysAsClient}</p>
+          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">days</p>
         </div>
         <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Assignments</p>

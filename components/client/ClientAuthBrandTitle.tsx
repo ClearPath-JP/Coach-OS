@@ -10,7 +10,7 @@ export function ClientAuthBrandTitle({
 }: {
   className?: string
 }) {
-  const [label, setLabel] = useState('ClearPath')
+  const [label, setLabel] = useState('Kindo')
 
   useEffect(() => {
     let cancelled = false

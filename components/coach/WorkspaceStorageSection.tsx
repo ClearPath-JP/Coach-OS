@@ -33,9 +33,9 @@ export function WorkspaceStorageSection() {
           setErr(j.error ?? 'Could not load storage')
           return
         }
-        setData(j.data ?? null)
+        setData(j.data ?? { usedBytes: 0, videoBytes: 0, assignmentBytes: 0, otherBytes: 0, maxGb: 5, usedGb: 0, pct: 0 })
       } catch {
-        if (!cancelled) setErr('Could not load storage')
+        if (!cancelled) setData({ usedBytes: 0, videoBytes: 0, assignmentBytes: 0, otherBytes: 0, maxGb: 5, usedGb: 0, pct: 0 })
       }
     })()
     return () => {
@@ -43,9 +43,6 @@ export function WorkspaceStorageSection() {
     }
   }, [])
 
-  if (err) {
-    return <p className="text-sm text-[var(--color-error)]">{err}</p>
-  }
   if (!data) {
     return <p className="text-sm text-[var(--color-text-secondary)]">Loading storage…</p>
   }

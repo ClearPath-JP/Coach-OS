@@ -34,7 +34,7 @@ const MOBILE_DARK_WARM =
 export default function OnboardingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen md:min-h-0 lg:grid-cols-[52fr_48fr]">
-      <aside className="hidden lg:contents" aria-label="Getting started with Sensei App">
+      <aside className="hidden lg:contents" aria-label="Getting started with Kindo">
         <AuthBrandedLeftPanel
           variant="coach-login-light"
           headline={ONBOARDING_HEADLINE}

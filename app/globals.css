@@ -258,14 +258,14 @@ html[data-theme='dark'] {
   --bg-muted: #1C1B19;
   --bg-emphasis: #252320;
 
-  /* Accent — ember gold, used surgically (active nav, key CTA only) */
-  --accent: #D4943C;
-  --accent-rgb: 212, 148, 60;
-  --accent-dark: #B07828;
-  --accent-light: #161008;
-  --accent-muted: #1E1710;
-  --accent-hover: #E0A850;
-  --accent-surface: rgba(212, 148, 60, 0.06);
+  /* Accent — KINDO amber, used surgically (active nav, key CTA only) */
+  --accent: #e8943a;
+  --accent-rgb: 232, 148, 58;
+  --accent-dark: #B87528;
+  --accent-light: #181009;
+  --accent-muted: #1F1812;
+  --accent-hover: #f0a854;
+  --accent-surface: rgba(232, 148, 58, 0.06);
 
   /* Text — warm silver, not cold zinc */
   --text-primary: #E8E6E3;

@@ -144,15 +144,26 @@ export async function seedDemoWorkspaceContent(admin: SupabaseClient, workspaceI
   const clientAuthIdsByEmail: Record<string, string> = {}
 
   for (const client of CLIENTS) {
+    let clientProfileId: string
+
     const { data: authUser, error: uErr } = await admin.auth.admin.createUser({
       email: client.email.toLowerCase(),
       password: 'Demo1234!',
       email_confirm: true,
       user_metadata: { role: 'client', workspace_id: workspaceId },
     })
-    if (uErr || !authUser.user?.id) throw new Error(uErr?.message ?? `Auth failed for ${client.email}`)
+    if (uErr) {
+      // User already exists — look them up instead
+      const { data: users } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+      const existing = users.users.find((u) => u.email?.toLowerCase() === client.email.toLowerCase())
+      if (!existing?.id) throw new Error(`Could not find or create user for ${client.email}`)
+      clientProfileId = existing.id
+    } else if (!authUser.user?.id) {
+      throw new Error(`Auth failed for ${client.email}`)
+    } else {
+      clientProfileId = authUser.user.id
+    }
 
-    const clientProfileId = authUser.user.id
     clientAuthIdsByEmail[client.email.toLowerCase()] = clientProfileId
 
     const fullName = `${client.firstName} ${client.lastName}`

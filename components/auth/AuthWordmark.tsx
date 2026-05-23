@@ -28,14 +28,14 @@ export function AuthWordmark({
     return (
       <p
         className={cn(
-          'm-0 select-none font-semibold leading-tight tracking-[-0.03em] [font-family:var(--font-sora)]',
+          'm-0 select-none font-semibold leading-tight tracking-[0.08em] [font-family:var(--font-display)]',
           sizeCls,
           className
         )}
-        aria-label="ClearPath Solutions"
+        aria-label="Kindo"
       >
-        <span className="text-[#0B2D5E] lowercase">clearpath</span>
-        <span className="mx-1.5 font-medium lowercase text-[var(--accent)]">solutions</span>
+        <span className="text-[#0B2D5E]">KIN</span>
+        <span className="text-[#e8943a]">DO</span>
       </p>
     )
   }
@@ -43,16 +43,14 @@ export function AuthWordmark({
   return (
     <p
       className={cn(
-        'm-0 select-none font-semibold leading-tight tracking-[-0.03em] [font-family:var(--font-sora)]',
+        'm-0 select-none font-semibold leading-tight tracking-[0.08em] [font-family:var(--font-display)]',
         sizeCls,
         className
       )}
-      aria-label="ClearPath Solutions"
+      aria-label="Kindo"
     >
-      <span className="text-white lowercase drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]">clearpath</span>
-      <span className="mx-1.5 font-medium lowercase text-[#B3E5FC] drop-shadow-[0_1px_2px_rgba(13,71,161,0.2)]">
-        solutions
-      </span>
+      <span className="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]">KIN</span>
+      <span className="text-[#e8943a] drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">DO</span>
     </p>
   )
 }

@@ -205,7 +205,7 @@ export function DriveFileBrowser({
       <p className="text-sm text-[var(--color-muted)] mb-3">
         {pickForProgramBlock
           ? 'Choose a video to import into your library and add to this module.'
-          : 'Videos stay in your Drive. ClearPath only stores the file ID and streams through your workspace connection.'}
+          : 'Videos stay in your Drive. Kindo only stores the file ID and streams through your workspace connection.'}
       </p>
 
       {loading && <p className="text-sm text-[var(--color-muted)]">Loading folder…</p>}

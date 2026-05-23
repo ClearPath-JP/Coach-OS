@@ -25,7 +25,7 @@ async function enforcePortalSessionFingerprint(
   request: NextRequest,
   userId: string,
   portal: FingerprintPortal,
-  signInPath: '/login' | '/client-login'
+  signInPath: '/login'
 ): Promise<NextResponse | null> {
   if (process.env.NODE_ENV === 'development') return null
   if (process.env.CLEARPATH_DISABLE_SESSION_FINGERPRINT === '1') return null
@@ -74,11 +74,12 @@ export async function enforceCoachSessionFingerprint(
 }
 
 /**
- * Client /client/* routes: same behavior as coach; sign out → /client-login?reason=session.
+ * Client /client/* routes: same behavior as coach; sign out → /login?reason=session
+ * (DualRoleLoginPage handles both coach and client sign-in).
  */
 export async function enforceClientSessionFingerprint(
   request: NextRequest,
   userId: string
 ): Promise<NextResponse | null> {
-  return enforcePortalSessionFingerprint(request, userId, 'client', '/client-login')
+  return enforcePortalSessionFingerprint(request, userId, 'client', '/login')
 }

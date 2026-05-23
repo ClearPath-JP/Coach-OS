@@ -142,7 +142,7 @@ function SidebarBrandMark({ invertLogo }: { invertLogo?: boolean }) {
 
 function SidebarWordmark() {
   const { settings } = useWorkspace()
-  const displayName = settings.workspaceDisplayName || settings.brandName || 'ClearPath'
+  const displayName = settings.workspaceDisplayName || settings.brandName || 'Kindo'
   const showPoweredBy = !!(settings.workspaceDisplayName || settings.brandName)
 
   return (
@@ -175,7 +175,7 @@ function SidebarWordmark() {
               marginTop: '1px',
             }}
           >
-            Powered by ClearPath
+            Powered by FoundOS
           </span>
         ) : null}
       </div>
@@ -185,7 +185,7 @@ function SidebarWordmark() {
 
 function CoachSidebarHeader() {
   const { settings } = useWorkspace()
-  const displayName = settings.workspaceDisplayName || settings.brandName || 'ClearPath'
+  const displayName = settings.workspaceDisplayName || settings.brandName || 'Kindo'
 
   return (
     <div
@@ -199,7 +199,7 @@ function CoachSidebarHeader() {
           className="text-[9px] font-semibold uppercase tracking-[0.14em]"
           style={{ color: 'var(--coach-sidebar-muted)', marginTop: 1 }}
         >
-          Sensei App
+          Kindo
         </div>
       </div>
     </div>
@@ -431,7 +431,7 @@ export function Sidebar({
             </div>
             <div className="mt-2 flex items-center justify-between px-1">
               <p className="text-[9px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--coach-sidebar-muted)' }}>
-                Powered by ClearPath
+                Powered by FoundOS
               </p>
               <span className="text-[10px] text-[var(--text-quaternary)]">⌘K</span>
             </div>
