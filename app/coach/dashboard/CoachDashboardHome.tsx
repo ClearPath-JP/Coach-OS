@@ -115,11 +115,6 @@ const NAV_TILES = [
   { href: '/coach/schedule', label: 'Schedule', desc: 'Sessions & availability', icon: CalendarDays },
   { href: '/coach/classes', label: 'Classes', desc: 'Bookable group classes', icon: Ticket },
   { href: '/coach/clients', label: 'Clients', desc: 'Manage your roster', icon: Users },
-  { href: '/coach/assignments', label: 'Assignments', desc: 'Homework & reviews', icon: ClipboardCheck },
-  { href: '/coach/programs', label: 'Programs', desc: 'Training programs', icon: Swords },
-  { href: '/coach/packages', label: 'Packages', desc: 'Session packages', icon: Package },
-  { href: '/coach/payments', label: 'Payments', desc: 'Revenue & invoices', icon: CreditCard },
-  { href: '/coach/videos', label: 'Videos', desc: 'Video library', icon: Video },
 ] as const
 
 function AttentionBanner({ attention, badges }: { attention: AttentionData | null; badges: Badges }) {
@@ -303,12 +298,12 @@ export function CoachDashboardHome() {
       {/* Getting started — shown until core actions are done */}
       {!loading && <GettingStarted stats={s} programsCount={badges.programsCount} />}
 
-      {/* Quick nav tiles */}
+      {/* Quick nav tiles — top 3 most-used. Full sidebar nav covers the rest. */}
       <div>
         <h2 className="mb-3 text-[11px] font-medium tracking-[0.02em] text-[var(--text-quaternary)]">
           Jump to
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {NAV_TILES.map(({ href, label, desc, icon: Icon }) => (
             <Link
               key={href}
