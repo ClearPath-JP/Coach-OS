@@ -142,40 +142,25 @@ function SidebarBrandMark({ invertLogo }: { invertLogo?: boolean }) {
 
 function SidebarWordmark() {
   const { settings } = useWorkspace()
-  const displayName = settings.workspaceDisplayName || settings.brandName || 'Kindo'
-  const showPoweredBy = !!(settings.workspaceDisplayName || settings.brandName)
+  const workspaceName = settings.workspaceDisplayName || settings.brandName
 
   return (
     <div className="flex items-center gap-2">
       <SidebarBrandMark />
       <div className="min-w-0">
         <span
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '15px',
-            fontWeight: 500,
-            letterSpacing: '0.01em',
-            color: 'var(--text-primary)',
-            maxWidth: '160px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            display: 'block',
-          }}
+          className="block font-display text-[15px] font-semibold tracking-[0.12em]"
+          aria-label="Kindo"
         >
-          {displayName}
+          <span className="text-[var(--text-primary)]">KIN</span>
+          <span style={{ color: '#e8943a' }}>DO</span>
         </span>
-        {showPoweredBy ? (
+        {workspaceName ? (
           <span
-            style={{
-              fontSize: '10px',
-              color: 'var(--text-quaternary)',
-              letterSpacing: '0.02em',
-              display: 'block',
-              marginTop: '1px',
-            }}
+            className="block max-w-[160px] truncate text-[10px] font-normal tracking-[0.02em]"
+            style={{ color: 'var(--text-quaternary)', marginTop: 1 }}
           >
-            Powered by FoundOS
+            {workspaceName}
           </span>
         ) : null}
       </div>
@@ -185,7 +170,7 @@ function SidebarWordmark() {
 
 function CoachSidebarHeader() {
   const { settings } = useWorkspace()
-  const displayName = settings.workspaceDisplayName || settings.brandName || 'Kindo'
+  const workspaceName = settings.workspaceDisplayName || settings.brandName
 
   return (
     <div
@@ -194,13 +179,21 @@ function CoachSidebarHeader() {
     >
       <SidebarBrandMark invertLogo />
       <div className="min-w-0 flex-1 leading-tight">
-        <div className="font-display text-[14px] font-medium tracking-[0.02em] text-[var(--text-primary)]">{displayName}</div>
         <div
-          className="text-[9px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: 'var(--coach-sidebar-muted)', marginTop: 1 }}
+          className="font-display text-[15px] font-semibold tracking-[0.12em]"
+          aria-label="Kindo"
         >
-          Kindo
+          <span className="text-[var(--text-primary)]">KIN</span>
+          <span style={{ color: '#e8943a' }}>DO</span>
         </div>
+        {workspaceName ? (
+          <div
+            className="truncate text-[10px] font-normal tracking-[0.02em]"
+            style={{ color: 'var(--coach-sidebar-muted)', marginTop: 1 }}
+          >
+            {workspaceName}
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -429,10 +422,7 @@ export function Sidebar({
                 className="h-9 w-full rounded-[8px] px-2 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[180ms] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)]"
               />
             </div>
-            <div className="mt-2 flex items-center justify-between px-1">
-              <p className="text-[9px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--coach-sidebar-muted)' }}>
-                Powered by FoundOS
-              </p>
+            <div className="mt-2 flex items-center justify-end px-1">
               <span className="text-[10px] text-[var(--text-quaternary)]">⌘K</span>
             </div>
           </div>

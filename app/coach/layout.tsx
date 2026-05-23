@@ -103,7 +103,9 @@ export default async function CoachLayout({
     || initialWorkspaceSettings.workspaceDisplayName
     || 'Kindo'
 
-  const accentStyle = `:root, html[data-theme='dark'], html[data-theme='light'] { --cp-accent: ${resolvedCpAccent}; --accent: ${resolvedCpAccent}; }`
+  // Coach surfaces stay KINDO-branded (--accent from globals.css = #e8943a amber).
+  // Workspace accent (--cp-accent) only colors elements that preview the client portal.
+  const accentStyle = `:root, html[data-theme='dark'], html[data-theme='light'] { --cp-accent: ${resolvedCpAccent}; }`
 
   return (
     <WorkspaceProvider

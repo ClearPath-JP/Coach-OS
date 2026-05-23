@@ -66,16 +66,38 @@ function StatCard({
   label,
   value,
   trend,
+  accent = false,
+  zero = false,
 }: {
   label: string
   value: string
   trend?: { direction: string; percentChange: number }
+  /** Adds an amber left-border + warm glow. Use for stats that demand action when set. */
+  accent?: boolean
+  /** Renders the number dimmed when the underlying value is zero/empty. */
+  zero?: boolean
 }) {
   return (
-    <div className="group flex flex-col gap-1.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-5 py-4 transition-all duration-200 hover:border-[var(--border-default)] hover:bg-[var(--bg-muted)]">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-quaternary)]">{label}</span>
+    <div
+      className={cn(
+        'group relative flex flex-col gap-1.5 rounded-2xl border bg-[var(--bg-subtle)] px-5 py-4 transition-all duration-200 hover:bg-[var(--bg-muted)]',
+        accent
+          ? 'border-[var(--border-subtle)] before:absolute before:inset-y-3 before:left-0 before:w-[2px] before:rounded-r-full before:bg-[var(--accent)] before:shadow-[0_0_12px_var(--accent)]'
+          : 'border-[var(--border-subtle)] hover:border-[var(--border-default)]',
+      )}
+    >
+      <span className="text-[11px] font-medium tracking-[0.02em] text-[var(--text-tertiary)]">
+        {label}
+      </span>
       <div className="flex items-end gap-2">
-        <span className="font-display text-[28px] font-medium leading-none tracking-tight text-[var(--text-primary)]">{value}</span>
+        <span
+          className={cn(
+            'font-display text-[28px] font-medium leading-none tracking-tight',
+            zero ? 'text-[var(--text-quaternary)]' : 'text-[var(--text-primary)]',
+          )}
+        >
+          {value}
+        </span>
         {trend && trend.percentChange > 0 ? (
           <span className="mb-0.5 flex items-center gap-1 text-[12px]">
             <TrendIcon direction={trend.direction} />
@@ -231,10 +253,10 @@ export function CoachDashboardHome() {
     <div className="coach-dash-stagger flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h1 className="font-display text-[28px] font-medium leading-tight tracking-tight text-[var(--text-primary)]">
+        <h1 className="font-display text-[28px] font-medium leading-none tracking-tight text-[var(--text-primary)]">
           Command Center
         </h1>
-        <p className="mt-1.5 text-[14px] text-[var(--text-tertiary)]">
+        <p className="mt-3 text-[13px] text-[var(--text-quaternary)]">
           Your dojo at a glance.
         </p>
       </div>
@@ -251,10 +273,30 @@ export function CoachDashboardHome() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Active Clients" value={String(s.activeClientsCount)} trend={s.trends?.activeClients} />
-          <StatCard label="Sessions This Week" value={String(s.sessionsThisWeek)} trend={s.trends?.sessionsThisWeek} />
-          <StatCard label="Revenue (Month)" value={formatCents(s.revenueMonthCents)} trend={s.trends?.revenueMonth} />
-          <StatCard label="Pending Invoices" value={String(s.pendingInvoicesCount)} />
+          <StatCard
+            label="Active clients"
+            value={String(s.activeClientsCount)}
+            trend={s.trends?.activeClients}
+            zero={s.activeClientsCount === 0}
+          />
+          <StatCard
+            label="Sessions this week"
+            value={String(s.sessionsThisWeek)}
+            trend={s.trends?.sessionsThisWeek}
+            zero={s.sessionsThisWeek === 0}
+          />
+          <StatCard
+            label="Revenue (month)"
+            value={formatCents(s.revenueMonthCents)}
+            trend={s.trends?.revenueMonth}
+            zero={s.revenueMonthCents === 0}
+          />
+          <StatCard
+            label="Pending invoices"
+            value={String(s.pendingInvoicesCount)}
+            accent={s.pendingInvoicesCount > 0}
+            zero={s.pendingInvoicesCount === 0}
+          />
         </div>
       )}
 
@@ -263,8 +305,8 @@ export function CoachDashboardHome() {
 
       {/* Quick nav tiles */}
       <div>
-        <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--text-quaternary)]">
-          Quick Actions
+        <h2 className="mb-3 text-[11px] font-medium tracking-[0.02em] text-[var(--text-quaternary)]">
+          Jump to
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {NAV_TILES.map(({ href, label, desc, icon: Icon }) => (
@@ -277,7 +319,7 @@ export function CoachDashboardHome() {
               )}
             >
               <div className="flex size-9 items-center justify-center rounded-lg bg-[var(--bg-muted)] transition-colors group-hover:bg-[var(--accent)]/10">
-                <Icon size={18} strokeWidth={1.5} className="text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--accent)]" />
+                <Icon size={18} strokeWidth={1.75} className="text-[var(--text-secondary)] transition-colors group-hover:text-[var(--accent)]" />
               </div>
               <div>
                 <span className="text-[14px] font-medium text-[var(--text-primary)]">{label}</span>
