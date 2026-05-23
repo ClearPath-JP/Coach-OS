@@ -9,6 +9,7 @@ import {
   ClipboardList,
   Target,
   Calendar,
+  Ticket,
   MessageSquare,
   Receipt,
   User,
@@ -18,10 +19,11 @@ import { ClientPortalSidebarFooter } from '@/components/layout/ClientPortalSideb
 
 const PRIMARY: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/client/portal', label: 'Home', Icon: LayoutDashboard },
+  { href: '/client/classes', label: 'Book a class', Icon: Ticket },
+  { href: '/client/sessions', label: 'My sessions', Icon: Calendar },
   { href: '/client/programs', label: 'Programs', Icon: BookOpen },
   { href: '/client/assignments', label: 'Tasks', Icon: ClipboardList },
   { href: '/client/goals', label: 'Goals', Icon: Target },
-  { href: '/client/sessions', label: 'Sessions', Icon: Calendar },
   { href: '/client/messages', label: 'Messages', Icon: MessageSquare },
   { href: '/client/invoices', label: 'Invoices', Icon: Receipt },
 ]
@@ -60,7 +62,7 @@ function NavRows({
   )
 }
 
-/** Desktop left rail: full client destinations + Profile; footer = Powered by ClearPath. */
+/** Desktop left rail: full client destinations + Profile; footer = Powered by FoundOS. */
 export function ClientPortalDesktopSidebar({ className }: { className?: string }) {
   const pathname = usePathname()
   const profileActive = pathname === '/client/profile' || pathname?.startsWith('/client/profile/')

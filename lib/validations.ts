@@ -144,6 +144,7 @@ export const recurringAvailabilityCreateSchema = z.object({
   endTime: z.string().regex(timeRegex, 'Use HH:mm or HH:mm:ss'),
   label: z.string().max(200).optional(),
   sessionProductId: z.string().uuid().optional().nullable(),
+  isClientBookable: z.boolean().optional().default(false),
 }).refine((d) => d.endTime > d.startTime, { message: 'End time must be after start time', path: ['endTime'] })
 export type RecurringAvailabilityCreateInput = z.infer<typeof recurringAvailabilityCreateSchema>
 
@@ -154,6 +155,7 @@ export const recurringAvailabilityPatchSchema = z.object({
   endTime: z.string().regex(timeRegex).optional(),
   label: z.string().max(200).nullable().optional(),
   sessionProductId: z.string().uuid().nullable().optional(),
+  isClientBookable: z.boolean().optional(),
   is_active: z.boolean().optional(),
 }).refine(
   (d) => {
@@ -203,6 +205,7 @@ export const createPackageSchema = z.object({
   session_type: z.string().max(100).optional().nullable(),
   is_virtual: z.boolean().optional().default(true),
   is_active: z.boolean().optional().default(true),
+  capacity: z.number().int().min(1).max(50).optional().default(1),
 })
 export type CreatePackageInput = z.infer<typeof createPackageSchema>
 

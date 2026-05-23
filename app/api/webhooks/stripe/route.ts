@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { stripe, STRIPE_WEBHOOK_SECRET, STRIPE_PRICES } from '@/lib/stripe'
 import { markSessionInvoicePaidFromStripeCheckout } from '@/lib/stripe-client-invoice-checkout'
+import { createSessionFromClassBookingCheckout } from '@/lib/stripe-class-booking-webhook'
 import type Stripe from 'stripe'
 
 /**
@@ -52,6 +53,13 @@ export async function POST(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session
         if (session.mode === 'payment' && session.metadata?.type === 'client_invoice') {
           await markSessionInvoicePaidFromStripeCheckout(supabase, session)
+          return NextResponse.json({ received: true })
+        }
+        if (session.mode === 'payment' && session.metadata?.type === 'class_booking') {
+          const result = await createSessionFromClassBookingCheckout(supabase, session)
+          if (!result.ok) {
+            console.warn('[webhook] class_booking session not created:', result.reason)
+          }
           return NextResponse.json({ received: true })
         }
         if (session.mode !== 'subscription' || !session.subscription) {

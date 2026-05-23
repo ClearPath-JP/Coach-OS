@@ -27,7 +27,7 @@ export async function GET() {
     }
 
     const selectFull =
-      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_virtual, is_active, created_at'
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_virtual, is_active, capacity, created_at'
     const selectBase =
       'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at'
 
@@ -39,7 +39,7 @@ export async function GET() {
         .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
       if (!first.error) return first.data ?? []
-      if (/is_virtual|schema cache/i.test(first.error.message)) {
+      if (/is_virtual|capacity|schema cache/i.test(first.error.message)) {
         const second = await supabase
           .from('session_packages')
           .select(selectBase)
@@ -102,10 +102,11 @@ export async function POST(request: Request) {
       duration_minutes: parsed.data.duration_minutes ?? 60,
       session_type: parsed.data.session_type ?? null,
       is_active: parsed.data.is_active ?? true,
+      capacity: parsed.data.capacity ?? 1,
     }
 
     const selectFull =
-      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_virtual, is_active, created_at'
+      'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_virtual, is_active, capacity, created_at'
     const selectBase =
       'id, workspace_id, coach_id, title, description, price_cents, currency, duration_minutes, session_type, is_active, created_at'
 
@@ -118,8 +119,16 @@ export async function POST(request: Request) {
       .select(selectFull)
       .single()
 
-    if (rowResult.error && /is_virtual|schema cache/i.test(rowResult.error.message)) {
-      rowResult = await supabase.from('session_packages').insert(baseInsert).select(selectBase).single()
+    if (rowResult.error && /is_virtual|capacity|schema cache/i.test(rowResult.error.message)) {
+      // First insert likely succeeded but select failed — re-select instead of re-inserting
+      rowResult = await supabase
+        .from('session_packages')
+        .select(selectBase)
+        .eq('workspace_id', workspaceId)
+        .eq('title', baseInsert.title)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
     }
 
     const { data: row, error } = rowResult

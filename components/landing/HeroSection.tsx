@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Play, Sword, Dumbbell, BookOpen } from 'lucide-react'
+import { Play, Sword, BookOpen, ArrowRight } from 'lucide-react'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -22,57 +22,74 @@ export function HeroSection() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: 'url(/images/hero-dojo.jpg)' }}
         />
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-app)]/70 via-[var(--bg-app)]/50 to-[var(--bg-app)]" />
-        {/* Vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--bg-app)_100%)]" />
-        {/* Warm accent glow from lanterns */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[var(--accent)] opacity-[0.06] blur-[150px]" />
+        {/* Top-down gradient for nav legibility + bottom fade into page */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-app)]/85 via-[var(--bg-app)]/55 to-[var(--bg-app)]" />
+        {/* Vignette to focus center */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_25%,var(--bg-app)_95%)]" />
+        {/* Warm lantern glow */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#e8943a] opacity-[0.06] blur-[160px]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 text-center">
-        {/* Discipline tag */}
+        {/* KINDO brand mark — small, above the headline */}
         <motion.div
           custom={0}
           initial="hidden"
           animate="visible"
           variants={fadeUp}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--accent)]/20 bg-[var(--bg-app)]/60 backdrop-blur-sm mb-8"
+          className="mb-6"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-          <span className="text-xs font-medium tracking-widest uppercase text-[var(--accent)]">
+          <span
+            className="font-[family-name:var(--font-display)] text-xs font-semibold tracking-[0.36em]"
+            aria-label="Kindo"
+          >
+            <span className="text-white/85">KIN</span>
+            <span style={{ color: '#e8943a' }}>DO</span>
+          </span>
+        </motion.div>
+
+        {/* Discipline tag */}
+        <motion.div
+          custom={1}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#e8943a]/25 bg-[var(--bg-app)]/60 backdrop-blur-sm mb-8"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#e8943a] animate-pulse" />
+          <span className="text-[11px] font-medium tracking-[0.22em] uppercase text-[#e8943a]">
             Discipline. Focus. Legacy.
           </span>
         </motion.div>
 
         {/* Main headline */}
         <motion.h1
-          custom={1}
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
-          className="font-[family-name:var(--font-display)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-[var(--text-primary)] leading-[1.05] tracking-tight"
-        >
-          Master the
-          <br />
-          <span className="text-[var(--accent)]">Path Within</span>
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p
           custom={2}
           initial="hidden"
           animate="visible"
           variants={fadeUp}
-          className="mt-6 text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed"
+          className="font-[family-name:var(--font-display)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.02] tracking-tight"
         >
-          The platform where martial arts and fitness coaches build their dojo online.
-          Share videos, create programs, grow your students.
+          Master the
+          <br />
+          <span style={{ color: '#e8943a' }}>Path Within</span>
+        </motion.h1>
+
+        {/* Subtitle */}
+        <motion.p
+          custom={3}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="mt-8 text-lg md:text-xl text-white/75 max-w-2xl mx-auto leading-relaxed"
+        >
+          The home for coaches who teach the craft.
+          Videos, programs, students — your dojo, online.
         </motion.p>
 
         {/* CTA buttons */}
         <motion.div
-          custom={3}
+          custom={4}
           initial="hidden"
           animate="visible"
           variants={fadeUp}
@@ -80,70 +97,68 @@ export function HeroSection() {
         >
           <Link
             href="/signup?role=coach"
-            className="group relative inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-[var(--accent)] text-[var(--text-on-accent)] font-semibold text-base hover:bg-[var(--accent-hover)] transition-all shadow-lg shadow-[var(--accent)]/20"
+            className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-white font-semibold text-base transition-all shadow-[0_8px_28px_rgba(232,148,58,0.35)] hover:shadow-[0_10px_36px_rgba(232,148,58,0.5)]"
+            style={{ background: '#e8943a' }}
           >
             <Sword size={18} />
-            I&apos;m a Coach
+            Start Your Dojo
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
             href="/signup?role=student"
-            className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl border border-[var(--border-default)] bg-[var(--bg-app)]/40 backdrop-blur-sm text-[var(--text-primary)] font-semibold text-base hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/5 transition-all"
+            className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl border border-white/15 bg-white/[0.04] backdrop-blur-sm text-white font-semibold text-base hover:border-[#e8943a]/40 hover:bg-white/[0.07] transition-all"
           >
             <BookOpen size={18} />
-            I&apos;m a Student
+            Find a Coach
           </Link>
         </motion.div>
 
-        {/* Stats bar */}
-        <motion.div
-          custom={4}
-          initial="hidden"
-          animate="visible"
-          variants={fadeUp}
-          className="mt-16 flex items-center justify-center gap-8 md:gap-16"
-        >
-          {[
-            { value: '500+', label: 'Active Students' },
-            { value: '50+', label: 'Coaches' },
-            { value: '10K+', label: 'Videos Shared' },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
-                {stat.value}
-              </div>
-              <div className="text-xs text-[var(--text-tertiary)] mt-1">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Feature pills */}
+        {/* Already a member — log in */}
         <motion.div
           custom={5}
           initial="hidden"
           animate="visible"
           variants={fadeUp}
-          className="mt-12 flex flex-wrap items-center justify-center gap-3"
+          className="mt-6"
+        >
+          <Link
+            href="/login"
+            className="text-sm text-white/55 hover:text-white transition-colors inline-flex items-center gap-1.5 group"
+          >
+            Already a member?
+            <span className="font-medium text-white/85 group-hover:text-[#e8943a] transition-colors">
+              Log in
+            </span>
+            <ArrowRight size={13} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+          </Link>
+        </motion.div>
+
+        {/* Feature pills */}
+        <motion.div
+          custom={6}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="mt-14 flex flex-wrap items-center justify-center gap-3"
         >
           {[
             { icon: Play, label: 'Video Library' },
             { icon: Sword, label: 'Programs & Lessons' },
-            { icon: Dumbbell, label: 'Workouts & Nutrition' },
+            { icon: BookOpen, label: 'Student Portal' },
           ].map(({ icon: Icon, label }) => (
             <div
               key={label}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-app)]/50 backdrop-blur-sm text-sm text-[var(--text-secondary)]"
+              className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-sm text-xs text-white/70"
             >
-              <Icon size={14} className="text-[var(--accent)]" />
+              <Icon size={13} style={{ color: '#e8943a' }} />
               {label}
             </div>
           ))}
         </motion.div>
       </div>
 
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--bg-app)] to-transparent" />
+      {/* Bottom fade into page */}
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[var(--bg-app)] to-transparent" />
     </section>
   )
 }

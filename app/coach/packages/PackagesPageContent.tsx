@@ -78,6 +78,7 @@ function PackageFormModal({
           session_type: initialPackage.session_type ?? '',
           is_virtual: initialPackage.is_virtual ?? true,
           is_active: initialPackage.is_active,
+          capacity: (initialPackage as { capacity?: number }).capacity ?? 1,
         }
       : {
           title: '',
@@ -88,6 +89,7 @@ function PackageFormModal({
           session_type: '',
           is_virtual: true,
           is_active: true,
+          capacity: 1,
         }
   )
 
@@ -144,6 +146,22 @@ function PackageFormModal({
             onChange={(e) => setForm((f) => ({ ...f, duration_minutes: parseInt(e.target.value || '60', 10) }))}
             placeholder="60"
           />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-[var(--color-ink)]">
+            Capacity (max attendees)
+          </label>
+          <Input
+            type="number"
+            min="1"
+            max="50"
+            value={form.capacity || 1}
+            onChange={(e) => setForm((f) => ({ ...f, capacity: Math.max(1, parseInt(e.target.value || '1', 10)) }))}
+            placeholder="1"
+          />
+          <p className="mt-1 text-xs text-[var(--color-muted)]">
+            1 = 1-on-1 session. Higher = group class. Clients see &quot;X/{form.capacity ?? 1} booked&quot; when this class is bookable from their portal.
+          </p>
         </div>
         <div>
           <span className="mb-2 block text-sm font-medium text-[var(--color-ink)]">Session format</span>

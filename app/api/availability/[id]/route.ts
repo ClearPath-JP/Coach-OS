@@ -58,6 +58,7 @@ export async function PATCH(
     if (parsed.data.endTime !== undefined) updates.end_time = parsed.data.endTime
     if (parsed.data.label !== undefined) updates.label = parsed.data.label ?? null
     if (parsed.data.sessionProductId !== undefined) updates.session_product_id = parsed.data.sessionProductId ?? null
+    if (parsed.data.isClientBookable !== undefined) updates.is_client_bookable = parsed.data.isClientBookable
     if (parsed.data.is_active !== undefined) updates.is_active = parsed.data.is_active
 
     if (Object.keys(updates).length === 0) {

@@ -5,6 +5,7 @@ import {
   CreditCard,
   LayoutDashboard,
   Swords,
+  Ticket,
   Users,
   Video,
   ClipboardCheck,
@@ -19,6 +20,7 @@ const SECTIONS: SidebarNavSection[] = [
     items: [
       { href: '/coach/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} strokeWidth={1.5} /> },
       { href: '/coach/schedule', label: 'Schedule', icon: <CalendarDays size={16} strokeWidth={1.5} /> },
+      { href: '/coach/classes', label: 'Classes', icon: <Ticket size={16} strokeWidth={1.5} /> },
     ],
   },
   {

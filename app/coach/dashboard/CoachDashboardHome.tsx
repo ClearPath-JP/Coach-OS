@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Package,
   Swords,
+  Ticket,
   Users,
   Video,
   TrendingUp,
@@ -40,7 +41,7 @@ type AttentionData = {
   unpaidInvoices: Array<{ id: string; amountCents: number; firstName: string | null; lastName: string | null }>
 }
 
-type Badges = { assignments: number }
+type Badges = { assignments: number; programsCount: number }
 
 const ZERO_STATS: DashboardStats = {
   activeClientsCount: 0,
@@ -71,10 +72,10 @@ function StatCard({
   trend?: { direction: string; percentChange: number }
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-5 py-4">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-quaternary)]">{label}</span>
+    <div className="group flex flex-col gap-1.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-5 py-4 transition-all duration-200 hover:border-[var(--border-default)] hover:bg-[var(--bg-muted)]">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-quaternary)]">{label}</span>
       <div className="flex items-end gap-2">
-        <span className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{value}</span>
+        <span className="font-display text-[28px] font-medium leading-none tracking-tight text-[var(--text-primary)]">{value}</span>
         {trend && trend.percentChange > 0 ? (
           <span className="mb-0.5 flex items-center gap-1 text-[12px]">
             <TrendIcon direction={trend.direction} />
@@ -89,7 +90,8 @@ function StatCard({
 }
 
 const NAV_TILES = [
-  { href: '/coach/schedule', label: 'Schedule', desc: 'View & book sessions', icon: CalendarDays },
+  { href: '/coach/schedule', label: 'Schedule', desc: 'Sessions & availability', icon: CalendarDays },
+  { href: '/coach/classes', label: 'Classes', desc: 'Bookable group classes', icon: Ticket },
   { href: '/coach/clients', label: 'Clients', desc: 'Manage your roster', icon: Users },
   { href: '/coach/assignments', label: 'Assignments', desc: 'Homework & reviews', icon: ClipboardCheck },
   { href: '/coach/programs', label: 'Programs', desc: 'Training programs', icon: Swords },
@@ -102,7 +104,7 @@ function AttentionBanner({ attention, badges }: { attention: AttentionData | nul
   const items: { label: string; href: string; count: number }[] = []
   if (badges.assignments > 0) items.push({ label: 'assignments need review', href: '/coach/assignments', count: badges.assignments })
   if (attention?.overdue?.length) items.push({ label: 'overdue assignments', href: '/coach/assignments', count: attention.overdue.length })
-  if (attention?.inactive?.length) items.push({ label: 'inactive clients', href: '/coach/clients', count: attention.inactive.length })
+  if (attention?.inactive?.length) items.push({ label: 'clients need engagement', href: '/coach/clients', count: attention.inactive.length })
   if (attention?.unpaidInvoices?.length) items.push({ label: 'unpaid invoices', href: '/coach/payments', count: attention.unpaidInvoices.length })
 
   if (items.length === 0) return null
@@ -128,11 +130,11 @@ function AttentionBanner({ attention, badges }: { attention: AttentionData | nul
   )
 }
 
-function GettingStarted({ stats }: { stats: DashboardStats }) {
+function GettingStarted({ stats, programsCount }: { stats: DashboardStats; programsCount: number }) {
   const steps = [
     { done: stats.activeClientsCount > 0, label: 'Add your first client', href: '/coach/clients', desc: 'Import or create a client profile' },
     { done: stats.sessionsThisWeek > 0, label: 'Book a session', href: '/coach/schedule', desc: 'Schedule your first training session' },
-    { done: false, label: 'Create a program', href: '/coach/programs', desc: 'Build a structured training program' },
+    { done: programsCount > 0, label: 'Create a program', href: '/coach/programs', desc: 'Build a structured training program' },
     { done: stats.revenueMonthCents > 0, label: 'Record a payment', href: '/coach/payments', desc: 'Track revenue from your clients' },
   ]
 
@@ -194,16 +196,17 @@ function GettingStarted({ stats }: { stats: DashboardStats }) {
 export function CoachDashboardHome() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [attention, setAttention] = useState<AttentionData | null>(null)
-  const [badges, setBadges] = useState<Badges>({ assignments: 0 })
+  const [badges, setBadges] = useState<Badges>({ assignments: 0, programsCount: 0 })
   const [loading, setLoading] = useState(true)
 
   const fetchAll = useCallback(() => {
     const today = new Date().toISOString().split('T')[0]
     Promise.all([
-      fetch(`/api/schedule/stats?date=${today}`, { credentials: 'include' }).then((r) => r.json()).catch(() => null),
-      fetch(`/api/schedule/attention?date=${today}`, { credentials: 'include' }).then((r) => r.json()).catch(() => null),
+      fetch('/api/coach/dashboard-summary', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
+      fetch('/api/coach/dashboard-attention', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
       fetch('/api/assignments/overview', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
-    ]).then(([statsJson, attentionJson, asgJson]) => {
+      fetch('/api/programs', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
+    ]).then(([statsJson, attentionJson, asgJson, programsJson]) => {
       setStats(statsJson?.data ?? ZERO_STATS)
       if (attentionJson?.data) setAttention(attentionJson.data)
       let asg = 0
@@ -212,7 +215,8 @@ export function CoachDashboardHome() {
         const ov = typeof asgJson.data.overdueCount === 'number' ? asgJson.data.overdueCount : 0
         asg = pr + ov
       }
-      setBadges({ assignments: asg })
+      const pgCount = Array.isArray(programsJson?.data) ? programsJson.data.length : 0
+      setBadges({ assignments: asg, programsCount: pgCount })
       setLoading(false)
     })
   }, [])
@@ -227,10 +231,10 @@ export function CoachDashboardHome() {
     <div className="coach-dash-stagger flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
+        <h1 className="font-display text-[28px] font-medium leading-tight tracking-tight text-[var(--text-primary)]">
           Command Center
         </h1>
-        <p className="mt-1 text-[14px] text-[var(--text-tertiary)]">
+        <p className="mt-1.5 text-[14px] text-[var(--text-tertiary)]">
           Your dojo at a glance.
         </p>
       </div>
@@ -255,11 +259,11 @@ export function CoachDashboardHome() {
       )}
 
       {/* Getting started — shown until core actions are done */}
-      {!loading && <GettingStarted stats={s} />}
+      {!loading && <GettingStarted stats={s} programsCount={badges.programsCount} />}
 
       {/* Quick nav tiles */}
       <div>
-        <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--text-quaternary)]">
+        <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--text-quaternary)]">
           Quick Actions
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -268,17 +272,18 @@ export function CoachDashboardHome() {
               key={href}
               href={href}
               className={cn(
-                'group flex flex-col gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-5 py-4',
-                'transition-all duration-200 hover:border-[var(--border-strong)] hover:bg-[var(--bg-muted)]',
+                'group relative flex flex-col gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-5 py-4',
+                'transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:bg-[var(--bg-muted)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.18)]',
               )}
             >
-              <div className="flex size-9 items-center justify-center rounded-lg bg-[var(--bg-muted)]">
-                <Icon size={18} strokeWidth={1.5} className="text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]" />
+              <div className="flex size-9 items-center justify-center rounded-lg bg-[var(--bg-muted)] transition-colors group-hover:bg-[var(--accent)]/10">
+                <Icon size={18} strokeWidth={1.5} className="text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--accent)]" />
               </div>
               <div>
                 <span className="text-[14px] font-medium text-[var(--text-primary)]">{label}</span>
                 <p className="mt-0.5 text-[12px] text-[var(--text-quaternary)]">{desc}</p>
               </div>
+              <ArrowRight size={14} className="absolute right-4 top-4 text-[var(--text-quaternary)] opacity-0 transition-opacity group-hover:opacity-100" />
             </Link>
           ))}
         </div>

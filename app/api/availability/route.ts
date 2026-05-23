@@ -21,7 +21,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('recurring_availability')
-      .select('id, workspace_id, coach_id, day_of_week, start_time, end_time, label, session_product_id, is_active, created_at')
+      .select('id, workspace_id, coach_id, day_of_week, start_time, end_time, label, session_product_id, is_client_bookable, is_active, created_at')
       .eq('workspace_id', coach.workspace_id)
       .eq('coach_id', user.id)
       .order('day_of_week')
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: message }, { status: 400 })
     }
 
-    const { dayOfWeek, startTime, endTime, label, sessionProductId } = parsed.data
+    const { dayOfWeek, startTime, endTime, label, sessionProductId, isClientBookable } = parsed.data
     const { data, error } = await supabase
       .from('recurring_availability')
       .insert({
@@ -86,9 +86,10 @@ export async function POST(request: Request) {
         end_time: endTime,
         label: label?.trim() || null,
         session_product_id: sessionProductId || null,
+        is_client_bookable: isClientBookable ?? false,
         is_active: true,
       })
-      .select('id, day_of_week, start_time, end_time, label, session_product_id, is_active, created_at')
+      .select('id, day_of_week, start_time, end_time, label, session_product_id, is_client_bookable, is_active, created_at')
       .single()
 
     if (error) {
