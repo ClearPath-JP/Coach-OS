@@ -30,7 +30,8 @@ export async function GET(request: Request) {
         `
         id, workspace_id, coach_id, client_id, invoice_id, session_id,
         amount_cents, currency, payment_method, payment_reference, notes,
-        payment_date, created_at, updated_at
+        payment_date, created_at, updated_at,
+        clients ( first_name, last_name )
       `
       )
       .eq('workspace_id', workspaceId)
