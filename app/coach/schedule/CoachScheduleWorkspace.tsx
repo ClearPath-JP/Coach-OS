@@ -15,7 +15,7 @@ import {
   startOfDay,
   startOfWeek,
 } from 'date-fns'
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, ClipboardList, Clock, DollarSign, Users, Video } from 'lucide-react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
@@ -397,28 +397,28 @@ export function CoachScheduleWorkspace() {
 
       {/* ── Quick Actions Row ── */}
       <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
-        <button type="button" onClick={() => openBookModal(null, null)} className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
-          <span className="text-[18px]">📅</span>
+        <button type="button" onClick={() => openBookModal(null, null)} className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <CalendarPlus size={18} />
           Book Session
         </button>
-        <Link href="/coach/clients" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
-          <span className="text-[18px]">👤</span>
+        <Link href="/coach/clients" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <Users size={18} />
           Clients
         </Link>
-        <Link href="/coach/videos" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
-          <span className="text-[18px]">📹</span>
+        <Link href="/coach/videos" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <Video size={18} />
           Videos
         </Link>
-        <Link href="/coach/programs" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
-          <span className="text-[18px]">📋</span>
+        <Link href="/coach/programs" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <ClipboardList size={18} />
           Programs
         </Link>
-        <Link href="/coach/payments" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
-          <span className="text-[18px]">💰</span>
+        <Link href="/coach/payments" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <DollarSign size={18} />
           Payments
         </Link>
-        <button type="button" onClick={() => setAvailabilityOpen(true)} className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
-          <span className="text-[18px]">⚙️</span>
+        <button type="button" onClick={() => setAvailabilityOpen(true)} className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <Clock size={18} />
           Availability
         </button>
       </div>

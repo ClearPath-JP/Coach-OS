@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { addDays, addMinutes, format, isSameDay, parseISO, startOfDay } from 'date-fns'
 import { Button } from '@/components/ui/Button'
+import { Calendar, ClipboardList, DollarSign, Users, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatCents } from '@/lib/format-currency'
 import type { SessionForDrawer } from './SessionDetailDrawer'
@@ -139,7 +140,7 @@ export function ScheduleTodayPanel({
               'relative w-full rounded-[var(--radius-lg)] border bg-[var(--bg-app)] p-4 text-left transition-all duration-300 hover:-translate-y-0.5',
               highlight.kind === 'in-progress'
                 ? 'border-[var(--success)] shadow-[0_0_20px_rgba(52,211,153,0.12)]'
-                : 'border-[var(--accent)] shadow-[0_0_20px_rgba(159,18,57,0.12)]'
+                : 'border-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.12)]'
             )}
           >
             <span className={cn(
@@ -217,8 +218,8 @@ export function ScheduleTodayPanel({
       {/* ── No sessions empty state ── */}
       {daySessions.length === 0 ? (
         <div className="mb-4 flex flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] px-4 py-8 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-muted)] text-2xl" aria-hidden>
-            📅
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[var(--accent)]" aria-hidden>
+            <Calendar size={22} />
           </span>
           <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">No sessions {isFocusToday ? 'today' : 'this day'}</p>
           <Button type="button" variant="secondary" className="mt-3" onClick={onBookSession}>
@@ -317,27 +318,27 @@ export function ScheduleTodayPanel({
         <div className="grid grid-cols-2 gap-1.5">
           <Link
             href="/coach/clients"
-            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
           >
-            <span className="text-[14px]">👤</span> Add Client
+            <Users size={14} /> Add Client
           </Link>
           <Link
             href="/coach/videos"
-            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
           >
-            <span className="text-[14px]">📹</span> Upload Video
+            <Video size={14} /> Upload Video
           </Link>
           <Link
             href="/coach/programs"
-            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
           >
-            <span className="text-[14px]">📋</span> New Program
+            <ClipboardList size={14} /> New Program
           </Link>
           <Link
             href="/coach/payments"
-            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(159,18,57,0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
+            className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--bg-app)] px-3 py-2 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]"
           >
-            <span className="text-[14px]">💰</span> Send Invoice
+            <DollarSign size={14} /> Send Invoice
           </Link>
         </div>
       </div>
