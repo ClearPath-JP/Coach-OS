@@ -348,6 +348,8 @@ html[data-theme='dark'] {
   --cp-input-border: var(--border-default);
   --cp-input-focus: var(--accent);
   --cp-sapphire: var(--accent);
+  --cp-royal: var(--accent-dark);
+  --cp-periwinkle: var(--accent-hover);
   --cp-accent: var(--accent);
   --cp-accent-hover: var(--accent-hover);
   --cp-lavender: color-mix(in srgb, var(--accent) 10%, var(--bg-muted));

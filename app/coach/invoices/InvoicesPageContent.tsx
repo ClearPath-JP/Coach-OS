@@ -262,12 +262,12 @@ export function InvoicesPageContent() {
             </Button>
             {inv.status === 'pending' ? (
               <>
-                <Button size="xs" variant="secondary" type="button" onClick={() => setMarkPaidInvoice(inv)}>
+                <Button size="xs" variant="primary" type="button" onClick={() => setMarkPaidInvoice(inv)}>
                   Mark paid
                 </Button>
                 <Button
                   size="xs"
-                  variant="primary"
+                  variant="secondary"
                   type="button"
                   disabled={resendBusyId === inv.id}
                   onClick={() => void resendInvoice(inv)}

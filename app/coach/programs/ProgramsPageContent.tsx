@@ -39,9 +39,10 @@ function programGradient(title: string): string {
 }
 
 function previewLetters(title: string): string {
-  const t = title.trim()
-  if (t.length >= 2) return t.slice(0, 2).toUpperCase()
-  return (t.slice(0, 1) || '?').toUpperCase()
+  const words = title.trim().split(/[\s-]+/).filter((w) => /^[a-zA-Z]/.test(w))
+  if (words.length >= 2) return (words[0]!.charAt(0) + words[1]!.charAt(0)).toUpperCase()
+  if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase()
+  return (title.replace(/[^a-zA-Z]/g, '').slice(0, 2) || '?').toUpperCase()
 }
 
 function ProgramCardSkeleton() {

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { CalendarCheck, Flame, Star } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { DataTable, type DataColumn } from '@/components/ui/DataTable'
@@ -594,14 +595,14 @@ export function CoachClientsPageContent() {
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-[var(--text-tertiary)]">
                       <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2 py-0.5" title="Sessions completed">
-                        📅 {sessionsN}
+                        <CalendarCheck size={12} /> {sessionsN}
                       </span>
                       <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2 py-0.5" title="Total XP">
-                        ⭐ {client.rewards?.total_xp ?? 0}
+                        <Star size={12} /> {client.rewards?.total_xp ?? 0}
                       </span>
                       {(client.rewards?.current_streak_days ?? 0) > 0 && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-surface)] px-2 py-0.5 text-[var(--accent)]" title="Current streak">
-                          🔥 {client.rewards?.current_streak_days}d
+                          <Flame size={12} /> {client.rewards?.current_streak_days}d
                         </span>
                       )}
                     </div>
