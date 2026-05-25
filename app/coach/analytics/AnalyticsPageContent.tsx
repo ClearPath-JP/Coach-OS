@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { format, formatDistanceToNow, parseISO } from 'date-fns'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
+import { BarChart3 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { CountUpValue } from '@/components/ui/CountUpValue'
 import { PAYMENT_METHOD_LABELS, type PaymentMethodValue } from '@/lib/payment-methods'
@@ -402,9 +403,7 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
         noDataYet ? (
           mainTab === 'overview' ? (
           <Card variant="raised" padding="lg" className="p-10 text-center">
-            <p className="text-3xl" aria-hidden>
-              📊
-            </p>
+            <BarChart3 size={32} className="mx-auto text-[var(--accent)]" aria-hidden />
             <h2 className="mt-3 text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
               Your insights will appear here
             </h2>

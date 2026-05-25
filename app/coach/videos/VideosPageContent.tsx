@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Video as VideoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
@@ -310,7 +311,7 @@ export function VideosPageContent() {
 
         {!error && videos.length === 0 && (
           <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
-            <div className="empty-state-coach__icon" aria-hidden>🎬</div>
+            <div className="empty-state-coach__icon" aria-hidden><VideoIcon size={28} /></div>
             <p className="empty-state-coach__title">No videos yet</p>
             <p className="empty-state-coach__desc">
               Set your import folder in Settings, put videos in that Drive folder, then click <strong>Import from Google Drive</strong> to add them instantly — no upload to our servers.

@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { Package } from 'lucide-react'
 import { Input, Textarea } from '@/components/ui/Input'
 import { createPackageSchema, createInvoiceSchema, type CreatePackageInput, type CreateInvoiceInput } from '@/lib/validations'
 
@@ -412,7 +413,7 @@ export function PackagesPageContent() {
 
       {!loading && !error && packages.length === 0 && (
         <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
-          <div className="empty-state-coach__icon" aria-hidden>📦</div>
+          <div className="empty-state-coach__icon" aria-hidden><Package size={28} /></div>
           <p className="empty-state-coach__title">No packages yet</p>
           <p className="empty-state-coach__desc">
             Create session packages with set pricing and session counts. Send invoices to clients and track payments automatically.

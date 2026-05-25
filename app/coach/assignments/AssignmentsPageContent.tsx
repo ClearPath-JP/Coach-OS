@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { DataTable, type DataColumn } from '@/components/ui/DataTable'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -327,9 +328,7 @@ export function AssignmentsPageContent() {
           </div>
           {queueRows.length === 0 ? (
             <Card className="border border-[var(--border-default)] bg-[var(--bg-subtle)] p-10 text-center shadow-[var(--shadow-xs)]">
-              <p className="text-[20px]" aria-hidden>
-                🎉
-              </p>
+              <CheckCircle2 size={32} className="mx-auto text-[var(--accent)]" aria-hidden />
               <p className="mt-3 text-[15px] font-semibold text-[var(--text-primary)]">All caught up!</p>
               <p className="mt-1 text-[14px] text-[var(--text-tertiary)]">No assignments waiting for review.</p>
             </Card>
