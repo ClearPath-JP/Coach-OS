@@ -29,12 +29,13 @@ type ViewMode = 'grid' | 'list'
 
 function programGradient(title: string): string {
   const c = (title.trim()[0] ?? 'A').toUpperCase()
+  // Warm dojo palette — varied per program but cohesively on-brand (brass/ember/gold/clay).
   if (c >= 'A' && c <= 'E')
-    return 'linear-gradient(135deg, var(--cp-accent) 0%, var(--brand-primary, #1565C0) 100%)'
-  if (c >= 'F' && c <= 'J') return 'linear-gradient(135deg, #10B981 0%, #065F46 100%)'
-  if (c >= 'K' && c <= 'O') return 'linear-gradient(135deg, #8B5CF6 0%, #4C1D95 100%)'
-  if (c >= 'P' && c <= 'T') return 'linear-gradient(135deg, #F59E0B 0%, #92400E 100%)'
-  return 'linear-gradient(135deg, #F43F5E 0%, #881337 100%)'
+    return 'linear-gradient(135deg, var(--accent) 0%, #4a2c14 100%)'
+  if (c >= 'F' && c <= 'J') return 'linear-gradient(135deg, #d98a3c 0%, #6b3410 100%)'
+  if (c >= 'K' && c <= 'O') return 'linear-gradient(135deg, #c99a3a 0%, #5c4410 100%)'
+  if (c >= 'P' && c <= 'T') return 'linear-gradient(135deg, #e0a84a 0%, #7a4a14 100%)'
+  return 'linear-gradient(135deg, #b5642e 0%, #4a2410 100%)'
 }
 
 function previewLetters(title: string): string {

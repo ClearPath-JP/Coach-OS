@@ -1,6 +1,5 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
 import { WorkspaceProvider } from '@/lib/workspace-context'
@@ -32,7 +31,6 @@ export default async function CoachLayout({
 
   if (profile?.role !== 'coach') redirect('/client/portal')
 
-  let resolvedCpAccent = coerceToAllowedCoachAccent(null)
   let initialWorkspaceSettings = {
     workspaceDisplayName: null as string | null,
     brandName: null as string | null,
@@ -96,23 +94,20 @@ export default async function CoachLayout({
       logoUrl: workspace?.logo_url ?? null,
       stanceId: workspace?.stance_id ?? null,
     }
-    resolvedCpAccent = coerceToAllowedCoachAccent(workspace?.accent_color ?? null)
   }
 
   const brandName = initialWorkspaceSettings.brandName
     || initialWorkspaceSettings.workspaceDisplayName
     || 'Kindo'
 
-  // Coach surfaces stay KINDO-branded (global --accent from globals.css, now brass #c8882e).
-  // Workspace accent (--cp-accent) only colors elements that preview the client portal.
-  const accentStyle = `:root, html[data-theme='dark'], html[data-theme='light'] { --cp-accent: ${resolvedCpAccent}; }`
+  // Coach surfaces stay KINDO brass: --cp-accent falls back to globals (var(--accent)).
+  // The workspace/stance accent themes the client portal only (see app/client/layout).
 
   return (
     <WorkspaceProvider
       key={workspaceProviderKey(initialWorkspaceSettings)}
       initialSettings={initialWorkspaceSettings}
     >
-      <style>{accentStyle}</style>
       {/* Desktop: sidebar + content grid  |  Mobile: bottom dock + content */}
       <div className="flex min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
         {/* Sidebar — desktop only */}

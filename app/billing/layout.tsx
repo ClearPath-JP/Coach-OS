@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import { coachAccentStyleTagContent, coerceToAllowedCoachAccent } from '@/lib/coach-accent-phase4'
 import { createClient } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +9,6 @@ import { getCoachSidebarNav } from '@/components/layout/coach-sidebar-nav'
 import { WorkspaceProvider } from '@/lib/workspace-context'
 import { workspaceProviderKey } from '@/lib/workspace-settings'
 import { CommandPalette } from '@/components/CommandPalette'
-import { AccentInjector } from '@/components/layout/AccentInjector'
 
 /**
  * Billing layout: coach-only; same shell as coach area (Nav + sidebar + MobileNav).
@@ -40,7 +38,6 @@ export default async function BillingLayout({
     'Coach'
   const { topItems, sections } = getCoachSidebarNav()
 
-  let resolvedCpAccent = coerceToAllowedCoachAccent(null)
   let initialWorkspaceSettings = {
     workspaceDisplayName: null as string | null,
     brandName: null as string | null,
@@ -72,11 +69,7 @@ export default async function BillingLayout({
       logoUrl: workspace?.logo_url ?? null,
       stanceId: workspace?.stance_id ?? null,
     }
-
-    resolvedCpAccent = coerceToAllowedCoachAccent(workspace?.accent_color ?? null)
   }
-
-  const cpAccentStyle = coachAccentStyleTagContent(resolvedCpAccent)
 
   return (
     <WorkspaceProvider
@@ -84,8 +77,6 @@ export default async function BillingLayout({
       initialSettings={initialWorkspaceSettings}
     >
       <div className="flex min-h-screen min-h-0 flex-col bg-[var(--cp-offwhite)] lg:grid lg:h-[100dvh] lg:grid-rows-[var(--nav-height)_minmax(0,1fr)] lg:overflow-hidden">
-        <style>{cpAccentStyle}</style>
-        <AccentInjector accentColor={resolvedCpAccent} />
         <Nav
           coachApp
           userDisplayName={displayName}
