@@ -49,7 +49,7 @@ const LABEL_CLASS =
 
 function focusGold(e: React.FocusEvent<HTMLInputElement>) {
   e.target.style.borderColor = 'var(--accent)'
-  e.target.style.boxShadow = '0 0 0 3px rgba(159,18,57,0.15)'
+  e.target.style.boxShadow = '0 0 0 3px rgba(var(--accent-rgb),0.15)'
 }
 function blurReset(e: React.FocusEvent<HTMLInputElement>) {
   e.target.style.borderColor = 'var(--border-default)'
@@ -139,22 +139,31 @@ export function SignupPageClient() {
         className="relative hidden min-h-0 flex-col overflow-hidden lg:flex lg:w-[45%]"
         style={{ background: '#0A0908' }}
       >
-        {/* Grain texture */}
+        {/* Dojo hero — matches the login page */}
         <div
           aria-hidden
           style={{
-            position: 'absolute', inset: 0, zIndex: 1, opacity: 0.025, pointerEvents: 'none',
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
-            backgroundSize: '200px 200px',
+            position: 'absolute', inset: 0, zIndex: 0,
+            backgroundImage: 'url(/images/newlogin.jpg)',
+            backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.5,
           }}
         />
 
-        {/* Accent glow */}
+        {/* Legibility overlay */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            background: 'linear-gradient(180deg, rgba(10,9,8,0.72) 0%, rgba(10,9,8,0.55) 42%, rgba(8,7,6,0.85) 100%)',
+          }}
+        />
+
+        {/* Amber glow */}
         <div
           aria-hidden
           style={{
             position: 'absolute', bottom: '-15%', left: '20%', width: '70%', height: '60%',
-            background: 'radial-gradient(ellipse, rgba(159,18,57,0.1) 0%, rgba(180,100,40,0.04) 40%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(var(--accent-rgb),0.12) 0%, rgba(var(--accent-rgb),0.04) 40%, transparent 70%)',
             pointerEvents: 'none', zIndex: 1,
           }}
         />
@@ -165,7 +174,7 @@ export function SignupPageClient() {
               fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500,
               letterSpacing: '0.12em', color: 'rgba(237,237,239,0.7)', lineHeight: 1,
             }}>
-              KIN<span style={{ color: '#e8943a' }}>DO</span>
+              KIN<span style={{ color: 'var(--accent)' }}>DO</span>
             </div>
           </div>
 
@@ -194,7 +203,7 @@ export function SignupPageClient() {
                 <div key={text} className="flex items-center gap-3">
                   <div style={{
                     width: 5, height: 5, borderRadius: '50%',
-                    background: 'rgba(159,18,57,0.5)', flexShrink: 0,
+                    background: 'rgba(var(--accent-rgb),0.6)', flexShrink: 0,
                   }} />
                   <span style={{ fontSize: 13, color: 'rgba(200,190,170,0.55)', lineHeight: 1.4 }}>
                     {text}
@@ -222,8 +231,8 @@ export function SignupPageClient() {
           className="glass-modal w-full max-w-[480px] rounded-2xl p-7 lg:p-9"
           style={{
             background: 'rgba(24,24,27,0.5)',
-            border: '1px solid rgba(159,18,57,0.12)',
-            boxShadow: '0 0 60px rgba(159,18,57,0.06), 0 8px 32px rgba(0,0,0,0.3)',
+            border: '1px solid rgba(var(--accent-rgb),0.14)',
+            boxShadow: '0 0 60px rgba(var(--accent-rgb),0.06), 0 8px 32px rgba(0,0,0,0.35)',
           }}
         >
 
@@ -233,7 +242,7 @@ export function SignupPageClient() {
               fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500,
               letterSpacing: '0.12em', color: 'var(--text-primary)', lineHeight: 1,
             }}>
-              KIN<span style={{ color: '#e8943a' }}>DO</span>
+              KIN<span style={{ color: 'var(--accent)' }}>DO</span>
             </div>
           </div>
 

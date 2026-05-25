@@ -2,7 +2,7 @@ import { PublicNav } from '@/components/landing/PublicNav'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection'
 import { FeaturesSection } from '@/components/landing/FeaturesSection'
-import { CoachSpotlightSection } from '@/components/landing/CoachSpotlightSection'
+import { FounderSection } from '@/components/landing/FounderSection'
 import { PricingSection } from '@/components/landing/PricingSection'
 import { CTASection } from '@/components/landing/CTASection'
 import { Footer } from '@/components/landing/Footer'
@@ -14,7 +14,7 @@ export default function LandingPage() {
       <HeroSection />
       <HowItWorksSection />
       <FeaturesSection />
-      <CoachSpotlightSection />
+      <FounderSection />
       <PricingSection />
       <CTASection />
       <Footer />

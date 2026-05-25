@@ -153,7 +153,7 @@ function SidebarWordmark() {
           aria-label="Kindo"
         >
           <span className="text-[var(--text-primary)]">KIN</span>
-          <span style={{ color: '#e8943a' }}>DO</span>
+          <span style={{ color: 'var(--accent)' }}>DO</span>
         </span>
         {workspaceName ? (
           <span
@@ -184,7 +184,7 @@ function CoachSidebarHeader() {
           aria-label="Kindo"
         >
           <span className="text-[var(--text-primary)]">KIN</span>
-          <span style={{ color: '#e8943a' }}>DO</span>
+          <span style={{ color: 'var(--accent)' }}>DO</span>
         </div>
         {workspaceName ? (
           <div

@@ -20,17 +20,17 @@ export function CTASection() {
 
           <div className="relative z-10">
             <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-5xl font-bold text-[var(--text-primary)] leading-tight">
-              Your dojo is waiting
+              The mat is ready.
             </h2>
             <p className="mt-4 text-[var(--text-secondary)] text-lg max-w-xl mx-auto">
-              Whether you&apos;re a coach ready to take your teaching online, or a student looking for real instruction — start here.
+              Coaches: open your dojo. Students: find yours.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/signup"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[var(--accent)] text-[var(--text-on-accent)] font-semibold hover:bg-[var(--accent-hover)] transition-all shadow-lg shadow-[var(--accent)]/20"
               >
-                Begin Your Journey
+                Open Your Dojo
                 <ArrowRight size={18} />
               </Link>
             </div>

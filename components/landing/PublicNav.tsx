@@ -7,8 +7,8 @@ import { Menu, X } from 'lucide-react'
 
 const navLinks = [
   { label: 'Features', href: '#features' },
-  { label: 'Coaches', href: '#coaches' },
   { label: 'Pricing', href: '#pricing' },
+  { label: 'Why Kindo', href: '#founder' },
 ]
 
 export function PublicNav() {
@@ -24,7 +24,7 @@ export function PublicNav() {
             style={{ lineHeight: 1 }}
           >
             <span className="text-[var(--text-primary)]">KIN</span>
-            <span style={{ color: '#e8943a' }}>DO</span>
+            <span className="font-bold" style={{ color: 'var(--accent)' }}>DO</span>
           </span>
         </Link>
 
@@ -51,9 +51,9 @@ export function PublicNav() {
           </Link>
           <Link
             href="/signup"
-            className="text-sm font-medium text-[var(--text-on-accent)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors px-5 py-2.5 rounded-lg"
+            className="text-sm font-medium text-[var(--text-on-accent)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors px-5 py-2.5 rounded-xl"
           >
-            Get Started
+            Open Your Dojo
           </Link>
         </div>
 
@@ -99,9 +99,9 @@ export function PublicNav() {
               <Link
                 href="/signup"
                 onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium text-center text-[var(--text-on-accent)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors px-5 py-2.5 rounded-lg"
+                className="text-sm font-medium text-center text-[var(--text-on-accent)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors px-5 py-2.5 rounded-xl"
               >
-                Get Started
+                Open Your Dojo
               </Link>
             </div>
           </motion.div>

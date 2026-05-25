@@ -121,14 +121,14 @@ function DawnDojoCanvas() {
 
 /* ───────────────── SVG Icons ───────────────── */
 
-/** Katana icon for Sensei role */
+/** Katana icon for Coach role */
 function KatanaIcon({ glow }: { glow?: boolean }) {
   return (
     <svg viewBox="0 0 64 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 58, height: 108 }}>
       <defs>
         <linearGradient id="katana-blade" x1="32" y1="8" x2="32" y2="75" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor={glow ? 'rgba(240,230,200,0.9)' : 'rgba(200,195,180,0.5)'} />
-          <stop offset="100%" stopColor={glow ? 'rgba(180,170,140,0.7)' : 'rgba(140,135,120,0.3)'} />
+          <stop offset="0%" stopColor={glow ? 'rgba(240,230,200,0.9)' : 'rgba(214,208,192,0.78)'} />
+          <stop offset="100%" stopColor={glow ? 'rgba(180,170,140,0.7)' : 'rgba(165,158,138,0.55)'} />
         </linearGradient>
         {glow && (
           <filter id="katana-glow">
@@ -141,24 +141,24 @@ function KatanaIcon({ glow }: { glow?: boolean }) {
       <path
         d="M31 8 L33 8 L34 75 L30 75 Z"
         fill="url(#katana-blade)"
-        stroke={glow ? 'rgba(232,168,72,0.3)' : 'rgba(180,170,150,0.15)'}
+        stroke={glow ? 'rgba(var(--accent-rgb),0.3)' : 'rgba(195,180,155,0.32)'}
         strokeWidth="0.5"
         filter={glow ? 'url(#katana-glow)' : undefined}
       />
       {/* Tsuba */}
-      <ellipse cx="32" cy="78" rx="10" ry="3" fill={glow ? 'rgba(180,150,80,0.6)' : 'rgba(120,100,60,0.35)'} />
+      <ellipse cx="32" cy="78" rx="10" ry="3" fill={glow ? 'rgba(180,150,80,0.6)' : 'rgba(155,128,72,0.6)'} />
       {/* Handle */}
-      <rect x="29" y="81" width="6" height="28" rx="1.5" fill={glow ? 'rgba(60,45,25,0.8)' : 'rgba(50,40,25,0.5)'} />
+      <rect x="29" y="81" width="6" height="28" rx="1.5" fill={glow ? 'rgba(60,45,25,0.8)' : 'rgba(72,56,34,0.72)'} />
       {[0, 6, 12, 18, 24].map((y) => (
-        <line key={y} x1="29" y1={83 + y} x2="35" y2={86 + y} stroke={glow ? 'rgba(160,130,70,0.35)' : 'rgba(120,100,60,0.15)'} strokeWidth="0.6" />
+        <line key={y} x1="29" y1={83 + y} x2="35" y2={86 + y} stroke={glow ? 'rgba(160,130,70,0.35)' : 'rgba(150,122,68,0.34)'} strokeWidth="0.6" />
       ))}
       {/* Pommel */}
-      <ellipse cx="32" cy="111" rx="4.5" ry="2" fill={glow ? 'rgba(160,130,70,0.5)' : 'rgba(100,80,50,0.3)'} />
+      <ellipse cx="32" cy="111" rx="4.5" ry="2" fill={glow ? 'rgba(160,130,70,0.5)' : 'rgba(135,108,66,0.54)'} />
     </svg>
   )
 }
 
-/** Shield / fist icon for Student role */
+/** Torii gate icon for Student role */
 function StudentIcon({ glow }: { glow?: boolean }) {
   return (
     <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 68, height: 68 }}>
@@ -175,18 +175,18 @@ function StudentIcon({ glow }: { glow?: boolean }) {
         {/* Top beam */}
         <path
           d="M15 22 L65 22 L67 18 L13 18 Z"
-          fill={glow ? 'rgba(232,168,72,0.6)' : 'rgba(180,160,120,0.3)'}
+          fill={glow ? 'rgba(var(--accent-rgb),0.6)' : 'rgba(198,172,128,0.6)'}
         />
         {/* Secondary beam */}
-        <rect x="18" y="26" width="44" height="3" rx="1" fill={glow ? 'rgba(200,160,80,0.45)' : 'rgba(150,130,90,0.2)'} />
+        <rect x="18" y="26" width="44" height="3" rx="1" fill={glow ? 'rgba(200,160,80,0.45)' : 'rgba(170,146,100,0.46)'} />
         {/* Left pillar */}
-        <rect x="22" y="26" width="4" height="42" fill={glow ? 'rgba(200,160,80,0.45)' : 'rgba(150,130,90,0.2)'} />
+        <rect x="22" y="26" width="4" height="42" fill={glow ? 'rgba(200,160,80,0.45)' : 'rgba(170,146,100,0.46)'} />
         {/* Right pillar */}
-        <rect x="54" y="26" width="4" height="42" fill={glow ? 'rgba(200,160,80,0.45)' : 'rgba(150,130,90,0.2)'} />
+        <rect x="54" y="26" width="4" height="42" fill={glow ? 'rgba(200,160,80,0.45)' : 'rgba(170,146,100,0.46)'} />
         {/* Base left */}
-        <rect x="18" y="66" width="12" height="3" rx="1" fill={glow ? 'rgba(200,160,80,0.35)' : 'rgba(150,130,90,0.15)'} />
+        <rect x="18" y="66" width="12" height="3" rx="1" fill={glow ? 'rgba(200,160,80,0.35)' : 'rgba(170,146,100,0.4)'} />
         {/* Base right */}
-        <rect x="50" y="66" width="12" height="3" rx="1" fill={glow ? 'rgba(200,160,80,0.35)' : 'rgba(150,130,90,0.15)'} />
+        <rect x="50" y="66" width="12" height="3" rx="1" fill={glow ? 'rgba(200,160,80,0.35)' : 'rgba(170,146,100,0.4)'} />
       </g>
     </svg>
   )
@@ -212,14 +212,16 @@ function EyeIcon({ off }: { off?: boolean }) {
 
 /* ───────────────── Role Select Screen ───────────────── */
 
+const VALUE_BULLETS = ['Your classes', 'Payments', 'Videos', 'Schedule']
+
 function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
   const [hovered, setHovered] = useState<LoginRole | null>(null)
 
   const cardStyle = (r: LoginRole): React.CSSProperties => ({
-    background: hovered === r ? 'rgba(15,15,18,0.55)' : 'rgba(15,15,18,0.42)',
+    background: hovered === r ? 'rgba(12,12,15,0.78)' : 'rgba(12,12,15,0.66)',
     backdropFilter: 'blur(24px) saturate(1.4)',
     WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
-    border: `1px solid ${hovered === r ? 'rgba(232,168,72,0.55)' : 'rgba(220,190,120,0.28)'}`,
+    border: `1px solid ${hovered === r ? 'rgba(var(--accent-rgb),0.6)' : 'rgba(var(--accent-rgb),0.4)'}`,
     borderRadius: 18,
     padding: '40px 32px 30px',
     cursor: 'pointer',
@@ -230,9 +232,29 @@ function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
     transition: 'all 0.35s ease',
     transform: hovered === r ? 'translateY(-6px) scale(1.02)' : 'translateY(0) scale(1)',
     boxShadow: hovered === r
-      ? '0 0 50px rgba(232,168,72,0.18), 0 14px 50px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)'
+      ? '0 0 50px rgba(var(--accent-rgb),0.18), 0 14px 50px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)'
       : '0 10px 36px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04)',
     width: 'clamp(180px, 22vw, 230px)',
+  })
+
+  const labelStyle = (r: LoginRole): React.CSSProperties => ({
+    fontFamily: 'var(--font-display)',
+    fontSize: 18,
+    fontWeight: 500,
+    letterSpacing: '0.1em',
+    color: hovered === r ? 'var(--accent-hover)' : 'rgba(230,225,215,0.9)',
+    transition: 'color 0.3s, text-shadow 0.3s',
+    textShadow: hovered === r ? '0 0 16px rgba(var(--accent-rgb),0.4)' : '0 1px 6px rgba(0,0,0,0.5)',
+    display: 'block',
+  })
+
+  const subLabelStyle = (r: LoginRole): React.CSSProperties => ({
+    fontSize: 11,
+    color: hovered === r ? 'rgba(210,200,180,0.7)' : 'rgba(200,190,170,0.5)',
+    transition: 'color 0.3s',
+    letterSpacing: '0.04em',
+    marginTop: 6,
+    display: 'block',
   })
 
   return (
@@ -242,137 +264,141 @@ function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 36,
+        gap: 28,
+        padding: '0 20px',
         animation: 'gameMenuAppear 0.8s ease-out both',
         animationDelay: '0.3s',
       }}
     >
+      {/* Headline — what Kindo is, in one line */}
+      <h1
+        className="role-headline"
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'clamp(20px, 3vw, 28px)',
+          fontWeight: 500,
+          letterSpacing: '0.01em',
+          color: 'rgba(240,237,232,0.92)',
+          textShadow: '0 2px 18px rgba(0,0,0,0.6)',
+          margin: 0,
+          textAlign: 'center',
+        }}
+      >
+        Run your whole coaching business.
+      </h1>
+
       {/* Two role cards */}
-      <div style={{ display: 'flex', gap: 'clamp(20px, 4vw, 48px)', alignItems: 'center' }}>
-        {/* Sensei card */}
+      <div className="role-cards" style={{ display: 'flex', gap: 'clamp(20px, 4vw, 48px)', alignItems: 'center' }}>
+        {/* Coach card */}
         <button
           type="button"
+          className="role-card"
           onClick={() => onSelect('coach')}
           onMouseEnter={() => setHovered('coach')}
           onMouseLeave={() => setHovered(null)}
           style={cardStyle('coach')}
-          aria-label="Sign in as Sensei (Coach)"
+          aria-label="Sign in as a coach"
         >
-          <div style={{ height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="role-icon-slot" style={{ height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <KatanaIcon glow={hovered === 'coach'} />
           </div>
           <div
             aria-hidden
-            style={{ width: '60%', height: 1, background: `linear-gradient(90deg, transparent, ${hovered === 'coach' ? 'rgba(232,168,72,0.3)' : 'rgba(200,170,100,0.12)'}, transparent)` }}
+            style={{ width: '60%', height: 1, background: `linear-gradient(90deg, transparent, ${hovered === 'coach' ? 'rgba(var(--accent-rgb),0.3)' : 'rgba(200,170,100,0.12)'}, transparent)` }}
           />
           <div style={{ textAlign: 'center' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 18,
-                fontWeight: 500,
-                letterSpacing: '0.1em',
-                color: hovered === 'coach' ? '#f0cc6a' : 'rgba(230,225,215,0.9)',
-                transition: 'color 0.3s, text-shadow 0.3s',
-                textShadow: hovered === 'coach' ? '0 0 16px rgba(232,168,72,0.4)' : '0 1px 6px rgba(0,0,0,0.5)',
-                display: 'block',
-              }}
-            >
-              SENSEI
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                color: hovered === 'coach' ? 'rgba(210,200,180,0.7)' : 'rgba(200,190,170,0.5)',
-                transition: 'color 0.3s',
-                letterSpacing: '0.04em',
-                marginTop: 6,
-                display: 'block',
-              }}
-            >
-              Coach workspace
-            </span>
+            <span style={labelStyle('coach')}>COACH</span>
+            <span style={subLabelStyle('coach')}>Your dojo</span>
           </div>
         </button>
 
         {/* Decorative divider */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <div style={{ width: 1, height: 50, background: 'linear-gradient(180deg, transparent, rgba(200,170,100,0.2), transparent)' }} />
+        <div className="role-divider" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div className="role-divider-line" style={{ width: 1, height: 50, background: 'linear-gradient(180deg, transparent, rgba(200,170,100,0.2), transparent)' }} />
           <span style={{ fontSize: 10, color: 'rgba(200,190,170,0.25)', letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>OR</span>
-          <div style={{ width: 1, height: 50, background: 'linear-gradient(180deg, transparent, rgba(200,170,100,0.2), transparent)' }} />
+          <div className="role-divider-line" style={{ width: 1, height: 50, background: 'linear-gradient(180deg, transparent, rgba(200,170,100,0.2), transparent)' }} />
         </div>
 
         {/* Student card */}
         <button
           type="button"
+          className="role-card"
           onClick={() => onSelect('student')}
           onMouseEnter={() => setHovered('student')}
           onMouseLeave={() => setHovered(null)}
           style={cardStyle('student')}
-          aria-label="Sign in as Student (Client)"
+          aria-label="Sign in as a student"
         >
-          <div style={{ height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="role-icon-slot" style={{ height: 108, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <StudentIcon glow={hovered === 'student'} />
           </div>
           <div
             aria-hidden
-            style={{ width: '60%', height: 1, background: `linear-gradient(90deg, transparent, ${hovered === 'student' ? 'rgba(232,168,72,0.3)' : 'rgba(200,170,100,0.12)'}, transparent)` }}
+            style={{ width: '60%', height: 1, background: `linear-gradient(90deg, transparent, ${hovered === 'student' ? 'rgba(var(--accent-rgb),0.3)' : 'rgba(200,170,100,0.12)'}, transparent)` }}
           />
           <div style={{ textAlign: 'center' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 18,
-                fontWeight: 500,
-                letterSpacing: '0.1em',
-                color: hovered === 'student' ? '#f0cc6a' : 'rgba(230,225,215,0.9)',
-                transition: 'color 0.3s, text-shadow 0.3s',
-                textShadow: hovered === 'student' ? '0 0 16px rgba(232,168,72,0.4)' : '0 1px 6px rgba(0,0,0,0.5)',
-                display: 'block',
-              }}
-            >
-              STUDENT
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                color: hovered === 'student' ? 'rgba(210,200,180,0.7)' : 'rgba(200,190,170,0.5)',
-                transition: 'color 0.3s',
-                letterSpacing: '0.04em',
-                marginTop: 6,
-                display: 'block',
-              }}
-            >
-              Client portal
-            </span>
+            <span style={labelStyle('student')}>STUDENT</span>
+            <span style={subLabelStyle('student')}>Your training</span>
           </div>
         </button>
       </div>
 
-      {/* Signup link */}
-      <p style={{ fontSize: 13, color: 'rgba(200,190,170,0.5)', margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
-        New here?{' '}
+      {/* Value micro-bullets — what every coach owns */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 'clamp(8px, 2vw, 14px)',
+          maxWidth: 440,
+        }}
+      >
+        {VALUE_BULLETS.map((t, i) => (
+          <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 14px)' }}>
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'rgba(230,221,202,0.85)',
+                textShadow: '0 1px 8px rgba(0,0,0,0.85)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t}
+            </span>
+            {i < VALUE_BULLETS.length - 1 && (
+              <span aria-hidden style={{ color: 'rgba(var(--accent-rgb),0.55)', fontSize: 12, lineHeight: 1 }}>·</span>
+            )}
+          </span>
+        ))}
+      </div>
+
+      {/* Signup link — coaches only (students are invited by their coach) */}
+      <p style={{ fontSize: 13, color: 'rgba(212,202,184,0.7)', margin: 0, textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
+        New coach?{' '}
         <Link
           href="/signup"
-          style={{ fontWeight: 500, color: '#e8a948', textDecoration: 'none', transition: 'color 0.15s' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#f0c060' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = '#e8a948' }}
+          style={{ fontWeight: 500, color: 'var(--accent)', textDecoration: 'none', transition: 'color 0.15s' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-hover)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--accent)' }}
         >
-          Begin your journey
+          Open your dojo
         </Link>
       </p>
 
-      {/* Bottom tagline */}
+      {/* Founder credibility */}
       <p
         style={{
           fontSize: 11,
           letterSpacing: '0.08em',
-          color: 'rgba(200,190,170,0.4)',
-          textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+          color: 'rgba(214,204,186,0.72)',
+          textShadow: '0 1px 8px rgba(0,0,0,0.8)',
           margin: 0,
         }}
       >
-        Discipline is the path.
+        Built by a coach, for coaches.
       </p>
     </div>
   )
@@ -396,8 +422,16 @@ function LoginForm({
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [emailTouched, setEmailTouched] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
-  const emailInvalid = emailTouched && email.trim().length > 0 && !isValidEmail(email)
+  const emailEmpty = email.trim().length === 0
+  const emailError =
+    submitted && emailEmpty
+      ? 'Enter your email.'
+      : emailTouched && !emailEmpty && !isValidEmail(email)
+        ? 'Enter a valid email address.'
+        : null
+  const passwordError = submitted && password.length === 0 ? 'Enter your password.' : null
 
   const rateLimitMessage =
     searchParams.get('error') === 'rate_limit'
@@ -411,8 +445,9 @@ function LoginForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setSubmitted(true)
     setEmailTouched(true)
-    if (!isValidEmail(email)) return
+    if (!isValidEmail(email) || password.length === 0) return
     setLoading(true)
     const intent = role === 'coach' ? 'coach' : 'client'
     const res = await fetch('/api/auth/login', {
@@ -473,7 +508,7 @@ function LoginForm({
           letterSpacing: '0.03em',
           textShadow: '0 1px 4px rgba(0,0,0,0.4)',
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = '#e8a948' }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent)' }}
         onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(200,190,170,0.55)' }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -528,8 +563,8 @@ function LoginForm({
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={(e) => void handleSubmit(e)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Form — method=post is a no-JS safety net; submit is always intercepted below */}
+        <form method="post" onSubmit={(e) => void handleSubmit(e)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }} noValidate>
           {/* Email */}
           <div>
             <label htmlFor="login-email" style={{ display: 'block', marginBottom: 5, fontSize: 11, fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'rgba(200,190,170,0.55)' }}>
@@ -543,17 +578,18 @@ function LoginForm({
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setEmailTouched(true)}
               placeholder="you@example.com"
+              aria-invalid={emailError ? true : undefined}
               style={{
-                width: '100%', height: 44, borderRadius: 10,
-                border: emailInvalid ? '1px solid rgba(220,60,60,0.5)' : '1px solid rgba(200,170,100,0.08)',
+                width: '100%', height: 46, borderRadius: 10,
+                border: emailError ? '1px solid rgba(220,60,60,0.5)' : '1px solid rgba(200,170,100,0.08)',
                 background: 'rgba(255,255,255,0.035)', padding: '0 14px', fontSize: 14,
                 color: 'rgba(240,237,232,0.9)', outline: 'none',
                 transition: 'border-color 0.2s, box-shadow 0.2s', boxSizing: 'border-box' as const,
               }}
               onFocus={(e) => { e.target.style.borderColor = 'rgba(200,150,60,0.35)'; e.target.style.boxShadow = '0 0 0 3px rgba(200,150,60,0.08)' }}
-              onBlurCapture={(e) => { e.target.style.borderColor = emailInvalid ? 'rgba(220,60,60,0.5)' : 'rgba(200,170,100,0.08)'; e.target.style.boxShadow = 'none' }}
+              onBlurCapture={(e) => { e.target.style.borderColor = emailError ? 'rgba(220,60,60,0.5)' : 'rgba(200,170,100,0.08)'; e.target.style.boxShadow = 'none' }}
             />
-            {emailInvalid && <p style={{ marginTop: 4, fontSize: 12, color: '#f87171' }}>Enter a valid email address.</p>}
+            {emailError && <p style={{ marginTop: 4, fontSize: 12, color: '#f87171' }}>{emailError}</p>}
           </div>
 
           {/* Password */}
@@ -564,12 +600,11 @@ function LoginForm({
               </label>
               <Link
                 href="/forgot-password"
-                style={{ fontSize: 11, color: 'rgba(200,190,170,0.5)', textDecoration: 'none', transition: 'color 0.15s' }}
-                tabIndex={-1}
-                onMouseEnter={(e) => { e.currentTarget.style.color = '#e8a948' }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(200,190,170,0.5)' }}
+                style={{ fontSize: 11, color: 'var(--accent)', textDecoration: 'none', transition: 'color 0.15s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-hover)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--accent)' }}
               >
-                Forgot?
+                Forgot password?
               </Link>
             </div>
             <div style={{ position: 'relative' }}>
@@ -580,15 +615,16 @@ function LoginForm({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Your password"
+                aria-invalid={passwordError ? true : undefined}
                 style={{
-                  width: '100%', height: 44, borderRadius: 10,
-                  border: '1px solid rgba(200,170,100,0.08)',
+                  width: '100%', height: 46, borderRadius: 10,
+                  border: passwordError ? '1px solid rgba(220,60,60,0.5)' : '1px solid rgba(200,170,100,0.08)',
                   background: 'rgba(255,255,255,0.035)', padding: '0 42px 0 14px', fontSize: 14,
                   color: 'rgba(240,237,232,0.9)', outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s', boxSizing: 'border-box' as const,
                 }}
                 onFocus={(e) => { e.target.style.borderColor = 'rgba(200,150,60,0.35)'; e.target.style.boxShadow = '0 0 0 3px rgba(200,150,60,0.08)' }}
-                onBlur={(e) => { e.target.style.borderColor = 'rgba(200,170,100,0.08)'; e.target.style.boxShadow = 'none' }}
+                onBlur={(e) => { e.target.style.borderColor = passwordError ? 'rgba(220,60,60,0.5)' : 'rgba(200,170,100,0.08)'; e.target.style.boxShadow = 'none' }}
               />
               <button
                 type="button"
@@ -602,6 +638,7 @@ function LoginForm({
                 <EyeIcon off={showPassword} />
               </button>
             </div>
+            {passwordError && <p style={{ marginTop: 4, fontSize: 12, color: '#f87171' }}>{passwordError}</p>}
           </div>
 
           {/* Error */}
@@ -617,16 +654,17 @@ function LoginForm({
             disabled={loading}
             className="login-enter-btn"
             style={{
-              marginTop: 4, height: 46, width: '100%', borderRadius: 10,
-              border: '1px solid rgba(200,150,60,0.25)',
-              background: 'linear-gradient(135deg, rgba(200,140,40,0.2) 0%, rgba(180,100,20,0.12) 100%)',
-              color: '#e8c873', fontSize: 14, fontWeight: 600, letterSpacing: '0.04em',
-              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1,
+              marginTop: 8, height: 48, width: '100%', borderRadius: 10,
+              border: '1px solid rgba(240,182,92,0.5)',
+              background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%)',
+              color: '#160f06', fontSize: 14, fontWeight: 600, letterSpacing: '0.05em',
+              cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
               transition: 'all 0.25s', position: 'relative', overflow: 'hidden',
+              boxShadow: '0 4px 18px rgba(200,140,40,0.25)',
             }}
           >
             {loading ? (
-              <div style={{ width: 18, height: 18, border: '2px solid rgba(232,200,115,0.3)', borderTopColor: '#e8c873', borderRadius: '50%', animation: 'gameMenuSpin 0.7s linear infinite', margin: '0 auto' }} />
+              <div style={{ width: 18, height: 18, border: '2px solid rgba(20,14,6,0.25)', borderTopColor: '#160f06', borderRadius: '50%', animation: 'gameMenuSpin 0.7s linear infinite', margin: '0 auto' }} />
             ) : (
               'Enter'
             )}
@@ -636,19 +674,25 @@ function LoginForm({
         {/* Divider */}
         <div aria-hidden style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(200,170,100,0.12), transparent)', margin: '20px 0 16px' }} />
 
-        {/* Footer */}
+        {/* Footer — coaches sign up; students are invited by their coach */}
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 13, color: 'rgba(200,190,170,0.5)', margin: 0 }}>
-            New here?{' '}
-            <Link
-              href="/signup"
-              style={{ fontWeight: 500, color: '#e8a948', textDecoration: 'none', transition: 'color 0.15s' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#f0c060' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#e8a948' }}
-            >
-              Begin your journey
-            </Link>
-          </p>
+          {isSensei ? (
+            <p style={{ fontSize: 13, color: 'rgba(200,190,170,0.5)', margin: 0 }}>
+              New here?{' '}
+              <Link
+                href="/signup"
+                style={{ fontWeight: 500, color: 'var(--accent)', textDecoration: 'none', transition: 'color 0.15s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent-hover)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--accent)' }}
+              >
+                Open your dojo
+              </Link>
+            </p>
+          ) : (
+            <p style={{ fontSize: 13, color: 'rgba(200,190,170,0.5)', margin: 0 }}>
+              Need access? Ask your coach for your invite.
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -695,9 +739,9 @@ export function DualRoleLoginPage() {
       {/* ═══ TOP BAR ═══ */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500, letterSpacing: '0.12em', color: 'rgba(240,237,232,0.95)', lineHeight: 1, textShadow: '0 2px 10px rgba(0,0,0,0.6)' }}>
-          KIN<span style={{ color: '#e8943a' }}>DO</span>
+          KIN<span style={{ color: 'var(--accent)' }}>DO</span>
         </div>
-        <p style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(200,190,170,0.5)', textShadow: '0 1px 6px rgba(0,0,0,0.6)', margin: 0 }}>
+        <p className="top-tagline" style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(200,190,170,0.5)', textShadow: '0 1px 6px rgba(0,0,0,0.6)', margin: 0 }}>
           FOCUS. TRAIN. EVOLVE.
         </p>
       </div>
@@ -727,9 +771,21 @@ export function DualRoleLoginPage() {
           color: rgba(200, 190, 170, 0.2);
         }
         .login-enter-btn:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(200,140,40,0.3) 0%, rgba(180,100,20,0.2) 100%) !important;
-          border-color: rgba(200,150,60,0.4) !important;
-          box-shadow: 0 0 24px rgba(200,140,40,0.12);
+          background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%) !important;
+          border-color: rgba(245,198,114,0.65) !important;
+          box-shadow: 0 6px 26px rgba(200,140,40,0.4) !important;
+          transform: translateY(-1px);
+        }
+        @media (max-width: 600px) {
+          .role-cards { flex-direction: column !important; gap: 18px !important; }
+          .role-card { width: min(320px, 84vw) !important; padding: 26px 28px 22px !important; }
+          .role-divider { flex-direction: row !important; gap: 12px !important; }
+          .role-divider-line { width: 44px !important; height: 1px !important; }
+        }
+        @media (max-width: 480px) {
+          .top-tagline { display: none !important; }
+          .role-headline { font-size: 20px !important; }
+          .role-icon-slot { height: 84px !important; }
         }
       `}</style>
     </div>

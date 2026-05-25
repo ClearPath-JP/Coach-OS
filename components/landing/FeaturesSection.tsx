@@ -69,7 +69,7 @@ export function FeaturesSection() {
             Features
           </span>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-            Everything your dojo needs
+            One dojo. Every tool.
           </h2>
           <p className="mt-4 text-[var(--text-secondary)] max-w-lg mx-auto">
             Video-first. Community-driven. Built by a coach who got tired of juggling 5 different apps.
@@ -84,7 +84,7 @@ export function FeaturesSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
-              transition={{ delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: i * 0.03, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className={`group p-6 rounded-2xl border transition-colors ${
                 feature.accent
                   ? 'border-[var(--accent)]/30 bg-[var(--accent)]/5 hover:border-[var(--accent)]/50'
@@ -101,7 +101,7 @@ export function FeaturesSection() {
               <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-2">
                 {feature.title}
               </h3>
-              <p className="text-xs text-[var(--text-tertiary)] leading-relaxed">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                 {feature.description}
               </p>
             </motion.div>

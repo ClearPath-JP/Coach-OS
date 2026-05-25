@@ -27,7 +27,7 @@ export function AuthBrandWordmark({
       aria-label="Kindo"
     >
       <span className={tone === 'on-dark' ? 'text-white' : 'text-[#111827]'}>KIN</span>
-      <span className="text-[#e8943a]">DO</span>
+      <span className="text-[var(--accent)]">DO</span>
     </span>
   )
 }

@@ -34,7 +34,7 @@ export function HowItWorksSection() {
             How it works
           </span>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-            Three steps to your online dojo
+            Open the doors in three moves
           </h2>
         </div>
 

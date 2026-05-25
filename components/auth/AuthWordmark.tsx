@@ -35,7 +35,7 @@ export function AuthWordmark({
         aria-label="Kindo"
       >
         <span className="text-[#0B2D5E]">KIN</span>
-        <span className="text-[#e8943a]">DO</span>
+        <span className="text-[var(--accent)]">DO</span>
       </p>
     )
   }
@@ -50,7 +50,7 @@ export function AuthWordmark({
       aria-label="Kindo"
     >
       <span className="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]">KIN</span>
-      <span className="text-[#e8943a] drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">DO</span>
+      <span className="text-[var(--accent)] drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">DO</span>
     </p>
   )
 }

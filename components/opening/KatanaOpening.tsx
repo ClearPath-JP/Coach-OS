@@ -4,19 +4,19 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const SESSION_KEY = 'sensei-opening-played'
-const TOTAL_DURATION = 2600
+const TOTAL_DURATION = 600
 
 /**
  * Katana slash intro animation.
  * Plays once per browser session, then unmounts.
  * Respects prefers-reduced-motion.
  *
- * Sequence (2.4s):
- *   0-400ms   Stillness — grain + faint guide line
- *   300-900ms Blade descends from top
- *   900-1300ms Horizontal slash erupts from impact
- *   1200-2000ms Screen splits, halves peel away
- *   1800-2400ms Overlay fades out
+ * Sequence (~780ms total):
+ *   0-120ms   Guide line fades in
+ *   40-240ms  Blade descends from top
+ *   210-410ms Impact glow + horizontal slash erupts
+ *   360-590ms Screen splits, halves peel away
+ *   600ms     Unmount; 180ms overlay fade reveals the page
  */
 export function KatanaOpening() {
   const [show, setShow] = useState(true)
@@ -47,7 +47,7 @@ export function KatanaOpening() {
           className="katana-overlay"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
           aria-hidden="true"
         >
           {/* Film grain texture */}

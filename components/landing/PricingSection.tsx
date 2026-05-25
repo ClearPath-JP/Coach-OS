@@ -7,11 +7,11 @@ import { Check } from 'lucide-react'
 const plans = [
   {
     name: 'Starter',
-    price: 49,
+    price: 69,
     description: 'For coaches just getting started online.',
     features: [
-      'Up to 10 students',
-      'Video library (5GB)',
+      'Up to 15 students',
+      'Video library (10GB)',
       'Basic programs',
       'Dojo chat',
       'Student progress tracking',
@@ -19,12 +19,12 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: 99,
+    price: 129,
     description: 'For coaches ready to grow their dojo.',
     popular: true,
     features: [
-      'Up to 30 students',
-      'Video library (25GB)',
+      'Unlimited students',
+      'Video library (50GB)',
       'Unlimited programs & lessons',
       'Dojo chat with channels',
       'Advanced analytics',
@@ -34,11 +34,11 @@ const plans = [
   },
   {
     name: 'Scale',
-    price: 149,
+    price: 199,
     description: 'For coaches building a training empire.',
     features: [
       'Unlimited students',
-      'Video library (100GB)',
+      'Video library (200GB)',
       'Everything in Pro',
       'White-label branding',
       'Priority support',
@@ -61,7 +61,7 @@ export function PricingSection() {
             Pricing
           </span>
           <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-            Simple pricing for coaches
+            Pricing that grows with you
           </h2>
           <p className="mt-4 text-[var(--text-secondary)] max-w-lg mx-auto">
             Students join free. Coaches pick a plan that fits their dojo.
@@ -102,7 +102,7 @@ export function PricingSection() {
                 className={`block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
                   plan.popular
                     ? 'bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20'
-                    : 'border border-[var(--border-default)] text-[var(--text-primary)] hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/5'
+                    : 'border border-[var(--border-default)] bg-white/[0.05] text-[var(--text-primary)] hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/10'
                 }`}
               >
                 Start Free Trial

@@ -4,7 +4,7 @@ const footerLinks = {
   Product: [
     { label: 'Features', href: '#features' },
     { label: 'Pricing', href: '#pricing' },
-    { label: 'Browse Coaches', href: '/browse' },
+    { label: 'Why Kindo', href: '#founder' },
   ],
   Company: [
     { label: 'About', href: '#' },
@@ -30,7 +30,7 @@ export function Footer() {
                 aria-label="Kindo"
               >
                 <span className="text-[var(--text-primary)]">KIN</span>
-                <span style={{ color: '#e8943a' }}>DO</span>
+                <span className="font-bold" style={{ color: 'var(--accent)' }}>DO</span>
               </span>
             </div>
             <p className="text-sm text-[var(--text-tertiary)] max-w-xs leading-relaxed">
@@ -65,7 +65,7 @@ export function Footer() {
             &copy; {new Date().getFullYear()} Kindo. All rights reserved.
           </p>
           <p className="text-xs text-[var(--text-quaternary)]">
-            Built by FoundOS
+            Your dojo, online.
           </p>
         </div>
       </div>

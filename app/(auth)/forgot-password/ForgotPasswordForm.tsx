@@ -116,7 +116,7 @@ export function ForgotPasswordForm() {
             }}
             onFocus={(e) => {
               e.target.style.borderColor = 'var(--accent)'
-              e.target.style.boxShadow = '0 0 0 3px rgba(159,18,57,0.15)'
+              e.target.style.boxShadow = '0 0 0 3px rgba(232,148,58,0.15)'
             }}
             onBlur={(e) => {
               e.target.style.borderColor = 'var(--border-strong)'
