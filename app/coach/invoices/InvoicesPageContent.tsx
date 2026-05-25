@@ -267,7 +267,7 @@ export function InvoicesPageContent() {
                 </Button>
                 <Button
                   size="xs"
-                  variant="secondary"
+                  variant="primary"
                   type="button"
                   disabled={resendBusyId === inv.id}
                   onClick={() => void resendInvoice(inv)}

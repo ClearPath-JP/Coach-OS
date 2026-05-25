@@ -462,14 +462,14 @@ export function PackagesPageContent() {
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   className="min-h-[44px]"
                   onClick={() => openSendInvoice(pkg)}
                 >
                   Send invoice
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   className="min-h-[44px]"
                   onClick={() => openEdit(pkg)}
                 >
