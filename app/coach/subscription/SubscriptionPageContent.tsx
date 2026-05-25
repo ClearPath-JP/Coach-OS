@@ -68,7 +68,7 @@ const BENEFITS = [
   { icon: Palette, title: 'White-Label Branding', description: 'Custom colors, logo, branded client portal' },
   { icon: Star, title: 'Testimonials', description: 'Collect and display client testimonials' },
   { icon: FileText, title: 'Assignments', description: 'Send homework with file uploads' },
-  { icon: Shield, title: 'Priority Support', description: 'Direct support from the FoundOS team' },
+  { icon: Shield, title: 'Priority Support', description: 'Direct support from the Kindo team' },
 ] as const
 
 const FOUNDING_FEATURES = [

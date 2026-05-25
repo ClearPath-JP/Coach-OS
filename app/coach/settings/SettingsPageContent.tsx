@@ -1076,7 +1076,7 @@ export function SettingsPageContent() {
                   <div className="h-5 rounded-[6px] bg-[var(--bg-muted)]" />
                   <div className="h-5 rounded-[6px] bg-[var(--bg-muted)]" />
                 </div>
-                <p className="mt-3 text-center text-[10px] text-[var(--text-quaternary)]">Powered by FoundOS</p>
+                <p className="mt-3 text-center text-[10px] text-[var(--text-quaternary)]">Powered by Kindo</p>
               </div>
               <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">Preview — how clients see your portal</p>
             </div>

@@ -16,15 +16,17 @@ import {
 import { Card } from '@/components/ui/Card'
 import { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_STYLES, type PaymentMethodValue } from '@/lib/payment-methods'
 
+// Brand-aligned, distinguishable palette: lead with brass, alternate warm/cool earthy tones
+// (from the stance palette) — no neon violet/indigo/pink.
 const DONUT_COLORS = [
-  '#0ea5e9',
-  '#10b981',
-  '#8b5cf6',
-  '#f59e0b',
-  '#6366f1',
-  '#ec4899',
+  '#c8882e', // brass
+  '#6a8aa4', // slate
+  '#5a8a4a', // jade
+  '#c4a44a', // gold
+  '#0f766e', // teal
+  '#b5642e', // clay
+  '#8a7a5a', // tan
   'var(--cp-gray)',
-  '#14b8a6',
 ]
 
 export type AnalyticsChartsChartRow = {

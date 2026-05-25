@@ -253,7 +253,6 @@ export function CoachDashboardContent({ coachDisplayName }: { coachDisplayName: 
               <Settings className="size-4" strokeWidth={1.5} />
               <span>Settings</span>
             </button>
-            <p className="sensei-menu__footer">Powered by FoundOS</p>
           </div>
         </div>
 

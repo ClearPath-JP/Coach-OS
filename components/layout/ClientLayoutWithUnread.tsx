@@ -128,7 +128,7 @@ export function ClientLayoutWithUnread({
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto pb-[88px] lg:min-h-0 lg:overflow-y-auto lg:pb-0">
           {children}
           <div className="mt-auto flex shrink-0 justify-center px-4 pb-2 pt-4 text-center text-[11px] text-[var(--text-quaternary)] lg:hidden">
-            Powered by <span className="font-medium text-[var(--cp-accent)]">FoundOS</span>
+            Powered by <span className="font-medium text-[var(--cp-accent)]">Kindo</span>
           </div>
         </div>
       </div>
