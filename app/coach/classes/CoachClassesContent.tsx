@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Loader2, Users, Calendar, Trash2, AlertCircle } from 'lucide-react'
+import { Plus, Loader2, Users, Calendar, Trash2, AlertTriangle } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
 
 const WEEKDAYS = [
@@ -194,7 +194,7 @@ export function CoachClassesContent() {
             role="alert"
             className="flex items-start gap-3 rounded-xl border border-[var(--warning-border)] bg-[var(--warning-bg)] px-4 py-3 text-sm text-[var(--warning)]"
           >
-            <AlertCircle className="mt-0.5 size-4 shrink-0" />
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <div>
               <p className="font-medium">Stripe not connected yet</p>
               <p className="mt-1 text-xs">
@@ -315,10 +315,16 @@ export function CoachClassesContent() {
 
         {!loading && !error && bookableSlots.length === 0 && packages.length > 0 && (
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-8 text-center">
-            <Calendar className="mx-auto mb-3 size-5 text-[var(--text-tertiary)]" />
-            <p className="text-sm text-[var(--text-tertiary)]">
-              No bookable class slots yet. Add your first one above.
-            </p>
+            <Calendar className="mx-auto mb-3 size-6 text-[var(--accent)]" />
+            <p className="text-sm font-medium text-[var(--text-primary)]">No class slots scheduled yet</p>
+            <p className="mt-1 text-sm text-[var(--text-tertiary)]">Put one of your class types on the weekly calendar.</p>
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            >
+              <Plus size={16} /> New class slot
+            </button>
           </div>
         )}
 
