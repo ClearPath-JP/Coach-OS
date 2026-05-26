@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { differenceInDays, eachWeekOfInterval, endOfWeek, format, isWithinInterval, parseISO, startOfWeek, subWeeks } from 'date-fns'
+import { Flame } from 'lucide-react'
 import { getLevelFromXp } from '@/lib/xp-system'
 import { ClientDailyCheckinsCoachSection } from '@/components/coach/ClientDailyCheckinsCoachSection'
 import { AssignProgramToClientModal } from '@/components/coach/AssignProgramToClientModal'
@@ -591,7 +592,8 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
             <p className="text-[11px] text-[var(--text-quaternary)]">Level {client.rewards?.level ?? 1}</p>
             {(client.rewards?.current_streak_days ?? 0) > 0 && (
               <span className="inline-flex items-center gap-0.5 rounded-full bg-[var(--accent-surface)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)]">
-                🔥 {client.rewards?.current_streak_days}d
+                <Flame size={11} className="shrink-0" />
+                {client.rewards?.current_streak_days}d
               </span>
             )}
           </div>

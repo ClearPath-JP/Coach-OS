@@ -147,7 +147,7 @@ export async function GET(request: Request) {
         deploymentHint,
       },
       billingUiCopy: {
-        monthlyDisplay: { starter: '$49', pro: '$99', scale: '$149' },
+        monthlyDisplay: { starter: '$69', pro: '$129', scale: '$199' },
         setupFeeDisplay: { starter: '$197', pro: '$297', scale: '$397' },
         note: 'Billing page labels are static in BillingPageContent — confirm they match Stripe.',
       },

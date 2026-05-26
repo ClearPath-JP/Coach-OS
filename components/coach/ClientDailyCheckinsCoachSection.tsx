@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { differenceInCalendarDays, eachDayOfInterval, format, parseISO, startOfDay, subDays } from 'date-fns'
+import { Flame } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
 
@@ -159,8 +160,9 @@ export function ClientDailyCheckinsCoachSection({ clientId }: { clientId: string
         </p>
         <p>
           Current streak:{' '}
-          <span className="font-medium text-[var(--color-ink)]">
-            🔥 {trend?.currentStreak ?? 0} day streak
+          <span className="inline-flex items-center gap-1 font-medium text-[var(--color-ink)]">
+            <Flame size={13} className="shrink-0" />
+            {trend?.currentStreak ?? 0} day streak
           </span>
         </p>
         <p>

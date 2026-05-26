@@ -68,6 +68,26 @@ export function PricingSection() {
           </p>
         </div>
 
+        {/* Founding early-bird offer — current launch deal; the 3-tier ladder below is the public "later" pricing */}
+        <div className="relative mx-auto mb-12 max-w-3xl overflow-hidden rounded-2xl border border-[var(--accent)]/40 bg-[var(--accent)]/[0.06] p-6 text-center">
+          <span className="text-xs font-semibold tracking-widest uppercase text-[var(--accent)]">
+            Founding offer · limited spots
+          </span>
+          <p className="mt-2 text-lg md:text-xl font-semibold text-[var(--text-primary)]">
+            Our first coaches lock in{' '}
+            <span className="text-[var(--accent)]">$99/mo for life</span> — full Pro access, no setup fee.
+          </p>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            Regular pricing below applies once the founding cohort fills.
+          </p>
+          <Link
+            href="/signup?role=coach&plan=founding"
+            className="mt-4 inline-block rounded-xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-[var(--text-on-accent)] shadow-lg shadow-[var(--accent)]/20 transition-all hover:bg-[var(--accent-hover)]"
+          >
+            Claim a founding spot
+          </Link>
+        </div>
+
         {/* Pricing cards */}
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan, i) => (
