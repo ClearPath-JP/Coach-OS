@@ -8,6 +8,11 @@ import { runLeadResearch } from '@/lib/lead-research'
 
 const searchSchema = z.object({
   query: z.string().trim().min(5, 'Query must be at least 5 characters').max(500, 'Query too long'),
+  discipline: z.string().trim().max(80).optional(),
+  area: z.string().trim().max(80).optional(),
+  radius: z.string().trim().max(40).optional(),
+  idealClients: z.array(z.string().trim().max(40)).max(12).optional(),
+  platform: z.string().trim().max(40).optional(),
 })
 
 /**
@@ -60,9 +65,9 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY || !process.env.APIFY_TOKEN) {
       return NextResponse.json(
-        { error: 'Lead research is not configured — ANTHROPIC_API_KEY missing.' },
+        { error: 'Lead research is not fully configured yet — needs ANTHROPIC_API_KEY and APIFY_TOKEN.' },
         { status: 503 }
       )
     }
@@ -88,7 +93,12 @@ export async function POST(request: Request) {
 
     // Run the actual Claude search
     try {
-      const outcome = await runLeadResearch(query)
+      const outcome = await runLeadResearch(query, {
+        discipline: parsed.data.discipline ?? null,
+        area: parsed.data.area ?? null,
+        idealClients: parsed.data.idealClients ?? null,
+        platform: parsed.data.platform ?? null,
+      })
       const status = outcome.results.length > 0 ? 'done' : 'failed'
       const errorMessage = outcome.results.length === 0
         ? 'No usable results returned — try rewording the query.'

@@ -7,35 +7,35 @@ export const PLAN_LIMITS = {
     maxVideoStorageGb: 5,
     maxAssignmentStorageGb: 2,
     maxAssignmentsPerClient: 50,
-    maxLeadSearchesPerMonth: 0,
+    maxLeadSearchesPerMonth: 10, // one-time trial — counted for all time, not monthly (see checkLeadSearchLimit)
   },
   founding: {
     maxClients: null as number | null, // unlimited — same as pro
     maxVideoStorageGb: 50,
     maxAssignmentStorageGb: 20,
     maxAssignmentsPerClient: 999,
-    maxLeadSearchesPerMonth: 50,
+    maxLeadSearchesPerMonth: 200,
   },
   starter: {
     maxClients: 15,
     maxVideoStorageGb: 10,
     maxAssignmentStorageGb: 5,
     maxAssignmentsPerClient: 50,
-    maxLeadSearchesPerMonth: 5,
+    maxLeadSearchesPerMonth: 50,
   },
   pro: {
     maxClients: null as number | null, // unlimited
     maxVideoStorageGb: 50,
     maxAssignmentStorageGb: 20,
     maxAssignmentsPerClient: 999,
-    maxLeadSearchesPerMonth: 20,
+    maxLeadSearchesPerMonth: 200,
   },
   scale: {
     maxClients: null as number | null, // unlimited
     maxVideoStorageGb: 200,
     maxAssignmentStorageGb: 100,
     maxAssignmentsPerClient: 999,
-    maxLeadSearchesPerMonth: 50,
+    maxLeadSearchesPerMonth: 500, // marketed "unlimited"; 500/mo is a fair-use ceiling
   },
 } as const
 
@@ -65,10 +65,10 @@ export function effectiveClientLimit(plan: string, workspaceMaxClients: number |
 /** Implied monthly SaaS MRR per plan for admin rollups — keep aligned with Stripe Prices + SubscriptionPageContent. */
 export const PLAN_MRR_CENTS: Record<string, number> = {
   free: 0,
-  founding: 9900,
-  starter: 9900,
-  pro: 14900,
-  scale: 24900,
+  founding: 9900, // early-bird: $99/mo for life
+  starter: 6900, // $69/mo
+  pro: 12900, // $129/mo
+  scale: 19900, // $199/mo
 }
 
 /**
@@ -173,15 +173,23 @@ export async function checkLeadSearchLimit(
   const plan = sub?.plan ?? 'free'
   const max = planLimitsFor(plan).maxLeadSearchesPerMonth
 
+  // Free is a one-time trial counted for all time; paid plans reset each calendar month.
+  const isLifetime = plan === 'free'
   const monthStart = new Date()
   monthStart.setDate(1)
   monthStart.setHours(0, 0, 0, 0)
 
-  const { count, error } = await service
+  // Only completed searches consume the quota — a failed or empty search
+  // (no usable results) must not cost the coach a credit.
+  let query = service
     .from('lead_searches')
     .select('id', { count: 'exact', head: true })
     .eq('workspace_id', workspaceId)
-    .gte('created_at', monthStart.toISOString())
+    .eq('status', 'done')
+  if (!isLifetime) {
+    query = query.gte('created_at', monthStart.toISOString())
+  }
+  const { count, error } = await query
   if (error) {
     return { allowed: false, used: 0, max }
   }
