@@ -128,7 +128,7 @@ function ProgramsIcon({ className }: { className?: string }) {
   )
 }
 
-function AssignmentsIcon({ className }: { className?: string }) {
+function MegaphoneIcon({ className }: { className?: string }) {
   return (
     <svg
       width="20"
@@ -142,9 +142,8 @@ function AssignmentsIcon({ className }: { className?: string }) {
       className={className}
       aria-hidden
     >
-      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-      <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" />
-      <path d="M9 12h6M9 16h6" />
+      <path d="m3 11 18-5v12L3 14v-3z" />
+      <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
     </svg>
   )
 }
@@ -301,7 +300,7 @@ const PRIMARY = [
 
 const MORE_LINKS = [
   { href: '/coach/programs', label: 'Programs' },
-  { href: '/coach/assignments', label: 'Assignments' },
+  { href: '/coach/promote', label: 'Promote' },
   { href: '/coach/videos', label: 'Videos' },
   { href: '/coach/packages', label: 'Packages' },
   { href: '/coach/invoices', label: 'Invoices' },
@@ -332,7 +331,7 @@ function SparklesIcon({ className }: { className?: string }) {
 
 const MORE_GRID = [
   { href: '/coach/programs', label: 'Programs', Icon: ProgramsIcon },
-  { href: '/coach/assignments', label: 'Assign', Icon: AssignmentsIcon },
+  { href: '/coach/promote', label: 'Promote', Icon: MegaphoneIcon },
   { href: '/coach/videos', label: 'Videos', Icon: VideosIcon },
   { href: '/coach/packages', label: 'Packages', Icon: PackagesIcon },
   { href: '/coach/invoices', label: 'Invoices', Icon: InvoicesIcon },

@@ -117,10 +117,8 @@ const NAV_TILES = [
   { href: '/coach/clients', label: 'Clients', desc: 'Manage your roster', icon: Users },
 ] as const
 
-function AttentionBanner({ attention, badges }: { attention: AttentionData | null; badges: Badges }) {
+function AttentionBanner({ attention }: { attention: AttentionData | null }) {
   const items: { label: string; href: string; count: number }[] = []
-  if (badges.assignments > 0) items.push({ label: 'assignments need review', href: '/coach/assignments', count: badges.assignments })
-  if (attention?.overdue?.length) items.push({ label: 'overdue assignments', href: '/coach/assignments', count: attention.overdue.length })
   if (attention?.inactive?.length) items.push({ label: 'clients need engagement', href: '/coach/clients', count: attention.inactive.length })
   if (attention?.unpaidInvoices?.length) items.push({ label: 'unpaid invoices', href: '/coach/payments', count: attention.unpaidInvoices.length })
 
@@ -257,7 +255,7 @@ export function CoachDashboardHome() {
       </div>
 
       {/* Attention banner */}
-      {!loading && <AttentionBanner attention={attention} badges={badges} />}
+      {!loading && <AttentionBanner attention={attention} />}
 
       {/* Stats row — always visible */}
       {loading ? (

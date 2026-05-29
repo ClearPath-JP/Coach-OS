@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ClearPathLogo } from '@/components/layout/ClearPathLogo'
 import { SignOutButton } from '@/components/layout/SignOutButton'
 import { cn } from '@/lib/utils'
@@ -88,27 +88,9 @@ function SearchIcon() {
 }
 
 function useCoachSidebarBadges() {
-  const [badges, setBadges] = useState({ assignments: 0 })
-  const refresh = useCallback(() => {
-    fetch('/api/assignments/overview', { credentials: 'include' })
-      .then((r) => r.json())
-      .then((asgJson) => {
-        let asg = 0
-        if (asgJson?.data) {
-          const pr = typeof asgJson.data.pendingReviewCount === 'number' ? asgJson.data.pendingReviewCount : 0
-          const ov = typeof asgJson.data.overdueCount === 'number' ? asgJson.data.overdueCount : 0
-          asg = pr + ov
-        }
-        setBadges({ assignments: asg })
-      })
-      .catch(() => {})
-  }, [])
-  useEffect(() => {
-    refresh()
-    const t = window.setInterval(refresh, 60_000)
-    return () => clearInterval(t)
-  }, [refresh])
-  return badges
+  // Assignments nav item removed — no badge to fetch. Kept as a stable shape
+  // so NavRowsCoach's `badges` prop contract is unchanged.
+  return { assignments: 0 }
 }
 
 function SidebarBrandMark({ invertLogo }: { invertLogo?: boolean }) {
@@ -285,7 +267,7 @@ function NavRowsCoach({
         const isActive =
           pathname === item.href ||
           (item.href !== '/' && pathname != null && pathname.startsWith(item.href + '/'))
-        const badge = item.href === '/coach/assignments' ? badges.assignments : 0
+        const badge = 0
         return (
           <Link
             key={item.href}
@@ -293,7 +275,7 @@ function NavRowsCoach({
             className={cn(
               'relative mb-[2px] flex h-[34px] items-center gap-2.5 rounded-[6px] px-2.5 text-[13px] no-underline transition-all duration-[200ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[var(--accent-surface)] font-medium text-[var(--text-primary)] [&_svg]:text-[var(--accent)]'
+                ? 'nav-item-active-coach bg-[var(--accent-surface)] font-medium text-[var(--text-primary)] [&_svg]:text-[var(--accent)] before:absolute before:left-0 before:top-1/2 before:h-[18px] before:w-[3px] before:-translate-y-1/2 before:rounded-r-full before:bg-[var(--accent)]'
                 : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--coach-sidebar-icon)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-secondary)] [&:hover_svg]:text-[var(--text-tertiary)]'
             )}
           >

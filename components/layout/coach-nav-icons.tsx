@@ -7,6 +7,7 @@ import {
   CreditCard,
   FileText,
   LayoutDashboard,
+  Megaphone,
   MessageSquare,
   Package,
   Settings,
@@ -66,6 +67,10 @@ export function BillingNavIcon({ className, ...props }: LucideProps) {
 
 export function AssignmentsIcon({ className, ...props }: LucideProps) {
   return <ClipboardList className={cn(sz, className)} strokeWidth={2} aria-hidden {...props} />
+}
+
+export function PromoteIcon({ className, ...props }: LucideProps) {
+  return <Megaphone className={cn(sz, className)} strokeWidth={2} aria-hidden {...props} />
 }
 
 export function SubscriptionIcon({ className, ...props }: LucideProps) {

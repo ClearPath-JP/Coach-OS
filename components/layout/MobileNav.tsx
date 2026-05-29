@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
-import { LayoutDashboard, BookOpen, MessageSquare, ClipboardList, User } from 'lucide-react'
+import { LayoutDashboard, BookOpen, MessageSquare, Megaphone, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 function BillingIcon({ className }: { className?: string }) {
@@ -153,34 +153,13 @@ function PaymentsIcon({ className }: { className?: string }) {
   )
 }
 
-function AssignmentsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-      <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" />
-      <path d="M9 12h6M9 16h6" />
-    </svg>
-  )
-}
-
 export const coachTabs = [
   { href: '/coach/dashboard', label: 'Home', icon: HomeIcon },
   { href: '/coach/analytics', label: 'Analytics', icon: AnalyticsIcon },
   { href: '/coach/clients', label: 'Clients', icon: ClientsIcon },
   { href: '/coach/schedule', label: 'Schedule', icon: CalendarIcon },
   { href: '/coach/programs', label: 'Programs', icon: ProgramsIcon },
-  { href: '/coach/assignments', label: 'Assign', icon: AssignmentsIcon },
+  { href: '/coach/promote', label: 'Promote', icon: Megaphone },
   { href: '/coach/videos', label: 'Videos', icon: VideosIcon },
   { href: '/coach/messages', label: 'Messages', icon: MessagesIcon },
   { href: '/coach/packages', label: 'Packages', icon: PackagesIcon },
@@ -194,7 +173,6 @@ export const clientPortalTabs: readonly { href: string; label: string; icon: Luc
   { href: '/client/portal', label: 'Home', icon: LayoutDashboard },
   { href: '/client/programs', label: 'Programs', icon: BookOpen },
   { href: '/client/messages', label: 'Messages', icon: MessageSquare },
-  { href: '/client/assignments', label: 'Tasks', icon: ClipboardList },
   { href: '/client/profile', label: 'Profile', icon: User },
 ] as const
 
@@ -303,7 +281,7 @@ export function MobileNav({
   pendingAssignmentsCount = 0,
 }: MobileNavProps) {
   const pathname = usePathname()
-  const isClientPortalTabs = tabs === clientPortalTabs || tabs.length === 5
+  const isClientPortalTabs = tabs === clientPortalTabs || tabs.length <= 5
 
   return (
     <nav

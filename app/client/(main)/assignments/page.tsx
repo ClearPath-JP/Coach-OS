@@ -1,5 +1,5 @@
-import { ClientAssignmentsPageContent } from './ClientAssignmentsPageContent'
+import { redirect } from 'next/navigation'
 
 export default function ClientAssignmentsPage() {
-  return <ClientAssignmentsPageContent />
+  redirect('/client/portal')
 }

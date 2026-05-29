@@ -6,7 +6,6 @@ import type { LucideIcon } from 'lucide-react'
 import {
   LayoutDashboard,
   BookOpen,
-  ClipboardList,
   Target,
   Calendar,
   Ticket,
@@ -22,7 +21,6 @@ const PRIMARY: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/client/classes', label: 'Book a class', Icon: Ticket },
   { href: '/client/sessions', label: 'My sessions', Icon: Calendar },
   { href: '/client/programs', label: 'Programs', Icon: BookOpen },
-  { href: '/client/assignments', label: 'Tasks', Icon: ClipboardList },
   { href: '/client/goals', label: 'Goals', Icon: Target },
   { href: '/client/messages', label: 'Messages', Icon: MessageSquare },
   { href: '/client/invoices', label: 'Invoices', Icon: Receipt },

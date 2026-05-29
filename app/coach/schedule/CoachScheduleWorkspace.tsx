@@ -15,7 +15,7 @@ import {
   startOfDay,
   startOfWeek,
 } from 'date-fns'
-import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, ClipboardList, Clock, DollarSign, Users, Video } from 'lucide-react'
+import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, ClipboardList, Clock, DollarSign, Ticket, Users, Video } from 'lucide-react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
@@ -217,6 +217,11 @@ export function CoachScheduleWorkspace() {
 
   const headerDatePill = format(new Date(), 'EEEE, MMMM d')
 
+  // iOS/macOS Calendar registers the webcal: scheme — tapping it opens the subscribe sheet directly.
+  const calendarWebcalUrl = calendarSubscribeUrl
+    ? calendarSubscribeUrl.replace(/^https?:\/\//i, 'webcal://')
+    : null
+
   const attentionCount = (attention?.inactive?.length ?? 0) + (attention?.overdue?.length ?? 0) + (attention?.unpaidInvoices?.length ?? 0)
 
   return (
@@ -347,7 +352,7 @@ export function CoachScheduleWorkspace() {
       {/* ── Calendar subscribe ── */}
       <details className="sensei-page__collapsible">
         <summary>
-          Subscribe in Google Calendar or Apple Calendar
+          Add your schedule to your phone calendar
           <span className="ml-2 text-[11px] text-[var(--text-quaternary)]">(optional)</span>
         </summary>
         <div className="sensei-page__collapsible-body">
@@ -356,29 +361,35 @@ export function CoachScheduleWorkspace() {
           ) : calendarSubscribeUrl ? (
             <>
               <p className="text-[13px] leading-relaxed text-[var(--text-tertiary)]">
-                Paste the URL below in Google Calendar &rarr; <em>From URL</em>. Treat the link like a password.
+                One tap and your sessions sync to your phone &mdash; the next 90 days, kept up to date automatically.
               </p>
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <input
-                  readOnly
-                  value={calendarSubscribeUrl}
-                  className="min-w-0 flex-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 font-mono text-[11px] text-[var(--text-primary)]"
-                  aria-label="Calendar subscribe URL"
-                />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {calendarWebcalUrl && (
+                  <a href={calendarWebcalUrl} className="sensei-page__action-btn">
+                    Add to Apple Calendar / iPhone
+                  </a>
+                )}
                 <button
                   type="button"
-                  className="sensei-page__action-btn"
+                  className="sensei-page__toggle-btn rounded-lg border border-[var(--border-default)] px-4"
                   onClick={() => {
                     void navigator.clipboard.writeText(calendarSubscribeUrl).then(() => {
-                      addToast('Calendar link copied', 'success')
+                      addToast('Calendar link copied — paste into Google Calendar → From URL', 'success')
                     })
                   }}
                 >
-                  Copy
+                  Copy link for Google Calendar
                 </button>
               </div>
+              <input
+                readOnly
+                value={calendarSubscribeUrl}
+                onFocus={(e) => e.currentTarget.select()}
+                className="mt-3 w-full min-w-0 rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 font-mono text-[11px] text-[var(--text-primary)]"
+                aria-label="Calendar subscribe URL"
+              />
               <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
-                Next 90 days of sessions.{' '}
+                On Android, add this URL in Google Calendar &rarr; <em>Other calendars &rarr; From URL</em>. Treat the link like a password.{' '}
                 <a href="/api/calendar/feed/coach" className="font-medium text-[var(--accent-dark)] hover:text-[var(--accent)]">
                   Download .ics
                 </a>
@@ -396,11 +407,15 @@ export function CoachScheduleWorkspace() {
       </details>
 
       {/* ── Quick Actions Row ── */}
-      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-7">
         <button type="button" onClick={() => openBookModal(null, null)} className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
           <CalendarPlus size={18} />
           Book Session
         </button>
+        <Link href="/coach/classes" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
+          <Ticket size={18} />
+          Classes
+        </Link>
         <Link href="/coach/clients" className="flex flex-col items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-3 text-[12px] font-medium text-[var(--text-secondary)] transition-all hover:border-[rgba(var(--accent-rgb),0.2)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-primary)]">
           <Users size={18} />
           Clients

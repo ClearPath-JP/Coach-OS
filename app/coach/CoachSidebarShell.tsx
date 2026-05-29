@@ -9,7 +9,7 @@ import {
   Ticket,
   Users,
   Video,
-  ClipboardCheck,
+  Megaphone,
   Package,
   Settings,
 } from 'lucide-react'
@@ -28,8 +28,13 @@ const SECTIONS: SidebarNavSection[] = [
     title: 'Clients',
     items: [
       { href: '/coach/clients', label: 'Clients', icon: <Users size={16} strokeWidth={1.5} /> },
+    ],
+  },
+  {
+    title: 'Grow',
+    items: [
+      { href: '/coach/promote', label: 'Promote', icon: <Megaphone size={16} strokeWidth={1.5} /> },
       { href: '/coach/leads', label: 'Lead research', icon: <Sparkles size={16} strokeWidth={1.5} /> },
-      { href: '/coach/assignments', label: 'Assignments', icon: <ClipboardCheck size={16} strokeWidth={1.5} /> },
     ],
   },
   {

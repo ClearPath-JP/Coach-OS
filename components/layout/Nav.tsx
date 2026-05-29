@@ -34,7 +34,6 @@ export interface NavProps {
 const CLIENT_PORTAL_TOP_LINKS: { href: string; label: string }[] = [
   { href: '/client/portal', label: 'Home' },
   { href: '/client/programs', label: 'Programs' },
-  { href: '/client/assignments', label: 'Tasks' },
   { href: '/client/goals', label: 'Goals' },
   { href: '/client/sessions', label: 'Sessions' },
   { href: '/client/messages', label: 'Messages' },

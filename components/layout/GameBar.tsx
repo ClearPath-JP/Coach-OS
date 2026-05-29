@@ -13,7 +13,7 @@ const TITLE_MAP: Record<string, string> = {
   '/coach/invoices': 'Invoices',
   '/coach/packages': 'Packages',
   '/coach/analytics': 'Analytics',
-  '/coach/assignments': 'Assignments',
+  '/coach/promote': 'Promote',
   '/coach/settings': 'Settings',
   '/coach/subscription': 'Subscription',
 }

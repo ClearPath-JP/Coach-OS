@@ -1,7 +1,6 @@
 import type { SidebarNavItem, SidebarNavSection } from '@/components/layout/Sidebar'
 import {
   AnalyticsIcon,
-  AssignmentsIcon,
   ClientsIcon,
   DashboardIcon,
   InvoicesIcon,
@@ -9,6 +8,7 @@ import {
   PackagesIcon,
   PaymentsIcon,
   ProgramsIcon,
+  PromoteIcon,
   ScheduleIcon,
   SubscriptionIcon,
   VideosIcon,
@@ -41,7 +41,7 @@ export function getCoachSidebarNav(): {
         title: 'CONTENT',
         items: [
           { href: '/coach/programs', label: 'Programs', icon: <ProgramsIcon /> },
-          { href: '/coach/assignments', label: 'Assignments', icon: <AssignmentsIcon /> },
+          { href: '/coach/promote', label: 'Promote', icon: <PromoteIcon /> },
           { href: '/coach/videos', label: 'Videos', icon: <VideosIcon /> },
         ],
       },

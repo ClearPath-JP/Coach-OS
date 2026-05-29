@@ -17,7 +17,7 @@ function segmentTitle(pathname: string): string {
   if (pathname.startsWith('/coach/payments')) return 'Payments'
   if (pathname.startsWith('/coach/analytics')) return 'Analytics'
   if (pathname.startsWith('/coach/settings')) return 'Settings'
-  if (pathname.startsWith('/coach/assignments')) return 'Assignments'
+  if (pathname.startsWith('/coach/promote')) return 'Promote'
   if (pathname.startsWith('/coach')) return 'Coach'
   return ''
 }
