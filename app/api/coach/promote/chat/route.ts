@@ -2,21 +2,29 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
-import { runPromoteGeneration } from '@/lib/promote-content'
+import { runPromoteChat, type ChatMessage } from '@/lib/promote-content'
 
-const generateSchema = z.object({
-  kind: z.enum(['class', 'workout', 'book1on1', 'bts']),
+const chatSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string().trim().min(1).max(4000),
+      })
+    )
+    .min(1)
+    .max(40),
   discipline: z.string().trim().max(80).optional(),
-  topic: z.string().trim().max(500).optional(),
   tone: z.enum(['hype', 'calm', 'friendly']).optional(),
-  mode: z.enum(['ideas', 'post', 'video']),
+  finalize: z.boolean().optional(),
 })
 
 /**
- * POST /api/coach/promote/generate
- * Body: { kind, discipline?, topic?, tone?, mode: 'ideas' | 'post' }
- * Generates IG/FB post ideas or a full post via Claude. Stateless (nothing stored).
- * Content tools are available on all plans — no plan gating.
+ * POST /api/coach/promote/chat
+ * Body: { messages: [{role, content}], discipline?, tone?, finalize? }
+ * finalize=false → { data: { kind: 'reply', reply } }
+ * finalize=true  → { data: { kind: 'post', post } }
+ * Stateless, no plan gating (content tools = all plans).
  */
 export async function POST(request: Request) {
   try {
@@ -25,12 +33,12 @@ export async function POST(request: Request) {
     const { user } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(
-      `promote-generate:${user.id}`,
-      { windowMs: 60_000, max: 20 }
+      `promote-chat:${user.id}`,
+      { windowMs: 60_000, max: 30 }
     )
     if (!rateOk) {
       const res = NextResponse.json(
-        { error: 'Too many requests — wait a moment and try again' },
+        { error: 'Too many messages — wait a moment and try again' },
         { status: 429 }
       )
       if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
@@ -38,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => null)
-    const parsed = generateSchema.safeParse(body)
+    const parsed = chatSchema.safeParse(body)
     if (!parsed.success) {
       const msg = parsed.error.issues[0]?.message ?? 'Invalid request'
       return NextResponse.json({ error: msg }, { status: 400 })
@@ -52,20 +60,18 @@ export async function POST(request: Request) {
     }
 
     try {
-      const outcome = await runPromoteGeneration({
-        kind: parsed.data.kind,
-        mode: parsed.data.mode,
-        discipline: parsed.data.discipline ?? null,
-        topic: parsed.data.topic ?? null,
-        tone: parsed.data.tone ?? null,
-      })
+      const outcome = await runPromoteChat(
+        parsed.data.messages as ChatMessage[],
+        { discipline: parsed.data.discipline ?? null, tone: parsed.data.tone ?? null },
+        parsed.data.finalize ?? false
+      )
       return NextResponse.json({ data: outcome })
     } catch (err) {
-      console.error('POST /api/coach/promote/generate runPromoteGeneration', err)
-      return NextResponse.json({ error: 'Could not generate — try again' }, { status: 502 })
+      console.error('POST /api/coach/promote/chat runPromoteChat', err)
+      return NextResponse.json({ error: 'Could not respond — try again' }, { status: 502 })
     }
   } catch (err) {
-    console.error('POST /api/coach/promote/generate', err)
+    console.error('POST /api/coach/promote/chat', err)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }
