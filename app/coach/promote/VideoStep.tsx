@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Upload as TusUpload } from 'tus-js-client'
 import { Film, Loader2, Wand2, Upload, CheckCircle2, FileVideo } from 'lucide-react'
 import { type Tone, type PromoteResult, type GenerateResponse } from './promote-shared'
+import { VideoEditor, type Cue } from './VideoEditor'
 
 type LibraryVideo = { id: string; title: string }
 type UploadState = 'idle' | 'creating' | 'uploading' | 'processing' | 'ready' | 'failed'
@@ -28,6 +29,9 @@ export function VideoStep({
   const [uploadPct, setUploadPct] = useState(0)
   const [embed, setEmbed] = useState<{ libraryId: string; guid: string } | null>(null)
   const [transcript, setTranscript] = useState('')
+  const [sourceVideoId, setSourceVideoId] = useState<string | null>(null)
+  const [durationSec, setDurationSec] = useState(0)
+  const [cues, setCues] = useState<Cue[]>([])
   const cancelledRef = useRef(false)
 
   useEffect(() => {
@@ -74,6 +78,8 @@ export function VideoStep({
           ready?: boolean
           failed?: boolean
           captionsText?: string
+          durationSeconds?: number | null
+          cues?: Cue[]
         }
         if (d.failed) {
           setUploadState('failed')
@@ -84,6 +90,8 @@ export function VideoStep({
           const text = d.captionsText ?? ''
           setTranscript(text)
           if (text) setDescription((prev) => prev || text.slice(0, 480))
+          if (typeof d.durationSeconds === 'number' && d.durationSeconds > 0) setDurationSec(d.durationSeconds)
+          if (Array.isArray(d.cues)) setCues(d.cues)
           setUploadState('ready')
           return
         }
@@ -113,6 +121,7 @@ export function VideoStep({
             tusEndpoint: string
             authorizationSignature: string
             authorizationExpire: number
+            dbId?: string | null
           }
           error?: string
         }
@@ -123,6 +132,7 @@ export function VideoStep({
         }
         const { videoId, libraryId, tusEndpoint, authorizationSignature, authorizationExpire } = json.data
         setEmbed({ libraryId: String(libraryId), guid: videoId })
+        if (json.data.dbId) setSourceVideoId(json.data.dbId)
         setUploadState('uploading')
         const upload = new TusUpload(file, {
           endpoint: tusEndpoint,
@@ -249,9 +259,13 @@ export function VideoStep({
                 <p className="mt-1.5 max-h-32 overflow-y-auto leading-relaxed">{transcript}</p>
               </details>
             )}
-            <p className="text-[11px] text-[var(--text-quaternary)]">
-              Trim + burned-in captions render lands in the next phase. For now, get the AI plan below.
-            </p>
+            {sourceVideoId && durationSec > 0 ? (
+              <VideoEditor sourceVideoId={sourceVideoId} durationSec={durationSec} cues={cues} />
+            ) : (
+              <p className="text-[11px] text-[var(--text-quaternary)]">
+                Get the AI plan below to caption + structure your Reel.
+              </p>
+            )}
           </div>
         )}
       </div>

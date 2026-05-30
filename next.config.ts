@@ -65,6 +65,9 @@ const nextConfig: NextConfig = {
     'gsap',
     'animejs',
     'lenis',
+    // Remotion Lambda client (pulls in the AWS SDK) — load at runtime, don't bundle.
+    '@remotion/lambda',
+    '@remotion/lambda-client',
   ],
   images: {
     formats: ['image/webp', 'image/avif'],
