@@ -27,6 +27,32 @@ export function bunnyConfigured(): boolean {
   )
 }
 
+/**
+ * Sign a Bunny CDN file URL for Token Authentication (Basic scheme).
+ * When the Stream library has Token Authentication on, direct file access
+ * (mp4 / hls / thumbnail) 403s — a render pipeline (Remotion) needs a signed URL.
+ * token = base64url(MD5(tokenKey + path + expires)); appended as ?token=&expires=.
+ * The token key is the library's "URL Token Authentication Key" (≠ the Stream API key).
+ * If BUNNY_STREAM_TOKEN_KEY is unset (token auth disabled), returns the URL unchanged.
+ * Docs: https://docs.bunny.net/docs/cdn-token-authentication-basic
+ */
+export function signBunnyUrl(fileUrl: string, expiresInSec = 3 * 60 * 60): string {
+  const tokenKey = process.env.BUNNY_STREAM_TOKEN_KEY
+  if (!tokenKey) return fileUrl
+  const u = new URL(fileUrl)
+  const expires = Math.floor(Date.now() / 1000) + expiresInSec
+  const token = crypto
+    .createHash('md5')
+    .update(tokenKey + u.pathname + expires)
+    .digest('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
+  u.searchParams.set('token', token)
+  u.searchParams.set('expires', String(expires))
+  return u.toString()
+}
+
 export type BunnyCreateResult = {
   videoId: string
   libraryId: string

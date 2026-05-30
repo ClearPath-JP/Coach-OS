@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { createServiceClient } from '@/lib/supabase/service'
-import { fetchBunnyCaptions } from '@/lib/bunny'
+import { fetchBunnyCaptions, signBunnyUrl } from '@/lib/bunny'
 import { startCaptionedRender, remotionConfigured } from '@/lib/remotion'
 
 export const runtime = 'nodejs'
@@ -75,7 +75,8 @@ export async function POST(request: Request) {
     const captions = captionStyle === 'none' ? [] : cues
 
     const { renderId, bucketName } = await startCaptionedRender({
-      mp4Url: video.mp4_url,
+      // Sign the source so Remotion can fetch it past Bunny token auth (no-op if disabled).
+      mp4Url: signBunnyUrl(video.mp4_url),
       trimStartSec: start,
       trimEndSec: end,
       captions,
