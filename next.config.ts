@@ -37,8 +37,10 @@ const securityHeaders = [
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
       "media-src 'self' https://*.supabase.co blob:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.upstash.io",
-      "frame-src 'none'",
+      // video.bunnycdn.com = Bunny Stream TUS upload; *.b-cdn.net = Bunny CDN (captions/mp4).
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.upstash.io https://video.bunnycdn.com https://*.b-cdn.net",
+      // iframe.mediadelivery.net = Bunny Stream embedded player.
+      "frame-src https://iframe.mediadelivery.net",
       // frame-ancestors overrides X-Frame-Options in modern browsers.
       // 'self' allows same-origin framing (e.g. embedded Stripe elements) while
       // blocking third-party clickjacking.
