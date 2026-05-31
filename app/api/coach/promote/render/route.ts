@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
@@ -18,8 +18,10 @@ const schema = z.object({
 
 /**
  * POST /api/coach/promote/render
- * Starts a Remotion Lambda render of the source clip (trim + burned-in captions).
- * Records a `video_edits` row to track the job; the client polls /render/status.
+ * Creates a `video_edits` tracking row, returns its id immediately, then kicks off
+ * the Remotion Lambda render AFTER the response (Next `after()`). The client polls
+ * /render/status, which tolerates a not-yet-assigned render id (status stays
+ * 'rendering' at 0% until the Lambda kickoff patches the row).
  */
 export async function POST(request: Request) {
   try {
@@ -71,18 +73,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Trim end must be after the start' }, { status: 400 })
     }
 
-    const cues = video.captions_vtt_url ? (await fetchBunnyCaptions(video.captions_vtt_url)).cues : []
-    const captions = captionStyle === 'none' ? [] : cues
-
-    const { renderId, bucketName } = await startCaptionedRender({
-      // Sign the source so Remotion can fetch it past Bunny token auth (no-op if disabled).
-      mp4Url: signBunnyUrl(video.mp4_url),
-      trimStartSec: start,
-      trimEndSec: end,
-      captions,
-      captionStyle,
-    })
-
+    // Track the job up front so the client gets an editId to poll immediately —
+    // the Lambda kickoff (captions fetch + invocation, a few seconds) runs after the response.
     const { data: edit, error: eErr } = await service
       .from('video_edits')
       .insert({
@@ -94,14 +86,46 @@ export async function POST(request: Request) {
         trim_end_sec: end,
         caption_style: captionStyle,
         status: 'rendering',
-        remotion_render_id: renderId,
-        remotion_bucket: bucketName,
       })
       .select('id')
       .single()
-    if (eErr) console.error('POST /api/coach/promote/render video_edits insert', eErr)
+    if (eErr || !edit?.id) {
+      console.error('POST /api/coach/promote/render video_edits insert', eErr)
+      return NextResponse.json({ error: 'Could not start the render — try again' }, { status: 500 })
+    }
+    const editId = edit.id
 
-    return NextResponse.json({ data: { editId: edit?.id ?? null, renderId, bucketName } })
+    // Kick off the render after responding. On Vercel Fluid Compute the function stays
+    // alive for after() work; locally Next awaits it too. Patch the row with the render
+    // id (so status polling can track Lambda) or mark it failed.
+    after(async () => {
+      try {
+        const cues = video.captions_vtt_url
+          ? (await fetchBunnyCaptions(signBunnyUrl(video.captions_vtt_url))).cues
+          : []
+        const captions = captionStyle === 'none' ? [] : cues
+        const { renderId, bucketName } = await startCaptionedRender({
+          // Sign the source so Remotion can fetch it past Bunny token auth (no-op if disabled).
+          mp4Url: signBunnyUrl(video.mp4_url),
+          trimStartSec: start,
+          trimEndSec: end,
+          captions,
+          captionStyle,
+        })
+        await service
+          .from('video_edits')
+          .update({ remotion_render_id: renderId, remotion_bucket: bucketName })
+          .eq('id', editId)
+      } catch (err) {
+        console.error('POST /api/coach/promote/render kickoff', err)
+        await service
+          .from('video_edits')
+          .update({ status: 'failed', error: 'Could not start the render — try again' })
+          .eq('id', editId)
+      }
+    })
+
+    return NextResponse.json({ data: { editId } })
   } catch (err) {
     console.error('POST /api/coach/promote/render', err)
     return NextResponse.json({ error: 'Could not start the render — try again' }, { status: 500 })

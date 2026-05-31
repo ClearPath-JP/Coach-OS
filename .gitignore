@@ -57,3 +57,6 @@ next-env.d.ts
 .vercel
 
 .vercel
+
+# Local render artifacts (video editor verification)
+/out/

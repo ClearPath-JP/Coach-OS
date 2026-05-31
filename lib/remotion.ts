@@ -52,6 +52,11 @@ export async function startCaptionedRender(input: RenderInput): Promise<{ render
     codec: 'h264',
     imageFormat: 'jpeg',
     privacy: 'public',
+    // New AWS accounts cap Lambda concurrency at 10; Remotion fans a render out
+    // across many functions and trips "Rate Exceeded". A high framesPerLambda keeps
+    // a short clip on 1–2 functions. Lower this once the AWS quota is raised
+    // (`npx remotion lambda quotas increase`) for faster renders of long clips.
+    framesPerLambda: 1000,
     downloadBehavior: { type: 'download', fileName: 'kindo-clip.mp4' },
   })
   return { renderId, bucketName }
