@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Link from 'next/link'
 import { Star, Users, ArrowRight } from 'lucide-react'
 
 const mockCoaches = [
@@ -131,16 +130,9 @@ export function CoachSpotlightSection() {
           ))}
         </div>
 
-        {/* Browse all CTA */}
-        <div className="text-center mt-10">
-          <Link
-            href="/browse"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
-          >
-            Browse all coaches
-            <ArrowRight size={16} />
-          </Link>
-        </div>
+        {/* Browse-all CTA hidden until the public /browse directory is wired to
+            real coaches (it's currently mock data). Re-add:
+            <Link href="/browse" …>Browse all coaches <ArrowRight/></Link> */}
       </div>
     </section>
   )

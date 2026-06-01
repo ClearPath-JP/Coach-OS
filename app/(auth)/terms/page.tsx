@@ -18,15 +18,15 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-medium text-[var(--color-text-primary)]">1. Acceptance of terms</h2>
             <p className="text-[var(--color-text-secondary)]">
-              By creating an account or using FoundOS, you agree to these Terms of Service and our Privacy Policy. If
-              you do not agree, do not use the service.
+              By creating an account or using Kindo (a product of FoundOS), you agree to these Terms of Service and our
+              Privacy Policy. If you do not agree, do not use the service.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-medium text-[var(--color-text-primary)]">2. Description of service</h2>
             <p className="text-[var(--color-text-secondary)]">
-              FoundOS is a coaching management platform. We provide software tools (scheduling, messaging, programs,
+              Kindo is a coaching management platform. We provide software tools (scheduling, messaging, programs,
               billing helpers, and related features). Coaches are independent professionals: you provide the coaching;
               we provide the platform. We are not a party to the coaching relationship between you and your clients.
             </p>
@@ -36,7 +36,7 @@ export default function TermsPage() {
             <h2 className="text-base font-medium text-[var(--color-text-primary)]">3. Coach responsibilities</h2>
             <ul className="list-disc space-y-1 pl-5 text-[var(--color-text-secondary)]">
               <li>You are responsible for your relationships with clients, including scope of services and professional standards.</li>
-              <li>Payment disputes between coach and client are between those parties; FoundOS facilitates tools but does not mediate every dispute.</li>
+              <li>Payment disputes between coach and client are between those parties; Kindo facilitates tools but does not mediate every dispute.</li>
             </ul>
           </section>
 
@@ -60,7 +60,7 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-medium text-[var(--color-text-primary)]">6. Limitation of liability</h2>
             <p className="text-[var(--color-text-secondary)]">
-              To the fullest extent permitted by law, FoundOS and its suppliers are not liable for indirect,
+              To the fullest extent permitted by law, Kindo and its operator FoundOS are not liable for indirect,
               incidental, or consequential damages arising from your use of the service. Our total liability for claims
               relating to the service is limited to the amount you paid us in the twelve months before the claim, where
               applicable.
