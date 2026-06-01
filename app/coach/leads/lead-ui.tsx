@@ -11,6 +11,37 @@ import type { LeadResult } from '@/lib/lead-research'
 import { type LeadStatus, LEAD_STATUSES } from '@/lib/leads-interactions'
 
 // ---------------------------------------------------------------------------
+// URL / email sanitisers — exported so drawers and tables can share them.
+// Only http/https are allowed; javascript: and data: URIs are rejected.
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate a URL before putting it in an href. Only http/https are allowed;
+ * javascript: and data: URIs are rejected and replaced with '#'.
+ */
+export function safeUrl(url: string | null | undefined): string {
+  if (!url) return '#'
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'https:' || parsed.protocol === 'http:') return url
+  } catch {
+    // not a valid URL
+  }
+  return '#'
+}
+
+/**
+ * Build a mailto: href. Only allow a bare email address (no header injection).
+ * Returns null if the address looks unsafe.
+ */
+export function safeMailto(email: string | null | undefined): string | null {
+  if (!email) return null
+  // Simple sanity check — no angle brackets, newlines, or %0A tricks
+  if (/[\s<>\n\r]/.test(email)) return null
+  return `mailto:${email}`
+}
+
+// ---------------------------------------------------------------------------
 // MergedLead — the API's combined shape (LeadResult + stored CRM fields)
 // ---------------------------------------------------------------------------
 
