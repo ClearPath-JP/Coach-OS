@@ -12,6 +12,10 @@ import {
   Megaphone,
   Package,
   Settings,
+  MessageSquare,
+  Receipt,
+  BarChart3,
+  Crown,
 } from 'lucide-react'
 import { Sidebar, type SidebarNavSection } from '@/components/layout/Sidebar'
 
@@ -28,6 +32,7 @@ const SECTIONS: SidebarNavSection[] = [
     title: 'Clients',
     items: [
       { href: '/coach/clients', label: 'Clients', icon: <Users size={16} strokeWidth={1.5} /> },
+      { href: '/coach/messages', label: 'Messages', icon: <MessageSquare size={16} strokeWidth={1.5} /> },
     ],
   },
   {
@@ -43,12 +48,15 @@ const SECTIONS: SidebarNavSection[] = [
       { href: '/coach/programs', label: 'Programs', icon: <Swords size={16} strokeWidth={1.5} /> },
       { href: '/coach/packages', label: 'Packages', icon: <Package size={16} strokeWidth={1.5} /> },
       { href: '/coach/payments', label: 'Payments', icon: <CreditCard size={16} strokeWidth={1.5} /> },
+      { href: '/coach/invoices', label: 'Invoices', icon: <Receipt size={16} strokeWidth={1.5} /> },
+      { href: '/coach/analytics', label: 'Analytics', icon: <BarChart3 size={16} strokeWidth={1.5} /> },
       { href: '/coach/videos', label: 'Videos', icon: <Video size={16} strokeWidth={1.5} /> },
     ],
   },
 ]
 
 const BOTTOM_ITEMS = [
+  { href: '/coach/subscription', label: 'Subscription', icon: <Crown size={16} strokeWidth={1.5} /> },
   { href: '/coach/settings', label: 'Settings', icon: <Settings size={16} strokeWidth={1.5} /> },
 ]
 
