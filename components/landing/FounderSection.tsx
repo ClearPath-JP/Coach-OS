@@ -36,7 +36,7 @@ export function FounderSection() {
         </div>
 
         <p className="mt-6 text-sm text-[var(--text-tertiary)]">
-          Kindo is in early access — I&apos;m onboarding a first group of founding coaches by hand.
+          Kindo is in early access — I&apos;m personally onboarding the first 10 founding coaches by hand.
         </p>
 
         <div className="mt-8">

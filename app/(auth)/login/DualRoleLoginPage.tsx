@@ -541,7 +541,7 @@ function LoginForm({
               margin: 0,
             }}
           >
-            {isSensei ? 'Welcome back, Sensei' : 'Enter the Dojo'}
+            {isSensei ? 'Welcome back to your dojo' : 'Enter the Dojo'}
           </h1>
           <p style={{ fontSize: 12, color: 'rgba(200,190,170,0.55)', marginTop: 6, letterSpacing: '0.02em' }}>
             {isSensei ? 'Sign in to your coaching workspace.' : 'Sign in to your training portal.'}
@@ -666,7 +666,7 @@ function LoginForm({
             {loading ? (
               <div style={{ width: 18, height: 18, border: '2px solid rgba(20,14,6,0.25)', borderTopColor: '#160f06', borderRadius: '50%', animation: 'gameMenuSpin 0.7s linear infinite', margin: '0 auto' }} />
             ) : (
-              'Enter'
+              'Sign in'
             )}
           </button>
         </form>

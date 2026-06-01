@@ -1,41 +1,59 @@
 import { createServiceClient } from '@/lib/supabase/service'
 
-/** Per-plan caps: clients, storage pools, assignment count per client, monthly lead searches. */
+/**
+ * Per-plan entitlements: clients, storage pools, monthly streaming, assignments,
+ * monthly Local Scout (lead) searches, and feature flags.
+ * Canonical source — landing PricingSection + /coach/subscription read from here.
+ * Local Scout is gated to Pro+ (searches: 0 + localScout: false on free/starter).
+ * Streaming caps are catalog/display truth; hard enforcement lands with the Cloudflare Stream work.
+ */
 export const PLAN_LIMITS = {
   free: {
-    maxClients: 30,
+    // Trial mirrors Starter so what they see in the trial = what they'll get.
+    maxClients: 15,
     maxVideoStorageGb: 5,
+    maxStreamingGb: 25,
     maxAssignmentStorageGb: 2,
     maxAssignmentsPerClient: 50,
-    maxLeadSearchesPerMonth: 10, // one-time trial — counted for all time, not monthly (see checkLeadSearchLimit)
+    maxLeadSearchesPerMonth: 0, // Local Scout is Pro+ only
+    localScout: false,
   },
   founding: {
+    // $99/mo-for-life early bird = Pro access, with grandfathered 50 GB storage.
     maxClients: null as number | null, // unlimited — same as pro
     maxVideoStorageGb: 50,
+    maxStreamingGb: 100,
     maxAssignmentStorageGb: 20,
     maxAssignmentsPerClient: 999,
-    maxLeadSearchesPerMonth: 200,
+    maxLeadSearchesPerMonth: 50,
+    localScout: true,
   },
   starter: {
     maxClients: 15,
-    maxVideoStorageGb: 10,
+    maxVideoStorageGb: 5,
+    maxStreamingGb: 25,
     maxAssignmentStorageGb: 5,
     maxAssignmentsPerClient: 50,
-    maxLeadSearchesPerMonth: 50,
+    maxLeadSearchesPerMonth: 0, // Local Scout is a Pro+ upgrade driver
+    localScout: false,
   },
   pro: {
     maxClients: null as number | null, // unlimited
-    maxVideoStorageGb: 50,
+    maxVideoStorageGb: 25,
+    maxStreamingGb: 100,
     maxAssignmentStorageGb: 20,
     maxAssignmentsPerClient: 999,
-    maxLeadSearchesPerMonth: 200,
+    maxLeadSearchesPerMonth: 50,
+    localScout: true,
   },
   scale: {
     maxClients: null as number | null, // unlimited
-    maxVideoStorageGb: 200,
+    maxVideoStorageGb: 100,
+    maxStreamingGb: 500,
     maxAssignmentStorageGb: 100,
     maxAssignmentsPerClient: 999,
-    maxLeadSearchesPerMonth: 500, // marketed "unlimited"; 500/mo is a fair-use ceiling
+    maxLeadSearchesPerMonth: 200,
+    localScout: true,
   },
 } as const
 
@@ -43,7 +61,7 @@ export type StorageKind = 'video' | 'assignment_file'
 
 /** Default client caps by plan when workspace.max_clients is unset. */
 export const DEFAULT_MAX_CLIENTS_BY_PLAN = {
-  free: 30,
+  free: 15,
   founding: 999999, // unlimited
   starter: PLAN_LIMITS.starter.maxClients,
   pro: 999999,  // unlimited
@@ -66,9 +84,9 @@ export function effectiveClientLimit(plan: string, workspaceMaxClients: number |
 export const PLAN_MRR_CENTS: Record<string, number> = {
   free: 0,
   founding: 9900, // early-bird: $99/mo for life
-  starter: 6900, // $69/mo
-  pro: 12900, // $129/mo
-  scale: 19900, // $199/mo
+  starter: 7900, // $79/mo
+  pro: 14900, // $149/mo
+  scale: 29900, // $299/mo
 }
 
 /**

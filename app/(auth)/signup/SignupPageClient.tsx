@@ -374,6 +374,10 @@ export function SignupPageClient() {
                 'Create my workspace'
               )}
             </button>
+            <p className="text-center text-[12px] leading-relaxed text-[var(--text-tertiary)]">
+              No credit card to start — set up your workspace, then lock in Founding:{' '}
+              <span className="font-medium text-[var(--text-secondary)]">$99/mo for life</span>.
+            </p>
           </form>
 
           {/* Footer */}

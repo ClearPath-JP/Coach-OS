@@ -9,15 +9,20 @@ import {
   Trophy,
   Upload,
   Lock,
-  Zap,
+  MapPin,
 } from 'lucide-react'
 
 const features = [
   {
+    icon: MapPin,
+    title: 'Find Local Clients',
+    description: 'Type your city — Kindo pulls a list of local prospects from Instagram you can DM today. Built-in lead engine, not a third-party plugin.',
+    accent: true,
+  },
+  {
     icon: Video,
     title: 'Video Library',
     description: 'Upload, organize, and share technique videos with thumbnails, categories, and durations. Your content, your way.',
-    accent: true,
   },
   {
     icon: BookOpen,
@@ -48,11 +53,6 @@ const features = [
     icon: Lock,
     title: 'Paid or Private Access',
     description: 'Set a monthly subscription price or share access codes. You control who enters your dojo.',
-  },
-  {
-    icon: Zap,
-    title: 'Built for Solo Coaches',
-    description: 'No bloat, no enterprise features you\'ll never use. Just what a real coach with 5-30 students actually needs.',
   },
 ]
 
@@ -85,12 +85,17 @@ export function FeaturesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ delay: i * 0.03, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className={`group p-6 rounded-2xl border transition-colors ${
+              className={`group relative p-6 rounded-2xl border transition-colors ${
                 feature.accent
                   ? 'border-[var(--accent)]/30 bg-[var(--accent)]/5 hover:border-[var(--accent)]/50'
                   : 'border-[var(--border-subtle)] bg-[var(--bg-subtle)] hover:border-[var(--accent)]/20'
               }`}
             >
+              {feature.accent && (
+                <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-[0.14em] bg-[var(--accent)] text-[var(--text-on-accent)]">
+                  Lead Engine
+                </span>
+              )}
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 ${
                 feature.accent
                   ? 'bg-[var(--accent)]/20'

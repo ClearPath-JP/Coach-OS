@@ -7,8 +7,7 @@ const footerLinks = {
     { label: 'Why Kindo', href: '#founder' },
   ],
   Company: [
-    { label: 'About', href: '#' },
-    { label: 'Contact', href: '#' },
+    { label: 'Contact', href: 'mailto:hello@foundos.ai' },
   ],
   Legal: [
     { label: 'Privacy', href: '/privacy' },

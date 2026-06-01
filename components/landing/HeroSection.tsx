@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Play, Sword, BookOpen, ArrowRight, CreditCard, Calendar } from 'lucide-react'
+import { Play, DoorOpen, MapPin, BookOpen, ArrowRight, CreditCard, Calendar } from 'lucide-react'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -100,7 +100,7 @@ export function HeroSection() {
             className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl text-white font-semibold text-base transition-all shadow-[0_8px_28px_rgba(var(--accent-rgb),0.35)] hover:shadow-[0_10px_36px_rgba(var(--accent-rgb),0.5)]"
             style={{ background: 'var(--accent)' }}
           >
-            <Sword size={18} />
+            <DoorOpen size={18} />
             Open Your Dojo
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
@@ -108,7 +108,7 @@ export function HeroSection() {
             href="/signup?role=student"
             className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl border border-white/30 bg-white/[0.1] backdrop-blur-sm text-white font-semibold text-base hover:border-[var(--accent)]/50 hover:bg-white/[0.16] transition-all"
           >
-            <BookOpen size={18} />
+            <MapPin size={18} />
             Find a Coach
           </Link>
         </motion.div>

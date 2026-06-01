@@ -60,6 +60,8 @@ export async function GET() {
         assignmentBytes,
         otherBytes,
         maxGb,
+        videoMaxGb: limits.maxVideoStorageGb,
+        assignmentMaxGb: limits.maxAssignmentStorageGb,
         usedGb: tracked / 1_000_000_000,
         pct: maxGb > 0 ? Math.min(100, Math.round((tracked / (maxGb * 1_000_000_000)) * 100)) : 0,
       },

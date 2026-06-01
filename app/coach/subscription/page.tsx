@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { PLAN_LIMITS, PLAN_MRR_CENTS, effectiveClientLimit } from '@/lib/plan-limits'
 import { SubscriptionPageContent } from './SubscriptionPageContent'
 
 export const metadata = { title: 'Subscription' }
@@ -52,12 +53,30 @@ export default async function SubscriptionPage() {
   const hasStripeCustomer = Boolean(workspaceResult.data?.stripe_customer_id)
   const clientCount = clientCountResult.count ?? 0
 
+  // Drive the displayed entitlements from the enforced caps so the page can never
+  // promise more (or less) than the coach actually gets. null clientLimit = unlimited.
+  const planKey = (subscription?.plan ?? 'free') as keyof typeof PLAN_LIMITS
+  const limits = PLAN_LIMITS[planKey] ?? PLAN_LIMITS.free
+  const planInfo = {
+    priceCents: PLAN_MRR_CENTS[planKey] ?? 0,
+    clientLimit:
+      limits.maxClients == null
+        ? null
+        : effectiveClientLimit(planKey, workspaceResult.data?.max_clients),
+    videoGb: limits.maxVideoStorageGb,
+    streamingGb: limits.maxStreamingGb,
+    leadSearchesPerMonth: limits.maxLeadSearchesPerMonth,
+    localScout: limits.localScout,
+    isLifetime: planKey === 'founding',
+  }
+
   return (
     <Suspense fallback={null}>
       <SubscriptionPageContent
         subscription={subscription}
         hasStripeCustomer={hasStripeCustomer}
         clientCount={clientCount}
+        planInfo={planInfo}
       />
     </Suspense>
   )

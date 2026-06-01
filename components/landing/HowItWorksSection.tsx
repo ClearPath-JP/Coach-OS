@@ -13,8 +13,8 @@ const steps = [
   {
     icon: Search,
     number: '02',
-    title: 'Find Your Dojo',
-    description: 'Students browse coaches by discipline, subscribe monthly, or enter an access code. Join multiple dojos at once.',
+    title: 'Open the Doors',
+    description: 'Set your price, drop in your videos, share your access code. Students subscribe directly — no app store fees, no middleman cut.',
   },
   {
     icon: Video,

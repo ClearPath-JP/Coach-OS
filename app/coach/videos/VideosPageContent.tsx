@@ -60,6 +60,7 @@ export function VideosPageContent() {
   const [bulkCategoryOpen, setBulkCategoryOpen] = useState(false)
   const [categories, setCategories] = useState<VideoCategory[]>([])
   const [categoryManagerOpen, setCategoryManagerOpen] = useState(false)
+  const [storage, setStorage] = useState<{ videoBytes: number; videoMaxGb: number } | null>(null)
   const router = useRouter()
 
   const fetchVideos = useCallback(async () => {
@@ -73,6 +74,21 @@ export function VideosPageContent() {
     const res = await fetch('/api/video-categories')
     const data = await res.json()
     if (res.ok) setCategories(data.data ?? [])
+  }, [])
+
+  const fetchStorage = useCallback(async () => {
+    try {
+      const res = await fetch('/api/coach/storage', { credentials: 'include' })
+      const json = await res.json().catch(() => ({}))
+      if (res.ok && json.data) {
+        setStorage({
+          videoBytes: Number(json.data.videoBytes ?? 0),
+          videoMaxGb: Number(json.data.videoMaxGb ?? 0),
+        })
+      }
+    } catch {
+      /* non-fatal — the meter just won't render */
+    }
   }, [])
 
   const categoryMap = useMemo(() => {
@@ -101,6 +117,10 @@ export function VideosPageContent() {
       mounted = false
     }
   }, [fetchVideos])
+
+  useEffect(() => {
+    void fetchStorage()
+  }, [fetchStorage, videos.length])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -218,6 +238,10 @@ export function VideosPageContent() {
               How do I add videos from my phone?
             </button>
         </PageHeader>
+
+        {storage && storage.videoMaxGb > 0 && (
+          <StorageMeter usedBytes={storage.videoBytes} maxGb={storage.videoMaxGb} />
+        )}
 
         {!error && videos.length > 0 && (
           <>
@@ -1261,6 +1285,28 @@ function formatFileSize(bytes: number): string {
   if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(0)} MB`
   if (bytes >= 1e3) return `${(bytes / 1e3).toFixed(0)} KB`
   return `${bytes} B`
+}
+
+function StorageMeter({ usedBytes, maxGb }: { usedBytes: number; maxGb: number }) {
+  const usedGb = usedBytes / 1_000_000_000
+  const pct = maxGb > 0 ? Math.min(100, Math.round((usedGb / maxGb) * 100)) : 0
+  const near = pct >= 80
+  return (
+    <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3.5 py-2.5">
+      <div className="flex items-center justify-between text-[12px]">
+        <span className="font-medium text-[var(--text-secondary)]">Video storage</span>
+        <span className={near ? 'font-semibold text-[var(--warning)]' : 'text-[var(--text-tertiary)]'}>
+          {usedGb < 0.1 ? usedGb.toFixed(2) : usedGb.toFixed(1)} / {maxGb} GB used
+        </span>
+      </div>
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
+        <div
+          className="h-full rounded-full transition-[width] duration-500"
+          style={{ width: `${pct}%`, background: near ? 'var(--warning)' : 'var(--accent)' }}
+        />
+      </div>
+    </div>
+  )
 }
 
 function VideoCard({

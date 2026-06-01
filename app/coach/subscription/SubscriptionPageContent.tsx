@@ -4,21 +4,19 @@ import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import {
-  BarChart3,
   BookOpen,
   CalendarDays,
   Check,
   CreditCard,
-  FileText,
   HardDrive,
+  Mail,
   MessageSquare,
-  Palette,
-  Shield,
+  Search,
   Sparkles,
-  Star,
   Target,
   Users,
   Video,
+  Wifi,
   Zap,
 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -38,6 +36,16 @@ export interface SubscriptionPageContentProps {
   } | null
   hasStripeCustomer: boolean
   clientCount: number
+  /** Enforced entitlements for the current plan (computed server-side from plan-limits). */
+  planInfo: {
+    priceCents: number
+    clientLimit: number | null // null = unlimited
+    videoGb: number
+    streamingGb: number
+    leadSearchesPerMonth: number
+    localScout: boolean
+    isLifetime: boolean
+  }
 }
 
 const PLAN_LABELS: Record<Plan, string> = {
@@ -56,19 +64,15 @@ const STATUS_LABELS: Record<Status, string> = {
   paused: 'Paused',
 }
 
-const BENEFITS = [
-  { icon: Users, title: 'Unlimited Clients', description: 'Add as many clients as you need, no caps' },
-  { icon: Video, title: 'Video Library (50 GB)', description: 'Import training videos from Google Drive' },
-  { icon: CalendarDays, title: 'Schedule & Calendar', description: 'Book sessions, set availability, iCal sync' },
-  { icon: MessageSquare, title: 'Messaging', description: 'Real-time chat + broadcast to all clients' },
-  { icon: CreditCard, title: 'Payments & Invoicing', description: 'Track payments, send invoices, manage packages' },
-  { icon: BookOpen, title: 'Programs', description: 'Create training programs with video modules' },
-  { icon: BarChart3, title: 'Analytics', description: 'Revenue trends, client engagement, session stats' },
-  { icon: Target, title: 'Goal Tracking', description: 'Set and track client goals + daily check-ins' },
-  { icon: Palette, title: 'White-Label Branding', description: 'Custom colors, logo, branded client portal' },
-  { icon: Star, title: 'Testimonials', description: 'Collect and display client testimonials' },
-  { icon: FileText, title: 'Assignments', description: 'Send homework with file uploads' },
-  { icon: Shield, title: 'Priority Support', description: 'Direct support from the Kindo team' },
+// Qualitative capabilities on every paid plan. Per-tier numbers live in the usage tiles,
+// so nothing here states a cap that could be wrong for the coach's plan.
+const INCLUDED_FEATURES = [
+  { icon: CalendarDays, label: 'Scheduling & classes' },
+  { icon: BookOpen, label: 'Programs & assignments' },
+  { icon: Video, label: 'Video library' },
+  { icon: MessageSquare, label: 'Messaging & broadcast' },
+  { icon: CreditCard, label: 'Payments & invoicing' },
+  { icon: Target, label: 'Goal tracking & check-ins' },
 ] as const
 
 const FOUNDING_FEATURES = [
@@ -87,10 +91,17 @@ const FOUNDING_FEATURES = [
   'Priority support',
 ]
 
+function formatPrice(cents: number): string {
+  if (cents <= 0) return 'Free'
+  const dollars = cents / 100
+  return `$${Number.isInteger(dollars) ? dollars : dollars.toFixed(2)}`
+}
+
 export function SubscriptionPageContent({
   subscription,
   hasStripeCustomer,
   clientCount,
+  planInfo,
 }: SubscriptionPageContentProps) {
   const searchParams = useSearchParams()
   const success = searchParams.get('success') === 'true'
@@ -99,9 +110,10 @@ export function SubscriptionPageContent({
   const [loadingPlan, setLoadingPlan] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
-  const currentPlan = subscription?.plan ?? 'free'
-  const hasActiveSub = subscription && ['active', 'trialing'].includes(subscription.status)
-  const storageGb = currentPlan === 'scale' ? 200 : currentPlan === 'starter' ? 10 : 50
+  const currentPlan: Plan = subscription?.plan ?? 'free'
+  const status: Status | null = subscription?.status ?? null
+  const hasActiveSub = subscription != null && ['active', 'trialing'].includes(subscription.status)
+  const clientLimitLabel = planInfo.clientLimit == null ? 'Unlimited' : String(planInfo.clientLimit)
 
   const handleCheckout = async () => {
     setLoadingPlan(true)
@@ -141,9 +153,9 @@ export function SubscriptionPageContent({
     }
   }
 
-  const statusBadgeVariant = (status: Status) => {
-    if (status === 'active') return 'active'
-    if (status === 'trialing') return 'pending'
+  const statusBadgeVariant = (s: Status) => {
+    if (s === 'active') return 'active'
+    if (s === 'trialing') return 'pending'
     return 'error'
   }
 
@@ -172,37 +184,59 @@ export function SubscriptionPageContent({
               <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">
                 {PLAN_LABELS[currentPlan]}
               </h2>
-              {subscription && (
-                <Badge variant={statusBadgeVariant(subscription.status)}>
-                  {STATUS_LABELS[subscription.status]}
+              {status && (
+                <Badge variant={statusBadgeVariant(status)}>
+                  {STATUS_LABELS[status]}
                 </Badge>
               )}
             </div>
-            {subscription?.status === 'trialing' && subscription.trial_ends_at && (
-              <p className="mt-1 text-[14px] text-[var(--text-secondary)]">
+
+            {/* Price */}
+            <p className="mt-2 text-[26px] font-bold leading-none text-[var(--text-primary)]">
+              {formatPrice(planInfo.priceCents)}
+              {planInfo.priceCents > 0 && (
+                <span className="text-[15px] font-normal text-[var(--text-secondary)]">/month</span>
+              )}
+            </p>
+            {planInfo.isLifetime && (
+              <p className="mt-1 text-[13px] font-medium text-[var(--cp-accent)]">Rate locked in for life.</p>
+            )}
+
+            {/* Renewal / trial line */}
+            {status === 'trialing' && subscription?.trial_ends_at && (
+              <p className="mt-1.5 text-[14px] text-[var(--text-secondary)]">
                 Trial ends {format(new Date(subscription.trial_ends_at), 'MMMM d, yyyy')}
               </p>
             )}
-            {subscription?.status === 'active' && subscription.current_period_end && (
-              <p className="mt-1 text-[14px] text-[var(--text-secondary)]">
+            {status === 'active' && subscription?.current_period_end && (
+              <p className="mt-1.5 text-[14px] text-[var(--text-secondary)]">
                 Renews {format(new Date(subscription.current_period_end), 'MMMM d, yyyy')}
               </p>
             )}
-            {subscription?.status === 'past_due' && (
-              <p className="mt-1 text-[14px] text-[var(--error)]">
+            {status === 'active' && !subscription?.current_period_end && planInfo.priceCents > 0 && (
+              <p className="mt-1.5 text-[14px] text-[var(--text-secondary)]">Billed monthly</p>
+            )}
+            {status === 'past_due' && (
+              <p className="mt-1.5 text-[14px] text-[var(--error)]">
                 Payment failed — update your payment method to keep access.
               </p>
             )}
           </div>
+
           {hasStripeCustomer && (
-            <Button variant="secondary" onClick={handlePortal} disabled={portalLoading}>
-              {portalLoading ? 'Opening...' : 'Manage billing'}
-            </Button>
+            <div className="text-right">
+              <Button variant="secondary" onClick={handlePortal} disabled={portalLoading}>
+                {portalLoading ? 'Opening...' : 'Manage billing'}
+              </Button>
+              <p className="mt-1.5 max-w-[180px] text-[11px] leading-snug text-[var(--text-tertiary)]">
+                Change plan, update payment, or cancel anytime.
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Usage stats */}
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        {/* Usage / entitlements for THIS plan */}
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl bg-[var(--bg-subtle)] p-4">
             <div className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
               <Users className="size-4 shrink-0" aria-hidden />
@@ -210,7 +244,7 @@ export function SubscriptionPageContent({
             </div>
             <p className="mt-1 text-[22px] font-semibold text-[var(--text-primary)]">
               {clientCount}
-              <span className="text-[15px] font-normal text-[var(--text-secondary)]"> / unlimited</span>
+              <span className="text-[15px] font-normal text-[var(--text-secondary)]"> / {clientLimitLabel}</span>
             </p>
           </div>
           <div className="rounded-xl bg-[var(--bg-subtle)] p-4">
@@ -219,12 +253,50 @@ export function SubscriptionPageContent({
               <span>Video storage</span>
             </div>
             <p className="mt-1 text-[22px] font-semibold text-[var(--text-primary)]">
-              {storageGb} GB
+              {planInfo.videoGb} GB
               <span className="text-[15px] font-normal text-[var(--text-secondary)]"> included</span>
             </p>
           </div>
+          <div className="rounded-xl bg-[var(--bg-subtle)] p-4">
+            <div className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
+              <Wifi className="size-4 shrink-0" aria-hidden />
+              <span>Streaming</span>
+            </div>
+            <p className="mt-1 text-[22px] font-semibold text-[var(--text-primary)]">
+              {planInfo.streamingGb} GB
+              <span className="text-[15px] font-normal text-[var(--text-secondary)]"> / month</span>
+            </p>
+          </div>
+          <div className="rounded-xl bg-[var(--bg-subtle)] p-4">
+            <div className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
+              <Search className="size-4 shrink-0" aria-hidden />
+              <span>Lead searches</span>
+            </div>
+            {planInfo.localScout ? (
+              <p className="mt-1 text-[22px] font-semibold text-[var(--text-primary)]">
+                {planInfo.leadSearchesPerMonth}
+                <span className="text-[15px] font-normal text-[var(--text-secondary)]"> / month</span>
+              </p>
+            ) : (
+              <p className="mt-1 text-[15px] font-medium text-[var(--text-tertiary)]">Pro feature</p>
+            )}
+          </div>
         </div>
       </Card>
+
+      {/* ── Admin-managed plans (active sub, no Stripe customer): give a real change/cancel path ── */}
+      {hasActiveSub && !hasStripeCustomer && (
+        <Card variant="flat" padding="default" className="flex items-start gap-3">
+          <Mail className="mt-0.5 size-4 shrink-0 text-[var(--text-tertiary)]" aria-hidden />
+          <p className="text-[13px] text-[var(--text-secondary)]">
+            Your plan is managed by the Kindo team. Email{' '}
+            <a href="mailto:hello@foundos.ai" className="font-medium text-[var(--cp-accent)] hover:underline">
+              hello@foundos.ai
+            </a>{' '}
+            to upgrade, change, or cancel.
+          </p>
+        </Card>
+      )}
 
       {/* ── Founding Member offer (show when not subscribed) ── */}
       {!hasActiveSub && (
@@ -285,21 +357,18 @@ export function SubscriptionPageContent({
         </Card>
       )}
 
-      {/* ── What's Included benefits grid ── */}
+      {/* ── What's included ── */}
       <div>
         <p className="mb-3 text-[13px] font-medium uppercase tracking-wider text-[var(--text-tertiary)]">
-          What&apos;s Included
+          Included in your plan
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {BENEFITS.map(({ icon: Icon, title, description }) => (
-            <Card key={title} variant="glow" padding="default" className="flex items-start gap-3">
+          {INCLUDED_FEATURES.map(({ icon: Icon, label }) => (
+            <Card key={label} variant="glow" padding="default" className="flex items-center gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-light)]">
                 <Icon className="size-[18px] text-[var(--cp-accent)]" strokeWidth={1.5} aria-hidden />
               </div>
-              <div className="min-w-0">
-                <p className="text-[14px] font-semibold text-[var(--text-primary)]">{title}</p>
-                <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--text-tertiary)]">{description}</p>
-              </div>
+              <p className="text-[14px] font-medium text-[var(--text-primary)]">{label}</p>
             </Card>
           ))}
         </div>

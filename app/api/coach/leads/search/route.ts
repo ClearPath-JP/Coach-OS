@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         {
           error:
             limit.max === 0
-              ? 'Lead research is not included in your plan. Upgrade to Starter or higher.'
+              ? 'Lead research is a Pro feature. Upgrade to Pro or Scale to use it.'
               : `You've used all ${limit.max} lead searches this month. Resets on the 1st.`,
           used: limit.used,
           max: limit.max,

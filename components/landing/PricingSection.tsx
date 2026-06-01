@@ -7,43 +7,45 @@ import { Check } from 'lucide-react'
 const plans = [
   {
     name: 'Starter',
-    price: 69,
+    price: 79,
     description: 'For coaches just getting started online.',
     features: [
       'Up to 15 students',
-      'Video library (10GB)',
-      'Basic programs',
+      '5 GB video storage',
+      '25 GB monthly streaming',
+      'Programs & assignments',
       'Dojo chat',
       'Student progress tracking',
     ],
   },
   {
     name: 'Pro',
-    price: 129,
+    price: 149,
     description: 'For coaches ready to grow their dojo.',
     popular: true,
     features: [
       'Unlimited students',
-      'Video library (50GB)',
-      'Unlimited programs & lessons',
-      'Dojo chat with channels',
-      'Advanced analytics',
+      '25 GB video storage',
+      '100 GB monthly streaming',
+      '50 lead searches / month',
       'Custom dojo branding',
+      'Advanced analytics',
       'Access codes',
     ],
   },
   {
     name: 'Scale',
-    price: 199,
+    price: 299,
     description: 'For coaches building a training empire.',
     features: [
       'Unlimited students',
-      'Video library (200GB)',
-      'Everything in Pro',
+      '100 GB video storage',
+      '500 GB monthly streaming',
+      '200 lead searches / month',
       'White-label branding',
-      'Priority support',
-      'API access',
       'Multiple dojos',
+      'API access',
+      'Priority support',
     ],
   },
 ]
@@ -74,11 +76,11 @@ export function PricingSection() {
             Founding offer · limited spots
           </span>
           <p className="mt-2 text-lg md:text-xl font-semibold text-[var(--text-primary)]">
-            Our first coaches lock in{' '}
-            <span className="text-[var(--accent)]">$99/mo for life</span> — full Pro access, no setup fee.
+            Lock in full Pro access for{' '}
+            <span className="text-[var(--accent)]">$99/mo for life</span> — $50/mo off regular Pro pricing, forever.
           </p>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Regular pricing below applies once the founding cohort fills.
+            Same as the <span className="text-[var(--text-primary)] font-medium">Pro plan ($149/mo)</span> below — 50 students, custom branding, the works. Founding price never goes up.
           </p>
           <Link
             href="/signup?role=coach&plan=founding"
@@ -122,7 +124,7 @@ export function PricingSection() {
                 className={`block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
                   plan.popular
                     ? 'bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20'
-                    : 'border border-[var(--border-default)] bg-white/[0.05] text-[var(--text-primary)] hover:border-[var(--accent)]/40 hover:bg-[var(--accent)]/10'
+                    : 'border border-white/40 bg-white/[0.12] text-[var(--text-primary)] hover:border-[var(--accent)]/60 hover:bg-[var(--accent)]/15'
                 }`}
               >
                 Start Free Trial
