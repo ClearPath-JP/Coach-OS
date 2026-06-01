@@ -13,6 +13,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
 import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { DriveFileBrowser } from '@/components/coach/DriveFileBrowser'
+import { VideoUploader } from './VideoUploader'
 import { getCategoryColor, CATEGORY_COLORS, type CategoryColorKey } from '@/lib/video-category-colors'
 import type { Video, VideoCategory } from './types'
 
@@ -216,7 +217,8 @@ export function VideosPageContent() {
     <>
       <div className="flex flex-col gap-4">
         <PageHeader title="Video library" {...(videos.length > 0 ? { countLabel: `${videos.length} videos` } : {})}>
-          <Button type="button" size="sm" onClick={() => setDriveImportOpen(true)}>
+          <VideoUploader onUploaded={() => { void fetchVideos(); void fetchStorage() }} />
+          <Button type="button" size="sm" variant="secondary" onClick={() => setDriveImportOpen(true)}>
             Import from Google Drive
           </Button>
           <Link

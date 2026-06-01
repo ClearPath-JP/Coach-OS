@@ -4,8 +4,14 @@ import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createBunnyVideo, bunnyConfigured } from '@/lib/bunny'
+import { checkStorageLimit } from '@/lib/plan-limits'
 
-const schema = z.object({ title: z.string().trim().max(200).optional() })
+const schema = z.object({
+  title: z.string().trim().max(200).optional(),
+  // Optional so the existing Promote caller keeps working; the Videos-library
+  // uploader sends it so we can enforce the plan storage cap + track usage.
+  fileSizeBytes: z.number().int().positive().optional(),
+})
 
 /**
  * POST /api/coach/promote/bunny/create
@@ -41,6 +47,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid request' }, { status: 400 })
     }
     const title = parsed.data.title?.trim() || 'Coach clip'
+    const fileSizeBytes = parsed.data.fileSizeBytes ?? null
+
+    // Enforce the plan's video-storage cap when the caller reports a file size.
+    if (fileSizeBytes != null) {
+      const { allowed, usedGb, maxGb } = await checkStorageLimit(workspaceId, fileSizeBytes, 'video')
+      if (!allowed) {
+        return NextResponse.json(
+          {
+            error: `Storage full — this clip would exceed your ${maxGb} GB video limit (${usedGb.toFixed(1)} GB used). Upgrade your plan or remove a video.`,
+          },
+          { status: 413 }
+        )
+      }
+    }
 
     const created = await createBunnyVideo(title)
 
@@ -56,6 +76,8 @@ export async function POST(request: Request) {
         bunny_library_id: created.libraryId,
         bunny_video_guid: created.videoId,
         processing_status: 'processing',
+        // Store the upload size so Bunny videos count toward the storage meter.
+        file_size_bytes: fileSizeBytes,
       })
       .select('id')
       .single()
