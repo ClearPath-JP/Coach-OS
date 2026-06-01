@@ -259,6 +259,30 @@ export function CoachLeadsContent() {
     void load()
   }, [load])
 
+  // Restore the coach's last-used search inputs so returning doesn't mean re-typing everything.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('kindo-leads-form')
+      if (!raw) return
+      const v = JSON.parse(raw) as Partial<{
+        discipline: string
+        area: string
+        radius: string
+        idealClients: string[]
+        platform: string
+      }>
+      if (typeof v.discipline === 'string') setDiscipline(v.discipline)
+      if (typeof v.area === 'string') setArea(v.area)
+      if (typeof v.radius === 'string') setRadius(v.radius)
+      if (Array.isArray(v.idealClients)) {
+        setIdealClients(v.idealClients.filter((c): c is string => typeof c === 'string'))
+      }
+      if (typeof v.platform === 'string') setPlatform(v.platform)
+    } catch {
+      /* ignore malformed cache */
+    }
+  }, [])
+
   async function runSearch(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
@@ -298,6 +322,14 @@ export function CoachLeadsContent() {
         setActiveSearchId(newSearch.id)
       }
       if (json.data?.limit) setLimit(json.data.limit)
+      try {
+        localStorage.setItem(
+          'kindo-leads-form',
+          JSON.stringify({ discipline, area, radius, idealClients, platform })
+        )
+      } catch {
+        /* ignore quota/availability errors */
+      }
     } catch {
       setError('Network error — please try again')
     } finally {
@@ -369,7 +401,7 @@ export function CoachLeadsContent() {
             <div>
               <p className="font-medium">Not included in your plan</p>
               <p className="mt-1 text-xs">
-                Lead research is available on Starter (5/mo), Pro (20/mo), and Scale (50/mo).
+                Lead research is a Pro feature. Upgrade to Pro or Scale to find local clients near you.
               </p>
             </div>
           </div>
@@ -519,10 +551,14 @@ export function CoachLeadsContent() {
           {/* Active results */}
           <div className="order-2 lg:order-1">
             {!active && !loadingList && searches.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] p-10 text-center">
-                <Search className="mx-auto mb-3 size-5 text-[var(--text-tertiary)]" />
-                <p className="text-sm text-[var(--text-tertiary)]">
-                  Your past searches show here. Run your first one above.
+              <div className="empty-state-coach rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)]">
+                <div className="empty-state-coach__icon" aria-hidden>
+                  <Search className="size-5 text-[var(--text-tertiary)]" />
+                </div>
+                <p className="empty-state-coach__title">Find your first leads</p>
+                <p className="empty-state-coach__desc">
+                  Fill in the boxes above and run a search — we’ll scan local Instagram for real people and
+                  referral partners you can reach out to. Your past searches will show up here.
                 </p>
               </div>
             )}
@@ -536,10 +572,8 @@ export function CoachLeadsContent() {
                   <p className="mt-1 text-sm text-[var(--text-primary)]">{active.query}</p>
                   <p className="mt-2 text-[11px] text-[var(--text-quaternary)]">
                     {formatDistanceToNow(new Date(active.created_at), { addSuffix: true })}
-                    {active.cost_cents > 0 && (
-                      <>
-                        {' · '}~${(active.cost_cents / 100).toFixed(2)} compute
-                      </>
+                    {active.status === 'done' && active.result_count > 0 && (
+                      <>{' · '}{active.result_count} {active.result_count === 1 ? 'lead' : 'leads'}</>
                     )}
                   </p>
                 </div>
