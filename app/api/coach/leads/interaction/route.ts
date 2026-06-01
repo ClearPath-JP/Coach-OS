@@ -9,6 +9,7 @@ const schema = z.object({
   leadKey: z.string().trim().min(1).max(300),
   status: z.enum(LEAD_STATUSES as [string, ...string[]]).optional(),
   notes: z.string().max(4000).nullable().optional(),
+  savedClientId: z.string().uuid().nullable().optional(),
 })
 
 export async function PATCH(request: Request) {
@@ -26,13 +27,15 @@ export async function PATCH(request: Request) {
 
     const parsed = schema.safeParse(await request.json())
     if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid request' }, { status: 400 })
-    const { leadKey, status, notes } = parsed.data
-    if (status === undefined && notes === undefined) return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
+    const { leadKey, status, notes, savedClientId } = parsed.data
+    if (status === undefined && notes === undefined && savedClientId === undefined)
+      return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 
     const service = createServiceClient()
     const updateFields: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (status !== undefined) updateFields.status = status
     if (notes !== undefined) updateFields.notes = notes
+    if (savedClientId !== undefined) updateFields.saved_client_id = savedClientId
 
     // Try UPDATE first (preserves original coach_id / created_at).
     const { data: updated, error: updateError } = await service
