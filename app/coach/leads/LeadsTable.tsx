@@ -214,9 +214,7 @@ export function LeadsTable({
                    */
                   'max-[640px]:flex max-[640px]:flex-col max-[640px]:gap-1.5',
                   'max-[640px]:rounded-xl max-[640px]:border max-[640px]:border-[var(--border-subtle)]',
-                  'max-[640px]:m-2 max-[640px]:p-3',
-                  // reset table-row display at mobile
-                  'max-[640px]:table-row-reset'
+                  'max-[640px]:m-2 max-[640px]:p-3'
                 )}
               >
                 {/* Checkbox */}
@@ -243,16 +241,13 @@ export function LeadsTable({
                     {/* mobile: checkbox inline */}
                     <span
                       className="hidden max-[640px]:block mt-0.5"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onToggle(lead.leadKey)
-                      }}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <input
                         type="checkbox"
                         aria-label={`Select ${name}`}
                         checked={isSelected}
-                        readOnly
+                        onChange={() => onToggle(lead.leadKey)}
                         className="size-3.5 cursor-pointer accent-[var(--accent)]"
                       />
                     </span>
@@ -279,7 +274,7 @@ export function LeadsTable({
                     <span className="hidden max-[640px]:inline text-[10px] text-[var(--text-quaternary)] font-semibold uppercase tracking-wide w-16 shrink-0">Platform</span>
                     <span className="inline-flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
                       <PlatformIcon platform={lead.platform} />
-                      <span className="max-[640px]:inline hidden sm:inline">{platformLabel(lead.platform)}</span>
+                      <span>{platformLabel(lead.platform)}</span>
                     </span>
                   </span>
                 </td>
@@ -381,7 +376,7 @@ export function LeadsTable({
                       className="inline-flex items-center gap-1 rounded-md bg-[var(--accent)]/10 px-2 py-1 text-[11px] font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)]/20"
                     >
                       <ExternalLink className="size-3" />
-                      <span className="max-[640px]:inline hidden sm:inline">Open</span>
+                      <span>Open</span>
                     </a>
                     {/* Save to clients */}
                     {!lead.savedClientId && (
@@ -395,7 +390,7 @@ export function LeadsTable({
                         className="inline-flex items-center gap-1 rounded-md border border-[var(--border-default)] px-2 py-1 text-[11px] font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)]/40 hover:text-[var(--text-primary)]"
                       >
                         <UserPlus className="size-3" />
-                        <span className="max-[640px]:inline hidden sm:inline">Save</span>
+                        <span>Save</span>
                       </button>
                     )}
                     {lead.savedClientId && (
