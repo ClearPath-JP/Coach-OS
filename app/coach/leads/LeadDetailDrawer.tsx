@@ -473,16 +473,23 @@ export function LeadDetailDrawer({
 
           {/* Links row */}
           <div className="flex flex-wrap items-center gap-3">
-            <a
-              href={profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={`${openLead.platform} profile`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-default)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)]/40 hover:text-[var(--accent)]"
-            >
-              <ExternalLink className="size-3 shrink-0" />
-              View profile
-            </a>
+            {profileUrl !== '#' ? (
+              <a
+                href={profileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${openLead.platform} profile`}
+                className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-default)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)]/40 hover:text-[var(--accent)]"
+              >
+                <ExternalLink className="size-3 shrink-0" />
+                View profile
+              </a>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-subtle)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-quaternary)] opacity-60">
+                <ExternalLink className="size-3 shrink-0" />
+                No profile link
+              </span>
+            )}
 
             {mailtoHref ? (
               <a
