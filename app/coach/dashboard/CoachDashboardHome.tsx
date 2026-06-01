@@ -117,10 +117,12 @@ const NAV_TILES = [
   { href: '/coach/clients', label: 'Clients', desc: 'Manage your roster', icon: Users },
 ] as const
 
-function AttentionBanner({ attention }: { attention: AttentionData | null }) {
+function AttentionBanner({ attention, pendingInvoicesCount }: { attention: AttentionData | null; pendingInvoicesCount: number }) {
   const items: { label: string; href: string; count: number }[] = []
   if (attention?.inactive?.length) items.push({ label: 'clients need engagement', href: '/coach/clients', count: attention.inactive.length })
-  if (attention?.unpaidInvoices?.length) items.push({ label: 'unpaid invoices', href: '/coach/payments', count: attention.unpaidInvoices.length })
+  // Use the uncapped workspace-wide pending count (matches the Invoices page) and
+  // link to /coach/invoices, where the coach can actually act on them.
+  if (pendingInvoicesCount > 0) items.push({ label: pendingInvoicesCount === 1 ? 'unpaid invoice' : 'unpaid invoices', href: '/coach/invoices', count: pendingInvoicesCount })
 
   if (items.length === 0) return null
 
@@ -213,15 +215,22 @@ export function CoachDashboardHome() {
   const [attention, setAttention] = useState<AttentionData | null>(null)
   const [badges, setBadges] = useState<Badges>({ assignments: 0, programsCount: 0 })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const fetchAll = useCallback(() => {
-    const today = new Date().toISOString().split('T')[0]
-    Promise.all([
-      fetch('/api/coach/dashboard-summary', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
-      fetch('/api/coach/dashboard-attention', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
-      fetch('/api/assignments/overview', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
-      fetch('/api/programs', { credentials: 'include' }).then((r) => r.json()).catch(() => null),
-    ]).then(([statsJson, attentionJson, asgJson, programsJson]) => {
+  const fetchAll = useCallback(async () => {
+    setLoading(true)
+    setError(false)
+    // Abort if the network hangs so the skeleton can't get stuck forever.
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 15_000)
+    const opts = { credentials: 'include' as const, signal: controller.signal }
+    try {
+      const [statsJson, attentionJson, asgJson, programsJson] = await Promise.all([
+        fetch('/api/coach/dashboard-summary', opts).then((r) => r.json()),
+        fetch('/api/coach/dashboard-attention', opts).then((r) => r.json()).catch(() => null),
+        fetch('/api/assignments/overview', opts).then((r) => r.json()).catch(() => null),
+        fetch('/api/programs', opts).then((r) => r.json()).catch(() => null),
+      ])
       setStats(statsJson?.data ?? ZERO_STATS)
       if (attentionJson?.data) setAttention(attentionJson.data)
       let asg = 0
@@ -232,12 +241,17 @@ export function CoachDashboardHome() {
       }
       const pgCount = Array.isArray(programsJson?.data) ? programsJson.data.length : 0
       setBadges({ assignments: asg, programsCount: pgCount })
+    } catch {
+      // The primary summary fetch failed/aborted — surface a retry instead of hanging.
+      setError(true)
+    } finally {
+      clearTimeout(timeout)
       setLoading(false)
-    })
+    }
   }, [])
 
   useEffect(() => {
-    fetchAll()
+    void fetchAll()
   }, [fetchAll])
 
   const s = stats ?? ZERO_STATS
@@ -255,7 +269,7 @@ export function CoachDashboardHome() {
       </div>
 
       {/* Attention banner */}
-      {!loading && <AttentionBanner attention={attention} />}
+      {!loading && !error && <AttentionBanner attention={attention} pendingInvoicesCount={s.pendingInvoicesCount} />}
 
       {/* Stats row — always visible */}
       {loading ? (
@@ -263,6 +277,18 @@ export function CoachDashboardHome() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-[88px] animate-pulse rounded-xl bg-[var(--bg-subtle)]" />
           ))}
+        </div>
+      ) : error ? (
+        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-5 py-8 text-center">
+          <p className="text-sm font-medium text-[var(--text-secondary)]">Couldn’t load your dashboard</p>
+          <p className="mt-1 text-xs text-[var(--text-quaternary)]">Check your connection and try again.</p>
+          <button
+            type="button"
+            onClick={() => void fetchAll()}
+            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+          >
+            Try again
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -294,7 +320,7 @@ export function CoachDashboardHome() {
       )}
 
       {/* Getting started — shown until core actions are done */}
-      {!loading && <GettingStarted stats={s} programsCount={badges.programsCount} />}
+      {!loading && !error && <GettingStarted stats={s} programsCount={badges.programsCount} />}
 
       {/* Quick nav tiles — top 3 most-used. Full sidebar nav covers the rest. */}
       <div>
