@@ -165,9 +165,11 @@ export async function POST(request: Request) {
         const allotmentOk =
           plan.access_type === 'unlimited'
             ? true
-            : plan.access_type === 'limited'
-              ? mem.classes_used_this_period < (plan.classes_per_period ?? 0)
-              : typeMatch // 'specific' uses applies_to='types' semantics only
+            : plan.access_type === 'specific'
+              ? true // 'specific' = unlimited access within the applies_to types (typeMatch already gates which classes)
+              : plan.access_type === 'limited'
+                ? mem.classes_used_this_period < (plan.classes_per_period ?? 0)
+                : false // unknown access_type → not covered (fail safe; never silently grant unlimited)
 
         covered = typeMatch && allotmentOk
       }
@@ -232,11 +234,19 @@ export async function POST(request: Request) {
           })
 
         if (insertErr) {
-          // Roll back the allotment increment if we already applied one
+          // Roll back the allotment increment if we applied one. Re-read the current
+          // value and decrement by 1 (instead of writing back the stale read value), so
+          // we don't clobber increments made by concurrent bookings between read and rollback.
           if (plan && plan.access_type === 'limited' && mem) {
+            const { data: cur } = await service
+              .from('client_memberships')
+              .select('classes_used_this_period')
+              .eq('id', mem.id)
+              .maybeSingle()
+            const nowUsed = cur?.classes_used_this_period ?? mem.classes_used_this_period + 1
             await service
               .from('client_memberships')
-              .update({ classes_used_this_period: mem.classes_used_this_period })
+              .update({ classes_used_this_period: Math.max(0, nowUsed - 1) })
               .eq('id', mem.id)
           }
           if (insertErr.code === '23505') {
