@@ -9,7 +9,27 @@ import type Stripe from 'stripe'
  * POST /api/webhooks/stripe — Stripe webhook (subscriptions + existing checkout logic).
  * No Supabase session; verify Stripe signature. Use raw body for verification.
  * Always return 200 so Stripe does not retry (log errors internally).
+ *
+ * Membership isolation: for subscription/invoice events, look up client_memberships
+ * by stripe_subscription_id FIRST. If a row exists → handle as membership, break/return
+ * without touching workspace logic. If not found → fall through to workspace handling unchanged.
  */
+
+type MembershipStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete'
+
+/** Map a Stripe subscription status to client_memberships.status. */
+function stripeStatusToMembership(stripeStatus: Stripe.Subscription.Status): MembershipStatus {
+  switch (stripeStatus) {
+    case 'active': return 'active'
+    case 'trialing': return 'trialing'
+    case 'past_due':
+    case 'unpaid': return 'past_due'
+    case 'canceled':
+    case 'incomplete_expired': return 'canceled'
+    case 'incomplete':
+    default: return 'incomplete'
+  }
+}
 
 function priceIdToPlan(priceId: string): 'founding' | 'starter' | 'pro' | 'scale' | null {
   for (const [plan, id] of Object.entries(STRIPE_PRICES)) {
@@ -59,6 +79,45 @@ export async function POST(request: Request) {
           const result = await createSessionFromClassBookingCheckout(supabase, session)
           if (!result.ok) {
             console.warn('[webhook] class_booking session not created:', result.reason)
+          }
+          return NextResponse.json({ received: true })
+        }
+        // --- Client membership checkout ---
+        if (session.mode === 'subscription' && session.metadata?.type === 'client_membership') {
+          const clientId = session.metadata?.client_id as string | undefined
+          const workspaceId = session.metadata?.workspace_id as string | undefined
+          const planId = session.metadata?.plan_id as string | undefined
+          const subId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id ?? null
+          if (clientId && workspaceId && planId && subId) {
+            const memberSub = await stripe.subscriptions.retrieve(subId)
+            const memberStatus = stripeStatusToMembership(memberSub.status)
+            const periodStart = memberSub.current_period_start
+              ? new Date(memberSub.current_period_start * 1000).toISOString()
+              : null
+            const periodEnd = memberSub.current_period_end
+              ? new Date(memberSub.current_period_end * 1000).toISOString()
+              : null
+            const { error: upsertErr } = await supabase
+              .from('client_memberships')
+              .upsert(
+                {
+                  client_id: clientId,
+                  workspace_id: workspaceId,
+                  plan_id: planId,
+                  stripe_subscription_id: subId,
+                  status: memberStatus,
+                  current_period_start: periodStart,
+                  current_period_end: periodEnd,
+                  classes_used_this_period: 0,
+                  updated_at: new Date().toISOString(),
+                },
+                { onConflict: 'stripe_subscription_id' }
+              )
+            if (upsertErr) {
+              console.error('[webhook] client_membership upsert failed', upsertErr)
+            }
+          } else {
+            console.warn('[webhook] client_membership checkout missing metadata', session.metadata)
           }
           return NextResponse.json({ received: true })
         }
@@ -112,8 +171,80 @@ export async function POST(request: Request) {
         }
         break
       }
+      // invoice.paid — new billing period: reset client membership allotment.
+      // invoice.payment_succeeded is a Stripe alias; handle identically via fallthrough.
+      case 'invoice.payment_succeeded':
+      case 'invoice.paid': {
+        const invoice = event.data.object as Stripe.Invoice
+        const invoiceSubId = typeof invoice.subscription === 'string'
+          ? invoice.subscription
+          : (invoice.subscription as Stripe.Subscription | null)?.id ?? null
+        if (invoiceSubId) {
+          const { data: memberRow } = await supabase
+            .from('client_memberships')
+            .select('id')
+            .eq('stripe_subscription_id', invoiceSubId)
+            .maybeSingle()
+          if (memberRow) {
+            // Retrieve subscription to get fresh period boundaries.
+            const memberSub = await stripe.subscriptions.retrieve(invoiceSubId)
+            const periodStart = memberSub.current_period_start
+              ? new Date(memberSub.current_period_start * 1000).toISOString()
+              : null
+            const periodEnd = memberSub.current_period_end
+              ? new Date(memberSub.current_period_end * 1000).toISOString()
+              : null
+            await supabase
+              .from('client_memberships')
+              .update({
+                classes_used_this_period: 0,
+                current_period_start: periodStart,
+                current_period_end: periodEnd,
+                status: 'active',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', memberRow.id)
+            break
+          }
+        }
+        // Not a membership invoice — no existing workspace behavior for invoice.paid; no-op.
+        break
+      }
       case 'customer.subscription.updated': {
         const sub = event.data.object as Stripe.Subscription
+        // Membership check first — if this sub belongs to a client membership, handle it
+        // and break so the workspace subscriptions table is never touched.
+        const { data: memberRow } = await supabase
+          .from('client_memberships')
+          .select('id')
+          .eq('stripe_subscription_id', sub.id)
+          .maybeSingle()
+        if (memberRow) {
+          const memberStatus = stripeStatusToMembership(sub.status)
+          const periodStart = sub.current_period_start
+            ? new Date(sub.current_period_start * 1000).toISOString()
+            : null
+          const periodEnd = sub.current_period_end
+            ? new Date(sub.current_period_end * 1000).toISOString()
+            : null
+          const updatePayload: Record<string, unknown> = {
+            status: memberStatus,
+            current_period_start: periodStart,
+            current_period_end: periodEnd,
+            updated_at: new Date().toISOString(),
+          }
+          // If the coach scheduled a cancel-at-period-end, record canceled_at but keep
+          // status as-is (still active/trialing until the period actually ends).
+          if (sub.cancel_at_period_end) {
+            updatePayload.canceled_at = new Date().toISOString()
+          }
+          await supabase
+            .from('client_memberships')
+            .update(updatePayload)
+            .eq('id', memberRow.id)
+          break
+        }
+        // --- Workspace subscription (unchanged) ---
         const priceId = sub.items.data[0]?.price?.id
         const plan = priceId ? priceIdToPlan(priceId) ?? 'starter' : 'starter'
         const periodEnd = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null
@@ -140,6 +271,24 @@ export async function POST(request: Request) {
       }
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription
+        // Membership check first.
+        const { data: memberRow } = await supabase
+          .from('client_memberships')
+          .select('id')
+          .eq('stripe_subscription_id', sub.id)
+          .maybeSingle()
+        if (memberRow) {
+          await supabase
+            .from('client_memberships')
+            .update({
+              status: 'canceled',
+              canceled_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', memberRow.id)
+          break
+        }
+        // --- Workspace subscription (unchanged) ---
         const { data: row } = await supabase
           .from('subscriptions')
           .select('id')
@@ -155,6 +304,25 @@ export async function POST(request: Request) {
       }
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
+        // Membership check via invoice.subscription (more precise than customer lookup).
+        const failedSubId = typeof invoice.subscription === 'string'
+          ? invoice.subscription
+          : (invoice.subscription as Stripe.Subscription | null)?.id ?? null
+        if (failedSubId) {
+          const { data: memberRow } = await supabase
+            .from('client_memberships')
+            .select('id')
+            .eq('stripe_subscription_id', failedSubId)
+            .maybeSingle()
+          if (memberRow) {
+            await supabase
+              .from('client_memberships')
+              .update({ status: 'past_due', updated_at: new Date().toISOString() })
+              .eq('id', memberRow.id)
+            break
+          }
+        }
+        // --- Workspace subscription (unchanged) ---
         const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
         if (!customerId) break
         const { data: row } = await supabase
