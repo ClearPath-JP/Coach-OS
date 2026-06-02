@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Loader2, Users, Calendar, Trash2, AlertTriangle } from 'lucide-react'
+import { Plus, Loader2, Users, Calendar, Trash2, AlertTriangle, Pencil } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
+import { ClassFormModal, type ClassRecord } from './ClassFormModal'
 
 const WEEKDAYS = [
   { value: 0, short: 'Mon', long: 'Monday' },
@@ -56,6 +57,7 @@ type Slot = {
 export function CoachClassesContent() {
   const [packages, setPackages] = useState<Package[]>([])
   const [slots, setSlots] = useState<Slot[]>([])
+  const [classes, setClasses] = useState<ClassRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [stripeConnected, setStripeConnected] = useState<boolean | null>(null)
@@ -69,22 +71,35 @@ export function CoachClassesContent() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
+  // New class form modal
+  const [classModalOpen, setClassModalOpen] = useState(false)
+  const [editingClass, setEditingClass] = useState<ClassRecord | undefined>(undefined)
+
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const [pkgsRes, slotsRes, settingsRes] = await Promise.all([
+      const [pkgsRes, slotsRes, settingsRes, classesRes] = await Promise.all([
         fetch('/api/packages'),
         fetch('/api/availability'),
         fetch('/api/settings/workspace'),
+        fetch('/api/coach/classes'),
       ])
       const pkgsJson = await pkgsRes.json().catch(() => ({}))
       const slotsJson = await slotsRes.json().catch(() => ({}))
       const settingsJson = await settingsRes.json().catch(() => ({}))
+      const classesJson = await classesRes.json().catch(() => ({}))
       if (!pkgsRes.ok) throw new Error(pkgsJson.error ?? 'Could not load packages')
       if (!slotsRes.ok) throw new Error(slotsJson.error ?? 'Could not load slots')
       setPackages((pkgsJson.data ?? []).filter((p: Package) => p.is_active))
       setSlots((slotsJson.data ?? []).filter((s: Slot) => s.is_active))
+      // Classes API failure is non-fatal — the legacy slots list still works
+      if (classesRes.ok) {
+        const raw = classesJson?.data?.classes
+        setClasses(Array.isArray(raw) ? (raw as ClassRecord[]) : [])
+      } else {
+        setClasses([])
+      }
       const connectedId =
         settingsJson?.data?.stripe_connect_account_id || settingsJson?.stripe_connect_account_id
       setStripeConnected(Boolean(connectedId))
@@ -173,20 +188,30 @@ export function CoachClassesContent() {
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">
-              Bookable classes
+              Classes
             </h1>
             <p className="mt-1 text-sm text-[var(--text-tertiary)]">
-              Set weekly class slots your clients can pay to book. Each slot repeats every week.
+              Create classes your clients can pay to book — weekly recurring or one-time sessions.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setAddOpen((o) => !o)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)]"
-          >
-            <Plus className="size-4" />
-            New class slot
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAddOpen((o) => !o)}
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-default)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-subtle)]"
+            >
+              <Plus className="size-4" />
+              Add slot (legacy)
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEditingClass(undefined); setClassModalOpen(true) }}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)]"
+            >
+              <Plus className="size-4" />
+              New class
+            </button>
+          </div>
         </header>
 
         {stripeConnected === false && (
@@ -379,7 +404,86 @@ export function CoachClassesContent() {
             </ul>
           </div>
         )}
+        {/* ------------------------------------------------------------------ */}
+        {/* Classes created via the new form modal                             */}
+        {/* ------------------------------------------------------------------ */}
+        {classes.length > 0 && (
+          <div>
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">
+              Your classes
+            </h2>
+            <div className="overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+              <ul>
+                {classes.map((cls) => {
+                  const scheduleLabel = cls.recurring
+                    ? (cls.days ?? [])
+                        .map((d) => WEEKDAYS[d]?.short ?? '?')
+                        .join(', ')
+                    : (cls.oneTimeDate ?? 'One-time')
+                  return (
+                    <li
+                      key={cls.classGroupId}
+                      className="flex items-center gap-3 border-b border-[var(--border-subtle)] px-5 py-4 last:border-b-0"
+                    >
+                      {/* Color dot */}
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: cls.color ?? 'var(--accent)' }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-[var(--text-primary)]">
+                          {cls.name ?? 'Untitled'}
+                        </p>
+                        <p className="text-xs text-[var(--text-tertiary)]">
+                          {cls.type ?? ''}{cls.type && scheduleLabel ? ' · ' : ''}{scheduleLabel}
+                          {cls.startTime ? ` · ${timeLabel(cls.startTime.slice(0, 5))}` : ''}
+                          {cls.durationMinutes ? ` · ${cls.durationMinutes}min` : ''}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-3">
+                        <span className="text-sm text-[var(--text-secondary)]">
+                          {formatCents(cls.priceCents)}
+                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs text-[var(--text-tertiary)]">
+                          <Users className="size-3" />
+                          {cls.capacity ?? '—'}
+                        </span>
+                        <span
+                          className={[
+                            'rounded-full px-2 py-0.5 text-[11px] font-medium',
+                            cls.status === 'active'
+                              ? 'bg-emerald-500/15 text-emerald-400'
+                              : 'bg-[var(--bg-muted)] text-[var(--text-quaternary)]',
+                          ].join(' ')}
+                        >
+                          {cls.status}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => { setEditingClass(cls); setClassModalOpen(true) }}
+                          className="text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
+                          aria-label={`Edit ${cls.name ?? 'class'}`}
+                        >
+                          <Pencil className="size-4" />
+                        </button>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </div>
+        )}
+
       </div>
+
+      {/* Class form modal — create + edit */}
+      <ClassFormModal
+        open={classModalOpen}
+        onClose={() => { setClassModalOpen(false); setEditingClass(undefined) }}
+        onSaved={() => { void load() }}
+        editClass={editingClass}
+      />
     </main>
   )
 }
