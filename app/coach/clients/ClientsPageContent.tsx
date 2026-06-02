@@ -15,6 +15,7 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { calculateEngagementScore, engagementLabelText } from '@/lib/client-engagement'
 import { AddClientModal } from './AddClientModal'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
 import { differenceInCalendarDays, formatDistanceToNow, isToday } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -380,7 +381,7 @@ export function CoachClientsPageContent() {
 
   return (
     <>
-      <PageHeader title="Clients" countLabel={`${clients.length} clients`}>
+      <PageHeader title="Clients" icon={<Icon name="clients" />} countLabel={`${clients.length} clients`}>
         <div className="flex items-center gap-2">
           <Input
             type="search"

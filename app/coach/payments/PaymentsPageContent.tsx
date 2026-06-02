@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
@@ -337,7 +338,7 @@ export function PaymentsPageContent() {
 
   return (
     <main className="flex min-h-screen flex-1 flex-col space-y-6">
-      <PageHeader title="Payments" countLabel={paymentCountLabel}>
+      <PageHeader title="Payments" icon={<Icon name="payments" />} countLabel={paymentCountLabel}>
         <Button type="button" className="min-h-[44px]" onClick={() => { setEditing(null); setModalOpen(true) }}>
           Record payment
         </Button>

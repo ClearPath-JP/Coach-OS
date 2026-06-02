@@ -10,6 +10,7 @@ import { Input, Textarea } from '@/components/ui/Input'
 import { createProgramSchema } from '@/lib/validations'
 import { AssignProgramModal } from '@/components/coach/AssignProgramModal'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
 import { cn } from '@/lib/utils'
 
 type Program = {
@@ -216,7 +217,7 @@ export function ProgramsPageContent() {
 
   return (
     <>
-      <PageHeader title="Programs" countLabel={`${programs.length} programs`}>
+      <PageHeader title="Programs" icon={<Icon name="programs" />} countLabel={`${programs.length} programs`}>
         <div className="flex flex-wrap items-center gap-2">
           <Input
             type="search"

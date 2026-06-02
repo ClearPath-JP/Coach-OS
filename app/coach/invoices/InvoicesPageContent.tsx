@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { differenceInCalendarDays } from 'date-fns'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { DataTable } from '@/components/ui/DataTable'
@@ -285,7 +286,7 @@ export function InvoicesPageContent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Invoices" countLabel={`${pending.length} pending · ${paid.length} paid`}>
+      <PageHeader title="Invoices" icon={<Icon name="invoices" />} countLabel={`${pending.length} pending · ${paid.length} paid`}>
         <div className="flex flex-wrap gap-2">
           <Link href="/coach/packages">
             <Button variant="secondary" size="sm">Packages</Button>

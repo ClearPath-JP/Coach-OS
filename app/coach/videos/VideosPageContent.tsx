@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
 import { Video as VideoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -200,7 +201,7 @@ export function VideosPageContent() {
   if (loading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <PageHeader title="Video library" />
+        <PageHeader title="Video library" icon={<Icon name="videos" />} />
         <div className="flex flex-col items-center justify-center gap-3 py-16" aria-busy>
           <div className="h-8 w-48 animate-pulse rounded-lg bg-[var(--border-default)]" />
           <div className="grid w-full max-w-3xl grid-cols-1 gap-4 md:grid-cols-2">
@@ -216,7 +217,7 @@ export function VideosPageContent() {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Video library" {...(videos.length > 0 ? { countLabel: `${videos.length} videos` } : {})}>
+        <PageHeader title="Video library" icon={<Icon name="videos" />} {...(videos.length > 0 ? { countLabel: `${videos.length} videos` } : {})}>
           <VideoUploader onUploaded={() => { void fetchVideos(); void fetchStorage() }} />
           <Button type="button" size="sm" variant="secondary" onClick={() => setDriveImportOpen(true)}>
             Import from Google Drive

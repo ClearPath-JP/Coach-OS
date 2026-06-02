@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
@@ -372,6 +373,7 @@ export function PackagesPageContent() {
     <div className="space-y-6">
       <PageHeader
         title="Session packages"
+        icon={<Icon name="packages" />}
         {...(activePackageCount > 0 ? { countLabel: `${activePackageCount} active` } : {})}
       >
         <Link href="/coach/invoices">
