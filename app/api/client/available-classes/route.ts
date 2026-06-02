@@ -8,7 +8,11 @@ import { addDays, addWeeks, format, parseISO, startOfWeek } from 'date-fns'
  * GET /api/client/available-classes
  * Returns the next 4 weeks of bookable class slot instances for the client's coach.
  * Each instance is a specific date+time generated from a recurring_availability rule
- * where is_client_bookable=true AND it links to a session_package.
+ * where is_client_bookable=true AND it links to a session_package AND status != 'draft'.
+ *
+ * Per-occurrence overrides (class_occurrence_overrides) are applied:
+ *   - canceled=true  → occurrence is omitted entirely
+ *   - non-null start_time / capacity / location → applied to that occurrence
  *
  * Response shape:
  *   { data: ClassInstance[] }
@@ -53,7 +57,8 @@ export async function GET() {
     const service = createServiceClient()
 
     // Get bookable recurring_availability rules for the client's workspace
-    // joined with session_package details
+    // joined with session_package details.
+    // Draft slots are excluded — clients should never see unpublished classes.
     const { data: slots, error: slotsErr } = await service
       .from('recurring_availability')
       .select(`
@@ -65,6 +70,7 @@ export async function GET() {
       .eq('workspace_id', workspaceId)
       .eq('is_active', true)
       .eq('is_client_bookable', true)
+      .eq('status', 'active')
       .not('session_product_id', 'is', null)
 
     if (slotsErr) {
@@ -112,9 +118,9 @@ export async function GET() {
       myBookingStatus: 'none' | 'booked' | 'paid'
     }
 
-    const instances: Instance[] = []
+    // Collect all slot ids + candidate instances before override filtering
+    const candidateInstances: Instance[] = []
     const slotIds: string[] = []
-    const instanceKeysByDate = new Map<string, Instance[]>() // 'YYYY-MM-DD' → instances
 
     for (const raw of (slots ?? []) as SlotRow[]) {
       const pkg = Array.isArray(raw.session_packages) ? raw.session_packages[0] : raw.session_packages
@@ -153,25 +159,99 @@ export async function GET() {
           spotsRemaining: pkg.capacity ?? 1,
           myBookingStatus: 'none',
         }
-        instances.push(inst)
+        candidateInstances.push(inst)
         slotIds.push(raw.id)
-        const list = instanceKeysByDate.get(dateStr) ?? []
-        list.push(inst)
-        instanceKeysByDate.set(dateStr, list)
       }
+    }
+
+    if (candidateInstances.length === 0) {
+      return NextResponse.json({ data: [] })
+    }
+
+    // -----------------------------------------------------------------------
+    // Fetch occurrence overrides for all candidate slot ids in the window.
+    // Key: `${recurring_availability_id}:${occurrence_date}` (matches instanceKey).
+    // -----------------------------------------------------------------------
+    type OverrideRow = {
+      recurring_availability_id: string
+      occurrence_date: string
+      canceled: boolean
+      start_time: string | null
+      capacity: number | null
+      location: string | null
+    }
+
+    const uniqueSlotIds = Array.from(new Set(slotIds))
+
+    // Guard: if no slot ids, skip the override query (Supabase errors on empty .in())
+    let overrides: OverrideRow[] = []
+    if (uniqueSlotIds.length > 0) {
+      const fromDateStr = format(today, 'yyyy-MM-dd')
+      const toDateStr = format(addDays(rangeEnd, -1), 'yyyy-MM-dd')
+
+      const { data: ovData } = await service
+        .from('class_occurrence_overrides')
+        .select('recurring_availability_id, occurrence_date, canceled, start_time, capacity, location')
+        .in('recurring_availability_id', uniqueSlotIds)
+        .gte('occurrence_date', fromDateStr)
+        .lte('occurrence_date', toDateStr)
+
+      overrides = (ovData ?? []) as OverrideRow[]
+    }
+
+    // Build a lookup map keyed by instanceKey
+    const overrideMap = new Map<string, OverrideRow>()
+    for (const ov of overrides) {
+      const key = `${ov.recurring_availability_id}:${ov.occurrence_date}`
+      overrideMap.set(key, ov)
+    }
+
+    // Apply overrides: drop canceled occurrences, patch non-null fields on the rest
+    const instances: Instance[] = []
+    for (const inst of candidateInstances) {
+      const ov = overrideMap.get(inst.instanceKey)
+      if (ov) {
+        // Canceled → skip this occurrence entirely
+        if (ov.canceled) continue
+
+        // Apply non-null override fields
+        if (ov.start_time) {
+          const overrideStart = ov.start_time.slice(0, 5)
+          // Recompute scheduledTimeISO with the overridden start time.
+          // Construct local midnight from YYYY-MM-DD parts — same approach as the
+          // candidate loop — to avoid timezone misinterpretation from parseISO().
+          const [iy, imon, id2] = inst.instanceDate.split('-').map((x) => parseInt(x, 10))
+          const overridedTime = new Date(iy ?? 0, (imon ?? 1) - 1, id2 ?? 1)
+          const [oh, om] = overrideStart.split(':').map((x: string) => parseInt(x, 10))
+          overridedTime.setHours(oh ?? 0, om ?? 0, 0, 0)
+          // Skip if overridden time is now in the past
+          if (overridedTime < new Date()) continue
+          inst.startTime = overrideStart
+          inst.scheduledTimeISO = overridedTime.toISOString()
+        }
+        if (ov.capacity != null) {
+          inst.capacity = ov.capacity
+          inst.spotsRemaining = ov.capacity // will be reduced by bookings below
+        }
+        // Note: location override is not part of Instance shape (no location field today);
+        // it is stored in the DB and will be surfaced when Instance gains a location field.
+      }
+      instances.push(inst)
     }
 
     if (instances.length === 0) {
       return NextResponse.json({ data: [] })
     }
 
-    // Fetch all existing bookings (paid OR pending) for these slot ids in this date range
+    // -----------------------------------------------------------------------
+    // Fetch all existing bookings (paid OR pending) for these slot ids
+    // -----------------------------------------------------------------------
     const fromIso = today.toISOString()
     const toIso = rangeEnd.toISOString()
     const { data: bookings } = await service
       .from('sessions')
       .select('id, recurring_availability_id, scheduled_time, paid_at, client_id, stripe_checkout_id')
-      .in('recurring_availability_id', Array.from(new Set(slotIds)))
+      .in('recurring_availability_id', uniqueSlotIds)
       .gte('scheduled_time', fromIso)
       .lt('scheduled_time', toIso)
 
