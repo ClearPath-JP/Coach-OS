@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  BadgeDollarSign,
   CalendarDays,
   CreditCard,
   LayoutDashboard,
@@ -47,6 +48,7 @@ const SECTIONS: SidebarNavSection[] = [
     items: [
       { href: '/coach/programs', label: 'Programs', icon: <Swords size={16} strokeWidth={1.5} /> },
       { href: '/coach/packages', label: 'Packages', icon: <Package size={16} strokeWidth={1.5} /> },
+      { href: '/coach/memberships', label: 'Memberships', icon: <BadgeDollarSign size={16} strokeWidth={1.5} /> },
       { href: '/coach/payments', label: 'Payments', icon: <CreditCard size={16} strokeWidth={1.5} /> },
       { href: '/coach/invoices', label: 'Invoices', icon: <Receipt size={16} strokeWidth={1.5} /> },
       { href: '/coach/analytics', label: 'Analytics', icon: <BarChart3 size={16} strokeWidth={1.5} /> },

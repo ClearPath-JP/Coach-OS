@@ -33,6 +33,20 @@ interface ClientMembershipCountRow {
   count: number
 }
 
+interface ClientMembershipRow {
+  id: string
+  client_id: string
+  plan_id: string
+  status: string
+  classes_used_this_period: number | null
+}
+
+interface ClientRow {
+  id: string
+  first_name: string | null
+  last_name: string | null
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/coach/memberships
 // ---------------------------------------------------------------------------
@@ -73,29 +87,54 @@ export async function GET() {
     const plans = (rawPlans ?? []) as unknown as MembershipPlan[]
 
     if (plans.length === 0) {
-      return NextResponse.json({ data: { plans: [], mrrCents: 0, memberTotal: 0 } })
+      return NextResponse.json({ data: { plans: [], mrrCents: 0, memberTotal: 0, members: [] } })
     }
 
     const planIds = plans.map((p) => p.id)
 
-    // Count active client_memberships per plan.
+    // Fetch active client_memberships with usage data.
     // status in ('active','trialing','past_due')
-    const { data: rawCounts, error: countErr } = await svc
+    const { data: rawMemberships, error: membershipsErr } = await svc
       .from('client_memberships')
-      .select('plan_id')
+      .select('id,client_id,plan_id,status,classes_used_this_period')
       .eq('workspace_id', workspaceId)
       .in('status', ['active', 'trialing', 'past_due'])
       .in('plan_id', planIds)
 
-    if (countErr) {
-      console.error('GET /api/coach/memberships — counts query', countErr)
+    if (membershipsErr) {
+      console.error('GET /api/coach/memberships — memberships query', membershipsErr)
       return NextResponse.json({ error: 'Could not load member counts' }, { status: 500 })
     }
+
+    const memberships = (rawMemberships ?? []) as unknown as ClientMembershipRow[]
+
+    // Fetch client names for the member rows.
+    const clientIds = [...new Set(memberships.map((m) => m.client_id))]
+    let clientMap = new Map<string, ClientRow>()
+
+    if (clientIds.length > 0) {
+      const { data: rawClients, error: clientsErr } = await svc
+        .from('clients')
+        .select('id,first_name,last_name')
+        .in('id', clientIds)
+        .eq('workspace_id', workspaceId)
+      if (clientsErr) {
+        console.error('GET /api/coach/memberships — clients query', clientsErr)
+        return NextResponse.json({ error: 'Could not load member details' }, { status: 500 })
+      }
+      for (const c of (rawClients ?? []) as unknown as ClientRow[]) {
+        clientMap.set(c.id, c)
+      }
+    }
+
+    // Build plan name lookup for the members array.
+    const planNameMap = new Map<string, string>()
+    for (const p of plans) planNameMap.set(p.id, p.name)
 
     // Aggregate counts in memory (avoids needing a DB aggregate function on a
     // table whose types aren't in generated typings yet).
     const countMap = new Map<string, number>()
-    for (const row of (rawCounts ?? []) as unknown as ClientMembershipCountRow[]) {
+    for (const row of memberships as unknown as ClientMembershipCountRow[]) {
       const pid = (row as unknown as { plan_id: string }).plan_id
       countMap.set(pid, (countMap.get(pid) ?? 0) + 1)
     }
@@ -113,7 +152,27 @@ export async function GET() {
       return { ...plan, memberCount }
     })
 
-    return NextResponse.json({ data: { plans: enriched, mrrCents, memberTotal } })
+    // Build the members list for the UI.
+    const planDetailsMap = new Map<string, MembershipPlan>()
+    for (const p of plans) planDetailsMap.set(p.id, p)
+
+    const members = memberships.map((m) => {
+      const client = clientMap.get(m.client_id)
+      const plan = planDetailsMap.get(m.plan_id)
+      const clientName = client
+        ? [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unknown'
+        : 'Unknown'
+      return {
+        id: m.id,
+        clientName,
+        planName: planNameMap.get(m.plan_id) ?? 'Unknown plan',
+        status: m.status,
+        classesUsed: m.classes_used_this_period ?? 0,
+        classesPerPeriod: plan?.access_type === 'limited' ? (plan.classes_per_period ?? null) : null,
+      }
+    })
+
+    return NextResponse.json({ data: { plans: enriched, mrrCents, memberTotal, members } })
   } catch (e) {
     console.error('GET /api/coach/memberships', e)
     return NextResponse.json(
