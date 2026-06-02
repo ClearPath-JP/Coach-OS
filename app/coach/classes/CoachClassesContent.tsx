@@ -6,6 +6,7 @@ import { Plus, Loader2, Users, Calendar, Trash2, AlertTriangle } from 'lucide-re
 import { formatCents } from '@/lib/format-currency'
 import { ClassFormModal, type ClassRecord } from './ClassFormModal'
 import { ClassScheduleView, nextOccurrence } from './ClassScheduleView'
+import { ClassBookingsPanel } from './ClassBookingsPanel'
 
 const WEEKDAYS = [
   { value: 0, short: 'Mon', long: 'Monday' },
@@ -76,6 +77,9 @@ export function CoachClassesContent() {
   const [classModalOpen, setClassModalOpen] = useState(false)
   const [editingClass, setEditingClass] = useState<ClassRecord | undefined>(undefined)
   const [deleteTarget, setDeleteTarget] = useState<ClassRecord | null>(null)
+
+  // Bookings panel
+  const [bookingsTarget, setBookingsTarget] = useState<{ cls: ClassRecord; date: string } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -433,13 +437,20 @@ export function CoachClassesContent() {
               setClassModalOpen(true)
             }}
             onDelete={(cls) => setDeleteTarget(cls)}
-            onOpenBookings={() => {
-              /* bookings panel wired in the next slice */
-            }}
+            onOpenBookings={(cls, date) => setBookingsTarget({ cls, date })}
           />
         )}
 
       </div>
+
+      {/* Bookings slide-out panel */}
+      <ClassBookingsPanel
+        open={!!bookingsTarget}
+        classGroupId={bookingsTarget?.cls.classGroupId ?? null}
+        className={bookingsTarget?.cls.name ?? null}
+        date={bookingsTarget?.date ?? null}
+        onClose={() => setBookingsTarget(null)}
+      />
 
       {/* Class form modal — create + edit */}
       <ClassFormModal
