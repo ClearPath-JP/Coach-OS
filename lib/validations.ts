@@ -642,3 +642,83 @@ export const assignmentSubmitSchema = z.object({
   fileSizeBytes: z.number().int().nonnegative().optional().nullable(),
   checklistResponses: z.record(z.string(), z.boolean()).optional().nullable(),
 })
+
+// ---------------------------------------------------------------------------
+// Coach class CRUD (Classes overhaul, 2026-06-01)
+// ---------------------------------------------------------------------------
+
+const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+
+/** POST /api/coach/classes — create a class */
+export const createClassSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required').max(200),
+    type: z.string().min(1, 'Type is required').max(100),
+    description: z.string().max(2000).optional().nullable(),
+    location: z.string().max(300).optional().nullable(),
+    capacity: z.number().int().min(1, 'Capacity must be at least 1'),
+    priceCents: z.number().int().min(0, 'Price cannot be negative'),
+    currency: z.string().length(3).optional().default('usd'),
+    durationMinutes: z.number().int().min(5).max(480),
+    startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Use HH:MM'),
+    color: z.string().max(50).optional().nullable(),
+    status: z.enum(['active', 'draft']),
+    memberAccess: z.enum(['included', 'members_only', 'drop_in_only']),
+    isVirtual: z.boolean().optional().default(false),
+    recurring: z.boolean(),
+    days: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(),
+    oneTimeDate: z.string().regex(dateRegex, 'Use YYYY-MM-DD').optional(),
+  })
+  .superRefine((d, ctx) => {
+    if (d.recurring) {
+      if (!d.days || d.days.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Provide at least one day for recurring classes',
+          path: ['days'],
+        })
+      }
+    } else {
+      if (!d.oneTimeDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Provide oneTimeDate for a one-time class',
+          path: ['oneTimeDate'],
+        })
+      }
+    }
+  })
+export type CreateClassInput = z.infer<typeof createClassSchema>
+
+/** PATCH /api/coach/classes/[id] — update a class group or occurrence */
+export const patchClassSchema = z
+  .object({
+    scope: z.enum(['all', 'occurrence']),
+    occurrenceDate: z.string().regex(dateRegex, 'Use YYYY-MM-DD').optional(),
+    // Shared editable fields
+    name: z.string().min(1).max(200).optional(),
+    type: z.string().max(100).optional(),
+    description: z.string().max(2000).nullable().optional(),
+    location: z.string().max(300).nullable().optional(),
+    capacity: z.number().int().min(1).optional(),
+    priceCents: z.number().int().min(0).optional(),
+    currency: z.string().length(3).optional(),
+    durationMinutes: z.number().int().min(5).max(480).optional(),
+    startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
+    color: z.string().max(50).nullable().optional(),
+    status: z.enum(['active', 'draft']).optional(),
+    memberAccess: z.enum(['included', 'members_only', 'drop_in_only']).optional(),
+    isVirtual: z.boolean().optional(),
+    // 'all' scope only: reconcile days
+    days: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(),
+  })
+  .superRefine((d, ctx) => {
+    if (d.scope === 'occurrence' && !d.occurrenceDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'occurrenceDate is required for scope=occurrence',
+        path: ['occurrenceDate'],
+      })
+    }
+  })
+export type PatchClassInput = z.infer<typeof patchClassSchema>
