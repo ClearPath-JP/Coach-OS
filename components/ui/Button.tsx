@@ -66,11 +66,11 @@ const variantClasses: Record<
 > = {
   primary: cn(
     'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-medium',
-    'bg-[var(--accent)] text-[var(--text-on-accent)] border border-[var(--accent)] shadow-none',
+    'btn-primary-gloss text-[var(--text-on-accent)] border border-[var(--accent)]',
     'btn-shimmer overflow-hidden',
-    'hover:bg-[var(--accent-hover)] hover:-translate-y-px',
+    'hover:-translate-y-px',
     'active:translate-y-0',
-    'disabled:hover:bg-[var(--accent)] disabled:hover:translate-y-0'
+    'disabled:hover:translate-y-0'
   ),
   secondary: cn(
     'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-medium',

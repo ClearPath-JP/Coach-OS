@@ -898,6 +898,22 @@ html[data-theme='dark'] .gloss-panel {
     border-top-color: rgba(255, 255, 255, 0.06);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 14px 30px -18px rgba(0, 0, 0, 0.55);
   }
+
+  /* Glossy primary button surface — theme-aware via accent tokens. */
+  .btn-primary-gloss {
+    background: linear-gradient(180deg, var(--accent-hover), var(--accent) 55%, var(--accent-dark));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+      0 8px 20px -8px rgba(var(--accent-rgb), 0.45);
+  }
+  .btn-primary-gloss:hover:not(:disabled) {
+    background: linear-gradient(180deg, var(--accent-hover), var(--accent-hover) 60%, var(--accent));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+      0 12px 26px -8px rgba(var(--accent-rgb), 0.55);
+  }
 }
 
 .card-interactive {
