@@ -1,16 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { CalendarDays, CreditCard, Swords, Users, Video, Settings } from 'lucide-react'
+import { Icon, type InkedIconName } from '@/components/icons/inked'
+import { CoachMoreSheet } from './CoachMoreSheet'
 
-const NAV_ITEMS = [
-  { href: '/coach/schedule', label: 'Schedule', icon: CalendarDays },
-  { href: '/coach/clients', label: 'Clients', icon: Users },
-  { href: '/coach/payments', label: 'Payments', icon: CreditCard },
-  { href: '/coach/videos', label: 'Videos', icon: Video },
-  { href: '/coach/programs', label: 'Programs', icon: Swords },
-] as const
+const NAV_ITEMS: { href: string; label: string; icon: InkedIconName }[] = [
+  { href: '/coach/dashboard', label: 'Home', icon: 'dashboard' },
+  { href: '/coach/schedule', label: 'Schedule', icon: 'schedule' },
+  { href: '/coach/clients', label: 'Clients', icon: 'clients' },
+  { href: '/coach/messages', label: 'Messages', icon: 'messages' },
+]
 
 type CoachNavProps = {
   brandName: string
@@ -19,31 +20,38 @@ type CoachNavProps = {
 }
 
 /** Mobile-only bottom dock. Desktop navigation lives in CoachSidebarShell. */
-export function CoachNav({ brandName }: CoachNavProps) {
+export function CoachNav(_props: CoachNavProps) {
   const pathname = usePathname()
-
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + '/')
+  const [moreOpen, setMoreOpen] = useState(false)
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
   return (
-    <nav className="coach-nav__mobile" aria-label="Navigation">
-      {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
-        <Link
-          key={href}
-          href={href}
-          className={`coach-nav__mobile-link ${isActive(href) ? 'coach-nav__mobile-link--active' : ''}`}
+    <>
+      <nav className="coach-nav__mobile" aria-label="Navigation">
+        {NAV_ITEMS.map(({ href, label, icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`coach-nav__mobile-link ${isActive(href) ? 'coach-nav__mobile-link--active' : ''}`}
+          >
+            <Icon name={icon} size={20} />
+            <span className="coach-nav__mobile-label">{label}</span>
+          </Link>
+        ))}
+        <button
+          type="button"
+          onClick={() => setMoreOpen(true)}
+          className="coach-nav__mobile-link"
+          aria-haspopup="dialog"
+          aria-expanded={moreOpen}
         >
-          <Icon className="size-5" strokeWidth={1.5} />
-          <span className="coach-nav__mobile-label">{label}</span>
-        </Link>
-      ))}
-      <Link
-        href="/coach/settings"
-        className={`coach-nav__mobile-link ${isActive('/coach/settings') ? 'coach-nav__mobile-link--active' : ''}`}
-      >
-        <Settings className="size-5" strokeWidth={1.5} />
-        <span className="coach-nav__mobile-label">Settings</span>
-      </Link>
-    </nav>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden>
+            <circle cx="5" cy="12" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="19" cy="12" r="1.4" />
+          </svg>
+          <span className="coach-nav__mobile-label">More</span>
+        </button>
+      </nav>
+      <CoachMoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} />
+    </>
   )
 }
