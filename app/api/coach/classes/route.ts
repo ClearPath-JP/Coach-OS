@@ -280,6 +280,7 @@ export async function POST(request: Request) {
       .select('*')
 
     if (slotErr || !rawInserted) {
+      console.error('POST /api/coach/classes — slot insert', slotErr)
       // Best-effort cleanup of the package we just created
       await svc.from('session_packages').delete().eq('id', pkg.id)
       return NextResponse.json({ error: 'Could not create class slots' }, { status: 500 })
