@@ -42,6 +42,9 @@ supabase/.temp
 # Serena (MCP server local state)
 .serena/
 
+# Superpowers brainstorm artifacts (local visual mockups)
+.superpowers/
+
 # Build artifacts
 _rebuild/
 _screenshots/
