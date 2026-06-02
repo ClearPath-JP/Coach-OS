@@ -40,9 +40,9 @@ function addMinutesToTime(startTime: string, durationMinutes: number): string {
   return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
 }
 
-/** Get weekday (0=Sun … 6=Sat) from a YYYY-MM-DD string (UTC). */
+/** Weekday Mon=0 … Sun=6 from a YYYY-MM-DD string, matching recurring_availability.day_of_week. */
 function weekdayFromDate(dateStr: string): number {
-  return new Date(`${dateStr}T00:00:00Z`).getUTCDay()
+  return (new Date(`${dateStr}T00:00:00Z`).getUTCDay() + 6) % 7
 }
 
 // ---------------------------------------------------------------------------
