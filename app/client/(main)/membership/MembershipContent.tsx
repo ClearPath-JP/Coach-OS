@@ -6,11 +6,12 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  CreditCard,
   Star,
   XCircle,
 } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -234,10 +235,10 @@ export function MembershipContent() {
             Membership
           </h1>
         </header>
-        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-10 text-center">
+        <Card className="p-10 text-center">
           <Loader2 className="mx-auto size-5 animate-spin text-[var(--text-tertiary)]" />
           <p className="mt-3 text-sm text-[var(--text-tertiary)]">Loading membership info...</p>
-        </div>
+        </Card>
       </div>
     )
   }
@@ -283,7 +284,7 @@ export function MembershipContent() {
         <div
           role="status"
           aria-live="polite"
-          className="flex items-start gap-3 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-4 py-3 text-sm text-[var(--accent)]"
+          className="flex items-start gap-3 rounded-xl border border-[var(--cp-accent)]/30 bg-[var(--cp-accent)]/10 px-4 py-3 text-sm text-[var(--cp-accent)]"
         >
           <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
           <p>Your membership has been cancelled. It will remain active until the end of your current billing period.</p>
@@ -412,17 +413,10 @@ export function MembershipContent() {
           )}
 
           {plans.length === 0 ? (
-            <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-10 text-center">
-              <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[var(--accent)]/10">
-                <CreditCard className="size-5 text-[var(--accent)]" />
-              </div>
-              <h2 className="font-display text-lg font-medium text-[var(--text-primary)]">
-                No membership plans yet
-              </h2>
-              <p className="mt-2 text-sm text-[var(--text-tertiary)]">
-                Your coach hasn&apos;t set up memberships yet. Check back soon.
-              </p>
-            </div>
+            <EmptyState
+              title="No membership plans yet"
+              description="Your coach hasn't set up memberships yet. Check back soon."
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {plans.map((plan) => {
@@ -464,7 +458,7 @@ export function MembershipContent() {
                         type="button"
                         onClick={() => void handleSubscribe(plan.id)}
                         disabled={isSubscribing || subscribingPlanId !== null}
-                        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[var(--accent-hover)] disabled:cursor-wait disabled:opacity-70"
+                        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--cp-accent)] py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[var(--cp-accent-hover)] disabled:cursor-wait disabled:opacity-70"
                       >
                         {isSubscribing && <Loader2 className="size-4 animate-spin" />}
                         {isSubscribing ? 'Redirecting to checkout...' : 'Subscribe'}

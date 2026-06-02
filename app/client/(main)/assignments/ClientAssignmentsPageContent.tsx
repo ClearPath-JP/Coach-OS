@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { AssignmentSubmitModal } from '@/components/client/AssignmentSubmitModal'
 import { getProgressPercent } from '@/lib/xp-system'
 import { cn } from '@/lib/utils'
@@ -102,7 +103,7 @@ export function ClientAssignmentsPageContent() {
       ) : (
         <Card
           className={cn(
-            'overflow-hidden border-[var(--border-default)] bg-[linear-gradient(135deg,var(--accent-light),transparent)] p-5'
+            'overflow-hidden border-[var(--border-default)] bg-[linear-gradient(135deg,var(--cp-accent-light),transparent)] p-5'
           )}
         >
           <div className="flex flex-wrap items-start gap-4">
@@ -156,17 +157,10 @@ export function ClientAssignmentsPageContent() {
 
       <div className="space-y-3">
         {!loading && rows.length === 0 ? (
-          <div className="rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-6 py-12 text-center">
-            <p className="text-3xl" aria-hidden>
-              ✨
-            </p>
-            <h2 className="mt-3 text-[var(--text-20)] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
-              You&apos;re all caught up!
-            </h2>
-            <p className="mx-auto mt-2 max-w-[400px] text-[var(--text-14)] font-normal leading-[1.6] text-[var(--text-tertiary)]">
-              Your coach will send assignments here. Check back soon.
-            </p>
-          </div>
+          <EmptyState
+            title="You're all caught up!"
+            description="Your coach will send assignments here. Check back soon."
+          />
         ) : null}
         {filtered.map((r) => {
           const t = r.assignment_templates
@@ -181,7 +175,7 @@ export function ClientAssignmentsPageContent() {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="font-medium text-[var(--text-primary)]">{t?.title ?? 'Assignment'}</p>
                     {t?.points ? (
-                      <span className="shrink-0 rounded-full bg-[var(--accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
+                      <span className="shrink-0 rounded-full bg-[var(--cp-accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
                         +{r.status === 'approved' ? r.points_awarded || t.points : t.points} XP
                       </span>
                     ) : null}

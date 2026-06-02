@@ -63,8 +63,8 @@ export function Icon({
 export function Enso({ size = 72, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" className={className} aria-hidden>
-      <path d="M76 26 A34 34 0 1 0 80 60" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" />
-      <path d="M73 23 A37 37 0 1 0 83 57" stroke="rgba(var(--accent-rgb),0.3)" strokeWidth="3" strokeLinecap="round" />
+      <path d="M76 26 A34 34 0 1 0 80 60" stroke="var(--cp-accent)" strokeWidth="7" strokeLinecap="round" />
+      <path d="M73 23 A37 37 0 1 0 83 57" stroke="color-mix(in srgb, var(--cp-accent) 30%, transparent)" strokeWidth="3" strokeLinecap="round" />
     </svg>
   )
 }

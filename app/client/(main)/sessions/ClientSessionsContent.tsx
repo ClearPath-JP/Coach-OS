@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns'
 import { RequestSessionModal } from '@/components/client/RequestSessionModal'
 import { WeeklyUnavailabilityEditor } from '@/components/unavailability/WeeklyUnavailabilityEditor'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { cn } from '@/lib/utils'
 
 type ApiSession = {
@@ -67,12 +68,14 @@ export function ClientSessionsContent() {
             <div className="h-24 animate-pulse rounded-[var(--radius-lg)] bg-[var(--bg-muted)]" />
           </div>
         ) : upcoming.length === 0 ? (
-          <div className="space-y-3">
-            <p className="text-[14px] text-[var(--text-tertiary)]">No upcoming sessions</p>
-            <Button type="button" variant="secondary" size="sm" onClick={() => setRequestOpen(true)}>
-              Request a session
-            </Button>
-          </div>
+          <EmptyState
+            title="No upcoming sessions"
+            action={
+              <Button type="button" variant="secondary" size="sm" onClick={() => setRequestOpen(true)}>
+                Request a session
+              </Button>
+            }
+          />
         ) : (
           <ul className="space-y-4">
             {upcoming.map((s) => {

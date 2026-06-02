@@ -6,6 +6,7 @@ import { format } from 'date-fns'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type PackageRow = { id: string; title: string | null; description: string | null }
 export type ClientInvoiceRow = {
@@ -343,13 +344,10 @@ export function ClientInvoicesList({ clientId, invoices }: { clientId: string; i
 
   if (invoices.length === 0) {
     return (
-      <div className="mt-10 text-center">
-        <p className="text-[2rem]" aria-hidden>
-          💳
-        </p>
-        <p className="mt-4 text-[18px] font-semibold text-[var(--text-primary)]">No invoices yet</p>
-        <p className="mt-2 text-[14px] text-[var(--text-tertiary)]">Invoices from your coach will appear here.</p>
-      </div>
+      <EmptyState
+        title="No invoices yet"
+        description="Invoices from your coach will appear here."
+      />
     )
   }
 

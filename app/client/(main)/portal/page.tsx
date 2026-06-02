@@ -39,7 +39,7 @@ function sessionTypeLabel(t: string | null | undefined): string {
 const GOAL_CATEGORY_STYLE: Record<string, string> = {
   fitness: 'bg-[var(--info-bg)] text-[var(--info)]',
   nutrition: 'bg-[var(--success-bg)] text-[var(--success)]',
-  mindset: 'bg-[var(--accent-light)] text-[var(--cp-accent)]',
+  mindset: 'bg-[var(--cp-accent-light)] text-[var(--cp-accent)]',
   business: 'bg-[var(--warning-bg)] text-[var(--warning)]',
   health: 'bg-[var(--error-bg)] text-[var(--error)]',
   performance: 'bg-[var(--info-bg)] text-[var(--info)]',
@@ -240,7 +240,7 @@ export default async function ClientPortalPage() {
                 <p className="text-[15px] font-bold text-[var(--text-primary)]">{format(sessionStart, 'EEE, MMM d · h:mm a')}</p>
                 <p className="text-[12px] text-[var(--text-tertiary)]">{sessionTypeLabel(nextSession.session_type)} · {nextSession.duration_minutes ?? 60} min with {coachDisplayName}</p>
               </div>
-              <Link href="/client/sessions" className="rounded-[8px] bg-[var(--accent)] px-3 py-2 text-[13px] font-semibold text-white">View</Link>
+              <Link href="/client/sessions" className="rounded-[8px] bg-[var(--cp-accent)] px-3 py-2 text-[13px] font-semibold text-white">View</Link>
             </div>
           </div>
         ) : (
@@ -262,10 +262,10 @@ export default async function ClientPortalPage() {
         {/* Section 4 — Quick nav grid */}
         <div className="mb-3 grid grid-cols-2 gap-2.5">
           {[
-            { label: 'Programs', href: '/client/programs', emoji: '📚', sub: 'Your content', color: 'var(--accent-light)', textColor: 'var(--accent)' },
+            { label: 'Programs', href: '/client/programs', emoji: '📚', sub: 'Your content', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
             { label: 'Sessions', href: '/client/sessions', emoji: '📅', sub: 'View schedule', color: 'var(--success-bg)', textColor: 'var(--success)' },
             { label: 'Goals', href: '/client/goals', emoji: '🎯', sub: `${activeGoals.length > 0 ? `${activeGoals.length} active` : 'Track progress'}`, color: 'color-mix(in srgb, #a855f7 12%, var(--bg-muted))', textColor: '#a855f7' },
-            { label: 'Messages', href: '/client/messages', emoji: '💬', sub: messageUnreadCount > 0 ? `${messageUnreadCount} unread` : 'Chat with coach', color: 'var(--accent-light)', textColor: 'var(--accent)' },
+            { label: 'Messages', href: '/client/messages', emoji: '💬', sub: messageUnreadCount > 0 ? `${messageUnreadCount} unread` : 'Chat with coach', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
             { label: 'Tasks', href: '/client/assignments', emoji: '✅', sub: assignmentRows.length > 0 ? `${assignmentRows.length} open` : 'Your tasks', color: 'var(--warning-bg)', textColor: 'var(--warning)' },
             { label: 'Invoices', href: '/client/invoices', emoji: '🧾', sub: pendingInvoices.length > 0 ? `${pendingInvoices.length} pending` : 'Billing', color: 'var(--bg-muted)', textColor: 'var(--text-tertiary)' },
           ].map(item => (
@@ -324,7 +324,7 @@ export default async function ClientPortalPage() {
 
           {hasBrandingContent ? (
             <PortalBrandedHero>
-              <section className="rounded-[var(--radius-xl)] bg-[linear-gradient(135deg,var(--accent-light)_0%,transparent_100%)] px-6 py-6">
+              <section className="rounded-[var(--radius-xl)] bg-[linear-gradient(135deg,var(--cp-accent-light)_0%,transparent_100%)] px-6 py-6">
                 {branding?.logoUrl?.trim() ? (
                   <div className="relative mb-3 size-12 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--cp-offwhite)]">
                     <Image
@@ -403,7 +403,7 @@ export default async function ClientPortalPage() {
                       <p className="text-[16px] font-semibold text-[var(--text-primary)] lg:text-[16px] lg:font-bold">
                         {format(sessionStart, 'EEEE, MMMM d')}
                       </p>
-                      <span className="rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--cp-accent)]">
+                      <span className="rounded-full bg-[var(--cp-accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--cp-accent)]">
                         {sessionTypeLabel(nextSession.session_type)}
                       </span>
                     </div>
@@ -552,7 +552,7 @@ export default async function ClientPortalPage() {
                           </p>
                         </div>
                         {pts > 0 ? (
-                          <span className="shrink-0 rounded-full bg-[var(--accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
+                          <span className="shrink-0 rounded-full bg-[var(--cp-accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
                             +{pts} XP
                           </span>
                         ) : null}
@@ -641,7 +641,7 @@ export default async function ClientPortalPage() {
                 href="/client/messages"
                 className="flex h-[72px] items-center gap-3 px-5 py-4 text-inherit no-underline transition-colors duration-150 hover:bg-[var(--bg-subtle)]"
               >
-                <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
+                <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--cp-accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
                   {branding?.logoUrl?.trim() ? (
                     <Image
                       src={branding.logoUrl.trim()}
@@ -787,7 +787,7 @@ export default async function ClientPortalPage() {
                 href="/client/messages"
                 className="flex min-h-[72px] items-center gap-3 px-4 py-3 text-inherit no-underline transition-colors duration-150 hover:bg-[var(--bg-subtle)]"
               >
-                <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
+                <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--cp-accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
                   {branding?.logoUrl?.trim() ? (
                     <Image
                       src={branding.logoUrl.trim()}

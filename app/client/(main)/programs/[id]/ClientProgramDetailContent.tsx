@@ -137,14 +137,14 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
 
   if (error || !data) {
     return (
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
+      <Card className="text-center">
         <p className="text-[var(--color-muted)]">{error ?? 'Program not found'}</p>
         <Link href="/client/programs">
           <Button variant="secondary" className="mt-4">
             Back to programs
           </Button>
         </Link>
-      </div>
+      </Card>
     )
   }
 

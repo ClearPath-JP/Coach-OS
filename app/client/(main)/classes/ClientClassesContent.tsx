@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
-import { Calendar, Clock, Users, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Clock, Users, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 type ClassInstance = {
   instanceKey: string
@@ -134,7 +136,7 @@ export function ClientClassesContent() {
           aria-live="polite"
           className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${
             banner.type === 'success'
-              ? 'border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)]'
+              ? 'border-[var(--cp-accent)]/30 bg-[var(--cp-accent)]/10 text-[var(--cp-accent)]'
               : 'border-[var(--warning-border)] bg-[var(--warning-bg)] text-[var(--warning)]'
           }`}
         >
@@ -171,17 +173,12 @@ export function ClientClassesContent() {
       )}
 
       {!loading && !error && instances.length === 0 && (
-        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-10 text-center">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[var(--accent)]/10">
-            <Calendar className="size-5 text-[var(--accent)]" />
-          </div>
-          <h2 className="font-display text-lg font-medium text-[var(--text-primary)]">
-            No open classes right now
-          </h2>
-          <p className="mt-2 text-sm text-[var(--text-tertiary)]">
-            Your coach hasn&apos;t posted any bookable classes yet. Check back soon.
-          </p>
-        </div>
+        <Card padding="lg">
+          <EmptyState
+            title="No open classes right now"
+            description="Your coach hasn't posted any bookable classes yet. Check back soon."
+          />
+        </Card>
       )}
 
       {!loading && !error && grouped.length > 0 && (
@@ -191,7 +188,7 @@ export function ClientClassesContent() {
             return (
               <section key={dateStr} className="space-y-3">
                 <div className="flex items-baseline gap-3">
-                  <h2 className="font-display text-[15px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+                  <h2 className="font-display text-[15px] font-semibold uppercase tracking-[0.12em] text-[var(--cp-accent)]">
                     {format(date, 'EEEE')}
                   </h2>
                   <span className="text-sm text-[var(--text-tertiary)]">
@@ -208,7 +205,7 @@ export function ClientClassesContent() {
                         key={inst.instanceKey}
                         className={`rounded-xl border p-5 transition-colors ${
                           booked
-                            ? 'border-[var(--accent)]/30 bg-[var(--accent)]/5'
+                            ? 'border-[var(--cp-accent)]/30 bg-[var(--cp-accent)]/5'
                             : 'border-[var(--border-subtle)] bg-[var(--bg-subtle)]'
                         }`}
                       >
@@ -237,7 +234,7 @@ export function ClientClassesContent() {
 
                         <div className="mt-4">
                           {booked ? (
-                            <div className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)]/15 px-3 py-2 text-xs font-medium text-[var(--accent)]">
+                            <div className="inline-flex items-center gap-2 rounded-lg bg-[var(--cp-accent)]/15 px-3 py-2 text-xs font-medium text-[var(--cp-accent)]">
                               <CheckCircle2 className="size-3.5" />
                               You&apos;re booked
                             </div>
@@ -254,7 +251,7 @@ export function ClientClassesContent() {
                               type="button"
                               onClick={() => book(inst)}
                               disabled={isBooking}
-                              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-[var(--accent-hover)] disabled:cursor-wait disabled:opacity-70"
+                              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--cp-accent)] py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-[var(--cp-accent-hover)] disabled:cursor-wait disabled:opacity-70"
                             >
                               {isBooking && <Loader2 className="size-4 animate-spin" />}
                               {isBooking ? 'Redirecting to checkout…' : 'Book & pay'}

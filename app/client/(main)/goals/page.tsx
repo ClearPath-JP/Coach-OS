@@ -6,6 +6,7 @@ import { format, isBefore, parseISO, startOfDay } from 'date-fns'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { EmptyState } from '@/components/ui/EmptyState'
 import type { CoachGoalDto } from '@/components/coach/ClientGoalsTab'
 import { cn } from '@/lib/utils'
 import { AnimatedBar } from '@/components/client/AnimatedBar'
@@ -90,15 +91,10 @@ export default function ClientGoalsPage() {
       <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">My Goals</h1>
 
       {goals.length === 0 ? (
-        <div className="mt-10 flex flex-col items-center text-center">
-          <div className="flex size-16 items-center justify-center rounded-full bg-[var(--bg-muted)] text-[2rem]" aria-hidden>
-            🎯
-          </div>
-          <p className="mt-4 text-[18px] font-semibold text-[var(--text-primary)]">No goals set yet</p>
-          <p className="mt-2 max-w-sm text-[14px] leading-relaxed text-[var(--text-tertiary)]">
-            Your coach will set goals here to track your progress together.
-          </p>
-        </div>
+        <EmptyState
+          title="No goals set yet"
+          description="Your coach will set goals here to track your progress together."
+        />
       ) : (
         <ul className="mt-8 space-y-6">
           {activeList.map((g) => (

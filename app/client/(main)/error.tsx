@@ -33,7 +33,7 @@ export default function ClientMainSegmentError({
         </Button>
       </div>
       <p className="text-[13px] text-[var(--text-tertiary)]">
-        <Link href="/client/portal" className="text-[var(--accent)] underline-offset-2 hover:underline">
+        <Link href="/client/portal" className="text-[var(--cp-accent)] underline-offset-2 hover:underline">
           Portal home
         </Link>
       </p>

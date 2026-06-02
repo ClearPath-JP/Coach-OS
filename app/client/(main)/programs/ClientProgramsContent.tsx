@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
@@ -75,12 +76,12 @@ export function ClientProgramsContent() {
     return (
       <div>
         <PageHeader title="My Programs" />
-        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
+        <Card className="mt-6 text-center">
           <p className="text-[var(--color-muted)]">{error}</p>
           <Button variant="secondary" className="mt-4" onClick={fetchPrograms}>
             Try again
           </Button>
-        </div>
+        </Card>
       </div>
     )
   }
@@ -89,18 +90,16 @@ export function ClientProgramsContent() {
     return (
       <div>
         <PageHeader title="My Programs" />
-        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-light)] text-xl" aria-hidden>
-            📘
-          </div>
-          <p className="font-medium text-[var(--color-ink)]">No programs assigned yet</p>
-          <p className="mt-1 text-[15px] text-[var(--color-muted)]">
-            Your coach will assign programs for you to work through.
-          </p>
-          <Link href="/client/portal" className="mt-4 inline-block">
-            <Button variant="secondary">Go to portal</Button>
-          </Link>
-        </div>
+        <EmptyState
+          className="mt-6"
+          title="No programs assigned yet"
+          description="Your coach will assign programs for you to work through."
+          action={
+            <Link href="/client/portal">
+              <Button variant="secondary">Go to portal</Button>
+            </Link>
+          }
+        />
       </div>
     )
   }

@@ -7,7 +7,7 @@ export default function ClientProgramsPage() {
       <div className="mb-4">
         <Link
           href="/client/portal"
-          className="text-[13px] font-medium text-[var(--text-tertiary)] hover:text-[var(--accent)]"
+          className="text-[13px] font-medium text-[var(--text-tertiary)] hover:text-[var(--cp-accent)]"
         >
           &larr; Home
         </Link>
