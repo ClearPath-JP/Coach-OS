@@ -7,8 +7,8 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Icon } from '@/components/icons/inked'
-import { Video as VideoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { Input, Textarea } from '@/components/ui/Input'
@@ -337,23 +337,11 @@ export function VideosPageContent() {
         {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
 
         {!error && videos.length === 0 && (
-          <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
-            <div className="empty-state-coach__icon" aria-hidden><VideoIcon size={28} /></div>
-            <p className="empty-state-coach__title">No videos yet</p>
-            <p className="empty-state-coach__desc">
-              Set your import folder in Settings, put videos in that Drive folder, then click <strong>Import from Google Drive</strong> to add them instantly — no upload to our servers.
-            </p>
-            <Button variant="secondary" className="empty-state-coach__cta" onClick={() => setInfoOpen(true)}>
-              How do I add videos from my phone?
-            </Button>
-            <div className="mt-6 flex flex-wrap justify-center gap-4 text-[12px] text-[var(--text-quaternary)]">
-              <span>Google Drive sync</span>
-              <span aria-hidden>·</span>
-              <span>Organize by category</span>
-              <span aria-hidden>·</span>
-              <span>Share with clients</span>
-            </div>
-          </div>
+          <EmptyState
+            title="No videos yet"
+            description={<>Set your import folder in Settings, put videos in that Drive folder, then click <strong>Import from Google Drive</strong> to add them instantly — no upload to our servers.</>}
+            action={<Button variant="secondary" onClick={() => setInfoOpen(true)}>How do I add videos from my phone?</Button>}
+          />
         )}
 
         {!error && videos.length > 0 && (

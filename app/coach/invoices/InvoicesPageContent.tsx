@@ -9,6 +9,7 @@ import { Icon } from '@/components/icons/inked'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { DataTable } from '@/components/ui/DataTable'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
 import { cn } from '@/lib/utils'
@@ -376,16 +377,15 @@ export function InvoicesPageContent() {
       )}
 
       {!loading && !error && invoices.length === 0 && (
-        <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
-          <div className="empty-state-coach__icon flex size-20 items-center justify-center text-[36px]">💰</div>
-          <p className="empty-state-coach__title mt-4">No invoices yet</p>
-          <p className="empty-state-coach__desc mx-auto mt-2 max-w-[320px]">
-            Send an invoice from a session package to see it here.
-          </p>
-          <Link href="/coach/packages" className="empty-state-coach__cta inline-block">
-            <Button>Go to packages</Button>
-          </Link>
-        </div>
+        <EmptyState
+          title="No invoices yet"
+          description="Send an invoice from a session package to see it here."
+          action={
+            <Link href="/coach/packages">
+              <Button>Go to packages</Button>
+            </Link>
+          }
+        />
       )}
 
       {!loading && !error && invoices.length > 0 && displayedInvoices.length === 0 && (

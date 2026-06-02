@@ -11,6 +11,8 @@ import { createProgramSchema } from '@/lib/validations'
 import { AssignProgramModal } from '@/components/coach/AssignProgramModal'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Icon } from '@/components/icons/inked'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { cn } from '@/lib/utils'
 
 type Program = {
@@ -209,7 +211,7 @@ export function ProgramsPageContent() {
     setMenuId(null)
   }
 
-  const tabs: { value: Tab; label: string }[] = [
+  const tabs: TabItem<Tab>[] = [
     { value: 'all', label: 'All' },
     { value: 'published', label: 'Published' },
     { value: 'draft', label: 'Draft' },
@@ -261,23 +263,7 @@ export function ProgramsPageContent() {
 
       <div className="pb-10">
 
-      <div className="mb-6 flex flex-wrap gap-0 border-b border-[var(--border-subtle)]">
-        {tabs.map((t) => (
-          <button
-            key={t.value}
-            type="button"
-            onClick={() => setTab(t.value)}
-            className={cn(
-              'relative h-9 px-4 text-[14px] transition-colors duration-150',
-              tab === t.value
-                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--cp-accent)]'
-                : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} value={tab} onChange={setTab} ariaLabel="Filter programs" className="mb-6" />
 
       {loading && (
         <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
@@ -297,23 +283,11 @@ export function ProgramsPageContent() {
       )}
 
       {!loading && !error && programs.length === 0 && (
-        <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
-          <div className="empty-state-coach__icon" aria-hidden>📚</div>
-          <p className="empty-state-coach__title">Build your signature program</p>
-          <p className="empty-state-coach__desc">
-            Create a structured program for your clients with videos, notes, and assignments. Assign it once, use it forever.
-          </p>
-          <Button className="empty-state-coach__cta" onClick={() => setCreateOpen(true)}>
-            Create a program
-          </Button>
-          <div className="mt-6 flex flex-wrap justify-center gap-4 text-[12px] text-[var(--text-quaternary)]">
-            <span>Videos &amp; notes</span>
-            <span aria-hidden>·</span>
-            <span>Structured modules</span>
-            <span aria-hidden>·</span>
-            <span>Assign to clients</span>
-          </div>
-        </div>
+        <EmptyState
+          title="Build your signature program"
+          description="Create a structured program for your clients with videos, notes, and assignments. Assign it once, use it forever."
+          action={<Button onClick={() => setCreateOpen(true)}>Create a program</Button>}
+        />
       )}
 
       {!loading && !error && programs.length > 0 && view === 'grid' && (
