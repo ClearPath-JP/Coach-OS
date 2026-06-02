@@ -8,11 +8,14 @@ import { ClearPathLogo } from '@/components/layout/ClearPathLogo'
 import { SignOutButton } from '@/components/layout/SignOutButton'
 import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/lib/workspace-context'
+import { openCommandPalette } from '@/lib/command-palette'
 
 export interface SidebarNavItem {
   href: string
   label: string
   icon?: React.ReactNode
+  /** Small uppercase tag rendered at the row's end, e.g. "PRO". */
+  pill?: string
 }
 
 export interface SidebarNavSection {
@@ -267,7 +270,6 @@ function NavRowsCoach({
         const isActive =
           pathname === item.href ||
           (item.href !== '/' && pathname != null && pathname.startsWith(item.href + '/'))
-        const badge = 0
         return (
           <Link
             key={item.href}
@@ -283,16 +285,12 @@ function NavRowsCoach({
               <span className="flex size-4 shrink-0 items-center justify-center [&>svg]:size-4">{item.icon}</span>
             ) : null}
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
-            {badge > 0 ? (
+            {item.pill ? (
               <span
-                className="badge shrink-0 rounded-full px-1.5 py-px text-center text-[10px] font-semibold transition-[filter] duration-[180ms] hover:brightness-[0.9]"
-                style={{
-                  background: 'var(--accent)',
-                  color: 'var(--bg-app)',
-                  minWidth: '16px',
-                }}
+                className="ml-auto shrink-0 rounded-[4px] border px-1 py-px text-[8px] font-bold uppercase tracking-[0.1em]"
+                style={{ color: 'var(--accent-dark)', borderColor: 'rgba(var(--accent-rgb),0.3)' }}
               >
-                {badge > 99 ? '99+' : badge}
+                {item.pill}
               </span>
             ) : null}
           </Link>
@@ -404,9 +402,14 @@ export function Sidebar({
                 className="h-9 w-full rounded-[8px] px-2 text-[12px] text-[var(--text-tertiary)] transition-colors duration-[180ms] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)]"
               />
             </div>
-            <div className="mt-2 flex items-center justify-end px-1">
-              <span className="text-[10px] text-[var(--text-quaternary)]">⌘K</span>
-            </div>
+            <button
+              type="button"
+              onClick={() => openCommandPalette()}
+              className="mt-2 flex w-full items-center gap-2 rounded-[6px] px-2 py-1.5 text-[11px] text-[var(--text-quaternary)] transition-colors hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-tertiary)]"
+            >
+              <span>Quick jump</span>
+              <span className="ml-auto rounded-[4px] border border-[var(--coach-sidebar-input-border)] px-1.5 py-px text-[10px]">⌘K</span>
+            </button>
           </div>
         ) : null}
 
