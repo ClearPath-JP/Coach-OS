@@ -60,9 +60,9 @@ export async function POST(request: Request) {
       .from('recurring_availability')
       .select(`
         id, workspace_id, coach_id, day_of_week, start_time, end_time,
-        is_client_bookable, is_active, session_product_id,
+        is_client_bookable, is_active, session_product_id, member_access,
         session_packages:session_product_id (
-          id, title, price_cents, currency, duration_minutes, capacity, is_active
+          id, title, price_cents, currency, duration_minutes, capacity, is_active, session_type
         )
       `)
       .eq('id', slotId)
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     if (!slot.is_active || !slot.is_client_bookable) {
       return NextResponse.json({ error: 'This class is not bookable' }, { status: 400 })
     }
-    type Pkg = { id: string; title: string; price_cents: number; currency: string | null; duration_minutes: number; capacity: number; is_active: boolean }
+    type Pkg = { id: string; title: string; price_cents: number; currency: string | null; duration_minutes: number; capacity: number; is_active: boolean; session_type: string | null }
     const pkg = (Array.isArray(slot.session_packages) ? slot.session_packages[0] : slot.session_packages) as Pkg | null
     if (!pkg || !pkg.is_active) {
       return NextResponse.json({ error: 'Class type not available' }, { status: 400 })
@@ -114,7 +114,148 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'You are already booked for this class' }, { status: 409 })
     }
 
-    // 4. Coach must have Stripe Connect set up
+    // 4. Membership coverage check
+    // member_access defaults to 'drop_in_only' if the column is null (pre-migration rows)
+    const memberAccess = (slot.member_access ?? 'drop_in_only') as 'drop_in_only' | 'members_only' | 'included'
+
+    if (memberAccess !== 'drop_in_only') {
+      // Load the client's live membership + its plan
+      const { data: membership } = await service
+        .from('client_memberships')
+        .select(`
+          id, classes_used_this_period,
+          membership_plans:plan_id (
+            access_type, classes_per_period, applies_to, applies_to_types
+          )
+        `)
+        .eq('client_id', clientId)
+        .eq('workspace_id', workspaceId)
+        .in('status', ['active', 'trialing'])
+        .maybeSingle()
+
+      type MembershipPlan = {
+        access_type: string
+        classes_per_period: number | null
+        applies_to: string
+        applies_to_types: string[] | null
+      }
+      type LiveMembership = {
+        id: string
+        classes_used_this_period: number
+        membership_plans: MembershipPlan | MembershipPlan[] | null
+      }
+
+      const mem = membership as LiveMembership | null
+      const plan = mem
+        ? ((Array.isArray(mem.membership_plans)
+            ? mem.membership_plans[0]
+            : mem.membership_plans) as MembershipPlan | null)
+        : null
+
+      // Determine if this class is covered by the membership
+      let covered = false
+      if (mem && plan) {
+        // applies_to check
+        const typeMatch =
+          plan.applies_to === 'types'
+            ? (plan.applies_to_types ?? []).includes(pkg.session_type ?? '')
+            : true // 'all' covers every class type
+
+        // allotment check
+        const allotmentOk =
+          plan.access_type === 'unlimited'
+            ? true
+            : plan.access_type === 'limited'
+              ? mem.classes_used_this_period < (plan.classes_per_period ?? 0)
+              : typeMatch // 'specific' uses applies_to='types' semantics only
+
+        covered = typeMatch && allotmentOk
+      }
+
+      if (memberAccess === 'members_only' && !covered) {
+        return NextResponse.json(
+          { error: 'This class is for members only. Subscribe to book it.' },
+          { status: 403 }
+        )
+      }
+
+      if (covered) {
+        // Free membership-covered booking: insert sessions row directly (no Stripe).
+        //
+        // For limited plans we must increment the allotment counter atomically BEFORE
+        // creating the session so that concurrent requests cannot both pass the
+        // classes_used_this_period < classes_per_period check and double-book.
+        //
+        // Strategy: conditional UPDATE where classes_used_this_period equals the value
+        // we read. If another request already incremented it the UPDATE matches 0 rows →
+        // we treat that as "allotment exhausted" and return 409. Only on a confirmed
+        // single-row update do we proceed to insert the session.
+        if (plan && plan.access_type === 'limited' && mem) {
+          const { data: updatedRows, error: allotmentErr } = await service
+            .from('client_memberships')
+            .update({ classes_used_this_period: mem.classes_used_this_period + 1 })
+            .eq('id', mem.id)
+            .eq('classes_used_this_period', mem.classes_used_this_period) // optimistic lock
+            .select('id')
+
+          if (allotmentErr) {
+            console.error('POST /api/client/book-class allotment update', allotmentErr)
+            return NextResponse.json({ error: 'Booking failed — please try again' }, { status: 500 })
+          }
+          if (!updatedRows || updatedRows.length === 0) {
+            // Another concurrent request won the race and exhausted the allotment
+            return NextResponse.json(
+              { error: 'Your membership class allotment is now full for this period' },
+              { status: 409 }
+            )
+          }
+        }
+
+        // Allotment secured (or unlimited/not-limited). Insert the session row.
+        const durationMinutes = pkg.duration_minutes
+        const endTime = new Date(scheduledTime.getTime() + durationMinutes * 60_000)
+
+        const { error: insertErr } = await service
+          .from('sessions')
+          .insert({
+            workspace_id: workspaceId,
+            coach_id: slot.coach_id,
+            client_id: clientId,
+            scheduled_time: scheduledTime.toISOString(),
+            end_time: endTime.toISOString(),
+            duration_minutes: durationMinutes,
+            status: 'confirmed',
+            session_product_id: pkg.id,
+            recurring_availability_id: slotId,
+            paid_at: new Date().toISOString(),
+            // stripe_checkout_id intentionally omitted — membership booking has no Stripe checkout
+          })
+
+        if (insertErr) {
+          // Roll back the allotment increment if we already applied one
+          if (plan && plan.access_type === 'limited' && mem) {
+            await service
+              .from('client_memberships')
+              .update({ classes_used_this_period: mem.classes_used_this_period })
+              .eq('id', mem.id)
+          }
+          if (insertErr.code === '23505') {
+            return NextResponse.json(
+              { error: 'You are already booked for this class' },
+              { status: 409 }
+            )
+          }
+          console.error('POST /api/client/book-class membership insert', insertErr)
+          return NextResponse.json({ error: 'Booking failed — please try again' }, { status: 500 })
+        }
+
+        return NextResponse.json({ data: { booked: true, membershipUsed: true } })
+      }
+
+      // covered=false + memberAccess='included' → fall through to Stripe drop-in flow below
+    }
+
+    // 5. Coach must have Stripe Connect set up
     const { data: workspace } = await service
       .from('workspaces')
       .select('stripe_connect_account_id, name')
@@ -128,7 +269,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // 5. Get client display info for receipt
+    // 6. Get client display info for receipt
     const { data: client } = await service
       .from('clients')
       .select('email, first_name, last_name')
@@ -138,7 +279,7 @@ export async function POST(request: Request) {
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ?? request.headers.get('origin') ?? 'http://localhost:3000'
 
-    // 6. Create Stripe Checkout — destination charge to coach's connected account
+    // 7. Create Stripe Checkout — destination charge to coach's connected account
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',
