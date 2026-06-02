@@ -18,6 +18,7 @@ import { PathStep } from './PathStep'
 import { IdeaStep } from './IdeaStep'
 import { ChatStep } from './ChatStep'
 import { VideoStep } from './VideoStep'
+import { Card } from '@/components/ui/Card'
 
 const FORM_KEY = 'kindo-promote-form'
 const LEADS_KEY = 'kindo-leads-form'
@@ -144,7 +145,7 @@ export function PromotePageContent() {
         {step === 2 && path === 'video' && <VideoStep discipline={discipline} tone={tone} onDone={done} />}
 
         {step === 3 && result && (
-          <div className="space-y-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] p-5">
+          <Card className="space-y-4">
             {result.type === 'post' ? <PostCard post={result.post} /> : <VideoPlanCard plan={result.videoPlan} />}
             <ResultActions caption={result.type === 'post' ? fullCaption(result.post) : videoPlanCaption(result.videoPlan)} />
             <div className="flex justify-end">
@@ -157,7 +158,7 @@ export function PromotePageContent() {
                 Start over
               </button>
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </main>

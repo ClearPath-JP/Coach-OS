@@ -15,9 +15,10 @@ import {
   startOfDay,
   startOfWeek,
 } from 'date-fns'
-import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, ClipboardList, Clock, DollarSign, Ticket, Users, Video } from 'lucide-react'
+import { CalendarPlus, ChevronLeft, ChevronRight, ClipboardList, Clock, DollarSign, Ticket, Users, Video } from 'lucide-react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Badge } from '@/components/ui/Badge'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { cn } from '@/lib/utils'
 import { BookSessionModal } from './BookSessionModal'
 import { AddAvailabilityModal } from './AddAvailabilityModal'
@@ -440,25 +441,25 @@ export function CoachScheduleWorkspace() {
 
       {/* ── Empty state ── */}
       {!calendarLoading && sessions.length === 0 && (
-        <div className="sensei-page__empty mt-6">
-          <CalendarDays className="h-10 w-10 text-[var(--accent-dark)]" strokeWidth={1} />
-          <p className="sensei-page__empty-title">No sessions this week</p>
-          <p className="sensei-page__empty-sub">
-            Book your first session or set your availability so clients know when you&apos;re free.
-          </p>
-          <div className="mt-6 flex gap-3">
-            <button type="button" className="sensei-page__action-btn" onClick={() => openBookModal(null, null)}>
-              Book Session
-            </button>
-            <button
-              type="button"
-              className="sensei-page__toggle-btn rounded-lg border border-[var(--border-default)] px-4"
-              onClick={() => setAvailabilityOpen(true)}
-            >
-              Set Availability
-            </button>
-          </div>
-        </div>
+        <EmptyState
+          className="mt-6"
+          title="No sessions this week"
+          description="Book your first session or set your availability so clients know when you're free."
+          action={
+            <>
+              <button type="button" className="sensei-page__action-btn" onClick={() => openBookModal(null, null)}>
+                Book Session
+              </button>
+              <button
+                type="button"
+                className="sensei-page__toggle-btn rounded-lg border border-[var(--border-default)] px-4"
+                onClick={() => setAvailabilityOpen(true)}
+              >
+                Set Availability
+              </button>
+            </>
+          }
+        />
       )}
 
       {/* ── Main content: sidebar + calendar grid ── */}

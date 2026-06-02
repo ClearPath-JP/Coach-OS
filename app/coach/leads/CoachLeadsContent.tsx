@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
 import {
-  Search,
   Loader2,
   Trash2,
   AlertCircle,
@@ -15,6 +14,8 @@ import {
   ChevronUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { type LeadStatus } from '@/lib/leads-interactions'
 import { type MergedLead } from './lead-ui'
 import { type LeadFilters, LeadFiltersBar } from './LeadFiltersBar'
@@ -759,22 +760,16 @@ export function CoachLeadsContent() {
           <div className="order-2 lg:order-1 space-y-4">
             {/* No searches yet */}
             {!active && !loadingList && searches.length === 0 && (
-              <div className="empty-state-coach rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)]">
-                <div className="empty-state-coach__icon" aria-hidden>
-                  <Search className="size-5 text-[var(--text-tertiary)]" />
-                </div>
-                <p className="empty-state-coach__title">Find your first leads</p>
-                <p className="empty-state-coach__desc">
-                  Fill in the boxes above and run a search — we&apos;ll scan local Instagram for real people and
-                  referral partners you can reach out to. Your past searches will show up here.
-                </p>
-              </div>
+              <EmptyState
+                title="Find your first leads"
+                description="Fill in the boxes above and run a search — we'll scan local Instagram for real people and referral partners you can reach out to. Your past searches will show up here."
+              />
             )}
 
             {active && (
               <div className="space-y-4">
                 {/* Search query summary card */}
-                <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
+                <Card padding="default" className="p-4">
                   <p className="text-xs uppercase tracking-[0.12em] text-[var(--text-quaternary)]">Query</p>
                   <p className="mt-1 text-sm text-[var(--text-primary)]">{active.query}</p>
                   <p className="mt-2 text-[11px] text-[var(--text-quaternary)]">
@@ -783,7 +778,7 @@ export function CoachLeadsContent() {
                       <>{' · '}{active.result_count} {active.result_count === 1 ? 'lead' : 'leads'}</>
                     )}
                   </p>
-                </div>
+                </Card>
 
                 {/* Pending skeleton */}
                 {active.status === 'pending' && (
@@ -815,25 +810,25 @@ export function CoachLeadsContent() {
 
                 {/* Done — zero results or all filtered out */}
                 {active.status === 'done' && visibleLeads.length === 0 && (
-                  <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-10 text-center space-y-2">
-                    <p className="text-sm font-medium text-[var(--text-secondary)]">
-                      {active.results.length === 0 ? 'No results found' : 'No leads in view'}
-                    </p>
-                    <p className="text-xs text-[var(--text-tertiary)]">
-                      {active.results.length === 0
+                  <EmptyState
+                    title={active.results.length === 0 ? 'No results found' : 'No leads in view'}
+                    description={
+                      active.results.length === 0
                         ? `No usable results for this search. Try a more specific query in ${area || 'your area'}.`
-                        : "You've hidden every lead from this search."}
-                    </p>
-                    {active.results.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setHiddenKeys(new Set())}
-                        className="mt-2 inline-flex items-center gap-1 rounded-md border border-[var(--border-default)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--accent)]/40 hover:text-[var(--text-primary)] transition-colors"
-                      >
-                        Show all leads
-                      </button>
-                    )}
-                  </div>
+                        : "You've hidden every lead from this search."
+                    }
+                    action={
+                      active.results.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setHiddenKeys(new Set())}
+                          className="inline-flex items-center gap-1 rounded-md border border-[var(--border-default)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--accent)]/40 hover:text-[var(--text-primary)] transition-colors"
+                        >
+                          Show all leads
+                        </button>
+                      ) : undefined
+                    }
+                  />
                 )}
 
                 {/* Done — results table */}
