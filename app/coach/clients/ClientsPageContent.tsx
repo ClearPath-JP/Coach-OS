@@ -16,6 +16,8 @@ import { calculateEngagementScore, engagementLabelText } from '@/lib/client-enga
 import { AddClientModal } from './AddClientModal'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Icon } from '@/components/icons/inked'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { differenceInCalendarDays, formatDistanceToNow, isToday } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -232,11 +234,11 @@ export function CoachClientsPageContent() {
 
   const visibleClients = displayedClients
 
-  const tabs: { value: StatusFilter; label: string }[] = [
-    { value: '', label: 'All' },
-    { value: 'active', label: 'Active' },
-    { value: 'paused', label: 'Paused' },
-    { value: 'completed', label: 'Completed' },
+  const tabs: TabItem<StatusFilter>[] = [
+    { value: '', label: 'All', count: tabCounts.all },
+    { value: 'active', label: 'Active', count: tabCounts.active },
+    { value: 'paused', label: 'Paused', count: tabCounts.paused },
+    { value: 'completed', label: 'Completed', count: tabCounts.completed },
   ]
 
   const deleteClient = async (client: Client) => {
@@ -425,36 +427,13 @@ export function CoachClientsPageContent() {
 
       <div className="pb-10">
 
-        <div className="mb-6 flex flex-wrap gap-0 border-b border-[var(--border-subtle)]" role="tablist" aria-label="Filter by status">
-          {tabs.map((tab) => (
-            <button
-              key={tab.value || 'all'}
-              type="button"
-              role="tab"
-              aria-selected={statusFilter === tab.value}
-              onClick={() => setStatusFilter(tab.value)}
-              className={cn(
-                'relative h-9 px-4 text-[14px] transition-colors duration-150',
-                statusFilter === tab.value
-                  ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--cp-accent)]'
-                  : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-              )}
-            >
-              {tab.label}
-              <span className="ml-1 text-[13px] text-[var(--text-quaternary)]">
-                (
-                {tab.value === ''
-                  ? tabCounts.all
-                  : tab.value === 'active'
-                    ? tabCounts.active
-                    : tab.value === 'paused'
-                      ? tabCounts.paused
-                      : tabCounts.completed}
-                )
-              </span>
-            </button>
-          ))}
-        </div>
+        <Tabs
+          tabs={tabs}
+          value={statusFilter}
+          onChange={setStatusFilter}
+          ariaLabel="Filter by status"
+          className="mb-6"
+        />
 
         {loading && <ClientListSkeleton view={view} />}
         {!loading && error && (
@@ -466,23 +445,11 @@ export function CoachClientsPageContent() {
           </Card>
         )}
         {!loading && !error && clients.length === 0 && (
-          <div className="empty-state-coach rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)]">
-            <div className="empty-state-coach__icon" aria-hidden>👥</div>
-            <p className="empty-state-coach__title">Add your first client</p>
-            <p className="empty-state-coach__desc">
-              Invite clients to access their programs, schedule sessions, and track progress through Kindo.
-            </p>
-            <Button className="empty-state-coach__cta" onClick={() => setAddModalOpen(true)}>
-              Add first client
-            </Button>
-            <div className="mt-6 flex flex-wrap justify-center gap-4 text-[12px] text-[var(--text-quaternary)]">
-              <span>Track progress</span>
-              <span aria-hidden>·</span>
-              <span>Schedule sessions</span>
-              <span aria-hidden>·</span>
-              <span>Send assignments</span>
-            </div>
-          </div>
+          <EmptyState
+            title="Add your first client"
+            description="Invite clients to access their programs, schedule sessions, and track progress through Kindo."
+            action={<Button onClick={() => setAddModalOpen(true)}>Add first client</Button>}
+          />
         )}
         {!loading && !error && clients.length > 0 && view === 'grid' && (
           <div
