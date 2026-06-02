@@ -97,24 +97,30 @@ export async function POST(request: Request) {
             const periodEnd = memberSub.current_period_end
               ? new Date(memberSub.current_period_end * 1000).toISOString()
               : null
-            const { error: upsertErr } = await supabase
+            // Manual upsert by stripe_subscription_id — there's no unique index on it,
+            // so ON CONFLICT can't be used. Select-then-update-or-insert instead.
+            const { data: existingMember } = await supabase
               .from('client_memberships')
-              .upsert(
-                {
-                  client_id: clientId,
-                  workspace_id: workspaceId,
-                  plan_id: planId,
-                  stripe_subscription_id: subId,
-                  status: memberStatus,
-                  current_period_start: periodStart,
-                  current_period_end: periodEnd,
-                  classes_used_this_period: 0,
-                  updated_at: new Date().toISOString(),
-                },
-                { onConflict: 'stripe_subscription_id' }
-              )
-            if (upsertErr) {
-              console.error('[webhook] client_membership upsert failed', upsertErr)
+              .select('id')
+              .eq('stripe_subscription_id', subId)
+              .maybeSingle()
+            const membershipRow = {
+              client_id: clientId,
+              workspace_id: workspaceId,
+              plan_id: planId,
+              stripe_subscription_id: subId,
+              status: memberStatus,
+              current_period_start: periodStart,
+              current_period_end: periodEnd,
+              updated_at: new Date().toISOString(),
+            }
+            const { error: writeErr } = existingMember
+              ? await supabase.from('client_memberships').update(membershipRow).eq('id', existingMember.id)
+              : await supabase
+                  .from('client_memberships')
+                  .insert({ ...membershipRow, classes_used_this_period: 0 })
+            if (writeErr) {
+              console.error('[webhook] client_membership write failed', writeErr)
             }
           } else {
             console.warn('[webhook] client_membership checkout missing metadata', session.metadata)
