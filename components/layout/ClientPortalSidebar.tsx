@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Receipt,
   User,
+  CreditCard,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ClientPortalSidebarFooter } from '@/components/layout/ClientPortalSidebarFooter'
@@ -24,6 +25,7 @@ const PRIMARY: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/client/goals', label: 'Goals', Icon: Target },
   { href: '/client/messages', label: 'Messages', Icon: MessageSquare },
   { href: '/client/invoices', label: 'Invoices', Icon: Receipt },
+  { href: '/client/membership', label: 'Membership', Icon: CreditCard },
 ]
 
 function NavRows({
