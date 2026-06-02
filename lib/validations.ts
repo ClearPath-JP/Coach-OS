@@ -690,6 +690,89 @@ export const createClassSchema = z
   })
 export type CreateClassInput = z.infer<typeof createClassSchema>
 
+// ---------------------------------------------------------------------------
+// Membership plans CRUD (Dojo Memberships, Task 2 — 2026-06-01)
+// ---------------------------------------------------------------------------
+
+/** POST /api/coach/memberships — create a membership plan */
+export const createMembershipPlanSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required').max(200),
+    priceCents: z.number().int().min(0, 'Price cannot be negative'),
+    currency: z.string().length(3).optional().default('usd'),
+    accessType: z.enum(['unlimited', 'limited', 'specific']),
+    classesPerPeriod: z.number().int().min(1).optional(),
+    appliesTo: z.enum(['all', 'types']),
+    appliesToTypes: z.array(z.string().max(100)).max(50).optional(),
+    status: z.enum(['active', 'draft']).optional().default('active'),
+  })
+  .superRefine((d, ctx) => {
+    if (d.accessType === 'limited' && d.classesPerPeriod == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'classesPerPeriod is required when accessType is "limited"',
+        path: ['classesPerPeriod'],
+      })
+    }
+    if (d.appliesTo === 'types' && (!d.appliesToTypes || d.appliesToTypes.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'appliesToTypes must have at least one type when appliesTo is "types"',
+        path: ['appliesToTypes'],
+      })
+    }
+  })
+export type CreateMembershipPlanInput = z.infer<typeof createMembershipPlanSchema>
+
+/** PATCH /api/coach/memberships/[id] — edit a membership plan */
+export const patchMembershipPlanSchema = z
+  .object({
+    name: z.string().min(1).max(200).optional(),
+    priceCents: z.number().int().min(0).optional(),
+    currency: z.string().length(3).optional(),
+    accessType: z.enum(['unlimited', 'limited', 'specific']).optional(),
+    classesPerPeriod: z.number().int().min(1).nullable().optional(),
+    appliesTo: z.enum(['all', 'types']).optional(),
+    appliesToTypes: z.array(z.string().max(100)).max(50).nullable().optional(),
+    status: z.enum(['active', 'draft', 'archived']).optional(),
+  })
+  .superRefine((d, ctx) => {
+    // At least one field must be present
+    const hasAny =
+      d.name !== undefined ||
+      d.priceCents !== undefined ||
+      d.currency !== undefined ||
+      d.accessType !== undefined ||
+      d.classesPerPeriod !== undefined ||
+      d.appliesTo !== undefined ||
+      d.appliesToTypes !== undefined ||
+      d.status !== undefined
+    if (!hasAny) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Provide at least one field to update',
+      })
+    }
+    // If switching accessType to 'limited', classesPerPeriod must be supplied in
+    // the same request (we cannot infer the existing DB value at parse time).
+    if (d.accessType === 'limited' && d.classesPerPeriod == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'classesPerPeriod is required when setting accessType to "limited"',
+        path: ['classesPerPeriod'],
+      })
+    }
+    // If switching appliesTo to 'types', at least one type must be supplied.
+    if (d.appliesTo === 'types' && (!d.appliesToTypes || d.appliesToTypes.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'appliesToTypes must have at least one entry when setting appliesTo to "types"',
+        path: ['appliesToTypes'],
+      })
+    }
+  })
+export type PatchMembershipPlanInput = z.infer<typeof patchMembershipPlanSchema>
+
 /** PATCH /api/coach/classes/[id] — update a class group or occurrence */
 export const patchClassSchema = z
   .object({
