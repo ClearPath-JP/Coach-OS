@@ -20,6 +20,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -161,7 +162,7 @@ export function SubscriptionPageContent({
 
   return (
     <main className="min-h-screen p-4 md:p-6 max-w-5xl mx-auto space-y-6">
-      <PageHeader title="Subscription" />
+      <PageHeader title="Subscription" icon={<Icon name="subscription" />} />
 
       {success && (
         <div className="rounded-xl border border-[var(--color-success)] bg-[var(--color-success-light)] px-4 py-3 text-[15px] text-[var(--color-success)]">
@@ -363,10 +364,10 @@ export function SubscriptionPageContent({
           Included in your plan
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {INCLUDED_FEATURES.map(({ icon: Icon, label }) => (
+          {INCLUDED_FEATURES.map(({ icon: FeatureIcon, label }) => (
             <Card key={label} variant="glow" padding="default" className="flex items-center gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-light)]">
-                <Icon className="size-[18px] text-[var(--cp-accent)]" strokeWidth={1.5} aria-hidden />
+                <FeatureIcon className="size-[18px] text-[var(--cp-accent)]" strokeWidth={1.5} aria-hidden />
               </div>
               <p className="text-[14px] font-medium text-[var(--text-primary)]">{label}</p>
             </Card>

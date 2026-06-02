@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Loader2, Users, Calendar, Trash2, AlertTriangle } from 'lucide-react'
+import { Plus, Loader2, Users, Trash2, AlertTriangle } from 'lucide-react'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Button } from '@/components/ui/Button'
 import { formatCents } from '@/lib/format-currency'
 import { ClassFormModal, type ClassRecord } from './ClassFormModal'
 import { ClassScheduleView, nextOccurrence } from './ClassScheduleView'
@@ -204,36 +209,26 @@ export function CoachClassesContent() {
   }
 
   return (
-    <main className="min-h-screen p-4 md:p-6">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
-        <header className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">
-              Classes
-            </h1>
-            <p className="mt-1 text-sm text-[var(--text-tertiary)]">
-              Create classes your clients can pay to book — weekly recurring or one-time sessions.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setAddOpen((o) => !o)}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-default)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-subtle)]"
-            >
-              <Plus className="size-4" />
-              Add slot (legacy)
-            </button>
-            <button
-              type="button"
-              onClick={() => { setEditingClass(undefined); setClassModalOpen(true) }}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)]"
-            >
-              <Plus className="size-4" />
-              New class
-            </button>
-          </div>
-        </header>
+    <div className="coach-page">
+      <div className="coach-page-inner space-y-6">
+        <PageHeader title="Classes" icon={<Icon name="classes" />}>
+          <button
+            type="button"
+            onClick={() => setAddOpen((o) => !o)}
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-default)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-subtle)]"
+          >
+            <Plus className="size-4" />
+            Add slot (legacy)
+          </button>
+          <button
+            type="button"
+            onClick={() => { setEditingClass(undefined); setClassModalOpen(true) }}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--accent-hover)]"
+          >
+            <Plus className="size-4" />
+            New class
+          </button>
+        </PageHeader>
 
         {stripeConnected === false && (
           <div
@@ -254,18 +249,15 @@ export function CoachClassesContent() {
         )}
 
         {packages.length === 0 && !loading && (
-          <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] p-6 text-sm">
-            <p className="font-medium text-[var(--text-primary)]">No class types yet</p>
-            <p className="mt-1 text-[var(--text-tertiary)]">
-              Create a package first — set the title, price, duration, and capacity. Then come back to put it on the calendar.
-            </p>
-            <Link
-              href="/coach/packages"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent)] hover:text-[var(--accent-hover)]"
-            >
-              Create a package →
-            </Link>
-          </div>
+          <EmptyState
+            title="No class types yet"
+            description="Create a package first — set the title, price, duration, and capacity. Then come back to put it on the calendar."
+            action={
+              <Link href="/coach/packages">
+                <Button>Create a package</Button>
+              </Link>
+            }
+          />
         )}
 
         {addOpen && packages.length > 0 && (
@@ -360,22 +352,15 @@ export function CoachClassesContent() {
         )}
 
         {!loading && !error && bookableSlots.length === 0 && packages.length > 0 && (
-          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-8 text-center">
-            <Calendar className="mx-auto mb-3 size-6 text-[var(--accent)]" />
-            <p className="text-sm font-medium text-[var(--text-primary)]">No class slots scheduled yet</p>
-            <p className="mt-1 text-sm text-[var(--text-tertiary)]">Put one of your class types on the weekly calendar.</p>
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
-            >
-              <Plus size={16} /> New class slot
-            </button>
-          </div>
+          <EmptyState
+            title="No class slots scheduled yet"
+            description="Put one of your class types on the weekly calendar."
+            action={<Button onClick={() => setAddOpen(true)}>New class slot</Button>}
+          />
         )}
 
         {!loading && !error && bookableSlots.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+          <Card className="overflow-hidden !p-0">
             <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 border-b border-[var(--border-subtle)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">
               <span>Day</span>
               <span>Class</span>
@@ -423,7 +408,7 @@ export function CoachClassesContent() {
                 )
               })}
             </ul>
-          </div>
+          </Card>
         )}
         {/* ------------------------------------------------------------------ */}
         {/* Classes created via the new form modal                             */}
@@ -508,6 +493,6 @@ export function CoachClassesContent() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   )
 }

@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { format, formatDistanceToNow, parseISO } from 'date-fns'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
+import { Tabs, type TabItem } from '@/components/ui/Tabs'
+import { Icon } from '@/components/icons/inked'
 import { BarChart3 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { CountUpValue } from '@/components/ui/CountUpValue'
@@ -337,36 +339,19 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
   }
 
   const completedSessionsInSample = sessionsForTab.filter((s) => s.status === 'completed').length
-  const mainTabs: { id: MainTab; label: string }[] = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'revenue', label: 'Revenue' },
-    { id: 'clients', label: 'Clients' },
-    { id: 'sessions', label: 'Sessions' },
-    { id: 'assignments', label: 'Assignments' },
+  const mainTabs: TabItem<MainTab>[] = [
+    { value: 'overview', label: 'Overview' },
+    { value: 'revenue', label: 'Revenue' },
+    { value: 'clients', label: 'Clients' },
+    { value: 'sessions', label: 'Sessions' },
+    { value: 'assignments', label: 'Assignments' },
   ]
 
   return (
     <div className="flex min-h-0 flex-1 flex-col space-y-6">
-      <PageHeader title="Analytics" />
+      <PageHeader title="Analytics" icon={<Icon name="analytics" />} />
 
-      <div className="flex flex-wrap gap-0 border-b border-[var(--border-subtle)]" role="tablist" aria-label="Analytics views">
-        {mainTabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={mainTab === t.id}
-            onClick={() => setMainTab(t.id)}
-            className={`relative h-9 px-4 text-[14px] transition-colors duration-150 ${
-              mainTab === t.id
-                ? 'font-medium text-[var(--text-primary)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--cp-accent)]'
-                : 'font-normal text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={mainTabs} value={mainTab} onChange={setMainTab} ariaLabel="Analytics views" />
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Period">
         {(['week', 'month', 'year', 'all'] as const).map((p) => (

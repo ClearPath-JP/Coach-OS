@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  BadgeDollarSign,
   Loader2,
   Plus,
   Pencil,
@@ -12,6 +11,10 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -645,15 +648,11 @@ export function MembershipsContent() {
       <div className="mx-auto w-full max-w-5xl space-y-6">
 
         {/* Page header */}
-        <header className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">
-              Memberships
-            </h1>
-            <p className="mt-1 text-sm text-[var(--text-tertiary)]">
-              Recurring plans clients pay monthly — billed automatically through Stripe.
-            </p>
-          </div>
+        <PageHeader
+          title="Memberships"
+          icon={<Icon name="memberships" />}
+          {...(activePlans.length > 0 ? { countLabel: `${activePlans.length} active` } : {})}
+        >
           <button
             type="button"
             onClick={() => { setEditingPlan(undefined); setModalOpen(true) }}
@@ -662,7 +661,10 @@ export function MembershipsContent() {
             <Plus className="size-4" />
             New plan
           </button>
-        </header>
+        </PageHeader>
+        <p className="-mt-2 text-sm text-[var(--text-tertiary)]">
+          Recurring plans clients pay monthly — billed automatically through Stripe.
+        </p>
 
         {/* Loading */}
         {loading && (
@@ -682,22 +684,22 @@ export function MembershipsContent() {
           <>
             {/* MRR strip */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-5 py-4">
+              <Card className="px-5 py-4">
                 <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-quaternary)]">
                   Monthly revenue
                 </p>
                 <p className="mt-1 font-display text-2xl font-medium text-[var(--text-primary)]">
                   {formatCents(mrrCents)}
                 </p>
-              </div>
-              <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-5 py-4">
+              </Card>
+              <Card className="px-5 py-4">
                 <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-quaternary)]">
                   Active members
                 </p>
                 <p className="mt-1 font-display text-2xl font-medium text-[var(--text-primary)]">
                   {memberTotal}
                 </p>
-              </div>
+              </Card>
             </div>
 
             {/* Plans section */}
@@ -707,20 +709,19 @@ export function MembershipsContent() {
               </h2>
 
               {activePlans.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] p-8 text-center">
-                  <BadgeDollarSign className="mx-auto mb-3 size-6 text-[var(--accent)]" />
-                  <p className="text-sm font-medium text-[var(--text-primary)]">No plans yet</p>
-                  <p className="mt-1 text-sm text-[var(--text-tertiary)]">
-                    Create your first membership plan — clients subscribe and are billed monthly via Stripe.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => { setEditingPlan(undefined); setModalOpen(true) }}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)]"
-                  >
-                    <Plus className="size-4" /> New plan
-                  </button>
-                </div>
+                <EmptyState
+                  title="No plans yet"
+                  description="Create your first membership plan — clients subscribe and are billed monthly via Stripe."
+                  action={
+                    <button
+                      type="button"
+                      onClick={() => { setEditingPlan(undefined); setModalOpen(true) }}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)]"
+                    >
+                      <Plus className="size-4" /> New plan
+                    </button>
+                  }
+                />
               ) : (
                 <div className="space-y-2">
                   {activePlans.map((plan) => (
@@ -780,7 +781,7 @@ export function MembershipsContent() {
                 <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">
                   Members
                 </h2>
-                <div className="overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+                <Card className="overflow-hidden p-0">
                   {/* Table header */}
                   <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 border-b border-[var(--border-subtle)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">
                     <span>Client</span>
@@ -816,7 +817,7 @@ export function MembershipsContent() {
                       </li>
                     ))}
                   </ul>
-                </div>
+                </Card>
               </section>
             )}
           </>
