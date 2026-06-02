@@ -40,6 +40,15 @@ function addMinutesToTime(startTime: string, durationMinutes: number): string {
   return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`
 }
 
+/** Minutes between two "HH:MM" times (end - start). */
+function minutesBetween(start: string, end: string): number {
+  const s = start.split(':')
+  const e = end.split(':')
+  const sMin = Number(s[0] ?? 0) * 60 + Number(s[1] ?? 0)
+  const eMin = Number(e[0] ?? 0) * 60 + Number(e[1] ?? 0)
+  return eMin - sMin
+}
+
 /** Get weekday (0=Sun … 6=Sat) from a YYYY-MM-DD string (UTC). */
 function weekdayFromDate(dateStr: string): number {
   return new Date(`${dateStr}T00:00:00Z`).getUTCDay()
@@ -61,6 +70,8 @@ async function resolveGroup(classGroupId: string, workspaceId: string): Promise<
     .from('recurring_availability')
     .select('*')
     .eq('class_group_id', classGroupId)
+    .eq('workspace_id', workspaceId)
+    .eq('is_active', true)
 
   if (error || !rawSlots || rawSlots.length === 0) {
     return { notFound: true }
@@ -132,8 +143,17 @@ export async function PATCH(
       if (d.status !== undefined) slotUpdates.status = d.status
       if (d.memberAccess !== undefined) slotUpdates.member_access = d.memberAccess
       if (d.startTime !== undefined) slotUpdates.start_time = d.startTime
-      if (d.startTime !== undefined && d.durationMinutes !== undefined) {
-        slotUpdates.end_time = addMinutesToTime(d.startTime, d.durationMinutes)
+      // Recompute end_time whenever start OR duration changes, so the stored
+      // duration never goes stale (e.g. a PATCH that sends startTime alone).
+      if (d.startTime !== undefined || d.durationMinutes !== undefined) {
+        const baseSlot = slots[0]
+        const startForCalc = d.startTime ?? baseSlot?.start_time
+        const durForCalc =
+          d.durationMinutes ??
+          (baseSlot ? minutesBetween(baseSlot.start_time, baseSlot.end_time) : undefined)
+        if (startForCalc && durForCalc !== undefined) {
+          slotUpdates.end_time = addMinutesToTime(startForCalc, durForCalc)
+        }
       }
 
       // Build package updates
