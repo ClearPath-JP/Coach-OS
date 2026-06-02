@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { Icon } from '@/components/icons/inked'
+import { Card } from '@/components/ui/Card'
 import { useTheme } from '@/components/ThemeProvider'
 import { AccentColorPicker } from '@/components/settings/AccentColorPicker'
 import type { AccentColor } from '@/types/coach'
@@ -207,7 +210,7 @@ export default function CoachAppearancePage() {
   return (
     <main className="min-h-screen bg-[var(--bg-app)] px-4 py-8 md:px-8">
       <div className="mx-auto max-w-[640px]">
-        <nav className="mb-6">
+        <nav className="mb-3">
           <Link
             href="/coach/settings"
             className="text-[13px] text-[var(--accent)] hover:underline underline-offset-2"
@@ -216,15 +219,13 @@ export default function CoachAppearancePage() {
           </Link>
         </nav>
 
-        <h1 className="font-display mb-1 text-[24px] font-medium tracking-[0.01em] text-[var(--text-primary)]">
-          Appearance
-        </h1>
+        <PageHeader title="Appearance" icon={<Icon name="settings" />} />
         <p className="mb-8 text-[14px] text-[var(--text-tertiary)]">
           Make your workspace feel like yours. Changes are visible to you and your clients.
         </p>
 
         {/* ─── Section: Stance ─── */}
-        <div className="mb-6 overflow-hidden rounded-[14px] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)]">
+        <Card className="mb-6 overflow-hidden p-0">
           <div className="border-b border-[var(--border-subtle)] px-5 py-4">
             <h2 className="font-display text-[15px] font-medium text-[var(--text-primary)]">Stance</h2>
             <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
@@ -287,10 +288,10 @@ export default function CoachAppearancePage() {
               <p className="mt-3 text-[12px] font-medium text-[var(--success)]">Stance saved</p>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* ─── Section: Ambient Effects ─── */}
-        <div className="mb-6 overflow-hidden rounded-[14px] border border-[rgba(255,250,240,0.04)] bg-[var(--bg-subtle)]">
+        <Card className="mb-6 overflow-hidden p-0">
           <div className="flex items-center justify-between px-5 py-4">
             <div>
               <h2 className="font-display text-[15px] font-medium text-[var(--text-primary)]">Ambient effects</h2>
@@ -317,10 +318,10 @@ export default function CoachAppearancePage() {
               />
             </button>
           </div>
-        </div>
+        </Card>
 
         {/* ─── Section A: Theme ─── */}
-        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+        <Card className="mb-6 overflow-hidden p-0">
           <div className="border-b border-[var(--border-subtle)] px-5 py-4">
             <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Theme</h2>
             <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
@@ -405,10 +406,10 @@ export default function CoachAppearancePage() {
               </button>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* ─── Section B: Brand Identity ─── */}
-        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+        <Card className="mb-6 overflow-hidden p-0">
           <div className="border-b border-[var(--border-subtle)] px-5 py-4">
             <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Brand Identity</h2>
             <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
@@ -608,10 +609,10 @@ export default function CoachAppearancePage() {
               </>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* ─── Section C: Accent Color ─── */}
-        <div className="mb-6 overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+        <Card className="mb-6 overflow-hidden p-0">
           <div className="border-b border-[var(--border-subtle)] px-5 py-4">
             <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Accent Color</h2>
             <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
@@ -637,7 +638,7 @@ export default function CoachAppearancePage() {
               <AccentColorPicker currentAccent={accentColor} onSave={handleAccentSave} />
             )}
           </div>
-        </div>
+        </Card>
 
       </div>
 

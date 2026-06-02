@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
+import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { differenceInDays, eachWeekOfInterval, endOfWeek, format, isWithinInterval, parseISO, startOfWeek, subWeeks } from 'date-fns'
 import { Flame } from 'lucide-react'
 import { getLevelFromXp } from '@/lib/xp-system'
@@ -303,6 +304,13 @@ function RecentSessionNotesSection({ clientId }: { clientId: string }) {
     </Card>
   )
 }
+
+const CLIENT_TABS: TabItem<'overview' | 'goals' | 'payments' | 'progress'>[] = [
+  { value: 'overview', label: 'Overview' },
+  { value: 'goals', label: 'Goals' },
+  { value: 'payments', label: 'Payments' },
+  { value: 'progress', label: 'Progress' },
+]
 
 export function ClientDetailContent({ clientId }: { clientId: string }) {
   const router = useRouter()
@@ -600,24 +608,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 border-b border-[var(--border-subtle)] pb-px" role="tablist" aria-label="Client sections">
-        {(['overview', 'goals', 'payments', 'progress'] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={`relative px-4 py-2.5 text-[14px] font-medium transition-colors ${
-              tab === t
-                ? 'text-[var(--accent)] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-t after:bg-[var(--accent)]'
-                : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-            }`}
-          >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={CLIENT_TABS} value={tab} onChange={setTab} ariaLabel="Client sections" />
 
       {tab === 'goals' && client && (
         <ClientGoalsTab
