@@ -7,14 +7,17 @@ export interface PageHeaderProps {
   contextInfo?: string
   /** e.g. "12 items" — muted pill next to title */
   countLabel?: string
+  /** Optional inked icon rendered before the title (brass-tinted). */
+  icon?: React.ReactNode
   children?: React.ReactNode
 }
 
-export function PageHeader({ title, breadcrumb, contextInfo, countLabel, children }: PageHeaderProps) {
+export function PageHeader({ title, breadcrumb, contextInfo, countLabel, icon, children }: PageHeaderProps) {
   const pill = countLabel ?? contextInfo
   return (
     <header className="section-header-glow sticky top-0 z-20 -mx-[var(--coach-content-px-mobile)] mb-[var(--coach-header-content-gap)] flex h-[var(--coach-header-height)] shrink-0 items-center border-b border-[var(--border-subtle)] bg-[var(--bg-app)] px-[var(--coach-content-px-mobile)] lg:-mx-[var(--coach-content-px)] lg:px-[var(--coach-content-px)]">
       <div className="flex min-w-0 flex-1 items-center">
+        {icon ? <span className="mr-2.5 flex shrink-0 items-center text-[var(--accent)] [&>svg]:size-[18px]">{icon}</span> : null}
         <h1 className="truncate text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)]">
           {breadcrumb ?? title}
         </h1>
