@@ -817,31 +817,27 @@ export function CoachLeadsContent() {
                 {active.status === 'done' && visibleLeads.length === 0 && (
                   <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-10 text-center space-y-2">
                     <p className="text-sm font-medium text-[var(--text-secondary)]">
-                      {active.results.length === 0
-                        ? 'No results found'
-                        : 'No leads match your filters'}
+                      {active.results.length === 0 ? 'No results found' : 'No leads in view'}
                     </p>
                     <p className="text-xs text-[var(--text-tertiary)]">
                       {active.results.length === 0
                         ? `No usable results for this search. Try a more specific query in ${area || 'your area'}.`
-                        : 'Adjust or clear the filters above to see more leads.'}
+                        : "You've hidden every lead from this search."}
                     </p>
                     {active.results.length > 0 && (
                       <button
                         type="button"
-                        onClick={() =>
-                          setFilters({ type: '', platform: '', status: '', search: '' })
-                        }
+                        onClick={() => setHiddenKeys(new Set())}
                         className="mt-2 inline-flex items-center gap-1 rounded-md border border-[var(--border-default)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:border-[var(--accent)]/40 hover:text-[var(--text-primary)] transition-colors"
                       >
-                        Clear filters
+                        Show all leads
                       </button>
                     )}
                   </div>
                 )}
 
                 {/* Done — results table */}
-                {active.status === 'done' && active.results.length > 0 && (
+                {active.status === 'done' && visibleLeads.length > 0 && (
                   <div className="space-y-3">
                     {/* Filters bar */}
                     <LeadFiltersBar
