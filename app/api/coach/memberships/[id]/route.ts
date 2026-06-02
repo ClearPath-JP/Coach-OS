@@ -126,6 +126,10 @@ export async function PATCH(
     const effectiveStatus = d.status ?? plan.status
     const needsStripe = effectiveStatus !== 'draft'
 
+    // Track Stripe objects created in THIS request so we can roll them back if the DB write fails.
+    let createdPriceId: string | null = null
+    let createdProductId: string | null = null
+
     if (priceChanged || (d.status === 'active' && plan.status === 'draft' && !plan.stripe_price_id)) {
       // Activating a draft with no price, OR changing price/currency on a live plan.
       if (!stripe) {
@@ -146,6 +150,7 @@ export async function PATCH(
             metadata: { workspace_id: workspaceId },
           })
           productId = product.id
+          createdProductId = productId
           updates.stripe_product_id = productId
         } else if (d.name !== undefined) {
           // Keep product name in sync.
@@ -167,6 +172,7 @@ export async function PATCH(
           currency: d.currency ?? plan.currency,
           recurring: { interval: 'month' },
         })
+        createdPriceId = newPrice.id
         updates.stripe_price_id = newPrice.id
       }
     } else if (d.name !== undefined && plan.stripe_product_id && stripe) {
@@ -187,6 +193,13 @@ export async function PATCH(
 
     if (updateErr || !rawUpdated) {
       console.error('PATCH /api/coach/memberships/[id] — update', updateErr)
+      // Roll back Stripe objects created in this request so we never orphan an active price.
+      if (stripe && createdPriceId) {
+        try { await stripe.prices.update(createdPriceId, { active: false }) } catch { /* best-effort */ }
+      }
+      if (stripe && createdProductId) {
+        try { await stripe.products.update(createdProductId, { active: false }) } catch { /* best-effort */ }
+      }
       return NextResponse.json({ error: 'Could not update membership plan' }, { status: 500 })
     }
 
