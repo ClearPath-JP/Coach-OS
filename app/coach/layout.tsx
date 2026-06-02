@@ -7,6 +7,7 @@ import { workspaceProviderKey } from '@/lib/workspace-settings'
 import { CoachClientErrorReportingShell } from '@/components/shared/CoachClientErrorReporting'
 import { CoachNav } from './CoachNav'
 import { CoachSidebarShell } from './CoachSidebarShell'
+import { CommandPalette } from '@/components/CommandPalette'
 
 export const dynamic = 'force-dynamic'
 
@@ -121,6 +122,7 @@ export default async function CoachLayout({
           coachName={profile?.full_name ?? null}
           coachAvatarUrl={profile?.logo_url ?? initialWorkspaceSettings.logoUrl ?? null}
         />
+        <CommandPalette />
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
         </main>

@@ -27,20 +27,26 @@ export function CommandPalette() {
 
   const items: CommandItem[] = useMemo(
     () => [
-      { id: 'gd', section: 'Navigation', label: 'Go to Dashboard', shortcut: 'G D', run: () => router.push('/coach/dashboard') },
-      { id: 'gc', section: 'Navigation', label: 'Go to Clients', shortcut: 'G C', run: () => router.push('/coach/clients') },
-      { id: 'gm', section: 'Navigation', label: 'Go to Messages', shortcut: 'G M', run: () => router.push('/coach/messages') },
-      { id: 'gk', section: 'Navigation', label: 'Go to Calendar', shortcut: 'G K', run: () => router.push('/coach/schedule') },
-      { id: 'gp', section: 'Navigation', label: 'Go to Programs', shortcut: 'G P', run: () => router.push('/coach/programs') },
-      { id: 'ga', section: 'Navigation', label: 'Go to Analytics', shortcut: 'G A', run: () => router.push('/coach/analytics') },
-      { id: 'ac', section: 'Actions', label: 'Add new client', shortcut: 'C', run: () => router.push('/coach/clients') },
-      { id: 'ab', section: 'Actions', label: 'Book a session', shortcut: 'B', run: () => router.push('/coach/schedule') },
-      { id: 'ai', section: 'Actions', label: 'Send invoice', shortcut: 'I', run: () => router.push('/coach/invoices') },
-      { id: 'ap', section: 'Actions', label: 'Record payment', shortcut: 'P', run: () => router.push('/coach/payments') },
-      { id: 'ar', section: 'Actions', label: 'Create program', shortcut: 'R', run: () => router.push('/coach/programs') },
-      { id: 'sc', section: 'Settings', label: 'Change color theme', run: () => router.push('/coach/settings') },
-      { id: 'ss', section: 'Settings', label: 'Go to settings', run: () => router.push('/coach/settings') },
-      { id: 'so', section: 'Settings', label: 'Sign out', run: () => router.push('/login') },
+      { id: 'n-dash', section: 'Navigation', label: 'Go to Dashboard', run: () => router.push('/coach/dashboard') },
+      { id: 'n-sched', section: 'Navigation', label: 'Go to Schedule', run: () => router.push('/coach/schedule') },
+      { id: 'n-class', section: 'Navigation', label: 'Go to Classes', run: () => router.push('/coach/classes') },
+      { id: 'n-clients', section: 'Navigation', label: 'Go to Clients', run: () => router.push('/coach/clients') },
+      { id: 'n-msg', section: 'Navigation', label: 'Go to Messages', run: () => router.push('/coach/messages') },
+      { id: 'n-prog', section: 'Navigation', label: 'Go to Programs', run: () => router.push('/coach/programs') },
+      { id: 'n-pack', section: 'Navigation', label: 'Go to Packages', run: () => router.push('/coach/packages') },
+      { id: 'n-member', section: 'Navigation', label: 'Go to Memberships', run: () => router.push('/coach/memberships') },
+      { id: 'n-pay', section: 'Navigation', label: 'Go to Payments', run: () => router.push('/coach/payments') },
+      { id: 'n-inv', section: 'Navigation', label: 'Go to Invoices', run: () => router.push('/coach/invoices') },
+      { id: 'n-ana', section: 'Navigation', label: 'Go to Analytics', run: () => router.push('/coach/analytics') },
+      { id: 'n-promo', section: 'Navigation', label: 'Go to Promote', run: () => router.push('/coach/promote') },
+      { id: 'n-leads', section: 'Navigation', label: 'Go to Lead Research', run: () => router.push('/coach/leads') },
+      { id: 'n-vid', section: 'Navigation', label: 'Go to Videos', run: () => router.push('/coach/videos') },
+      { id: 'a-book', section: 'Actions', label: 'Book a session', shortcut: 'B', run: () => router.push('/coach/schedule') },
+      { id: 'a-client', section: 'Actions', label: 'Add a client', shortcut: 'C', run: () => router.push('/coach/clients') },
+      { id: 'a-msg', section: 'Actions', label: 'Message a client', shortcut: 'M', run: () => router.push('/coach/messages') },
+      { id: 'a-pay', section: 'Actions', label: 'Record a payment', shortcut: 'P', run: () => router.push('/coach/payments') },
+      { id: 's-sub', section: 'Settings', label: 'Subscription', run: () => router.push('/coach/subscription') },
+      { id: 's-set', section: 'Settings', label: 'Settings', run: () => router.push('/coach/settings') },
     ],
     [router]
   )
@@ -89,7 +95,7 @@ export function CommandPalette() {
   return (
     <div className="fixed inset-0 z-[130] flex items-start justify-center bg-black/40 pt-[12vh] backdrop-blur-[4px]">
       <button type="button" className="absolute inset-0" aria-label="Close command palette" onClick={() => setOpen(false)} />
-      <div className="relative z-10 w-full max-w-[640px] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xl)]">
+      <div className="gloss-glass relative z-10 w-full max-w-[640px] overflow-hidden rounded-[var(--radius-xl)]">
         <input
           autoFocus
           value={query}
@@ -118,7 +124,7 @@ export function CommandPalette() {
                         item.run()
                         setOpen(false)
                       }}
-                      className={`flex h-10 w-full items-center gap-2 rounded-[var(--radius-md)] px-3 text-left ${active ? 'bg-[var(--accent-light)]' : 'hover:bg-[var(--bg-subtle)]'}`}
+                      className={`flex h-10 w-full items-center gap-2 rounded-[var(--radius-md)] px-3 text-left ${active ? 'bg-[var(--accent-surface)] text-[var(--text-primary)]' : 'hover:bg-[var(--bg-subtle)]'}`}
                     >
                       <span className="text-[14px] text-[var(--text-primary)]">{item.label}</span>
                       {item.shortcut ? <span className="ml-auto rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[11px] text-[var(--text-tertiary)]">{item.shortcut}</span> : null}

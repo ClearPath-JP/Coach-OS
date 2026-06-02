@@ -853,6 +853,21 @@ html[data-theme='dark'] .glass-modal {
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* Glossy glass surface — command palette, mobile sheets. Theme-safe base + dark gloss. */
+.gloss-glass {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xl);
+}
+html[data-theme='dark'] .gloss-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 30%), rgba(16, 14, 12, 0.86);
+  backdrop-filter: blur(22px) saturate(155%);
+  -webkit-backdrop-filter: blur(22px) saturate(155%);
+  border-color: var(--border-default);
+  border-top-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+}
+
 .card-interactive {
   cursor: pointer;
   transition:
