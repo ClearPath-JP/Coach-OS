@@ -1,16 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { endOfWeek, format, startOfWeek } from 'date-fns'
 import {
-  CalendarDays,
-  CreditCard,
-  ClipboardCheck,
-  Package,
-  Swords,
-  Ticket,
-  Users,
-  Video,
   TrendingUp,
   TrendingDown,
   Minus,
@@ -21,6 +14,15 @@ import {
 } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
+import {
+  todayRows,
+  nextSession,
+  messageRows,
+  unreadTotal,
+  type SessionRow,
+  type ConversationRow,
+} from './dashboard-data'
+import { GreetingBar, TodayPanel, MessagesPeek, QuickActions } from './dashboard-widgets'
 
 type DashboardStats = {
   activeClientsCount: number
@@ -72,9 +74,7 @@ function StatCard({
   label: string
   value: string
   trend?: { direction: string; percentChange: number }
-  /** Adds an amber left-border + warm glow. Use for stats that demand action when set. */
   accent?: boolean
-  /** Renders the number dimmed when the underlying value is zero/empty. */
   zero?: boolean
 }) {
   return (
@@ -86,9 +86,7 @@ function StatCard({
           : 'border-[var(--border-subtle)] hover:border-[var(--border-default)]',
       )}
     >
-      <span className="text-[11px] font-medium tracking-[0.02em] text-[var(--text-tertiary)]">
-        {label}
-      </span>
+      <span className="text-[11px] font-medium tracking-[0.02em] text-[var(--text-tertiary)]">{label}</span>
       <div className="flex items-end gap-2">
         <span
           className={cn(
@@ -111,35 +109,37 @@ function StatCard({
   )
 }
 
-const NAV_TILES = [
-  { href: '/coach/schedule', label: 'Schedule', desc: 'Sessions & availability', icon: CalendarDays },
-  { href: '/coach/classes', label: 'Classes', desc: 'Bookable group classes', icon: Ticket },
-  { href: '/coach/clients', label: 'Clients', desc: 'Manage your roster', icon: Users },
-] as const
-
-function AttentionBanner({ attention, pendingInvoicesCount }: { attention: AttentionData | null; pendingInvoicesCount: number }) {
-  const items: { label: string; href: string; count: number }[] = []
-  if (attention?.inactive?.length) items.push({ label: 'clients need engagement', href: '/coach/clients', count: attention.inactive.length })
-  // Use the uncapped workspace-wide pending count (matches the Invoices page) and
-  // link to /coach/invoices, where the coach can actually act on them.
-  if (pendingInvoicesCount > 0) items.push({ label: pendingInvoicesCount === 1 ? 'unpaid invoice' : 'unpaid invoices', href: '/coach/invoices', count: pendingInvoicesCount })
-
+function AttentionStrip({ attention, pendingInvoicesCount }: { attention: AttentionData | null; pendingInvoicesCount: number }) {
+  const items: { label: string; href: string }[] = []
+  if (attention?.inactive?.length) {
+    items.push({
+      label: `${attention.inactive.length} ${attention.inactive.length === 1 ? 'client needs' : 'clients need'} engagement`,
+      href: '/coach/clients',
+    })
+  }
+  if (pendingInvoicesCount > 0) {
+    const total = attention?.unpaidInvoices?.reduce((a, i) => a + (i.amountCents || 0), 0) ?? 0
+    const amt = total > 0 ? ` · ${formatCents(total)}` : ''
+    items.push({
+      label: `${pendingInvoicesCount} unpaid ${pendingInvoicesCount === 1 ? 'invoice' : 'invoices'}${amt}`,
+      href: '/coach/invoices',
+    })
+  }
   if (items.length === 0) return null
-
   return (
-    <div className="rounded-xl border border-[var(--accent-border)] bg-[var(--accent-surface)] px-5 py-3">
+    <div className="rounded-xl border border-[var(--accent-border)] bg-[var(--accent-surface)] px-4 py-3">
       <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--accent)]">
         <AlertTriangle size={15} />
         <span>Needs attention</span>
       </div>
-      <div className="mt-2 flex flex-wrap gap-3">
+      <div className="mt-2 flex flex-col gap-1.5">
         {items.map((item) => (
           <Link
-            key={item.href + item.label}
+            key={item.href}
             href={item.href}
             className="text-[13px] text-[var(--text-secondary)] underline decoration-[var(--border-strong)] underline-offset-2 transition-colors hover:text-[var(--text-primary)]"
           >
-            {item.count} {item.label}
+            {item.label}
           </Link>
         ))}
       </div>
@@ -154,24 +154,17 @@ function GettingStarted({ stats, programsCount }: { stats: DashboardStats; progr
     { done: programsCount > 0, label: 'Create a program', href: '/coach/programs', desc: 'Build a structured training program' },
     { done: stats.revenueMonthCents > 0, label: 'Record a payment', href: '/coach/payments', desc: 'Track revenue from your clients' },
   ]
-
   const completed = steps.filter((s) => s.done).length
   if (completed >= steps.length) return null
-
   return (
-    <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-5">
+    <div className="gloss-panel p-5">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Get started</h2>
-          <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">
-            {completed} of {steps.length} complete
-          </p>
+          <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">{completed} of {steps.length} complete</p>
         </div>
         <div className="flex h-2 w-24 overflow-hidden rounded-full bg-[var(--bg-muted)]">
-          <div
-            className="h-full rounded-full bg-[var(--accent)] transition-all duration-500"
-            style={{ width: `${(completed / steps.length) * 100}%` }}
-          />
+          <div className="h-full rounded-full bg-[var(--accent)] transition-all duration-500" style={{ width: `${(completed / steps.length) * 100}%` }} />
         </div>
       </div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -179,12 +172,7 @@ function GettingStarted({ stats, programsCount }: { stats: DashboardStats; progr
           <Link
             key={step.href + step.label}
             href={step.href}
-            className={cn(
-              'group flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150',
-              step.done
-                ? 'opacity-50'
-                : 'hover:bg-[var(--bg-muted)]',
-            )}
+            className={cn('group flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150', step.done ? 'opacity-50' : 'hover:bg-[var(--bg-muted)]')}
           >
             {step.done ? (
               <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-500" />
@@ -192,17 +180,10 @@ function GettingStarted({ stats, programsCount }: { stats: DashboardStats; progr
               <Circle size={16} className="mt-0.5 shrink-0 text-[var(--text-quaternary)] group-hover:text-[var(--text-tertiary)]" />
             )}
             <div className="min-w-0">
-              <span className={cn(
-                'text-[13px] font-medium',
-                step.done ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]',
-              )}>
-                {step.label}
-              </span>
+              <span className={cn('text-[13px] font-medium', step.done ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]')}>{step.label}</span>
               <p className="text-[12px] text-[var(--text-quaternary)]">{step.desc}</p>
             </div>
-            {!step.done && (
-              <ArrowRight size={14} className="ml-auto mt-0.5 shrink-0 text-[var(--text-quaternary)] opacity-0 transition-opacity group-hover:opacity-100" />
-            )}
+            {!step.done && <ArrowRight size={14} className="ml-auto mt-0.5 shrink-0 text-[var(--text-quaternary)] opacity-0 transition-opacity group-hover:opacity-100" />}
           </Link>
         ))}
       </div>
@@ -210,26 +191,31 @@ function GettingStarted({ stats, programsCount }: { stats: DashboardStats; progr
   )
 }
 
-export function CoachDashboardHome() {
+export function CoachDashboardHome({ coachName }: { coachName: string }) {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [attention, setAttention] = useState<AttentionData | null>(null)
   const [badges, setBadges] = useState<Badges>({ assignments: 0, programsCount: 0 })
+  const [sessions, setSessions] = useState<SessionRow[]>([])
+  const [conversations, setConversations] = useState<ConversationRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
     setError(false)
-    // Abort if the network hangs so the skeleton can't get stuck forever.
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 15_000)
     const opts = { credentials: 'include' as const, signal: controller.signal }
+    const now = new Date()
+    const weekQ = `?from=${encodeURIComponent(startOfWeek(now, { weekStartsOn: 1 }).toISOString())}&to=${encodeURIComponent(endOfWeek(now, { weekStartsOn: 1 }).toISOString())}`
     try {
-      const [statsJson, attentionJson, asgJson, programsJson] = await Promise.all([
+      const [statsJson, attentionJson, asgJson, programsJson, sessJson, convJson] = await Promise.all([
         fetch('/api/coach/dashboard-summary', opts).then((r) => r.json()),
         fetch('/api/coach/dashboard-attention', opts).then((r) => r.json()).catch(() => null),
         fetch('/api/assignments/overview', opts).then((r) => r.json()).catch(() => null),
         fetch('/api/programs', opts).then((r) => r.json()).catch(() => null),
+        fetch(`/api/coach/sessions${weekQ}`, opts).then((r) => r.json()).catch(() => null),
+        fetch('/api/messages/conversations', opts).then((r) => r.json()).catch(() => null),
       ])
       setStats(statsJson?.data ?? ZERO_STATS)
       if (attentionJson?.data) setAttention(attentionJson.data)
@@ -241,8 +227,9 @@ export function CoachDashboardHome() {
       }
       const pgCount = Array.isArray(programsJson?.data) ? programsJson.data.length : 0
       setBadges({ assignments: asg, programsCount: pgCount })
+      setSessions(Array.isArray(sessJson?.data) ? sessJson.data : [])
+      setConversations(Array.isArray(convJson?.data) ? convJson.data : [])
     } catch {
-      // The primary summary fetch failed/aborted — surface a retry instead of hanging.
       setError(true)
     } finally {
       clearTimeout(timeout)
@@ -255,23 +242,21 @@ export function CoachDashboardHome() {
   }, [fetchAll])
 
   const s = stats ?? ZERO_STATS
+  const today = useMemo(() => todayRows(sessions, new Date()), [sessions])
+  const nextUp = useMemo(() => nextSession(sessions, new Date()), [sessions])
+  const msgs = useMemo(() => messageRows(conversations, 3), [conversations])
+  const unread = useMemo(() => unreadTotal(conversations), [conversations])
+
+  const greetNow = new Date()
+  const hour = greetNow.getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const coachFirst = coachName.trim().split(/\s+/)[0] || 'Coach'
+  const dateLine = format(greetNow, 'EEEE · MMMM d')
 
   return (
     <div className="coach-dash-stagger flex flex-col gap-6">
-      {/* Header */}
-      <div>
-        <h1 className="font-display text-[28px] font-medium leading-none tracking-tight text-[var(--text-primary)]">
-          Command Center
-        </h1>
-        <p className="mt-3 text-[13px] text-[var(--text-quaternary)]">
-          Your dojo at a glance.
-        </p>
-      </div>
+      <GreetingBar coachFirst={coachFirst} dateLine={dateLine} greeting={greeting} next={nextUp} />
 
-      {/* Attention banner */}
-      {!loading && !error && <AttentionBanner attention={attention} pendingInvoicesCount={s.pendingInvoicesCount} />}
-
-      {/* Stats row — always visible */}
       {loading ? (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -292,61 +277,22 @@ export function CoachDashboardHome() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard
-            label="Active clients"
-            value={String(s.activeClientsCount)}
-            trend={s.trends?.activeClients}
-            zero={s.activeClientsCount === 0}
-          />
-          <StatCard
-            label="Sessions this week"
-            value={String(s.sessionsThisWeek)}
-            trend={s.trends?.sessionsThisWeek}
-            zero={s.sessionsThisWeek === 0}
-          />
-          <StatCard
-            label="Revenue (month)"
-            value={formatCents(s.revenueMonthCents)}
-            trend={s.trends?.revenueMonth}
-            zero={s.revenueMonthCents === 0}
-          />
-          <StatCard
-            label="Pending invoices"
-            value={String(s.pendingInvoicesCount)}
-            accent={s.pendingInvoicesCount > 0}
-            zero={s.pendingInvoicesCount === 0}
-          />
+          <StatCard label="Active clients" value={String(s.activeClientsCount)} trend={s.trends?.activeClients} zero={s.activeClientsCount === 0} />
+          <StatCard label="Sessions this week" value={String(s.sessionsThisWeek)} trend={s.trends?.sessionsThisWeek} zero={s.sessionsThisWeek === 0} />
+          <StatCard label="Revenue (month)" value={formatCents(s.revenueMonthCents)} trend={s.trends?.revenueMonth} zero={s.revenueMonthCents === 0} />
+          <StatCard label="Pending invoices" value={String(s.pendingInvoicesCount)} accent={s.pendingInvoicesCount > 0} zero={s.pendingInvoicesCount === 0} />
         </div>
       )}
 
-      {/* Getting started — shown until core actions are done */}
-      {!loading && !error && <GettingStarted stats={s} programsCount={badges.programsCount} />}
-
-      {/* Quick nav tiles — top 3 most-used. Full sidebar nav covers the rest. */}
-      <div>
-        <h2 className="mb-3 text-[11px] font-medium tracking-[0.02em] text-[var(--text-quaternary)]">
-          Jump to
-        </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {NAV_TILES.map(({ href, label, desc, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'group relative flex flex-col gap-3 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-5 py-4',
-                'transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:bg-[var(--bg-muted)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.18)]',
-              )}
-            >
-              <div className="flex size-9 items-center justify-center rounded-lg bg-[var(--bg-muted)] transition-colors group-hover:bg-[var(--accent)]/10">
-                <Icon size={18} strokeWidth={1.75} className="text-[var(--text-secondary)] transition-colors group-hover:text-[var(--accent)]" />
-              </div>
-              <div>
-                <span className="text-[14px] font-medium text-[var(--text-primary)]">{label}</span>
-                <p className="mt-0.5 text-[12px] text-[var(--text-quaternary)]">{desc}</p>
-              </div>
-              <ArrowRight size={14} className="absolute right-4 top-4 text-[var(--text-quaternary)] opacity-0 transition-opacity group-hover:opacity-100" />
-            </Link>
-          ))}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="flex flex-col gap-4">
+          <TodayPanel items={today} />
+          {!loading && !error && <GettingStarted stats={s} programsCount={badges.programsCount} />}
+        </div>
+        <div className="flex flex-col gap-4">
+          {!loading && !error && <AttentionStrip attention={attention} pendingInvoicesCount={s.pendingInvoicesCount} />}
+          <MessagesPeek items={msgs} unreadTotal={unread} />
+          <QuickActions />
         </div>
       </div>
     </div>
