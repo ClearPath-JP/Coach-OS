@@ -1,65 +1,51 @@
 'use client'
 
-import {
-  BadgeDollarSign,
-  CalendarDays,
-  CreditCard,
-  LayoutDashboard,
-  Sparkles,
-  Swords,
-  Ticket,
-  Users,
-  Video,
-  Megaphone,
-  Package,
-  Settings,
-  MessageSquare,
-  Receipt,
-  BarChart3,
-  Crown,
-} from 'lucide-react'
-import { Sidebar, type SidebarNavSection } from '@/components/layout/Sidebar'
+import { Icon } from '@/components/icons/inked'
+import { Sidebar, type SidebarNavItem, type SidebarNavSection } from '@/components/layout/Sidebar'
+
+const TOP_ITEMS: SidebarNavItem[] = [
+  { href: '/coach/dashboard', label: 'Dashboard', icon: <Icon name="dashboard" /> },
+]
 
 const SECTIONS: SidebarNavSection[] = [
   {
-    title: 'Command Center',
+    title: 'Coaching',
     items: [
-      { href: '/coach/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} strokeWidth={1.5} /> },
-      { href: '/coach/schedule', label: 'Schedule', icon: <CalendarDays size={16} strokeWidth={1.5} /> },
-      { href: '/coach/classes', label: 'Classes', icon: <Ticket size={16} strokeWidth={1.5} /> },
+      { href: '/coach/schedule', label: 'Schedule', icon: <Icon name="schedule" /> },
+      { href: '/coach/classes', label: 'Classes', icon: <Icon name="classes" /> },
+      { href: '/coach/clients', label: 'Clients', icon: <Icon name="clients" /> },
+      { href: '/coach/messages', label: 'Messages', icon: <Icon name="messages" /> },
     ],
   },
   {
-    title: 'Clients',
+    title: 'Offerings',
     items: [
-      { href: '/coach/clients', label: 'Clients', icon: <Users size={16} strokeWidth={1.5} /> },
-      { href: '/coach/messages', label: 'Messages', icon: <MessageSquare size={16} strokeWidth={1.5} /> },
+      { href: '/coach/programs', label: 'Programs', icon: <Icon name="programs" /> },
+      { href: '/coach/packages', label: 'Packages', icon: <Icon name="packages" /> },
+      { href: '/coach/memberships', label: 'Memberships', icon: <Icon name="memberships" /> },
+    ],
+  },
+  {
+    title: 'Money',
+    items: [
+      { href: '/coach/payments', label: 'Payments', icon: <Icon name="payments" /> },
+      { href: '/coach/invoices', label: 'Invoices', icon: <Icon name="invoices" /> },
+      { href: '/coach/analytics', label: 'Analytics', icon: <Icon name="analytics" /> },
     ],
   },
   {
     title: 'Grow',
     items: [
-      { href: '/coach/promote', label: 'Promote', icon: <Megaphone size={16} strokeWidth={1.5} /> },
-      { href: '/coach/leads', label: 'Lead research', icon: <Sparkles size={16} strokeWidth={1.5} /> },
-    ],
-  },
-  {
-    title: 'Business',
-    items: [
-      { href: '/coach/programs', label: 'Programs', icon: <Swords size={16} strokeWidth={1.5} /> },
-      { href: '/coach/packages', label: 'Packages', icon: <Package size={16} strokeWidth={1.5} /> },
-      { href: '/coach/memberships', label: 'Memberships', icon: <BadgeDollarSign size={16} strokeWidth={1.5} /> },
-      { href: '/coach/payments', label: 'Payments', icon: <CreditCard size={16} strokeWidth={1.5} /> },
-      { href: '/coach/invoices', label: 'Invoices', icon: <Receipt size={16} strokeWidth={1.5} /> },
-      { href: '/coach/analytics', label: 'Analytics', icon: <BarChart3 size={16} strokeWidth={1.5} /> },
-      { href: '/coach/videos', label: 'Videos', icon: <Video size={16} strokeWidth={1.5} /> },
+      { href: '/coach/promote', label: 'Promote', icon: <Icon name="promote" /> },
+      { href: '/coach/leads', label: 'Lead Research', icon: <Icon name="leads" />, pill: 'PRO' },
+      { href: '/coach/videos', label: 'Videos', icon: <Icon name="videos" /> },
     ],
   },
 ]
 
-const BOTTOM_ITEMS = [
-  { href: '/coach/subscription', label: 'Subscription', icon: <Crown size={16} strokeWidth={1.5} /> },
-  { href: '/coach/settings', label: 'Settings', icon: <Settings size={16} strokeWidth={1.5} /> },
+const BOTTOM_ITEMS: SidebarNavItem[] = [
+  { href: '/coach/subscription', label: 'Subscription', icon: <Icon name="subscription" /> },
+  { href: '/coach/settings', label: 'Settings', icon: <Icon name="settings" /> },
 ]
 
 type CoachSidebarShellProps = {
@@ -73,6 +59,7 @@ export function CoachSidebarShell({ coachName, coachAvatarUrl }: CoachSidebarShe
       <Sidebar
         variant="coach"
         wordmark
+        topItems={TOP_ITEMS}
         sections={SECTIONS}
         bottomItems={BOTTOM_ITEMS}
         userBar={{
