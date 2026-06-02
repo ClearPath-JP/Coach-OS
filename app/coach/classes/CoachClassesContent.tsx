@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Loader2, Users, Calendar, Trash2, AlertTriangle, Pencil } from 'lucide-react'
+import { Plus, Loader2, Users, Calendar, Trash2, AlertTriangle } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
 import { ClassFormModal, type ClassRecord } from './ClassFormModal'
+import { ClassScheduleView, nextOccurrence } from './ClassScheduleView'
 
 const WEEKDAYS = [
   { value: 0, short: 'Mon', long: 'Monday' },
@@ -74,6 +75,7 @@ export function CoachClassesContent() {
   // New class form modal
   const [classModalOpen, setClassModalOpen] = useState(false)
   const [editingClass, setEditingClass] = useState<ClassRecord | undefined>(undefined)
+  const [deleteTarget, setDeleteTarget] = useState<ClassRecord | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -180,6 +182,21 @@ export function CoachClassesContent() {
     if (res.ok) {
       void load()
     }
+  }
+
+  async function doDeleteClass(cls: ClassRecord, scope: 'all' | 'occurrence') {
+    let url = `/api/coach/classes/${cls.classGroupId}?scope=${scope}`
+    if (scope === 'occurrence') {
+      const nd = nextOccurrence(cls)
+      if (!nd) {
+        setDeleteTarget(null)
+        return
+      }
+      url += `&date=${nd}`
+    }
+    const res = await fetch(url, { method: 'DELETE' })
+    setDeleteTarget(null)
+    if (res.ok) void load()
   }
 
   return (
@@ -407,72 +424,19 @@ export function CoachClassesContent() {
         {/* ------------------------------------------------------------------ */}
         {/* Classes created via the new form modal                             */}
         {/* ------------------------------------------------------------------ */}
-        {classes.length > 0 && (
-          <div>
-            <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">
-              Your classes
-            </h2>
-            <div className="overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)]">
-              <ul>
-                {classes.map((cls) => {
-                  const scheduleLabel = cls.recurring
-                    ? (cls.days ?? [])
-                        .map((d) => WEEKDAYS[d]?.short ?? '?')
-                        .join(', ')
-                    : (cls.oneTimeDate ?? 'One-time')
-                  return (
-                    <li
-                      key={cls.classGroupId}
-                      className="flex items-center gap-3 border-b border-[var(--border-subtle)] px-5 py-4 last:border-b-0"
-                    >
-                      {/* Color dot */}
-                      <span
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: cls.color ?? 'var(--accent)' }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[var(--text-primary)]">
-                          {cls.name ?? 'Untitled'}
-                        </p>
-                        <p className="text-xs text-[var(--text-tertiary)]">
-                          {cls.type ?? ''}{cls.type && scheduleLabel ? ' · ' : ''}{scheduleLabel}
-                          {cls.startTime ? ` · ${timeLabel(cls.startTime.slice(0, 5))}` : ''}
-                          {cls.durationMinutes ? ` · ${cls.durationMinutes}min` : ''}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-3">
-                        <span className="text-sm text-[var(--text-secondary)]">
-                          {formatCents(cls.priceCents)}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-xs text-[var(--text-tertiary)]">
-                          <Users className="size-3" />
-                          {cls.capacity ?? '—'}
-                        </span>
-                        <span
-                          className={[
-                            'rounded-full px-2 py-0.5 text-[11px] font-medium',
-                            cls.status === 'active'
-                              ? 'bg-emerald-500/15 text-emerald-400'
-                              : 'bg-[var(--bg-muted)] text-[var(--text-quaternary)]',
-                          ].join(' ')}
-                        >
-                          {cls.status}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => { setEditingClass(cls); setClassModalOpen(true) }}
-                          className="text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors"
-                          aria-label={`Edit ${cls.name ?? 'class'}`}
-                        >
-                          <Pencil className="size-4" />
-                        </button>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          </div>
+        {/* New classes — weekly schedule view (replaces the simple list) */}
+        {!loading && !error && (
+          <ClassScheduleView
+            classes={classes}
+            onEdit={(cls) => {
+              setEditingClass(cls)
+              setClassModalOpen(true)
+            }}
+            onDelete={(cls) => setDeleteTarget(cls)}
+            onOpenBookings={() => {
+              /* bookings panel wired in the next slice */
+            }}
+          />
         )}
 
       </div>
@@ -484,6 +448,55 @@ export function CoachClassesContent() {
         onSaved={() => { void load() }}
         editClass={editingClass}
       />
+
+      {/* Delete confirm — "this occurrence" vs "all future" for recurring classes */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setDeleteTarget(null)}
+        >
+          <div
+            className="w-full max-w-sm space-y-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-app)] p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <h3 className="font-display text-base font-semibold text-[var(--text-primary)]">
+                Delete “{deleteTarget.name ?? 'class'}”?
+              </h3>
+              <p className="mt-1 text-sm text-[var(--text-tertiary)]">
+                {deleteTarget.recurring
+                  ? 'This is a recurring class. Cancel just the next session, or remove all future occurrences? Existing paid bookings are kept.'
+                  : 'Existing paid bookings are kept.'}
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-lg border border-[var(--border-default)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+              >
+                Cancel
+              </button>
+              {deleteTarget.recurring && (
+                <button
+                  type="button"
+                  onClick={() => void doDeleteClass(deleteTarget, 'occurrence')}
+                  className="rounded-lg border border-[var(--border-default)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                >
+                  This occurrence
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => void doDeleteClass(deleteTarget, 'all')}
+                className="rounded-lg bg-[var(--error)] px-3 py-2 text-sm font-medium text-white hover:opacity-90"
+              >
+                {deleteTarget.recurring ? 'All future' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
