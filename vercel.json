@@ -3,5 +3,5 @@
   "buildCommand": "npm run build",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "crons": [{ "path": "/api/cron/reconcile-renders", "schedule": "0 * * * *" }]
+  "crons": [{ "path": "/api/cron/reconcile-renders", "schedule": "0 6 * * *" }]
 }
