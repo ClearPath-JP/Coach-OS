@@ -32,6 +32,21 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 
     const service = createServiceClient()
+
+    // Ownership check: if a client is being linked, confirm it belongs to this workspace.
+    // The service client bypasses RLS so we must validate explicitly.
+    if (savedClientId) {
+      const { data: owned } = await service
+        .from('clients')
+        .select('id')
+        .eq('id', savedClientId)
+        .eq('workspace_id', workspaceId)
+        .maybeSingle()
+      if (!owned) {
+        return NextResponse.json({ error: 'Client not found in this workspace' }, { status: 403 })
+      }
+    }
+
     const updateFields: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (status !== undefined) updateFields.status = status
     if (notes !== undefined) updateFields.notes = notes
