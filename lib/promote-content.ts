@@ -89,6 +89,7 @@ function str(v: unknown): string {
 
 function buildSystem(discipline: string, tone: PromoteTone): string {
   return `You write Instagram and Facebook posts for a local ${discipline} coach. Voice: ${TONE_GUIDE[tone]}. Write like a real person, not a marketer — confident, warm, and grounded in a real local community. Minimal emoji (0–2 max). No hashtag spam, no "DM me 🔥🔥🔥" clichés, no fake urgency. Speak to real people in the coach's town who might train with them.
+Never output bracketed placeholders like [YourTown], [City], [Town], or [YourCity] anywhere in the output — especially in hashtags. You do not know the coach's city. Use non-localized tags instead (e.g. #brazilianjiujitsu #bjjlife #martialarts) rather than inventing a [placeholder]. If the coach's location appears in the provided topic or discipline text, you may use that real place name, but never a bracketed placeholder.
 Return ONLY valid JSON — no prose, no markdown, no code fences.`
 }
 
@@ -160,7 +161,7 @@ export async function runPromoteGeneration(input: PromoteInput): Promise<Promote
       (topic
         ? `\nWhat the clip shows: ${topic}`
         : `\nThey haven't described the clip — infer a sensible plan for a ${discipline} coach.`) +
-      `\n\nReturn JSON:\n{"hookIdea":"what to show or say in the first 2 seconds to stop the scroll","structure":["3-6 shot-by-shot directions for how to cut/structure the clip"],"onScreenText":["3-6 short on-screen caption lines to overlay, in order"],"caption":"the post caption, 2-4 short paragraphs with line breaks","hashtags":["8-12 mostly-local tags, no # prefix"]}`
+      `\n\nReturn JSON:\n{"hookIdea":"what to show or say in the first 2 seconds to stop the scroll","structure":["3-6 shot-by-shot directions for how to cut/structure the clip"],"onScreenText":["3-6 short on-screen caption lines to overlay, in order"],"caption":"the post caption, 2-4 short paragraphs with line breaks","hashtags":["8-12 non-localized discipline tags, no # prefix, no bracketed placeholders"]}`
     const parsed = parseJson(await generateText(client, system, userMsg, 1536))
     const videoPlan: VideoPlan = {
       hookIdea: str(parsed.hookIdea),
@@ -177,7 +178,7 @@ export async function runPromoteGeneration(input: PromoteInput): Promise<Promote
   const userMsg =
     `Write ONE Instagram/Facebook post for ${kindLabel}.` +
     (topic ? `\nWhat they're promoting: ${topic}` : '') +
-    `\n\nReturn JSON:\n{"hook":"a scroll-stopping first line","caption":"the full caption, 2-5 short paragraphs with line breaks","hashtags":["8-12 relevant tags, mostly local, no # prefix"],"cta":"one clear call to action"` +
+    `\n\nReturn JSON:\n{"hook":"a scroll-stopping first line","caption":"the full caption, 2-5 short paragraphs with line breaks","hashtags":["8-12 non-localized discipline tags, no # prefix, no bracketed placeholders"],"cta":"one clear call to action"` +
     (wantScript
       ? `,"videoScript":["3-6 short shot or line directions for a 15-30s Reel"]}`
       : `,"videoScript":null}`)
@@ -228,7 +229,7 @@ Ask ONE good question at a time. Reflect their words back. Keep replies short (2
   const userMsg =
     `Here is my conversation with the coach:\n\n${convo}\n\n` +
     `Write ONE Instagram/Facebook post in the coach's voice based on what they said. ` +
-    `Return JSON:\n{"hook":"scroll-stopping first line","caption":"full caption, 2-5 short paragraphs with line breaks","hashtags":["8-12 mostly-local tags, no #"],"cta":"one clear call to action","videoScript":null}`
+    `Return JSON:\n{"hook":"scroll-stopping first line","caption":"full caption, 2-5 short paragraphs with line breaks","hashtags":["8-12 non-localized discipline tags, no #, no bracketed placeholders"],"cta":"one clear call to action","videoScript":null}`
   const parsed = parseJson(await generateText(client, system, userMsg, 1536))
   return { kind: 'post', post: parsePost(parsed) }
 }
