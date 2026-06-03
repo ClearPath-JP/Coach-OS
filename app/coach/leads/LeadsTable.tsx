@@ -293,19 +293,9 @@ export function LeadsTable({
                         <span className="truncate max-w-[130px]">{lead.email}</span>
                       </a>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="text-[11px] text-[var(--text-quaternary)]">—</span>
-                        <button
-                          type="button"
-                          disabled
-                          title="Coming soon"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-[10px] text-[var(--text-quaternary)] opacity-50 cursor-not-allowed border border-[var(--border-subtle)] rounded px-1.5 py-0.5 leading-none"
-                        >
-                          Find email
-                        </button>
-                      </span>
+                      <span className="text-[11px] text-[var(--text-quaternary)]">—</span>
                     )}
+                    {/* TODO: re-enable when email enrichment ships */}
                   </span>
                 </td>
 
