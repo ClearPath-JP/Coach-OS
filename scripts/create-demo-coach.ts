@@ -100,6 +100,7 @@ async function main() {
       workspace_id: workspaceId,
       plan: 'starter',
       status: 'active',
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
   }
 
