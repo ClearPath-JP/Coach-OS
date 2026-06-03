@@ -359,12 +359,17 @@ export function LeadDetailDrawer({
   // Ref for scrolling to outreach section
   const outreachRef = useRef<HTMLElement>(null)
 
+  // Ref for the scrollable body — reset to top whenever a different lead opens
+  const scrollBodyRef = useRef<HTMLDivElement>(null)
+
   // Sync local notes state when the lead prop changes (different row opened)
   useEffect(() => {
     setNotesValue(lead?.notes ?? '')
     notesOriginalRef.current = lead?.notes ?? ''
     setShowSaveForm(false)
     setCopiedHandle(false)
+    // Reset scroll to top so the drawer always opens at the header, not the AI section
+    scrollBodyRef.current?.scrollTo(0, 0)
   }, [lead?.leadKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Escape key handler
@@ -469,7 +474,7 @@ export function LeadDetailDrawer({
         </div>
 
         {/* ---- Scrollable body ---- */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+        <div ref={scrollBodyRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
 
           {/* Links row */}
           <div className="flex flex-wrap items-center gap-3">
