@@ -137,6 +137,40 @@ if (parsed.savedClientId) {
 - [ ] **Step 2: Verify** — `npx tsc --noEmit` clean; existing save-to-client flow still links normally (the happy path passes a real workspace client id).
 - [ ] **Step 3: Commit** — `git commit -m "fix(leads): validate saved_client_id belongs to the coach workspace"`
 
+### Task 5: Fix the `[YourTown]` hashtag placeholder leak (HIGH — ships broken hashtags publicly)
+
+**Why:** Promote generates hashtags like `#[YourTown]bjj` that go verbatim into the copy buffer — a coach pasting into Instagram posts the literal placeholder. Root cause: `lib/promote-content.ts` prompts ask for "mostly-local tags" and reference "the coach's town" (`:91, :163, :180, :231`) but the coach's real city is **never injected** into the prompt, so the model emits bracketed placeholders. (Chrome live-audit video-🟡, top priority.)
+
+**Files:**
+- Modify: `lib/promote-content.ts` (the 4 prompt builders)
+- Modify: `app/api/coach/promote/generate/route.ts` (+ the video-plan route) to fetch + pass the coach's city
+- **Design fork:** confirm where coach location lives (grep workspace/profile/onboarding for city/location/area). If no city field exists: either (a) prompt-guard only, or (b) capture the coach's town once in settings and thread it through.
+
+- [ ] Step 1: Locate the coach city/area in the data model.
+- [ ] Step 2: Thread `city` into the prompt builders + append: "Use the coach's real city in local hashtags. NEVER output bracketed placeholders like [YourTown] or [City]. If the city is unknown, use non-localized tags instead."
+- [ ] Step 3: Verify in-browser — generate a video plan + an idea post; assert zero `[`/`]` in hashtags, real city when known.
+- [ ] Step 4: Commit — `git commit -m "fix(promote): inject coach city + forbid bracketed placeholders in generated hashtags"`
+
+### Task 6: Open the lead detail drawer scrolled to top
+
+**Why:** The drawer opens at the bottom (AI Outreach Draft) instead of the top (name/status/actions), forcing a scroll-up every open. (Chrome live-audit leads-🟡.)
+
+**Files:** Modify `app/coach/leads/LeadDetailDrawer.tsx`
+
+- [ ] Step 1: Add a `ref` to the scroll container; in a `useEffect` keyed on the open lead id, `el?.scrollTo(0, 0)`.
+- [ ] Step 2: Verify — open several leads; each starts at the header.
+- [ ] Step 3: Commit — `git commit -m "fix(leads): open lead drawer scrolled to top"`
+
+### Task 7: Clarify the "0 / 0 searches" free-tier counter
+
+**Why:** Free tier shows "0 / 0 searches left this month" — reads like a math error, not "not in your plan." (Chrome live-audit leads-🟡.)
+
+**Files:** Modify `app/coach/leads/CoachLeadsContent.tsx` (quota display)
+
+- [ ] Step 1: When `maxLeadSearchesPerMonth === 0`, render "Lead Research is a Pro feature — upgrade to search" instead of "0 / 0 searches left".
+- [ ] Step 2: Verify — free demo coach sees upgrade copy; a Pro plan still shows "N / M searches left".
+- [ ] Step 3: Commit — `git commit -m "fix(leads): clearer free-tier lead-search quota messaging"`
+
 ### Tier 1 close-out
 - [ ] Stop dev server, run `npm run build` (must be green), restart dev.
 - [ ] `vercel --prod` (dedup makes re-uploads small/fast now), health-check `coach.foundos.ai/api/health`.
@@ -188,6 +222,13 @@ Thumbnail/scrubber strip under a dual-thumb trim range (Bunny exposes `thumbnail
 Today each search is a siloed result set; the same person reappears across searches as separate rows. A single pipeline board (New → Contacted → Replied → Converted) across all searches turns one-off searches into an ongoing CRM — far more useful for a 20-client solo coach. **L-effort, design-heavy.** Also fold in: persist dismissed leads (today "delete" is ephemeral client-side hide), make bulk "Add to clients" real or remove it, show the structured search summary instead of the verbose auto-composed query, and either populate or drop the always-null `bio`/`followers` claims.
 
 ---
+
+## 2026-06-03 Chrome live-audit — finding map
+Live audit of `coach.foundos.ai` confirmed the deploy healthy (Task-1 all PASS; Anthropic key rotation verified via Promote). Remaining findings slotted as:
+- **New → Tier 1:** `[YourTown]` hashtag leak (T5), drawer opens at bottom (T6), "0 / 0" quota copy (T7).
+- **Confirms code audit → Tier 2:** "failed" searches with no user explanation → 2c (Apify/error handling); storage bar stuck at "0.00 / 5 GB" despite uploads → 2d/L1 (Promote uploads never send `file_size_bytes`); "Find email" gating ambiguity → T1.3 (now hidden).
+- **Deferred → Tier 3 (video):** black library thumbnails (generate Bunny thumb at ~1s), identical "speech-clip.mp4" names (auto-name on upload), "copy just hashtags" button, estimated Reel duration in the plan, partial regenerate (hook/caption only), "Use in Promote" button on the library card, 9:16 preview pane.
+- **Deferred → Tier 3 (leads UX, 3d):** restore last search inputs, "Why" hover tooltip, note-save toast, "Next lead →" in drawer, individual-vs-partner grouping, in-drawer outreach tone toggle, follower/engagement signal, batch outreach generation.
 
 ## Recommended sequence
 1. **Tier 1** now (4 quick-wins, one deploy).
