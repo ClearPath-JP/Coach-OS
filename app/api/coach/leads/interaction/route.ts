@@ -36,12 +36,16 @@ export async function PATCH(request: Request) {
     // Ownership check: if a client is being linked, confirm it belongs to this workspace.
     // The service client bypasses RLS so we must validate explicitly.
     if (savedClientId) {
-      const { data: owned } = await service
+      const { data: owned, error: ownedError } = await service
         .from('clients')
         .select('id')
         .eq('id', savedClientId)
         .eq('workspace_id', workspaceId)
         .maybeSingle()
+      if (ownedError) {
+        console.error('PATCH /api/coach/leads/interaction ownership', ownedError)
+        return NextResponse.json({ error: 'Could not verify client' }, { status: 500 })
+      }
       if (!owned) {
         return NextResponse.json({ error: 'Client not found in this workspace' }, { status: 403 })
       }
