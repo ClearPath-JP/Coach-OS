@@ -586,8 +586,14 @@ export function CoachLeadsContent() {
           </div>
           {limit && (
             <div className="rounded-full border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-1.5 text-xs text-[var(--text-tertiary)]">
-              <span className="font-semibold text-[var(--text-primary)]">{limit.max - limit.used}</span> /{' '}
-              {limit.max} searches left this month
+              {limit.max === 0 ? (
+                <span>Lead Research is a Pro feature — upgrade to search</span>
+              ) : (
+                <>
+                  <span className="font-semibold text-[var(--text-primary)]">{limit.max - limit.used}</span> /{' '}
+                  {limit.max} searches left this month
+                </>
+              )}
             </div>
           )}
         </header>
