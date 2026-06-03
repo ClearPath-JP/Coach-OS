@@ -1,0 +1,19 @@
+# Deploy hygiene — exclude local dev/diagnostic artifacts (not part of the app build/runtime).
+# Keeps the Vercel source upload small and reliable.
+
+# Screenshot + diagnostic captures (Playwright/Chrome verification runs)
+screenshots/
+
+# Inspiration / moodboard images
+INSPO/
+
+# Markdown docs, specs, plans, design notes — never needed at build or runtime
+docs/
+
+# Stray AI-generated images dropped in the repo (untracked, not app assets)
+/Leonardo_Anime_XL_A_katana_planted_in_a_mossy_stone_in_a_dark_1.jpg
+public/images/Leonardo_Kino_XL_Wideangle_interior_of_an_empty_traditional_Ja_2.jpg
+
+# Claude Code / agent tooling dirs — not part of the app build or runtime
+.claude/
+.agents/
