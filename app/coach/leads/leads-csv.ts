@@ -12,8 +12,21 @@ export type CsvLeadRow = {
 /** RFC-4180 CSV quote a field if it contains comma, double-quote, or newline. */
 function quoteCsvField(value: string | null): string {
   if (value === null) return ''
+  // Formula-injection guard: neutralise values that Excel/Sheets would execute.
+  // Lead data is untrusted (third-party scraper) — prefix a lone apostrophe so
+  // the cell is treated as plain text, not a formula.
+  const firstChar = value[0]
+  const guarded =
+    firstChar === '=' ||
+    firstChar === '+' ||
+    firstChar === '-' ||
+    firstChar === '@' ||
+    firstChar === '\t' ||
+    firstChar === '\r'
+      ? `'${value}`
+      : value
   // Escape internal double-quotes by doubling them
-  const escaped = value.replace(/"/g, '""')
+  const escaped = guarded.replace(/"/g, '""')
   // Wrap in quotes if the value contains comma, double-quote, or newline
   if (escaped.includes(',') || escaped.includes('"') || escaped.includes('\n')) {
     return `"${escaped}"`
