@@ -105,7 +105,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "We couldn't find that testimonial" }, { status: 404 })
     }
 
-    const { error: delErr } = await supabase.from('testimonials').delete().eq('id', id)
+    const { error: delErr } = await supabase.from('testimonials').delete().eq('id', id).eq('workspace_id', workspaceId)
     if (delErr) {
       return NextResponse.json({ error: 'Could not delete testimonial' }, { status: 500 })
     }

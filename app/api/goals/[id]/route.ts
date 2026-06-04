@@ -260,7 +260,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "We couldn't find that goal" }, { status: 404 })
     }
 
-    const { error: delErr } = await supabase.from('client_goals').delete().eq('id', goalId)
+    const { error: delErr } = await supabase.from('client_goals').delete().eq('id', goalId).eq('workspace_id', workspaceId)
     if (delErr) {
       return NextResponse.json({ error: 'Could not delete goal' }, { status: 500 })
     }
