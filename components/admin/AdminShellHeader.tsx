@@ -31,6 +31,17 @@ export function AdminShellHeader({ email }: { email: string }) {
           <span className="rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
             Admin
           </span>
+          <nav className="hidden items-center gap-1 sm:flex">
+            <Link href="/admin/overview" className="rounded-md px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]">
+              Overview
+            </Link>
+            <Link href="/admin/audit" className="rounded-md px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]">
+              Audit
+            </Link>
+            <Link href="/admin/errors" className="rounded-md px-3 py-1.5 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]">
+              Errors
+            </Link>
+          </nav>
         </div>
         <div className="flex items-center gap-4">
           <span className="hidden text-[13px] text-[var(--text-muted)] sm:inline">{email}</span>
