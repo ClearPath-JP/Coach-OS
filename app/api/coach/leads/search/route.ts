@@ -4,7 +4,7 @@ import { requireCoach } from '@/lib/api-helpers'
 import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkLeadSearchLimit } from '@/lib/plan-limits'
-import { runLeadResearch } from '@/lib/lead-research'
+import { runLeadResearch, LeadSearchUnavailableError } from '@/lib/lead-research'
 
 const searchSchema = z.object({
   query: z.string().trim().min(5, 'Query must be at least 5 characters').max(500, 'Query too long'),
@@ -133,6 +133,14 @@ export async function POST(request: Request) {
           completed_at: new Date().toISOString(),
         })
         .eq('id', searchId)
+      if (err instanceof LeadSearchUnavailableError) {
+        // Founder-visible, greppable in Vercel logs / alerting.
+        console.error('[LEAD_SEARCH_UNAVAILABLE]', err.reason, err.message)
+        return NextResponse.json(
+          { error: "Lead search is temporarily unavailable — we've been notified. No search was used." },
+          { status: 503 }
+        )
+      }
       console.error('POST /api/coach/leads/search runLeadResearch', err)
       return NextResponse.json({ error: 'Search failed — try again' }, { status: 502 })
     }
