@@ -3,7 +3,12 @@ import { requireClient } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkStorageLimit } from '@/lib/plan-limits'
 import { createServiceClient } from '@/lib/supabase/service'
-import { sanitizeFileName } from '@/lib/file-validation'
+import {
+  sanitizeFileName,
+  isAllowedImageType,
+  validateImageMagicBytes,
+  validateDocumentMagicBytes,
+} from '@/lib/file-validation'
 
 const MAX_FILE = 10 * 1024 * 1024
 
@@ -72,6 +77,14 @@ export async function POST(request: Request) {
       }
 
       const buf = await file.arrayBuffer()
+
+      const magicOk = isAllowedImageType(mime)
+        ? await validateImageMagicBytes(buf)
+        : await validateDocumentMagicBytes(buf, mime)
+      if (!magicOk) {
+        return NextResponse.json({ error: 'File content does not match its declared type' }, { status: 400 })
+      }
+
       const safe = sanitizeFileName(file.name || 'document')
       const path = `assignment-files/${workspaceId}/${clientId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`
 
