@@ -9,6 +9,7 @@ export const maxDuration = 300
 const uuidRe =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+
 function verifyCloudConvertSignature(rawBody: string, signatureHeader: string | null): boolean {
   const secret = process.env.CLOUDCONVERT_WEBHOOK_SECRET?.trim()
   if (!secret || !signatureHeader) return false
@@ -46,13 +47,45 @@ export async function POST(request: Request) {
   const rawBody = await request.text()
   const webhookSecret = process.env.CLOUDCONVERT_WEBHOOK_SECRET?.trim()
   const signatureHeader = request.headers.get('CloudConvert-Signature')
-  // Per-job `webhook_url` callbacks often omit CloudConvert-Signature; account-wide webhooks include it.
-  // Only enforce HMAC when both a secret and a signature header are present.
-  const useHmac = Boolean(webhookSecret && signatureHeader)
-  const signatureValid = verifyCloudConvertSignature(rawBody, signatureHeader)
+  const n8nSecret = process.env.N8N_CALLBACK_SECRET?.trim()
+  const headerSecret = (
+    request.headers.get('x-clearpath-secret') ??
+    request.headers.get('X-Clearpath-Secret') ??
+    ''
+  ).trim()
 
-  if (useHmac && !signatureValid) {
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+  // Determine auth path. Every request must pass at least one real secret check.
+  // Path 1: CLOUDCONVERT_WEBHOOK_SECRET is set AND the signature header is present → verify HMAC.
+  // Path 2: N8N_CALLBACK_SECRET is set AND X-Clearpath-Secret header matches → accept.
+  // Anything else (no secret configured, or no credential presented) → 401.
+  const useHmac = Boolean(webhookSecret && signatureHeader)
+
+  if (useHmac) {
+    // HMAC path — used by production account-wide webhooks.
+    const signatureValid = verifyCloudConvertSignature(rawBody, signatureHeader)
+    if (!signatureValid) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
+  } else {
+    // Fallback path — per-job webhook_url callbacks (no CloudConvert signature).
+    // Requires N8N_CALLBACK_SECRET to be configured and the header to match.
+    // Hash both through HMAC-SHA256 with a fixed key so the buffers are always
+    // 32 bytes regardless of input length — no early-exit timing leak.
+    if (!n8nSecret) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const hmacKey = Buffer.from('kindo-webhook-compare')
+    const expected = createHmac('sha256', hmacKey).update(n8nSecret, 'utf8').digest()
+    const actual   = createHmac('sha256', hmacKey).update(headerSecret, 'utf8').digest()
+    let secretMatch = false
+    try {
+      secretMatch = timingSafeEqual(expected, actual)
+    } catch {
+      secretMatch = false
+    }
+    if (!secretMatch) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   let event: string
@@ -66,12 +99,7 @@ export async function POST(request: Request) {
   }
 
   if (!useHmac) {
-    const n8nSecret = process.env.N8N_CALLBACK_SECRET?.trim()
-    const headerSecret = (request.headers.get('x-clearpath-secret') ?? request.headers.get('X-Clearpath-Secret') ?? '').trim()
-    const providedSecret = headerSecret
-    if (!n8nSecret || providedSecret !== n8nSecret) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Per-job path: re-fetch job state from CloudConvert to confirm it is real.
     const jobId = job.id
     if (!jobId || typeof jobId !== 'string') {
       return NextResponse.json({ error: 'job.id required in webhook body' }, { status: 400 })
