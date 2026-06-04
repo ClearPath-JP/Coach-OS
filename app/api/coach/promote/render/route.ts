@@ -73,6 +73,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Trim end must be after the start' }, { status: 400 })
     }
 
+    // Idempotency guard: if a render for this source clip is already in flight (e.g. a
+    // double-click), return the existing job instead of inserting a second row + firing a
+    // second Lambda render (= double AWS cost). Same response shape as a fresh render.
+    const { data: inFlight } = await service
+      .from('video_edits')
+      .select('id')
+      .eq('status', 'rendering')
+      .eq('source_video_id', sourceVideoId)
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (inFlight?.id) {
+      return NextResponse.json({ data: { editId: inFlight.id } })
+    }
+
     // Track the job up front so the client gets an editId to poll immediately —
     // the Lambda kickoff (captions fetch + invocation, a few seconds) runs after the response.
     const { data: edit, error: eErr } = await service
