@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
+import { logServerError } from '@/lib/log-server-error'
 
 const schema = z.object({
   name: z.string().trim().max(120),
@@ -81,6 +82,7 @@ export async function POST(request: Request) {
     const filtered = text.trim().replace(/https?:\/\/\S+/g, '').replace(/\s{2,}/g, ' ').trim().slice(0, 600)
     return NextResponse.json({ data: { text: filtered } })
   } catch (err) {
+    await logServerError('POST /api/coach/leads/outreach', err)
     console.error('POST /api/coach/leads/outreach', err)
     return NextResponse.json({ error: 'Could not generate a message' }, { status: 502 })
   }

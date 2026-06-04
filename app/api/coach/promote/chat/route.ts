@@ -4,6 +4,7 @@ import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { runPromoteChat, type ChatMessage } from '@/lib/promote-content'
+import { logServerError } from '@/lib/log-server-error'
 
 const chatSchema = z.object({
   messages: z
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Could not respond — try again' }, { status: 502 })
     }
   } catch (err) {
+    await logServerError('POST /api/coach/promote/chat', err)
     console.error('POST /api/coach/promote/chat', err)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }

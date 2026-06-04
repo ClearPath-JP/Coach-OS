@@ -6,6 +6,7 @@ import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { createServiceClient } from '@/lib/supabase/service'
 import { fetchBunnyCaptions, signBunnyUrl } from '@/lib/bunny'
 import { startCaptionedRender, remotionConfigured } from '@/lib/remotion'
+import { logServerError } from '@/lib/log-server-error'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -153,6 +154,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ data: { editId } })
   } catch (err) {
+    await logServerError('POST /api/coach/promote/render', err)
     console.error('POST /api/coach/promote/render', err)
     return NextResponse.json({ error: 'Could not start the render — try again' }, { status: 500 })
   }

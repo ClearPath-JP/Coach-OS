@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 import { fetchCloudConvertJob, finalizeFromCloudConvertJobId } from '@/lib/drive-import/cloudconvert-finalize'
+import { logServerError } from '@/lib/log-server-error'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300

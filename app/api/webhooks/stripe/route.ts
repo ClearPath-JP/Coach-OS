@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { stripe, STRIPE_WEBHOOK_SECRET, STRIPE_PRICES } from '@/lib/stripe'
 import { markSessionInvoicePaidFromStripeCheckout } from '@/lib/stripe-client-invoice-checkout'
 import { createSessionFromClassBookingCheckout } from '@/lib/stripe-class-booking-webhook'
+import { logServerError } from '@/lib/log-server-error'
 import type Stripe from 'stripe'
 
 /**
@@ -349,6 +350,7 @@ export async function POST(request: Request) {
     }
   } catch (err) {
     console.error('[POST /api/webhooks/stripe] Unhandled error processing event', event.type, err)
+    await logServerError('POST /api/webhooks/stripe', err, { eventType: event.type })
     // Still return 200 so Stripe does not retry; error is logged for investigation.
   }
   return NextResponse.json({ received: true })

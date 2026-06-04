@@ -6,6 +6,7 @@ import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { checkLeadSearchLimit } from '@/lib/plan-limits'
 import { runLeadResearch, LeadSearchUnavailableError } from '@/lib/lead-research'
+import { logServerError } from '@/lib/log-server-error'
 
 const searchSchema = z.object({
   query: z.string().trim().min(5, 'Query must be at least 5 characters').max(500, 'Query too long'),
@@ -156,6 +157,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Search failed — try again' }, { status: 502 })
     }
   } catch (err) {
+    await logServerError('POST /api/coach/leads/search', err)
     console.error('POST /api/coach/leads/search', err)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }

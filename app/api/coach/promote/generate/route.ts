@@ -4,6 +4,7 @@ import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { runPromoteGeneration } from '@/lib/promote-content'
+import { logServerError } from '@/lib/log-server-error'
 
 const generateSchema = z.object({
   kind: z.enum(['class', 'workout', 'book1on1', 'bts']),
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Could not generate — try again' }, { status: 502 })
     }
   } catch (err) {
+    await logServerError('POST /api/coach/promote/generate', err)
     console.error('POST /api/coach/promote/generate', err)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
