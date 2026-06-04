@@ -24,6 +24,7 @@ const APIFY_COST_PER_RESULT_CENTS = 0.19 // apify/instagram-hashtag-scraper: $1.
 const APIFY_ACTOR = 'apify~instagram-hashtag-scraper'
 const RESULTS_PER_HASHTAG = 20 // posts pulled per hashtag → bounds Apify cost
 const MAX_HASHTAGS = 6 // hashtags we crawl per search
+const MAX_APIFY_ITEMS = MAX_HASHTAGS * RESULTS_PER_HASHTAG // hard cap on charged Apify results
 const MAX_CANDIDATES_TO_CLASSIFY = 80 // bounds the Claude classify input
 const MAX_PARTNERS_AND_BUSINESS = 3 // individuals must dominate the list
 
@@ -208,14 +209,17 @@ async function scrapeInstagramHashtags(hashtags: string[]): Promise<ApifyPost[]>
 
   const endpoint =
     `https://api.apify.com/v2/acts/${APIFY_ACTOR}/run-sync-get-dataset-items` +
-    `?token=${encodeURIComponent(token)}`
+    `?maxItems=${MAX_APIFY_ITEMS}`
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), 120_000)
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ hashtags, resultsLimit: RESULTS_PER_HASHTAG }),
       signal: controller.signal,
     })
@@ -224,7 +228,7 @@ async function scrapeInstagramHashtags(hashtags: string[]): Promise<ApifyPost[]>
       throw new Error(`Apify scrape failed (${res.status}): ${body.slice(0, 200)}`)
     }
     const data = (await res.json()) as unknown
-    return Array.isArray(data) ? (data as ApifyPost[]) : []
+    return Array.isArray(data) ? (data as ApifyPost[]).slice(0, MAX_APIFY_ITEMS) : []
   } finally {
     clearTimeout(timer)
   }
