@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server'
 import { assertAdminApi, logAdminAudit } from '@/lib/admin'
 import { createServiceClient } from '@/lib/supabase/service'
+import { csvSafeCell } from '@/lib/csv'
 
 type Ctx = { params: Promise<{ workspaceId: string }> }
-
-function csvEscape(s: string): string {
-  return `"${s.replace(/"/g, '""')}"`
-}
 
 /** GET — CSV export of workspace + clients for support / backups. */
 export async function GET(request: Request, context: Ctx) {
@@ -41,13 +38,13 @@ export async function GET(request: Request, context: Ctx) {
 
     const lines: string[] = []
     lines.push('section,key,value')
-    lines.push(['workspace', 'id', workspaceId].map(csvEscape).join(','))
-    lines.push(['workspace', 'name', ws.name ?? ''].map(csvEscape).join(','))
-    lines.push(['workspace', 'status', ws.status ?? ''].map(csvEscape).join(','))
-    lines.push(['workspace', 'created_at', ws.created_at ?? ''].map(csvEscape).join(','))
-    lines.push(['workspace', 'coach_email', coachEmail].map(csvEscape).join(','))
-    lines.push(['workspace', 'plan', sub?.plan ?? 'free'].map(csvEscape).join(','))
-    lines.push(['workspace', 'subscription_status', sub?.status ?? ''].map(csvEscape).join(','))
+    lines.push(['workspace', 'id', workspaceId].map(csvSafeCell).join(','))
+    lines.push(['workspace', 'name', ws.name ?? ''].map(csvSafeCell).join(','))
+    lines.push(['workspace', 'status', ws.status ?? ''].map(csvSafeCell).join(','))
+    lines.push(['workspace', 'created_at', ws.created_at ?? ''].map(csvSafeCell).join(','))
+    lines.push(['workspace', 'coach_email', coachEmail].map(csvSafeCell).join(','))
+    lines.push(['workspace', 'plan', sub?.plan ?? 'free'].map(csvSafeCell).join(','))
+    lines.push(['workspace', 'subscription_status', sub?.status ?? ''].map(csvSafeCell).join(','))
     lines.push('')
     lines.push('client,first_name,last_name,email,phone,status,created_at,updated_at')
     for (const c of clients ?? []) {
@@ -62,7 +59,7 @@ export async function GET(request: Request, context: Ctx) {
           c.created_at ?? '',
           c.updated_at ?? '',
         ]
-          .map((v) => csvEscape(String(v)))
+          .map((v) => csvSafeCell(v))
           .join(',')
       )
     }
