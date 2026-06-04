@@ -4,6 +4,7 @@ import { getValidAccessToken } from '@/lib/google-drive'
 import { verifyStreamToken } from '@/lib/stream-token'
 import { getVideoStreamRow, userCanStreamVideo } from '@/lib/video-stream-access'
 import { isAllowedMediaUrl } from '@/lib/url-allowlist'
+import { checkRateLimitAsync } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,11 @@ export async function GET(request: Request, context: RouteContext) {
     if (!authUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Generous cap — video players issue many Range requests per playback/seek session.
+    // Fail-open so a Redis blip never blocks legitimate playback.
+    const { success: rateOk } = await checkRateLimitAsync(`stream:${authUserId}`, { windowMs: 60_000, max: 600 })
+    if (!rateOk) return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
     const video = await getVideoStreamRow(videoId)
     const driveId = video?.drive_file_id?.trim() || null
