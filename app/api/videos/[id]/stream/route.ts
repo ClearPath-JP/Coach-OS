@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { getValidAccessToken } from '@/lib/google-drive'
 import { verifyStreamToken } from '@/lib/stream-token'
 import { getVideoStreamRow, userCanStreamVideo } from '@/lib/video-stream-access'
+import { isAllowedMediaUrl } from '@/lib/url-allowlist'
 
 export const dynamic = 'force-dynamic'
 
@@ -101,6 +102,12 @@ export async function GET(request: Request, context: RouteContext) {
         status: driveResponse.status,
         headers: outHeaders,
       })
+    }
+
+    // SSRF guard: playback_url comes from the DB and may have been written by an
+    // n8n callback. Reject any URL that is not on the known media host allowlist.
+    if (!isAllowedMediaUrl(playbackUrl)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const legacyHeaders: Record<string, string> = {}

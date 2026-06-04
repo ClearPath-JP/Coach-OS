@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { createServiceClient } from '@/lib/supabase/service'
 import { z } from 'zod'
+import { isAllowedMediaUrl } from '@/lib/url-allowlist'
 
 const fromN8nBodySchema = z.object({
   workspaceId: z.string().uuid(),
   coachId: z.string().uuid(),
   title: z.string().min(1),
-  playbackUrl: z.string().url(),
-  thumbnailUrl: z.string().url().optional().nullable(),
+  playbackUrl: z.string().url().refine(isAllowedMediaUrl, { message: 'URL host not allowed' }),
+  thumbnailUrl: z.string().url().refine(isAllowedMediaUrl, { message: 'URL host not allowed' }).optional().nullable(),
   durationSeconds: z.number().int().nonnegative().optional().nullable(),
   fileSizeBytes: z.number().int().nonnegative().optional().nullable(),
 })
