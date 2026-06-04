@@ -15,6 +15,13 @@ export type LeadResult = {
   followers: number | null
 }
 
+export class LeadSearchUnavailableError extends Error {
+  constructor(message: string, public reason: 'apify_quota' | 'apify_auth' | 'apify_down') {
+    super(message)
+    this.name = 'LeadSearchUnavailableError'
+  }
+}
+
 // --- Cost model ---
 const INPUT_COST_PER_MTOK_CENTS = 300 // claude-sonnet-4-6 ≈ $3.00 / 1M
 const OUTPUT_COST_PER_MTOK_CENTS = 1500 // ≈ $15.00 / 1M
@@ -225,7 +232,16 @@ async function scrapeInstagramHashtags(hashtags: string[]): Promise<ApifyPost[]>
     })
     if (!res.ok) {
       const body = await res.text().catch(() => '')
-      throw new Error(`Apify scrape failed (${res.status}): ${body.slice(0, 200)}`)
+      const reason: 'apify_quota' | 'apify_auth' | 'apify_down' =
+        res.status === 401 || res.status === 403
+          ? 'apify_auth'
+          : res.status === 402 || res.status === 429
+            ? 'apify_quota'
+            : 'apify_down'
+      throw new LeadSearchUnavailableError(
+        `Apify scrape failed (${res.status}): ${body.slice(0, 200)}`,
+        reason
+      )
     }
     const data = (await res.json()) as unknown
     return Array.isArray(data) ? (data as ApifyPost[]).slice(0, MAX_APIFY_ITEMS) : []
