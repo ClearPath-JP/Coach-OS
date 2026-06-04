@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { checkLeadSearchLimit } from '@/lib/plan-limits'
 import { runLeadResearch, LeadSearchUnavailableError } from '@/lib/lead-research'
 
@@ -63,6 +64,15 @@ export async function POST(request: Request) {
           max: limit.max,
         },
         { status: 403 }
+      )
+    }
+
+    // Daily workspace spend ceiling
+    const { allowed: quotaOk } = await checkDailyWorkspaceQuota(workspaceId, 'lead_search', 20)
+    if (!quotaOk) {
+      return NextResponse.json(
+        { error: 'Daily limit reached for this workspace — try again tomorrow.' },
+        { status: 429 }
       )
     }
 

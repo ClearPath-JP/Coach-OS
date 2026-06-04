@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { runPromoteChat, type ChatMessage } from '@/lib/promote-content'
 
 const chatSchema = z.object({
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
   try {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
-    const { user } = auth
+    const { user, workspaceId } = auth
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(
       `promote-chat:${user.id}`,
@@ -43,6 +44,14 @@ export async function POST(request: Request) {
       )
       if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
       return res
+    }
+
+    const { allowed: quotaOk } = await checkDailyWorkspaceQuota(workspaceId, 'ai_chat', 200)
+    if (!quotaOk) {
+      return NextResponse.json(
+        { error: 'Daily limit reached for this workspace — try again tomorrow.' },
+        { status: 429 }
+      )
     }
 
     const body = await request.json().catch(() => null)

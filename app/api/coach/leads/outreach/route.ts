@@ -3,6 +3,7 @@ import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 
 const schema = z.object({
   name: z.string().trim().max(120),
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   try {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
-    const { user } = auth
+    const { user, workspaceId } = auth
 
     const { success, retryAfter } = await checkRateLimitAsync(`leads-outreach:${user.id}`, {
       windowMs: 60_000,
@@ -36,6 +37,14 @@ export async function POST(request: Request) {
       const r = NextResponse.json({ error: 'Too many requests — wait a minute' }, { status: 429 })
       if (retryAfter) r.headers.set('Retry-After', String(retryAfter))
       return r
+    }
+
+    const { allowed: quotaOk } = await checkDailyWorkspaceQuota(workspaceId, 'lead_outreach', 40)
+    if (!quotaOk) {
+      return NextResponse.json(
+        { error: 'Daily limit reached for this workspace — try again tomorrow.' },
+        { status: 429 }
+      )
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {

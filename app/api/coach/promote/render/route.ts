@@ -2,6 +2,7 @@ import { NextResponse, after } from 'next/server'
 import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { createServiceClient } from '@/lib/supabase/service'
 import { fetchBunnyCaptions, signBunnyUrl } from '@/lib/bunny'
 import { startCaptionedRender, remotionConfigured } from '@/lib/remotion'
@@ -38,6 +39,14 @@ export async function POST(request: Request) {
       const res = NextResponse.json({ error: 'Too many renders — wait a moment and try again' }, { status: 429 })
       if (retryAfter) res.headers.set('Retry-After', String(retryAfter))
       return res
+    }
+
+    const { allowed: quotaOk } = await checkDailyWorkspaceQuota(workspaceId, 'render', 40)
+    if (!quotaOk) {
+      return NextResponse.json(
+        { error: 'Daily limit reached for this workspace — try again tomorrow.' },
+        { status: 429 }
+      )
     }
 
     if (!remotionConfigured()) {
