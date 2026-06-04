@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     const { success, retryAfter } = await checkRateLimitAsync(`leads-outreach:${user.id}`, {
       windowMs: 60_000,
       max: 20,
+      failMode: 'closed',
     })
     if (!success) {
       const r = NextResponse.json({ error: 'Too many requests — wait a minute' }, { status: 429 })

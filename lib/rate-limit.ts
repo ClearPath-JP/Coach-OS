@@ -34,6 +34,8 @@ function checkInMemory(key: string, options: RateLimitOptions): RateLimitResult 
 export type RateLimitOptions = {
   windowMs: number
   max: number
+  /** What to do if the limiter backend is unavailable. 'open' = allow (default, for auth/generic routes); 'closed' = block (use for money-spending routes). */
+  failMode?: 'open' | 'closed'
 }
 
 export type RateLimitResult = {
@@ -62,17 +64,15 @@ async function checkWithUpstash(
     const retryAfter = Math.ceil((reset - Date.now()) / 1000)
     return { success: false, retryAfter: Math.max(1, retryAfter) }
   } catch (error) {
-    if (process.env.NODE_ENV === 'production') {
-      if (!warnedRedisCallFailed) {
-        warnedRedisCallFailed = true
-        console.error(
-          '[ClearPath] Upstash rate limit call failed — failing CLOSED. Check URL, token, and Upstash dashboard.',
-          error
-        )
-      }
-      return { success: true }
+    const failClosed = options.failMode === 'closed'
+    if (process.env.NODE_ENV === 'production' && !warnedRedisCallFailed) {
+      warnedRedisCallFailed = true
+      console.error(
+        `[ClearPath] Upstash rate limit call failed — failing ${failClosed ? 'CLOSED (blocking)' : 'OPEN (allowing)'}. Check URL, token, and Upstash dashboard.`,
+        error
+      )
     }
-    return { success: true }
+    return failClosed ? { success: false, retryAfter: 30 } : { success: true }
   }
 }
 
@@ -96,9 +96,10 @@ export async function checkRateLimitAsync(
   if (!REDIS_URL?.trim() || !REDIS_TOKEN?.trim()) {
     if (process.env.NODE_ENV === 'production' && !warnedMissingRedis) {
       warnedMissingRedis = true
-      console.error(
-        '[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — rate limiting disabled. Add Upstash Redis in Vercel.'
-      )
+      console.error('[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — rate limiting disabled. Add Upstash Redis in Vercel.')
+    }
+    if (options.failMode === 'closed' && process.env.NODE_ENV === 'production') {
+      return { success: false, retryAfter: 30 }
     }
     return { success: true }
   }

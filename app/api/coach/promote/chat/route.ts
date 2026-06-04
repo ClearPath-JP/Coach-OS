@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(
       `promote-chat:${user.id}`,
-      { windowMs: 60_000, max: 30 }
+      { windowMs: 60_000, max: 30, failMode: 'closed' }
     )
     if (!rateOk) {
       const res = NextResponse.json(

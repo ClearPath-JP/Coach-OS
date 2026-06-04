@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`promote-render:${user.id}`, {
       windowMs: 60_000,
       max: 5,
+      failMode: 'closed',
     })
     if (!rateOk) {
       const res = NextResponse.json({ error: 'Too many renders — wait a moment and try again' }, { status: 429 })

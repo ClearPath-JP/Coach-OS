@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(
       `promote-generate:${user.id}`,
-      { windowMs: 60_000, max: 20 }
+      { windowMs: 60_000, max: 20, failMode: 'closed' }
     )
     if (!rateOk) {
       const res = NextResponse.json(

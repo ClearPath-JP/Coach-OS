@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`leads-search:${user.id}`, {
       windowMs: 60_000,
       max: 5,
+      failMode: 'closed',
     })
     if (!rateOk) {
       const res = NextResponse.json(
