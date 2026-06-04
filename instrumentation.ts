@@ -1,14 +1,6 @@
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    await import('./sentry.server.config')
-  }
-  if (process.env.NEXT_RUNTIME === 'edge') {
-    await import('./sentry.edge.config')
-  }
+  if (process.env.NEXT_RUNTIME === 'nodejs') await import('./sentry.server.config')
+  if (process.env.NEXT_RUNTIME === 'edge') await import('./sentry.edge.config')
 }
 
-export const onRequestError = async (...args: unknown[]) => {
-  const { captureRequestError } = await import('@sentry/nextjs')
-  // @ts-expect-error — Sentry types don't match Next.js exactly
-  return captureRequestError(...args)
-}
+export { captureRequestError as onRequestError } from '@sentry/nextjs'

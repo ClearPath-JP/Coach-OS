@@ -88,6 +88,11 @@ const nextConfig: NextConfig = {
   },
 }
 
+// withSentryConfig wraps at build time (source maps, Turbopack rules).
+// Runtime init is a no-op until SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN are set.
+// Conditionally apply only when source-map upload credentials are present;
+// the runtime Sentry.init (instrumentation.ts + instrumentation-client.ts)
+// is always active regardless of this wrapper.
 const sentryOrg = process.env.SENTRY_ORG
 const sentryProject = process.env.SENTRY_PROJECT
 const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
@@ -103,6 +108,9 @@ const finalConfig = sentryOrg && sentryProject && sentryAuthToken
       widenClientFileUpload: true,
       disableLogger: true,
     })
-  : withAnalyzer
+  : withSentryConfig(withAnalyzer, {
+      silent: true,
+      disableLogger: true,
+    })
 
 export default finalConfig
