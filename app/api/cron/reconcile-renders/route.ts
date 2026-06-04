@@ -76,5 +76,22 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ data: { checked: stuck?.length ?? 0, done, failed, pending } })
+  // Second pass: a kickoff that died before setting remotion_render_id is skipped by the
+  // query above (.not('remotion_render_id','is',null)) → it would stay 'rendering' forever,
+  // invisible to both the client poll and this cron. Fail any that never got a render id.
+  const strandedCutoff = new Date(Date.now() - 5 * 60_000).toISOString()
+  const { data: stranded, error: strandedErr } = await service
+    .from('video_edits')
+    .update({ status: 'failed', error: 'Render did not start — please try again' })
+    .eq('status', 'rendering')
+    .is('remotion_render_id', null)
+    .lt('created_at', strandedCutoff)
+    .select('id')
+  if (strandedErr) {
+    console.error('[cron/reconcile-renders] stranded', strandedErr)
+  }
+
+  return NextResponse.json({
+    data: { checked: stuck?.length ?? 0, done, failed, pending, stranded: stranded?.length ?? 0 },
+  })
 }
