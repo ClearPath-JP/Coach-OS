@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { createServiceClient } from '@/lib/supabase/service'
-import { TimelineSchema, ProjectAudioSchema, CAPTION_STYLES } from '@/lib/studio/timeline'
+import { TimelineSchema, ProjectAudioSchema, CAPTION_STYLES, audioPublicPath } from '@/lib/studio/timeline'
 
 export const runtime = 'nodejs'
 
@@ -35,7 +35,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (parsed.data.title !== undefined) patch.title = parsed.data.title
   if (parsed.data.timeline !== undefined) patch.timeline = parsed.data.timeline
-  if (parsed.data.audio !== undefined) patch.audio = parsed.data.audio
+  if (parsed.data.audio !== undefined) {
+    patch.audio = {
+      ...parsed.data.audio,
+      music: audioPublicPath(workspaceId, parsed.data.audio.music),
+      voiceover: audioPublicPath(workspaceId, parsed.data.audio.voiceover),
+    }
+  }
   if (parsed.data.captionStyle !== undefined) patch.caption_style = parsed.data.captionStyle
   const service = createServiceClient()
   const { data: updated, error } = await service.from('video_projects').update(patch).eq('id', id).eq('workspace_id', workspaceId).select('id').maybeSingle()

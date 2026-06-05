@@ -116,7 +116,7 @@ export async function validateDocumentMagicBytes(
 
 /**
  * Synchronous audio magic-byte validator. Accepts Node `Buffer` (which extends Uint8Array).
- * Returns true for MP3 (ID3 or raw frame-sync), WAV, OGG, FLAC, MP4/M4A (ftyp), and WebM/Matroska.
+ * Returns true for MP3 (ID3 or raw frame-sync), WAV, OGG, MP4/M4A (ftyp), and WebM/Matroska.
  */
 export function validateAudioMagicBytes(buf: Buffer): boolean {
   if (buf.length < 4) return false
@@ -125,7 +125,6 @@ export function validateAudioMagicBytes(buf: Buffer): boolean {
   if (buf[0] === 0xff && (buf[1] ?? 0) !== 0 && ((buf[1] ?? 0) & 0xe0) === 0xe0) return true // MP3 raw frame sync
   if (buf.length >= 12 && ascii(0, 4) === 'RIFF' && ascii(8, 4) === 'WAVE') return true      // WAV
   if (ascii(0, 4) === 'OggS') return true                                      // OGG
-  if (ascii(0, 4) === 'fLaC') return true                                      // FLAC
   if (buf.length >= 8 && ascii(4, 4) === 'ftyp') return true                   // MP4 / M4A
   if (buf[0] === 0x1a && buf[1] === 0x45 && buf[2] === 0xdf && buf[3] === 0xa3) return true  // WebM/Matroska (EBML)
   return false

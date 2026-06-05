@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireCoach } from '@/lib/api-helpers'
 import { createServiceClient } from '@/lib/supabase/service'
-import { TimelineSchema, ProjectAudioSchema, CAPTION_STYLES } from '@/lib/studio/timeline'
+import { TimelineSchema, ProjectAudioSchema, CAPTION_STYLES, audioPublicPath } from '@/lib/studio/timeline'
 
 export const runtime = 'nodejs'
 
@@ -31,10 +31,13 @@ export async function POST(request: Request) {
   const parsed = createSchema.safeParse(await request.json().catch(() => ({})))
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid request' }, { status: 400 })
   const { title, timeline, audio, captionStyle } = parsed.data
+  const safeAudio = audio
+    ? { ...audio, music: audioPublicPath(workspaceId, audio.music), voiceover: audioPublicPath(workspaceId, audio.voiceover) }
+    : {}
   const service = createServiceClient()
   const { data, error } = await service.from('video_projects').insert({
     workspace_id: workspaceId, coach_id: user.id, title,
-    timeline, audio: audio ?? {}, caption_style: captionStyle,
+    timeline, audio: safeAudio, caption_style: captionStyle,
   }).select('id').single()
   if (error || !data) return NextResponse.json({ error: 'Could not create project' }, { status: 500 })
   return NextResponse.json({ data: { id: data.id } }, { status: 201 })
