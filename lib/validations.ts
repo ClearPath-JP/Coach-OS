@@ -101,10 +101,18 @@ export const patchVideoSchema = z
     title: z.string().min(1, 'Title is required').max(200).optional(),
     description: z.union([z.string().max(2000), z.null()]).optional(),
     category: z.union([z.string().max(80), z.null()]).optional(),
+    // The real, tab-driving link. `category` (text) is legacy/free-form and no
+    // longer the source of truth for the library's category tabs.
+    category_id: z.union([z.string().uuid('Invalid category'), z.null()]).optional(),
   })
-  .refine((d) => d.title !== undefined || d.description !== undefined || d.category !== undefined, {
-    message: 'Provide at least one field to update',
-  })
+  .refine(
+    (d) =>
+      d.title !== undefined ||
+      d.description !== undefined ||
+      d.category !== undefined ||
+      d.category_id !== undefined,
+    { message: 'Provide at least one field to update' }
+  )
 export type PatchVideoInput = z.infer<typeof patchVideoSchema>
 
 export const bulkVideoCategorySchema = z.object({
@@ -805,3 +813,82 @@ export const patchClassSchema = z
     }
   })
 export type PatchClassInput = z.infer<typeof patchClassSchema>
+
+// ---------------------------------------------------------------------------
+// Promote content workspace — Saved Posts + Brand Voice (2026-06-05)
+// ---------------------------------------------------------------------------
+
+/** A finished post (Idea/Chat paths) — mirrors PromotePost in lib/promote-content. */
+const promotePostContentSchema = z.object({
+  hook: z.string().max(2000),
+  caption: z.string().max(8000),
+  hashtags: z.array(z.string().max(80)).max(30),
+  cta: z.string().max(2000),
+  videoScript: z.union([z.array(z.string().max(2000)).max(20), z.null()]),
+})
+
+/** A Reel plan (Video path) — mirrors VideoPlan in lib/promote-content. */
+const promoteVideoPlanContentSchema = z.object({
+  hookIdea: z.string().max(2000),
+  structure: z.array(z.string().max(2000)).max(20),
+  onScreenText: z.array(z.string().max(2000)).max(20),
+  caption: z.string().max(8000),
+  hashtags: z.array(z.string().max(80)).max(30),
+})
+
+/** Either content shape — used where the post type isn't statically known (PATCH). */
+export const promotePostContentUnionSchema = z.union([
+  promotePostContentSchema,
+  promoteVideoPlanContentSchema,
+])
+
+const promotePostBaseSchema = z.object({
+  path: z.enum(['idea', 'chat', 'video']),
+  kind: z.enum(['class', 'workout', 'book1on1', 'bts']).nullable().optional(),
+  platform: z.enum(['instagram', 'facebook']).nullable().optional(),
+  tone: z.enum(['hype', 'calm', 'friendly']).nullable().optional(),
+  title: z.string().max(200).nullable().optional(),
+  sourceVideoId: z.string().uuid('Invalid video').nullable().optional(),
+})
+
+/** POST /api/coach/promote/posts — save a generated post or video plan.
+ *  Discriminated on `type` so `content` is guaranteed to match the post type. */
+export const savePromotePostSchema = z.discriminatedUnion('type', [
+  promotePostBaseSchema.extend({ type: z.literal('post'), content: promotePostContentSchema }),
+  promotePostBaseSchema.extend({ type: z.literal('video'), content: promoteVideoPlanContentSchema }),
+])
+export type SavePromotePostInput = z.infer<typeof savePromotePostSchema>
+
+/** PATCH /api/coach/promote/posts/[id] — edit content and/or status.
+ *  The route re-validates `content` against the stored post's `type`. */
+export const patchPromotePostSchema = z
+  .object({
+    content: promotePostContentUnionSchema.optional(),
+    status: z.enum(['draft', 'posted']).optional(),
+    title: z.string().max(200).nullable().optional(),
+  })
+  .refine((d) => d.content !== undefined || d.status !== undefined || d.title !== undefined, {
+    message: 'Provide at least one field to update',
+  })
+export type PatchPromotePostInput = z.infer<typeof patchPromotePostSchema>
+
+/** PATCH /api/coach/promote/profile — brand voice (upsert, one row per workspace). */
+export const promoteProfileSchema = z
+  .object({
+    discipline: z.string().max(80).nullable().optional(),
+    tone: z.enum(['hype', 'calm', 'friendly']).nullable().optional(),
+    platform: z.enum(['instagram', 'facebook']).nullable().optional(),
+    bookingUrl: z.string().max(300).nullable().optional(),
+    signature: z.string().max(200).nullable().optional(),
+  })
+  .superRefine((d, ctx) => {
+    const u = d.bookingUrl != null ? String(d.bookingUrl).trim() : ''
+    if (u !== '' && !isValidHttpUrl(u)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Booking link must start with http:// or https://',
+        path: ['bookingUrl'],
+      })
+    }
+  })
+export type PromoteProfileInput = z.infer<typeof promoteProfileSchema>

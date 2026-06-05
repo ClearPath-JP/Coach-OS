@@ -130,7 +130,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    const updates: { title?: string; description?: string | null; category?: string | null } = {}
+    const updates: {
+      title?: string
+      description?: string | null
+      category?: string | null
+      category_id?: string | null
+    } = {}
     if (parsed.data.title !== undefined) updates.title = parsed.data.title
     if (parsed.data.description !== undefined) {
       const d = parsed.data.description
@@ -140,6 +145,24 @@ export async function PATCH(request: Request, context: RouteContext) {
       const c = parsed.data.category
       updates.category = c === null ? null : c.trim() === '' ? null : c.trim()
     }
+    if (parsed.data.category_id !== undefined) {
+      const catId = parsed.data.category_id
+      if (catId === null) {
+        updates.category_id = null
+      } else {
+        // Only link to a category that belongs to this workspace.
+        const { data: cat } = await supabase
+          .from('video_categories')
+          .select('id')
+          .eq('id', catId)
+          .eq('workspace_id', workspaceId)
+          .maybeSingle()
+        if (!cat) {
+          return NextResponse.json({ error: 'Category not found' }, { status: 400 })
+        }
+        updates.category_id = catId
+      }
+    }
 
     const { data: row, error } = await supabase
       .from('videos')
@@ -147,7 +170,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .eq('id', id)
       .eq('workspace_id', workspaceId)
       .is('deleted_at', null)
-      .select('id, title, description, category')
+      .select('id, title, description, category, category_id')
       .maybeSingle()
 
     if (error) {

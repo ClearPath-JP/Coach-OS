@@ -12,6 +12,9 @@ const generateSchema = z.object({
   topic: z.string().trim().max(500).optional(),
   tone: z.enum(['hype', 'calm', 'friendly']).optional(),
   mode: z.enum(['ideas', 'post', 'video']),
+  platform: z.enum(['instagram', 'facebook']).optional(),
+  bookingUrl: z.string().trim().max(300).optional(),
+  signature: z.string().trim().max(200).optional(),
 })
 
 /**
@@ -68,6 +71,9 @@ export async function POST(request: Request) {
         discipline: parsed.data.discipline ?? null,
         topic: parsed.data.topic ?? null,
         tone: parsed.data.tone ?? null,
+        platform: parsed.data.platform ?? null,
+        bookingUrl: parsed.data.bookingUrl ?? null,
+        signature: parsed.data.signature ?? null,
       })
       return NextResponse.json({ data: outcome })
     } catch (err) {

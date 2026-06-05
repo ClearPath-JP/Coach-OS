@@ -11,6 +11,7 @@ import Anthropic from '@anthropic-ai/sdk'
 export type PromoteKind = 'class' | 'workout' | 'book1on1' | 'bts'
 export type PromoteTone = 'hype' | 'calm' | 'friendly'
 export type PromoteMode = 'ideas' | 'post' | 'video'
+export type PromotePlatform = 'instagram' | 'facebook'
 
 export type PromoteIdea = { title: string; angle: string }
 export type PromotePost = {
@@ -34,6 +35,9 @@ export type PromoteInput = {
   topic?: string | null
   tone?: PromoteTone | null
   mode: PromoteMode
+  platform?: PromotePlatform | null
+  bookingUrl?: string | null
+  signature?: string | null
 }
 
 export type PromoteOutcome =
@@ -43,7 +47,13 @@ export type PromoteOutcome =
 
 export type ChatRole = 'user' | 'assistant'
 export type ChatMessage = { role: ChatRole; content: string }
-export type ChatContext = { discipline?: string | null; tone?: PromoteTone | null }
+export type ChatContext = {
+  discipline?: string | null
+  tone?: PromoteTone | null
+  platform?: PromotePlatform | null
+  bookingUrl?: string | null
+  signature?: string | null
+}
 export type ChatOutcome = { kind: 'reply'; reply: string } | { kind: 'post'; post: PromotePost }
 
 const MODEL = 'claude-sonnet-4-6'
@@ -87,8 +97,31 @@ function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : ''
 }
 
-function buildSystem(discipline: string, tone: PromoteTone): string {
-  return `You write Instagram and Facebook posts for a local ${discipline} coach. Voice: ${TONE_GUIDE[tone]}. Write like a real person, not a marketer — confident, warm, and grounded in a real local community. Minimal emoji (0–2 max). No hashtag spam, no "DM me 🔥🔥🔥" clichés, no fake urgency. Speak to real people in the coach's town who might train with them.
+function buildSystem(
+  discipline: string,
+  tone: PromoteTone,
+  opts?: { platform?: PromotePlatform | null; bookingUrl?: string | null; signature?: string | null }
+): string {
+  // Defensive hygiene: these are the coach's own fields, but strip newlines/quotes
+  // and cap length before they enter the prompt so they can't reshape instructions.
+  const clean = (s: string, max: number) =>
+    s.replace(/[\r\n]+/g, ' ').replace(/["`]/g, "'").trim().slice(0, max)
+  const platform = opts?.platform ?? null
+  const platformLine =
+    platform === 'facebook'
+      ? '\nTarget platform: Facebook — story-led, slightly longer captions read well; hashtags matter less than on Instagram (a few is plenty).'
+      : platform === 'instagram'
+        ? '\nTarget platform: Instagram — a tight, punchy caption with a strong first line and a clean block of relevant hashtags.'
+        : ''
+  const booking = opts?.bookingUrl ? clean(opts.bookingUrl, 300) : ''
+  const bookingLine = booking
+    ? `\nIf the call to action invites booking or enquiries, you may point people to the coach's link: ${booking}`
+    : ''
+  const signature = opts?.signature ? clean(opts.signature, 80) : ''
+  const signatureLine = signature
+    ? `\nThe coach sometimes signs off as '${signature}' — use it only if it feels natural, never forced.`
+    : ''
+  return `You write Instagram and Facebook posts for a local ${discipline} coach. Voice: ${TONE_GUIDE[tone]}. Write like a real person, not a marketer — confident, warm, and grounded in a real local community. Minimal emoji (0–2 max). No hashtag spam, no "DM me 🔥🔥🔥" clichés, no fake urgency. Speak to real people in the coach's town who might train with them.${platformLine}${bookingLine}${signatureLine}
 Never output bracketed placeholders like [YourTown], [City], [Town], or [YourCity] anywhere in the output — especially in hashtags. You do not know the coach's city. Use non-localized tags instead (e.g. #brazilianjiujitsu #bjjlife #martialarts) rather than inventing a [placeholder]. If the coach's location appears in the provided topic or discipline text, you may use that real place name, but never a bracketed placeholder.
 Return ONLY valid JSON — no prose, no markdown, no code fences.`
 }
@@ -135,7 +168,11 @@ export async function runPromoteGeneration(input: PromoteInput): Promise<Promote
   const discipline = (input.discipline ?? '').trim() || 'fitness / martial arts'
   const kindLabel = KIND_LABELS[input.kind]
   const topic = (input.topic ?? '').trim()
-  const system = buildSystem(discipline, tone)
+  const system = buildSystem(discipline, tone, {
+    platform: input.platform ?? null,
+    bookingUrl: input.bookingUrl ?? null,
+    signature: input.signature ?? null,
+  })
 
   if (input.mode === 'ideas') {
     const userMsg =
@@ -224,8 +261,11 @@ Ask ONE good question at a time. Reflect their words back. Keep replies short (2
   // finalize → write the post from the conversation
   const convo = clean.map((m) => `${m.role === 'user' ? 'Coach' : 'Partner'}: ${m.content}`).join('\n')
   const system =
-    buildSystem(discipline, tone) +
-    `\nUse the coach's own words and ideas from the conversation. Keep their voice.`
+    buildSystem(discipline, tone, {
+      platform: ctx.platform ?? null,
+      bookingUrl: ctx.bookingUrl ?? null,
+      signature: ctx.signature ?? null,
+    }) + `\nUse the coach's own words and ideas from the conversation. Keep their voice.`
   const userMsg =
     `Here is my conversation with the coach:\n\n${convo}\n\n` +
     `Write ONE Instagram/Facebook post in the coach's voice based on what they said. ` +
