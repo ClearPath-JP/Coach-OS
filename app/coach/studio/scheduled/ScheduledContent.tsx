@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ScheduleForm } from './ScheduleForm'
 
 type Post = {
   id: string
@@ -18,12 +20,19 @@ function formatScheduledAt(raw: string): string {
 }
 
 export function ScheduledContent() {
+  const videoParam = useSearchParams().get('video')
+
   const [posts, setPosts] = useState<Post[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [canceling, setCanceling] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+
+  // Auto-open form when a ?video= deep-link is present
+  useEffect(() => {
+    if (videoParam) setShowForm(true)
+  }, [videoParam])
 
   // Silent reload — no full loading spinner; used after mutations
   const reload = useCallback(async () => {
@@ -94,9 +103,11 @@ export function ScheduledContent() {
       </div>
 
       {showForm && (
-        <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4 text-sm text-[var(--text-tertiary)]">
-          Schedule form coming in the next step
-        </div>
+        <ScheduleForm
+          {...(videoParam ? { defaultVideoId: videoParam } : {})}
+          onCreated={() => { void reload(); setShowForm(false) }}
+          onCancel={() => setShowForm(false)}
+        />
       )}
 
       {err && <p className="text-sm text-red-400">{err}</p>}

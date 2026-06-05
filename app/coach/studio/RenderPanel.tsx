@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 type RS = 'idle' | 'rendering' | 'done' | 'failed'
 
@@ -16,12 +17,14 @@ function isSafeUrl(url: string | null): url is string {
 export function RenderPanel({ projectId, canRender, onBeforeRender, title }: {
   projectId: string; canRender: boolean; onBeforeRender: () => Promise<void>; title: string
 }) {
+  const router = useRouter()
   const [state, setState] = useState<RS>('idle')
   const [progress, setProgress] = useState(0)
   const [outputUrl, setOutputUrl] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [savedToLib, setSavedToLib] = useState(false)
+  const [savedVideoId, setSavedVideoId] = useState<string | null>(null)
   const cancelled = useRef(false)
 
   // Cancel polling on unmount to prevent setState on unmounted component
@@ -66,10 +69,13 @@ export function RenderPanel({ projectId, canRender, onBeforeRender, title }: {
     try {
       const res = await fetch('/api/studio/save-to-library', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ editId, title }) })
       if (res.ok) {
+        const j = await res.json().catch(() => ({}))
+        const vid: string | undefined = (j as { data?: { videoId?: string } }).data?.videoId
         setSavedToLib(true)
+        if (vid) setSavedVideoId(vid)
       } else {
         const j = await res.json().catch(() => ({}))
-        setErr(j?.error ?? 'Could not save')
+        setErr((j as { error?: string })?.error ?? 'Could not save')
       }
     } catch {
       setErr('Network error — could not save to library')
@@ -91,6 +97,14 @@ export function RenderPanel({ projectId, canRender, onBeforeRender, title }: {
           <div className="flex gap-2">
             <a href={safeOutputUrl} download className="rounded-xl border border-white/15 px-3 py-1.5 text-sm">Download</a>
             <button onClick={saveToLibrary} disabled={savedToLib} className="rounded-xl border border-white/15 px-3 py-1.5 text-sm disabled:opacity-50">{savedToLib ? 'Saved ✓' : 'Save to library'}</button>
+            {savedToLib && savedVideoId && (
+              <button
+                onClick={() => router.push('/coach/studio/scheduled?video=' + encodeURIComponent(savedVideoId))}
+                className="btn-primary-gloss inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-medium text-white shadow-sm"
+              >
+                Schedule this
+              </button>
+            )}
           </div>
         </div>
       )}
