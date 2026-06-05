@@ -26,7 +26,7 @@ export async function GET(request: Request) {
     const service = createServiceClient()
     const { data: edit, error } = await service
       .from('video_edits')
-      .select('id, status, remotion_render_id, remotion_bucket, output_url, error')
+      .select('id, status, remotion_render_id, remotion_bucket, output_url, error, project_id')
       .eq('id', editId)
       .eq('workspace_id', workspaceId)
       .single()
@@ -50,6 +50,11 @@ export async function GET(request: Request) {
         .update({ status: 'done', output_url: s.outputUrl, completed_at: new Date().toISOString() })
         .eq('id', editId)
         .eq('workspace_id', workspaceId)
+      if (edit.project_id) {
+        await service.from('video_projects')
+          .update({ status: 'rendered', updated_at: new Date().toISOString() })
+          .eq('id', edit.project_id).eq('workspace_id', workspaceId)
+      }
       return NextResponse.json({ data: { status: 'done', progress: 1, outputUrl: s.outputUrl, error: null } })
     }
     if (s.error) {
@@ -58,6 +63,11 @@ export async function GET(request: Request) {
         .update({ status: 'failed', error: s.error.slice(0, 500) })
         .eq('id', editId)
         .eq('workspace_id', workspaceId)
+      if (edit.project_id) {
+        await service.from('video_projects')
+          .update({ status: 'failed', updated_at: new Date().toISOString() })
+          .eq('id', edit.project_id).eq('workspace_id', workspaceId)
+      }
       return NextResponse.json({ data: { status: 'failed', progress: s.progress, outputUrl: null, error: s.error } })
     }
 

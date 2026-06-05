@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { RenderPanel } from './RenderPanel'
-import { totalDurationSec, MAX_CLIPS, type CaptionStyle } from '@/lib/studio/timeline'
+import { totalDurationSec, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle } from '@/lib/studio/timeline'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Icon } from '@/components/icons/inked'
@@ -90,14 +90,16 @@ export function StudioEditor({ projectId }: { projectId: string }) {
   })
   const trim = (uid: string, inSec: number, outSec: number) => setClips((cs) => cs.map((c) => c.uid === uid ? { ...c, inSec: Math.max(0, Math.min(inSec, c.sourceDur - 0.5)), outSec: Math.min(c.sourceDur, Math.max(outSec, inSec + 0.5)) } : c))
   const toggleCaptions = (uid: string) => setClips((cs) => cs.map((c) => c.uid === uid ? { ...c, captionsOn: !c.captionsOn } : c))
-  const split = (uid: string, atSec: number) => setClips((cs) => {
-    const i = cs.findIndex((c) => c.uid === uid); if (i < 0) return cs
-    const c = cs[i]!
-    if (atSec <= c.inSec + 0.25 || atSec >= c.outSec - 0.25) return cs
-    const left = { ...c, uid: nextUid(), outSec: atSec }
+  const split = (uid: string, atSec: number) => {
+    const i = clips.findIndex((c) => c.uid === uid); if (i < 0) return
+    const c = clips[i]!
+    if (atSec <= c.inSec + 0.25 || atSec >= c.outSec - 0.25) return
+    const leftUid = nextUid()
+    const left = { ...c, uid: leftUid, outSec: atSec }
     const right = { ...c, uid: nextUid(), inSec: atSec }
-    return [...cs.slice(0, i), left, right, ...cs.slice(i + 1)]
-  })
+    setClips([...clips.slice(0, i), left, right, ...clips.slice(i + 1)])
+    setSelected(leftUid)
+  }
 
   const serialize = useCallback(() => clips.map((c) => ({ sourceVideoId: c.sourceVideoId, inSec: Number(c.inSec.toFixed(2)), outSec: Number(c.outSec.toFixed(2)), crop: null, captionsOn: c.captionsOn })), [clips])
   const save = useCallback(async () => {
@@ -139,7 +141,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
             <p className="px-1 text-xs text-[var(--text-quaternary)]">{saving ? 'Saving…' : 'Saved'}</p>
           </div>
         </div>
-        <RenderPanel projectId={projectId} canRender={clips.length > 0} onBeforeRender={save} title={title} />
+        <RenderPanel projectId={projectId} canRender={clips.length > 0 && totalDurationSec(serialize()) <= MAX_TOTAL_SEC} onBeforeRender={save} title={title} />
       </header>
 
       {loadError && (
@@ -276,6 +278,11 @@ export function StudioEditor({ projectId }: { projectId: string }) {
                 {totalSec > 60 && (
                   <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-500">
                     Reels under 60s tend to perform better.
+                  </p>
+                )}
+                {totalSec > MAX_TOTAL_SEC && (
+                  <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+                    Over the {MAX_TOTAL_SEC}s limit — trim a clip to render.
                   </p>
                 )}
               </>
