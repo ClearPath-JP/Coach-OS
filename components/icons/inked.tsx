@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 export type InkedIconName =
   | 'dashboard' | 'schedule' | 'classes' | 'clients' | 'messages'
   | 'programs' | 'packages' | 'memberships' | 'payments' | 'invoices'
-  | 'analytics' | 'promote' | 'leads' | 'videos' | 'subscription'
+  | 'analytics' | 'promote' | 'leads' | 'videos' | 'studio' | 'subscription'
   | 'settings' | 'search'
 
 const PATHS: Record<InkedIconName, ReactNode> = {
@@ -22,6 +22,7 @@ const PATHS: Record<InkedIconName, ReactNode> = {
   promote: (<><path d="M4 10v4l11 4.5V5.5z" /><path d="M15 8.5a3.5 3.5 0 0 1 0 7" /><path d="M7 14.5v3.5" /></>),
   leads: (<><circle cx="10" cy="10.5" r="5.2" /><path d="M14 14.5l5.5 5.5" /><path d="M18 3.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" /></>),
   videos: (<><rect x="3" y="5.5" width="18" height="13" rx="2.5" /><path d="M10 9.5l4.5 2.5L10 14.5z" /></>),
+  studio: (<><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M3 7l3-3 3 3M9 7l3-3 3 3M15 7l3-3 3 3" /></>),
   subscription: (<path d="M4 18.5h16M4.5 18l-1-9 4.5 4 4-7 4 7 4.5-4-1 9" />),
   settings: (<><path d="M4 8h16M4 16h16" /><circle cx="9" cy="8" r="2.4" /><circle cx="15" cy="16" r="2.4" /></>),
   search: (<><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></>),

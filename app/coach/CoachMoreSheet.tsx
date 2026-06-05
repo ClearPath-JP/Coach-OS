@@ -25,6 +25,7 @@ const GROUPS: Group[] = [
     { href: '/coach/analytics', label: 'Analytics', icon: 'analytics' },
   ] },
   { title: 'Grow', rows: [
+    { href: '/coach/studio', label: 'Studio', icon: 'studio' },
     { href: '/coach/promote', label: 'Promote', icon: 'promote' },
     { href: '/coach/leads', label: 'Lead Research', icon: 'leads' },
     { href: '/coach/videos', label: 'Videos', icon: 'videos' },
