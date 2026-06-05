@@ -8,7 +8,7 @@ import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { remotionConfigured, startTimelineRender, type TimelineRenderInput } from '@/lib/remotion'
 import { signBunnyUrl, fetchBunnyCaptions } from '@/lib/bunny'
 import { logServerError } from '@/lib/log-server-error'
-import { TimelineSchema, totalDurationSec, MAX_TOTAL_SEC } from '@/lib/studio/timeline'
+import { TimelineSchema, totalDurationSec, MAX_TOTAL_SEC, ProjectAudioSchema, audioPublicPath, STUDIO_AUDIO_BUCKET } from '@/lib/studio/timeline'
 import { offsetCues } from '@/lib/studio/captions'
 
 export const runtime = 'nodejs'
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   if (inFlight?.id) return NextResponse.json({ data: { editId: inFlight.id } })
 
   const { data: project, error: pErr } = await service.from('video_projects')
-    .select('id, timeline, caption_style').eq('id', projectId).eq('workspace_id', workspaceId).single()
+    .select('id, timeline, caption_style, audio').eq('id', projectId).eq('workspace_id', workspaceId).single()
   if (pErr || !project) return NextResponse.json({ error: 'Project not found' }, { status: 404 })
 
   const tl = TimelineSchema.safeParse(project.timeline)
@@ -82,7 +82,15 @@ export async function POST(request: Request) {
         }
         cursorSec += Math.max(0, c.outSec - c.inSec)
       }
-      const { renderId, bucketName } = await startTimelineRender({ clips: renderClips, captions, captionStyle: project.caption_style as TimelineRenderInput['captionStyle'] })
+      const pa = ProjectAudioSchema.safeParse(project.audio)
+      let audioInput: TimelineRenderInput['audio'] = undefined
+      if (pa.success) {
+        const musicPath = audioPublicPath(workspaceId, pa.data.music)
+        const voPath = audioPublicPath(workspaceId, pa.data.voiceover)
+        const pub = (p: string | null) => p ? service.storage.from(STUDIO_AUDIO_BUCKET).getPublicUrl(p).data.publicUrl : null
+        audioInput = { musicUrl: pub(musicPath), voiceoverUrl: pub(voPath), volumes: pa.data.volumes }
+      }
+      const { renderId, bucketName } = await startTimelineRender({ clips: renderClips, captions, captionStyle: project.caption_style as TimelineRenderInput['captionStyle'], ...(audioInput !== undefined ? { audio: audioInput } : {}) })
       await service.from('video_edits').update({ remotion_render_id: renderId, remotion_bucket: bucketName }).eq('id', editId)
     } catch (err) {
       await logServerError('studio render kickoff', err)

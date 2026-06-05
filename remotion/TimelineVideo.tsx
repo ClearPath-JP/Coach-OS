@@ -1,4 +1,4 @@
-import { AbsoluteFill, OffthreadVideo, Series, useCurrentFrame, useVideoConfig } from 'remotion'
+import { AbsoluteFill, Audio, OffthreadVideo, Series, useCurrentFrame, useVideoConfig } from 'remotion'
 import type { CSSProperties } from 'react'
 
 export type TimelineRenderClip = {
@@ -9,10 +9,12 @@ export type TimelineRenderClip = {
   captionsOn: boolean
 }
 export type TimelineCaption = { text: string; startMs: number; endMs: number } // timeline-time
+export type TimelineAudio = { musicUrl: string | null; voiceoverUrl: string | null; volumes: { clip: number; music: number; voiceover: number } }
 export type TimelineVideoProps = {
   clips: TimelineRenderClip[]
   captions: TimelineCaption[]
   captionStyle: 'tiktok' | 'minimal' | 'karaoke' | 'none'
+  audio?: TimelineAudio
 }
 
 const FPS = 30
@@ -43,7 +45,8 @@ function CaptionLayer({ captions, captionStyle }: { captions: TimelineCaption[];
   )
 }
 
-export function TimelineVideo({ clips, captions, captionStyle }: TimelineVideoProps) {
+export function TimelineVideo({ clips, captions, captionStyle, audio }: TimelineVideoProps) {
+  const vol = audio?.volumes ?? { clip: 1, music: 0.5, voiceover: 1 }
   return (
     <AbsoluteFill style={{ backgroundColor: 'black' }}>
       <Series>
@@ -56,6 +59,7 @@ export function TimelineVideo({ clips, captions, captionStyle }: TimelineVideoPr
                   src={clip.mp4Url}
                   trimBefore={Math.round(clip.inSec * FPS)}
                   trimAfter={Math.round(clip.outSec * FPS)}
+                  volume={vol.clip}
                   style={coverStyle(clip.crop)}
                 />
               </AbsoluteFill>
@@ -63,6 +67,8 @@ export function TimelineVideo({ clips, captions, captionStyle }: TimelineVideoPr
           )
         })}
       </Series>
+      {audio?.musicUrl ? <Audio src={audio.musicUrl} volume={vol.music} /> : null}
+      {audio?.voiceoverUrl ? <Audio src={audio.voiceoverUrl} volume={vol.voiceover} /> : null}
       <CaptionLayer captions={captions} captionStyle={captionStyle} />
     </AbsoluteFill>
   )

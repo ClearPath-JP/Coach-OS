@@ -72,6 +72,7 @@ export type TimelineRenderInput = {
   }[]
   captions: { text: string; startMs: number; endMs: number }[]
   captionStyle: 'tiktok' | 'minimal' | 'karaoke' | 'none'
+  audio?: { musicUrl: string | null; voiceoverUrl: string | null; volumes: { clip: number; music: number; voiceover: number } }
 }
 
 /** Start a multi-clip timeline render on Lambda. Returns immediately with the render id + bucket. */
