@@ -2,13 +2,14 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { RenderPanel } from './RenderPanel'
 import { AudioPanel } from './AudioPanel'
-import { totalDurationSec, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle, ProjectAudioSchema, type ProjectAudio } from '@/lib/studio/timeline'
+import { CropBox } from './CropBox'
+import { totalDurationSec, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle, type Crop, ProjectAudioSchema, type ProjectAudio } from '@/lib/studio/timeline'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Icon } from '@/components/icons/inked'
 
 type LibVideo = { id: string; title: string; thumbnail_url: string | null; mp4_url: string | null; duration_seconds: number | null; embed_url?: string | null }
-type EditorClip = { uid: string; sourceVideoId: string; title: string; thumb: string | null; sourceDur: number; inSec: number; outSec: number; captionsOn: boolean }
+type EditorClip = { uid: string; sourceVideoId: string; title: string; thumb: string | null; sourceDur: number; inSec: number; outSec: number; captionsOn: boolean; crop: Crop | null }
 
 let _uid = 0
 const nextUid = () => `c${++_uid}`
@@ -63,9 +64,9 @@ export function StudioEditor({ projectId }: { projectId: string }) {
         setTitle(p.title ?? 'Untitled'); setCaptionStyle(p.caption_style ?? 'tiktok')
         if (p.audio) setAudio(ProjectAudioSchema.parse(p.audio))
         const byId = new Map(vids.map((v) => [v.id, v]))
-        setClips((p.timeline ?? []).map((c: { sourceVideoId: string; inSec: number; outSec: number; captionsOn?: boolean }) => {
+        setClips((p.timeline ?? []).map((c: { sourceVideoId: string; inSec: number; outSec: number; captionsOn?: boolean; crop?: Crop | null }) => {
           const v = byId.get(c.sourceVideoId)
-          return { uid: nextUid(), sourceVideoId: c.sourceVideoId, title: v?.title ?? 'Clip', thumb: v?.thumbnail_url ?? null, sourceDur: v?.duration_seconds ?? c.outSec, inSec: c.inSec, outSec: c.outSec, captionsOn: c.captionsOn ?? true }
+          return { uid: nextUid(), sourceVideoId: c.sourceVideoId, title: v?.title ?? 'Clip', thumb: v?.thumbnail_url ?? null, sourceDur: v?.duration_seconds ?? c.outSec, inSec: c.inSec, outSec: c.outSec, captionsOn: c.captionsOn ?? true, crop: c.crop ?? null }
         }))
       } catch {
         if (!cancelled) setLoadError('We couldn’t load this project. Check your connection and refresh.')
@@ -76,7 +77,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
 
   const addClip = (v: LibVideo) => {
     if (clips.length >= MAX_CLIPS) return
-    setClips((cs) => [...cs, { uid: nextUid(), sourceVideoId: v.id, title: v.title, thumb: v.thumbnail_url, sourceDur: v.duration_seconds ?? 10, inSec: 0, outSec: v.duration_seconds ?? 10, captionsOn: true }])
+    setClips((cs) => [...cs, { uid: nextUid(), sourceVideoId: v.id, title: v.title, thumb: v.thumbnail_url, sourceDur: v.duration_seconds ?? 10, inSec: 0, outSec: v.duration_seconds ?? 10, captionsOn: true, crop: null }])
     setPicking(false)
   }
   const removeClip = (uid: string) => {
@@ -93,6 +94,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
   })
   const trim = (uid: string, inSec: number, outSec: number) => setClips((cs) => cs.map((c) => c.uid === uid ? { ...c, inSec: Math.max(0, Math.min(inSec, c.sourceDur - 0.5)), outSec: Math.min(c.sourceDur, Math.max(outSec, inSec + 0.5)) } : c))
   const toggleCaptions = (uid: string) => setClips((cs) => cs.map((c) => c.uid === uid ? { ...c, captionsOn: !c.captionsOn } : c))
+  const setCrop = (uid: string, crop: Crop | null) => setClips((cs) => cs.map((c) => c.uid === uid ? { ...c, crop } : c))
   const split = (uid: string, atSec: number) => {
     const i = clips.findIndex((c) => c.uid === uid); if (i < 0) return
     const c = clips[i]!
@@ -104,7 +106,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
     setSelected(leftUid)
   }
 
-  const serialize = useCallback(() => clips.map((c) => ({ sourceVideoId: c.sourceVideoId, inSec: Number(c.inSec.toFixed(2)), outSec: Number(c.outSec.toFixed(2)), crop: null, captionsOn: c.captionsOn })), [clips])
+  const serialize = useCallback(() => clips.map((c) => ({ sourceVideoId: c.sourceVideoId, inSec: Number(c.inSec.toFixed(2)), outSec: Number(c.outSec.toFixed(2)), crop: c.crop, captionsOn: c.captionsOn })), [clips])
   const save = useCallback(async () => {
     const body = JSON.stringify({ title, timeline: serialize(), captionStyle, audio })
     if (body === savedRef.current) return
@@ -358,6 +360,22 @@ export function StudioEditor({ projectId }: { projectId: string }) {
                 >
                   Captions: {selectedClip.captionsOn ? 'On' : 'Off'}
                 </button>
+              </div>
+
+              {/* Reframe — pick which part of the source fills the 9:16 frame */}
+              <div className="space-y-2 border-t border-[var(--border-subtle)] pt-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-quaternary)]">Reframe</h3>
+                  <span className="text-[10px] text-[var(--text-quaternary)]">{selectedClip.crop ? 'Custom' : 'Centered'}</span>
+                </div>
+                <p className="text-[11px] leading-tight text-[var(--text-quaternary)]">
+                  Drag the box to choose what fills the vertical frame.
+                </p>
+                <CropBox
+                  thumbUrl={selectedClip.thumb}
+                  crop={selectedClip.crop}
+                  onChange={(cr) => setCrop(selectedClip.uid, cr)}
+                />
               </div>
             </Card>
           )}
