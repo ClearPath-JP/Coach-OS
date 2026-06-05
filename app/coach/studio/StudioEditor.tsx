@@ -1,30 +1,31 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { RenderPanel } from './RenderPanel'
 import { AudioPanel } from './AudioPanel'
 import { CropBox } from './CropBox'
-import { totalDurationSec, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle, type Crop, ProjectAudioSchema, type ProjectAudio } from '@/lib/studio/timeline'
+import { totalDurationSec, totalFrames, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle, type Crop, ProjectAudioSchema, type ProjectAudio } from '@/lib/studio/timeline'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Icon } from '@/components/icons/inked'
+import type { TimelineVideoProps } from '@/remotion/TimelineVideo'
+
+// @remotion/player is browser-only — load it without SSR so `next build` never
+// tries to prerender the <Player> on the server.
+const LivePreview = dynamic(() => import('./LivePreview').then((m) => m.LivePreview), {
+  ssr: false,
+  loading: () => (
+    <div className="flex aspect-[9/16] w-full max-w-[280px] items-center justify-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-sm text-[var(--text-quaternary)]">
+      Loading preview…
+    </div>
+  ),
+})
 
 type LibVideo = { id: string; title: string; thumbnail_url: string | null; mp4_url: string | null; duration_seconds: number | null; embed_url?: string | null }
 type EditorClip = { uid: string; sourceVideoId: string; title: string; thumb: string | null; sourceDur: number; inSec: number; outSec: number; captionsOn: boolean; crop: Crop | null }
 
 let _uid = 0
 const nextUid = () => `c${++_uid}`
-
-// Defense-in-depth: only ever feed the preview iframe a Bunny embed URL over https.
-// embed_url is server-generated (bunnyEmbedUrl) so this should always pass for real data.
-function safeEmbedUrl(url: string | null | undefined): string | null {
-  if (!url) return null
-  try {
-    const u = new URL(url)
-    return u.protocol === 'https:' && u.hostname === 'iframe.mediadelivery.net' ? url : null
-  } catch {
-    return null
-  }
-}
 
 const CAPTION_PICKS: { key: CaptionStyle; label: string; hint: string }[] = [
   { key: 'tiktok', label: 'Bold', hint: 'White, heavy outline' },
@@ -123,9 +124,29 @@ export function StudioEditor({ projectId }: { projectId: string }) {
   useEffect(() => { const t = setTimeout(() => { void save() }, 1200); return () => clearTimeout(t) }, [save])
 
   const selectedClip = clips.find((c) => c.uid === selected) ?? null
-  const selectedSource = selectedClip ? library.find((v) => v.id === selectedClip.sourceVideoId) ?? null : null
-  const previewSrc = safeEmbedUrl(selectedSource?.embed_url)
   const totalSec = totalDurationSec(serialize())
+
+  // Live composite preview — the same TimelineVideo the Lambda renders, played client-side.
+  // Captions are intentionally omitted here (verified at render); audio uses the public
+  // studio-audio bucket URL.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const audioUrl = (p: string | null) => (p && supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/studio-audio/${p}` : null)
+  const previewProps: TimelineVideoProps = {
+    clips: clips
+      .map((c) => {
+        const v = library.find((l) => l.id === c.sourceVideoId)
+        return { mp4Url: v?.mp4_url ?? '', inSec: c.inSec, outSec: c.outSec, crop: c.crop, captionsOn: c.captionsOn }
+      })
+      .filter((c) => c.mp4Url),
+    captions: [],
+    captionStyle,
+    audio: {
+      musicUrl: audioUrl(audio.music),
+      voiceoverUrl: audioUrl(audio.voiceover),
+      volumes: audio.volumes,
+    },
+  }
+  const previewFrames = totalFrames(serialize())
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-5 px-4 py-6">
@@ -158,30 +179,12 @@ export function StudioEditor({ projectId }: { projectId: string }) {
       <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
         {/* LEFT — preview + timeline */}
         <div className="space-y-5">
-          {/* 2 — Preview */}
-          <Card padding="default" className="flex flex-col items-center">
-            {selectedClip ? (
-              previewSrc ? (
-                <iframe
-                  src={previewSrc}
-                  title={selectedClip.title}
-                  allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-                  allowFullScreen
-                  className="aspect-[9/16] w-full max-w-[280px] rounded-xl border border-[var(--border-subtle)] bg-black"
-                />
-              ) : selectedClip.thumb ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={selectedClip.thumb} alt={selectedClip.title} className="aspect-[9/16] w-full max-w-[280px] rounded-xl border border-[var(--border-subtle)] object-cover" />
-              ) : (
-                <div className="grid aspect-[9/16] w-full max-w-[280px] place-items-center rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-sm text-[var(--text-quaternary)]">
-                  No preview
-                </div>
-              )
-            ) : (
-              <div className="grid aspect-[9/16] w-full max-w-[280px] place-items-center rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--bg-subtle)] text-sm text-[var(--text-quaternary)]">
-                Select a clip
-              </div>
-            )}
+          {/* 2 — Preview (live composite — clips + trim + crop + audio, played client-side) */}
+          <Card padding="default" className="flex flex-col items-center gap-2">
+            <LivePreview inputProps={previewProps} durationInFrames={previewFrames} />
+            <p className="text-center text-[11px] leading-tight text-[var(--text-quaternary)]">
+              Live preview · captions show in the final render
+            </p>
           </Card>
 
           {/* 3 — Timeline */}
