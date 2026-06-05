@@ -62,6 +62,36 @@ export async function startCaptionedRender(input: RenderInput): Promise<{ render
   return { renderId, bucketName }
 }
 
+export type TimelineRenderInput = {
+  clips: {
+    mp4Url: string
+    inSec: number
+    outSec: number
+    crop: { x: number; y: number; w: number; h: number } | null
+    captionsOn: boolean
+  }[]
+  captions: { text: string; startMs: number; endMs: number }[]
+  captionStyle: 'tiktok' | 'minimal' | 'karaoke' | 'none'
+}
+
+/** Start a multi-clip timeline render on Lambda. Returns immediately with the render id + bucket. */
+export async function startTimelineRender(input: TimelineRenderInput): Promise<{ renderId: string; bucketName: string }> {
+  const { region, functionName, serveUrl } = cfg()
+  const { renderId, bucketName } = await renderMediaOnLambda({
+    region,
+    functionName,
+    serveUrl,
+    composition: 'TimelineVideo',
+    inputProps: input,
+    codec: 'h264',
+    imageFormat: 'jpeg',
+    privacy: 'public',
+    framesPerLambda: 1000,
+    downloadBehavior: { type: 'download', fileName: 'kindo-reel.mp4' },
+  })
+  return { renderId, bucketName }
+}
+
 export type RenderStatus = { done: boolean; progress: number; outputUrl: string | null; error: string | null }
 
 /** Poll a render's progress. `progress` is 0..1. */
