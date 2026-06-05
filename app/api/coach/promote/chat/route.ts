@@ -18,6 +18,9 @@ const chatSchema = z.object({
     .max(40),
   discipline: z.string().trim().max(80).optional(),
   tone: z.enum(['hype', 'calm', 'friendly']).optional(),
+  platform: z.enum(['instagram', 'facebook']).optional(),
+  bookingUrl: z.string().trim().max(300).optional(),
+  signature: z.string().trim().max(200).optional(),
   finalize: z.boolean().optional(),
 })
 
@@ -72,7 +75,13 @@ export async function POST(request: Request) {
     try {
       const outcome = await runPromoteChat(
         parsed.data.messages as ChatMessage[],
-        { discipline: parsed.data.discipline ?? null, tone: parsed.data.tone ?? null },
+        {
+          discipline: parsed.data.discipline ?? null,
+          tone: parsed.data.tone ?? null,
+          platform: parsed.data.platform ?? null,
+          bookingUrl: parsed.data.bookingUrl ?? null,
+          signature: parsed.data.signature ?? null,
+        },
         parsed.data.finalize ?? false
       )
       return NextResponse.json({ data: outcome })

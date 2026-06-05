@@ -3,21 +3,25 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Send, Loader2, Wand2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { type Tone, type ChatMsg, type PromoteResult, type Post } from './promote-shared'
+import { type ChatMsg, type PromoteResult, type Post, type BrandVoice, type DoneMeta } from './promote-shared'
 
 const GREETING =
   'Tell me what’s on your mind — a technique you love, a student win, why you coach, or what you want to say this week. I’ll ask a couple of questions, then turn it into a post that sounds like you.'
 
+const STARTERS = [
+  'I taught a student to escape side control today and it finally clicked.',
+  'Why I started coaching out of my garage.',
+  '3 things every beginner gets wrong in their first month.',
+]
+
 type ChatResponse = { data?: { kind: 'reply'; reply: string } | { kind: 'post'; post: Post }; error?: string }
 
 export function ChatStep({
-  discipline,
-  tone,
+  voice,
   onDone,
 }: {
-  discipline: string
-  tone: Tone
-  onDone: (r: PromoteResult) => void
+  voice: BrandVoice
+  onDone: (r: PromoteResult, meta?: DoneMeta) => void
 }) {
   const [messages, setMessages] = useState<ChatMsg[]>([])
   const [input, setInput] = useState('')
@@ -44,7 +48,14 @@ export function ChatStep({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ messages: next, discipline: discipline || undefined, tone }),
+        body: JSON.stringify({
+          messages: next,
+          discipline: voice.discipline || undefined,
+          tone: voice.tone,
+          platform: voice.platform,
+          bookingUrl: voice.bookingUrl || undefined,
+          signature: voice.signature || undefined,
+        }),
       })
       const json = (await res.json().catch(() => ({}))) as ChatResponse
       if (!res.ok) {
@@ -69,7 +80,15 @@ export function ChatStep({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ messages, discipline: discipline || undefined, tone, finalize: true }),
+        body: JSON.stringify({
+          messages,
+          discipline: voice.discipline || undefined,
+          tone: voice.tone,
+          platform: voice.platform,
+          bookingUrl: voice.bookingUrl || undefined,
+          signature: voice.signature || undefined,
+          finalize: true,
+        }),
       })
       const json = (await res.json().catch(() => ({}))) as ChatResponse
       if (!res.ok) {
@@ -91,6 +110,20 @@ export function ChatStep({
     <div className="space-y-3 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] p-4">
       <div className="h-[40vh] min-h-[260px] space-y-3 overflow-y-auto rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] p-4">
         <Bubble role="assistant">{GREETING}</Bubble>
+        {messages.length === 0 && (
+          <div className="flex flex-wrap gap-1.5 pl-1 pt-1">
+            {STARTERS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setInput(s)}
+                className="rounded-full border border-[var(--border-default)] px-2.5 py-1 text-left text-[11px] text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)]/40 hover:text-[var(--text-primary)]"
+              >
+                {s.length > 44 ? `${s.slice(0, 42)}…` : s}
+              </button>
+            ))}
+          </div>
+        )}
         {messages.map((m, i) => (
           <Bubble key={i} role={m.role}>
             {m.content}

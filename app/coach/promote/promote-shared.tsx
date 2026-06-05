@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 export type Tone = 'hype' | 'calm' | 'friendly'
 export type Kind = 'class' | 'workout' | 'book1on1' | 'bts'
 export type Path = 'video' | 'idea' | 'chat'
+export type Platform = 'instagram' | 'facebook'
 
 export type Idea = { title: string; angle: string }
 export type Post = {
@@ -25,6 +26,50 @@ export type VideoPlan = {
 }
 export type ChatMsg = { role: 'user' | 'assistant'; content: string }
 export type PromoteResult = { type: 'post'; post: Post } | { type: 'video'; videoPlan: VideoPlan }
+
+/** Extra context a step passes when finishing, so the saved post is well-labeled. */
+export type DoneMeta = { kind?: Kind | null; sourceVideoId?: string | null }
+
+/** A coach's saved brand voice (persisted per workspace). */
+export type BrandVoice = {
+  discipline: string
+  tone: Tone
+  platform: Platform
+  bookingUrl: string
+  signature: string
+}
+
+export const EMPTY_BRAND_VOICE: BrandVoice = {
+  discipline: '',
+  tone: 'friendly',
+  platform: 'instagram',
+  bookingUrl: '',
+  signature: '',
+}
+
+/** A saved post row from /api/coach/promote/posts. */
+export type SavedPost = {
+  id: string
+  path: Path
+  kind: Kind | null
+  platform: Platform | null
+  tone: Tone | null
+  type: 'post' | 'video'
+  content: Post | VideoPlan
+  title: string | null
+  source_video_id: string | null
+  status: 'draft' | 'posted'
+  posted_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** A saved row → the in-memory result the cards render. */
+export function savedToResult(s: SavedPost): PromoteResult {
+  return s.type === 'post'
+    ? { type: 'post', post: s.content as Post }
+    : { type: 'video', videoPlan: s.content as VideoPlan }
+}
 
 export type GenerateResponse = {
   data?:
@@ -55,6 +100,22 @@ export function fullCaption(p: Post): string {
 export function videoPlanCaption(v: VideoPlan): string {
   const tags = v.hashtags.length ? v.hashtags.map((h) => `#${h}`).join(' ') : ''
   return [v.caption, tags].filter(Boolean).join('\n\n')
+}
+
+/** A short shelf label for a result. */
+export function postTitle(r: PromoteResult): string {
+  const base = r.type === 'post' ? r.post.hook || r.post.caption : r.videoPlan.hookIdea || r.videoPlan.caption
+  const firstLine = base.split('\n')[0]?.trim() ?? ''
+  return firstLine.slice(0, 80) || 'Untitled post'
+}
+
+/** Parse a free-text hashtag field ("#a #b, c") into clean tags (no #). */
+export function parseHashtags(input: string): string[] {
+  return input
+    .split(/[\s,]+/)
+    .map((t) => t.replace(/^#+/, '').trim())
+    .filter(Boolean)
+    .slice(0, 30)
 }
 
 export function useCopy() {
@@ -102,6 +163,36 @@ export function ToneToggle({ value, onChange, disabled }: { value: Tone; onChang
             aria-pressed={on}
           >
             {t.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+const PLATFORMS: { key: Platform; label: string }[] = [
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'facebook', label: 'Facebook' },
+]
+
+export function PlatformToggle({ value, onChange, disabled }: { value: Platform; onChange: (p: Platform) => void; disabled?: boolean }) {
+  return (
+    <div className="inline-flex rounded-lg border border-[var(--border-default)] p-0.5">
+      {PLATFORMS.map((p) => {
+        const on = p.key === value
+        return (
+          <button
+            key={p.key}
+            type="button"
+            onClick={() => onChange(p.key)}
+            disabled={disabled}
+            className={cn(
+              'rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60',
+              on ? 'bg-[var(--accent)] text-[var(--text-on-accent)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            )}
+            aria-pressed={on}
+          >
+            {p.label}
           </button>
         )
       })}
@@ -161,33 +252,66 @@ function Section({ title, action, children }: { title: string; action?: ReactNod
   )
 }
 
-export function PostCard({ post }: { post: Post }) {
+const EDIT_CLS =
+  'w-full resize-y rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm leading-relaxed text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20'
+
+export function PostCard({
+  post,
+  editing,
+  onChange,
+}: {
+  post: Post
+  editing?: boolean
+  onChange?: (post: Post) => void
+}) {
   const { copiedKey, copy } = useCopy()
+  const upd = (patch: Partial<Post>) => onChange?.({ ...post, ...patch })
   return (
     <div className="space-y-4">
-      {post.hook && (
+      {(editing || post.hook) && (
         <Section title="Hook">
-          <p className="text-sm font-medium text-[var(--text-primary)]">{post.hook}</p>
+          {editing ? (
+            <textarea rows={2} value={post.hook} onChange={(e) => upd({ hook: e.target.value })} className={EDIT_CLS} />
+          ) : (
+            <p className="text-sm font-medium text-[var(--text-primary)]">{post.hook}</p>
+          )}
         </Section>
       )}
       <Section
         title="Caption"
-        action={<CopyBtn onClick={() => copy(fullCaption(post), 'cap')} copied={copiedKey === 'cap'} label="Copy caption" />}
+        action={editing ? undefined : <CopyBtn onClick={() => copy(fullCaption(post), 'cap')} copied={copiedKey === 'cap'} label="Copy caption" />}
       >
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">{post.caption}</p>
+        {editing ? (
+          <textarea rows={6} value={post.caption} onChange={(e) => upd({ caption: e.target.value })} className={EDIT_CLS} />
+        ) : (
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">{post.caption}</p>
+        )}
       </Section>
-      {post.cta && (
+      {(editing || post.cta) && (
         <Section title="Call to action">
-          <p className="text-sm text-[var(--text-primary)]">{post.cta}</p>
+          {editing ? (
+            <textarea rows={2} value={post.cta} onChange={(e) => upd({ cta: e.target.value })} className={EDIT_CLS} />
+          ) : (
+            <p className="text-sm text-[var(--text-primary)]">{post.cta}</p>
+          )}
         </Section>
       )}
-      {post.hashtags.length > 0 && (
+      {(editing || post.hashtags.length > 0) && (
         <Section title="Hashtags">
-          <div className="flex flex-wrap gap-1.5">
-            {post.hashtags.map((h) => (
-              <span key={h} className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[11px] text-[var(--text-tertiary)]">#{h}</span>
-            ))}
-          </div>
+          {editing ? (
+            <input
+              value={post.hashtags.map((h) => `#${h}`).join(' ')}
+              onChange={(e) => upd({ hashtags: parseHashtags(e.target.value) })}
+              placeholder="#bjj #martialarts"
+              className={EDIT_CLS}
+            />
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {post.hashtags.map((h) => (
+                <span key={h} className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[11px] text-[var(--text-tertiary)]">#{h}</span>
+              ))}
+            </div>
+          )}
         </Section>
       )}
       {post.videoScript && post.videoScript.length > 0 && (
@@ -209,13 +333,26 @@ export function PostCard({ post }: { post: Post }) {
   )
 }
 
-export function VideoPlanCard({ plan }: { plan: VideoPlan }) {
+export function VideoPlanCard({
+  plan,
+  editing,
+  onChange,
+}: {
+  plan: VideoPlan
+  editing?: boolean
+  onChange?: (plan: VideoPlan) => void
+}) {
   const { copiedKey, copy } = useCopy()
+  const upd = (patch: Partial<VideoPlan>) => onChange?.({ ...plan, ...patch })
   return (
     <div className="space-y-4">
-      {plan.hookIdea && (
+      {(editing || plan.hookIdea) && (
         <Section title="First 2 seconds (the hook)">
-          <p className="text-sm font-medium text-[var(--text-primary)]">{plan.hookIdea}</p>
+          {editing ? (
+            <textarea rows={2} value={plan.hookIdea} onChange={(e) => upd({ hookIdea: e.target.value })} className={EDIT_CLS} />
+          ) : (
+            <p className="text-sm font-medium text-[var(--text-primary)]">{plan.hookIdea}</p>
+          )}
         </Section>
       )}
       {plan.structure.length > 0 && (
@@ -239,16 +376,29 @@ export function VideoPlanCard({ plan }: { plan: VideoPlan }) {
           </ul>
         </Section>
       )}
-      <Section title="Caption" action={<CopyBtn onClick={() => copy(videoPlanCaption(plan), 'cap')} copied={copiedKey === 'cap'} label="Copy caption" />}>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">{plan.caption}</p>
+      <Section title="Caption" action={editing ? undefined : <CopyBtn onClick={() => copy(videoPlanCaption(plan), 'cap')} copied={copiedKey === 'cap'} label="Copy caption" />}>
+        {editing ? (
+          <textarea rows={5} value={plan.caption} onChange={(e) => upd({ caption: e.target.value })} className={EDIT_CLS} />
+        ) : (
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">{plan.caption}</p>
+        )}
       </Section>
-      {plan.hashtags.length > 0 && (
+      {(editing || plan.hashtags.length > 0) && (
         <Section title="Hashtags">
-          <div className="flex flex-wrap gap-1.5">
-            {plan.hashtags.map((h) => (
-              <span key={h} className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[11px] text-[var(--text-tertiary)]">#{h}</span>
-            ))}
-          </div>
+          {editing ? (
+            <input
+              value={plan.hashtags.map((h) => `#${h}`).join(' ')}
+              onChange={(e) => upd({ hashtags: parseHashtags(e.target.value) })}
+              placeholder="#bjj #martialarts"
+              className={EDIT_CLS}
+            />
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {plan.hashtags.map((h) => (
+                <span key={h} className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[11px] text-[var(--text-tertiary)]">#{h}</span>
+              ))}
+            </div>
+          )}
         </Section>
       )}
     </div>

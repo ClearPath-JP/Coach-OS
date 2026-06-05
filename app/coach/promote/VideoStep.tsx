@@ -3,23 +3,23 @@
 import { useEffect, useRef, useState } from 'react'
 import { Upload as TusUpload } from 'tus-js-client'
 import { Film, Loader2, Wand2, Upload, CheckCircle2, FileVideo } from 'lucide-react'
-import { type Tone, type PromoteResult, type GenerateResponse } from './promote-shared'
+import { type PromoteResult, type GenerateResponse, type BrandVoice, type DoneMeta } from './promote-shared'
 import { VideoEditor, type Cue } from './VideoEditor'
 
 type LibraryVideo = { id: string; title: string }
 type UploadState = 'idle' | 'creating' | 'uploading' | 'processing' | 'ready' | 'failed'
 
 export function VideoStep({
-  discipline,
-  tone,
+  voice,
+  initialVideoId,
   onDone,
 }: {
-  discipline: string
-  tone: Tone
-  onDone: (r: PromoteResult) => void
+  voice: BrandVoice
+  initialVideoId?: string | null
+  onDone: (r: PromoteResult, meta?: DoneMeta) => void
 }) {
   const [videos, setVideos] = useState<LibraryVideo[]>([])
-  const [selectedId, setSelectedId] = useState('')
+  const [selectedId, setSelectedId] = useState(initialVideoId ?? '')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -175,14 +175,27 @@ export function VideoStep({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ kind: 'workout', mode: 'video', tone, discipline: discipline || undefined, topic: topic || undefined }),
+        body: JSON.stringify({
+          kind: 'workout', // unused by video mode; the schema just requires a kind
+          mode: 'video',
+          tone: voice.tone,
+          discipline: voice.discipline || undefined,
+          topic: topic || undefined,
+          platform: voice.platform,
+          bookingUrl: voice.bookingUrl || undefined,
+          signature: voice.signature || undefined,
+        }),
       })
       const json = (await res.json().catch(() => ({}))) as GenerateResponse
       if (!res.ok) {
         setError(json.error ?? 'Could not generate — try again')
         return
       }
-      if (json.data?.mode === 'video') onDone({ type: 'video', videoPlan: json.data.videoPlan })
+      if (json.data?.mode === 'video')
+        onDone(
+          { type: 'video', videoPlan: json.data.videoPlan },
+          { kind: null, sourceVideoId: sourceVideoId ?? (selectedId || null) }
+        )
     } catch {
       setError('Network error — please try again')
     } finally {
@@ -270,7 +283,11 @@ export function VideoStep({
         )}
       </div>
 
-      <div className="border-t border-[var(--border-subtle)]" />
+      <div className="flex items-center gap-3">
+        <span className="h-px flex-1 bg-[var(--border-subtle)]" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-quaternary)]">or describe a clip</span>
+        <span className="h-px flex-1 bg-[var(--border-subtle)]" />
+      </div>
 
       {/* Plan (works with or without an upload) */}
       <p className="text-sm text-[var(--text-tertiary)]">

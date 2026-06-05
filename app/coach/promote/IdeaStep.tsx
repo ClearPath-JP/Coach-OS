@@ -3,16 +3,14 @@
 import { useState } from 'react'
 import { Lightbulb, Wand2, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { KINDS, type Kind, type Tone, type Idea, type PromoteResult, type GenerateResponse } from './promote-shared'
+import { KINDS, type Kind, type Idea, type PromoteResult, type GenerateResponse, type BrandVoice, type DoneMeta } from './promote-shared'
 
 export function IdeaStep({
-  discipline,
-  tone,
+  voice,
   onDone,
 }: {
-  discipline: string
-  tone: Tone
-  onDone: (r: PromoteResult) => void
+  voice: BrandVoice
+  onDone: (r: PromoteResult, meta?: DoneMeta) => void
 }) {
   const [kind, setKind] = useState<Kind>('class')
   const [topic, setTopic] = useState('')
@@ -33,9 +31,12 @@ export function IdeaStep({
         body: JSON.stringify({
           kind,
           mode,
-          tone,
-          discipline: discipline || undefined,
+          tone: voice.tone,
+          discipline: voice.discipline || undefined,
           topic: (topicOverride ?? topic).trim() || undefined,
+          platform: voice.platform,
+          bookingUrl: voice.bookingUrl || undefined,
+          signature: voice.signature || undefined,
         }),
       })
       const json = (await res.json().catch(() => ({}))) as GenerateResponse
@@ -44,7 +45,7 @@ export function IdeaStep({
         return
       }
       if (json.data?.mode === 'ideas') setIdeas(json.data.ideas)
-      else if (json.data?.mode === 'post') onDone({ type: 'post', post: json.data.post })
+      else if (json.data?.mode === 'post') onDone({ type: 'post', post: json.data.post }, { kind })
     } catch {
       setError('Network error — please try again')
     } finally {
