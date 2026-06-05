@@ -29,6 +29,13 @@ function coverStyle(crop: TimelineRenderClip['crop']): CSSProperties {
   return { width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${scale}) translate(${tx}%, ${ty}%)`, transformOrigin: 'center' }
 }
 
+function splitWordsLocal(text: string, startMs: number, endMs: number) {
+  const words = text.split(/\s+/).filter(Boolean)
+  if (words.length === 0) return [] as { word: string; startMs: number; endMs: number }[]
+  const per = Math.max(0, endMs - startMs) / words.length
+  return words.map((word, i) => ({ word, startMs: startMs + i * per, endMs: startMs + (i + 1) * per }))
+}
+
 function CaptionLayer({ captions, captionStyle }: { captions: TimelineCaption[]; captionStyle: TimelineVideoProps['captionStyle'] }) {
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
@@ -36,7 +43,20 @@ function CaptionLayer({ captions, captionStyle }: { captions: TimelineCaption[];
   const ms = (frame / fps) * 1000
   const active = captions.find((c) => ms >= c.startMs && ms < c.endMs)
   if (!active) return null
-  // Phase 1: 'karaoke' falls back to the tiktok look (true word-by-word lands in Phase 3).
+  if (captionStyle === 'karaoke') {
+    const words = splitWordsLocal(active.text, active.startMs, active.endMs)
+    return (
+      <AbsoluteFill style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 220 }}>
+        <span style={tiktokStyle}>
+          {words.map((w, i) => (
+            <span key={`${w.startMs}-${w.endMs}-${w.word}-${i}`} style={{ color: ms >= w.startMs && ms < w.endMs ? '#c8882e' : 'white' }}>
+              {w.word}{i < words.length - 1 ? ' ' : ''}
+            </span>
+          ))}
+        </span>
+      </AbsoluteFill>
+    )
+  }
   const style = captionStyle === 'minimal' ? minimalStyle : tiktokStyle
   return (
     <AbsoluteFill style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: 220 }}>

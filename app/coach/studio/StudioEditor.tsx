@@ -28,6 +28,7 @@ let _uid = 0
 const nextUid = () => `c${++_uid}`
 
 const CAPTION_PICKS: { key: CaptionStyle; label: string; hint: string }[] = [
+  { key: 'karaoke', label: 'Karaoke', hint: 'Word-by-word highlight' },
   { key: 'tiktok', label: 'Bold', hint: 'White, heavy outline' },
   { key: 'minimal', label: 'Minimal', hint: 'Clean on a bar' },
   { key: 'none', label: 'Off', hint: 'No captions' },
@@ -386,7 +387,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
           {/* 5 — Caption style picker */}
           <Card padding="default" className="space-y-2.5">
             <h2 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--text-quaternary)]">Caption style</h2>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {CAPTION_PICKS.map((s) => {
                 const active = captionStyle === s.key
                 return (

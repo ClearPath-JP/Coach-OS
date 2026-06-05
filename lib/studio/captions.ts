@@ -19,3 +19,18 @@ export function offsetCues(
   }
   return out
 }
+
+export type CaptionWord = { word: string; startMs: number; endMs: number }
+// Approximate per-word timing by splitting a segment cue's duration evenly across its words
+// (Bunny transcripts are segment-level, not word-level).
+export function splitCueIntoWords(text: string, startMs: number, endMs: number): CaptionWord[] {
+  const words = text.split(/\s+/).filter(Boolean)
+  if (words.length === 0) return []
+  const dur = Math.max(0, endMs - startMs)
+  const per = dur / words.length
+  return words.map((word, i) => ({
+    word,
+    startMs: Math.round(startMs + i * per),
+    endMs: Math.round(startMs + (i + 1) * per),
+  }))
+}
