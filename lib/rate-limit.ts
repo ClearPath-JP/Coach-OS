@@ -1,7 +1,8 @@
 /**
  * Rate limiting for middleware and API routes.
- * Uses Upstash Redis when UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are set;
- * otherwise no limit (allow all) for local dev.
+ * Uses Upstash Redis when UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are set.
+ * Without it (or if the Upstash call fails): dev allows all; in prod, fail-open routes allow
+ * and fail-closed (money) routes degrade to a per-instance in-memory limiter — never a hard block.
  *
  * If you use Upstash locally and hit 429s while testing, set CLEARPATH_DEV_DISABLE_RATE_LIMIT=1
  * (non-production only) or temporarily comment out the UPSTASH_* vars.
@@ -13,11 +14,25 @@ const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN
 let warnedMissingRedis = false
 let warnedRedisCallFailed = false
 
-/** Fixed-window counters for Jest (no Redis) so rate-limit integration tests behave deterministically. */
+/**
+ * Fixed-window counters used by (a) Jest integration tests and (b) the production
+ * fail-closed fallback when Upstash is unreachable. Per-instance (not distributed).
+ */
 const memoryBuckets = new Map<string, { count: number; resetAt: number }>()
+let lastBucketSweep = 0
+
+/** Drop expired buckets (at most once/min) so the fallback can't grow unbounded on long-lived instances. */
+function sweepExpiredBuckets(now: number) {
+  if (now - lastBucketSweep < 60_000) return
+  lastBucketSweep = now
+  for (const [k, b] of memoryBuckets) {
+    if (now >= b.resetAt) memoryBuckets.delete(k)
+  }
+}
 
 function checkInMemory(key: string, options: RateLimitOptions): RateLimitResult {
   const now = Date.now()
+  sweepExpiredBuckets(now)
   let bucket = memoryBuckets.get(key)
   if (!bucket || now >= bucket.resetAt) {
     bucket = { count: 0, resetAt: now + options.windowMs }
@@ -68,11 +83,13 @@ async function checkWithUpstash(
     if (process.env.NODE_ENV === 'production' && !warnedRedisCallFailed) {
       warnedRedisCallFailed = true
       console.error(
-        `[ClearPath] Upstash rate limit call failed — failing ${failClosed ? 'CLOSED (blocking)' : 'OPEN (allowing)'}. Check URL, token, and Upstash dashboard.`,
+        `[ClearPath] Upstash rate limit call failed — ${failClosed ? 'degrading to in-memory limiter (per-instance)' : 'failing OPEN (allowing)'}. Check URL, token, and Upstash dashboard.`,
         error
       )
     }
-    return failClosed ? { success: false, retryAfter: 30 } : { success: true }
+    // Backend unreachable: fail-open routes allow; fail-closed routes degrade to a
+    // per-instance in-memory limiter (still caps abuse) instead of blocking everything.
+    return failClosed ? checkInMemory(key, options) : { success: true }
   }
 }
 
@@ -96,10 +113,12 @@ export async function checkRateLimitAsync(
   if (!REDIS_URL?.trim() || !REDIS_TOKEN?.trim()) {
     if (process.env.NODE_ENV === 'production' && !warnedMissingRedis) {
       warnedMissingRedis = true
-      console.error('[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — rate limiting disabled. Add Upstash Redis in Vercel.')
+      console.error('[ClearPath] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are not set — fail-closed routes use a per-instance in-memory limiter; add Upstash Redis in Vercel for distributed limits.')
     }
+    // Prod + fail-closed with no backend: degrade to in-memory (still limits) rather than
+    // hard-blocking. Dev keeps allow-all so local testing isn't rate-limited.
     if (options.failMode === 'closed' && process.env.NODE_ENV === 'production') {
-      return { success: false, retryAfter: 30 }
+      return checkInMemory(key, options)
     }
     return { success: true }
   }
