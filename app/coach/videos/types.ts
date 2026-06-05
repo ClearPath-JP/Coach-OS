@@ -22,6 +22,10 @@ export type Video = {
   processing_status: 'queued' | 'processing' | 'ready' | 'failed' | 'deleted'
   processing_error: string | null
   playback_url: string | null
+  /** Signed Bunny MP4 fallback (hover-preview source). Null until MP4 fallback is enabled + transcoded. */
+  mp4_url?: string | null
+  /** Bunny iframe player URL — plays HLS cross-browser. Present only for Bunny-hosted videos. */
+  embed_url?: string | null
   thumbnail_url: string | null
   duration_seconds: number | null
   file_size_bytes: number | null

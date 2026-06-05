@@ -53,6 +53,18 @@ export function signBunnyUrl(fileUrl: string, expiresInSec = 3 * 60 * 60): strin
   return u.toString()
 }
 
+/**
+ * Bunny's hosted iframe player URL for a video. Plays HLS cross-browser (the
+ * native <video> element can't), so this is what the UI embeds for playback.
+ * Prefer the per-row library id; fall back to the env library id.
+ * Returns null when no library id is available.
+ */
+export function bunnyEmbedUrl(guid: string, libraryId?: string | null): string | null {
+  const lib = (libraryId ?? process.env.BUNNY_STREAM_LIBRARY_ID ?? '').toString().trim()
+  if (!lib || !guid?.trim()) return null
+  return `https://iframe.mediadelivery.net/embed/${encodeURIComponent(lib)}/${encodeURIComponent(guid.trim())}`
+}
+
 export type BunnyCreateResult = {
   videoId: string
   libraryId: string

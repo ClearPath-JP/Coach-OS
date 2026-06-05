@@ -169,14 +169,20 @@ export function VideosPageContent() {
             next[idx] = { ...next[idx], ...row } as Video
             return next
           })
-          if (status === 'ready' && title) setToast(`Updated: ${title}`)
+          if (status === 'ready') {
+            // Realtime payloads come straight from Postgres and bypass the
+            // /api/videos mapping, so they lack embed_url + signed mp4/thumbnail
+            // URLs. Refetch to swap in a playable row instead of a gray HLS <video>.
+            void fetchVideos()
+            if (title) setToast(`Updated: ${title}`)
+          }
         }
       )
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [fetchVideos])
 
   useEffect(() => {
     if (!toast) return
@@ -410,14 +416,26 @@ export function VideosPageContent() {
 
       {playerVideo &&
         playerVideo.processing_status === 'ready' &&
-        (Boolean(playerVideo.drive_file_id?.trim()) || Boolean(playerVideo.playback_url?.trim())) && (
+        (Boolean(playerVideo.embed_url) || Boolean(playerVideo.drive_file_id?.trim()) || Boolean(playerVideo.playback_url?.trim())) && (
         <Modal
           isOpen={!!playerVideo}
           onClose={() => setPlayerVideo(null)}
           title={playerVideo.title}
           className="w-full max-w-none md:w-[min(96vw,1400px)]"
         >
-          {playerVideo.playback_url?.trim() ? (
+          {playerVideo.embed_url ? (
+            // Bunny's hosted player — plays HLS in every browser (a native <video>
+            // src=.m3u8 only works in Safari, which is why this was gray before).
+            <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+              <iframe
+                src={playerVideo.embed_url}
+                className="h-full w-full"
+                allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen;"
+                allowFullScreen
+                title={playerVideo.title}
+              />
+            </div>
+          ) : playerVideo.playback_url?.trim() ? (
             <video
               src={playerVideo.playback_url}
               controls
@@ -1330,7 +1348,8 @@ function VideoCard({
   const isReady = video.processing_status === 'ready'
   const isFailed = video.processing_status === 'failed'
   const isProcessing = video.processing_status === 'processing' || video.processing_status === 'queued'
-  const canPlay = isReady && Boolean(video.playback_url?.trim() || video.drive_file_id?.trim())
+  const canPlay = isReady && Boolean(video.embed_url || video.playback_url?.trim() || video.drive_file_id?.trim())
+  const posterUrl = video.thumbnail_url?.trim() || video.drive_thumbnail_url?.trim() || null
 
   return (
     <div
@@ -1345,17 +1364,22 @@ function VideoCard({
         onMouseEnter={() => { const el = previewRef.current; if (el) void el.play().catch(() => {}) }}
         onMouseLeave={() => { const el = previewRef.current; if (el) { el.pause(); el.currentTime = 0 } }}
       >
-        {/* Video preview */}
-        {isReady && video.playback_url?.trim() ? (
+        {/* Video preview — MP4 fallback hover-clip, else a real thumbnail, else placeholder.
+            (The old <video src={playback_url}> fed an HLS .m3u8 to a native player → gray.) */}
+        {isReady && video.mp4_url ? (
           <video
             ref={previewRef}
-            src={video.playback_url}
+            src={video.mp4_url}
+            poster={posterUrl ?? undefined}
             className="h-full w-full object-cover"
             muted
             playsInline
             preload="metadata"
             loop
           />
+        ) : isReady && posterUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={posterUrl} alt={video.title} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-neutral-800">
             <svg className="size-10 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

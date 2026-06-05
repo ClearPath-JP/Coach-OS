@@ -35,8 +35,9 @@ const securityHeaders = [
       `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
-      "media-src 'self' https://*.supabase.co blob:",
+      // *.b-cdn.net = Bunny CDN: video thumbnails (img) + MP4 fallback previews (media).
+      "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://*.b-cdn.net",
+      "media-src 'self' https://*.supabase.co blob: https://*.b-cdn.net",
       // video.bunnycdn.com = Bunny Stream TUS upload; *.b-cdn.net = Bunny CDN (captions/mp4).
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.upstash.io https://video.bunnycdn.com https://*.b-cdn.net",
       // iframe.mediadelivery.net = Bunny Stream embedded player.

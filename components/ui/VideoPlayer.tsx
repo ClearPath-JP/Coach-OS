@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 
+/** Only ever embed Bunny's hosted player — never trust an arbitrary URL in an <iframe src>. */
+const BUNNY_EMBED_PREFIX = 'https://iframe.mediadelivery.net/'
+
 export interface VideoPlayerProps {
   videoId: string
   title?: string
@@ -13,6 +16,7 @@ export interface VideoPlayerProps {
 
 function VideoPlayerInner({ videoId, title, thumbnailUrl, autoPlay, className }: VideoPlayerProps) {
   const [src, setSrc] = useState<string | null>(null)
+  const [embedUrl, setEmbedUrl] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -22,8 +26,14 @@ function VideoPlayerInner({ videoId, title, thumbnailUrl, autoPlay, className }:
           method: 'POST',
           credentials: 'include',
         })
-        const j = (await r.json()) as { data?: { streamUrl?: string } }
+        const j = (await r.json()) as { data?: { streamUrl?: string; embedUrl?: string | null } }
         if (cancelled) return
+        if (r.ok && j.data?.embedUrl && j.data.embedUrl.startsWith(BUNNY_EMBED_PREFIX)) {
+          // Bunny-hosted (HLS): a native <video> can't play it — use the iframe player.
+          // Allowlist-checked here so the <iframe src> below can only ever be a Bunny URL.
+          setEmbedUrl(j.data.embedUrl)
+          return
+        }
         if (r.ok && j.data?.streamUrl) {
           setSrc(j.data.streamUrl)
           return
@@ -46,7 +56,16 @@ function VideoPlayerInner({ videoId, title, thumbnailUrl, autoPlay, className }:
         aspectRatio: '16/9',
       }}
     >
-      {src ? (
+      {embedUrl ? (
+        // Bunny's hosted player — plays HLS in every browser (native <video> can't).
+        <iframe
+          src={embedUrl}
+          className="h-full w-full"
+          allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen;"
+          allowFullScreen
+          title={title}
+        />
+      ) : src ? (
         <video
           src={src}
           controls

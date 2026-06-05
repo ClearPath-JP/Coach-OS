@@ -16,6 +16,7 @@
     "db:pull": "supabase db pull",
     "db:status": "supabase migration list",
     "test": "jest --config jest.config.cjs --runInBand --detectOpenHandles --forceExit --testTimeout=120000",
+    "test:unit": "jest --config jest.unit.config.cjs",
     "setup": "npx tsx scripts/setup.ts",
     "create:demo": "npx tsx scripts/create-demo-coach.ts",
     "verify:stripe-env": "npx tsx scripts/verify-stripe-env.ts",

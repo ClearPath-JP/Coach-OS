@@ -6,6 +6,8 @@ export type VideoStreamRow = {
   workspace_id: string
   drive_file_id: string | null
   playback_url: string | null
+  bunny_video_guid: string | null
+  bunny_library_id: string | null
   deleted_at: string | null
 }
 
@@ -16,7 +18,7 @@ export async function getVideoStreamRow(videoId: string): Promise<VideoStreamRow
   const supabase = createServiceClient()
   const { data, error } = await supabase
     .from('videos')
-    .select('id, workspace_id, drive_file_id, playback_url, deleted_at')
+    .select('id, workspace_id, drive_file_id, playback_url, bunny_video_guid, bunny_library_id, deleted_at')
     .eq('id', videoId)
     .maybeSingle()
 

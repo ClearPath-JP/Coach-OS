@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
 import { signStreamToken } from '@/lib/stream-token'
 import { getVideoStreamRow, userCanStreamVideo } from '@/lib/video-stream-access'
+import { bunnyEmbedUrl } from '@/lib/bunny'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,9 +44,17 @@ export async function POST(_request: Request, context: RouteContext) {
     const { token, expiresAt } = signStreamToken(videoId, user.id, 3600, sessionEmail)
     const streamUrl = `/api/videos/${videoId}/stream?token=${encodeURIComponent(token)}`
 
+    // Bunny videos are HLS, which a native <video> can't play — hand back the
+    // hosted iframe player URL instead. Only reached after the access check above,
+    // so the GUID is never exposed to a viewer who can't watch the video.
+    const embedUrl = video.bunny_video_guid
+      ? bunnyEmbedUrl(video.bunny_video_guid, video.bunny_library_id)
+      : null
+
     return NextResponse.json({
       data: {
         streamUrl,
+        embedUrl,
         expiresAt: new Date(expiresAt).toISOString(),
         token,
       },
