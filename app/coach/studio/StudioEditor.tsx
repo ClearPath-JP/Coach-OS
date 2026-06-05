@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { RenderPanel } from './RenderPanel'
-import { totalDurationSec, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle } from '@/lib/studio/timeline'
+import { AudioPanel } from './AudioPanel'
+import { totalDurationSec, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle, ProjectAudioSchema, type ProjectAudio } from '@/lib/studio/timeline'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Icon } from '@/components/icons/inked'
@@ -40,6 +41,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
   const [saving, setSaving] = useState(false)
   const savedRef = useRef<string>('')
 
+  const [audio, setAudio] = useState<ProjectAudio>(() => ProjectAudioSchema.parse({}))
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -59,6 +61,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
           return
         }
         setTitle(p.title ?? 'Untitled'); setCaptionStyle(p.caption_style ?? 'tiktok')
+        if (p.audio) setAudio(ProjectAudioSchema.parse(p.audio))
         const byId = new Map(vids.map((v) => [v.id, v]))
         setClips((p.timeline ?? []).map((c: { sourceVideoId: string; inSec: number; outSec: number; captionsOn?: boolean }) => {
           const v = byId.get(c.sourceVideoId)
@@ -103,7 +106,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
 
   const serialize = useCallback(() => clips.map((c) => ({ sourceVideoId: c.sourceVideoId, inSec: Number(c.inSec.toFixed(2)), outSec: Number(c.outSec.toFixed(2)), crop: null, captionsOn: c.captionsOn })), [clips])
   const save = useCallback(async () => {
-    const body = JSON.stringify({ title, timeline: serialize(), captionStyle })
+    const body = JSON.stringify({ title, timeline: serialize(), captionStyle, audio })
     if (body === savedRef.current) return
     setSaving(true)
     try {
@@ -114,7 +117,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
     } finally {
       setSaving(false)
     }
-  }, [title, serialize, captionStyle, projectId])
+  }, [title, serialize, captionStyle, audio, projectId])
   useEffect(() => { const t = setTimeout(() => { void save() }, 1200); return () => clearTimeout(t) }, [save])
 
   const selectedClip = clips.find((c) => c.uid === selected) ?? null
@@ -383,6 +386,9 @@ export function StudioEditor({ projectId }: { projectId: string }) {
               })}
             </div>
           </Card>
+
+          {/* 6 — Audio panel */}
+          <AudioPanel audio={audio} onChange={setAudio} />
         </div>
       </div>
 
