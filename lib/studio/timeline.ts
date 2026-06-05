@@ -25,15 +25,25 @@ export const TimelineSchema = z.array(TimelineClipSchema).max(MAX_CLIPS)
 export type Timeline = z.infer<typeof TimelineSchema>
 
 export const ProjectAudioSchema = z.object({
-  musicAssetId: z.string().uuid().nullable().default(null),
-  voiceoverAssetId: z.string().uuid().nullable().default(null),
+  music: z.string().max(300).nullable().default(null),       // storage path in studio-audio, workspace-prefixed
+  voiceover: z.string().max(300).nullable().default(null),   // storage path
   volumes: z.object({
     clip: z.number().min(0).max(1).default(1),
     music: z.number().min(0).max(1).default(0.5),
     voiceover: z.number().min(0).max(1).default(1),
   }).default({ clip: 1, music: 0.5, voiceover: 1 }),
-}).default(() => ({ musicAssetId: null, voiceoverAssetId: null, volumes: { clip: 1, music: 0.5, voiceover: 1 } }))
+}).default(() => ({ music: null, voiceover: null, volumes: { clip: 1, music: 0.5, voiceover: 1 } }))
 export type ProjectAudio = z.infer<typeof ProjectAudioSchema>
+
+// Tenant guard: only return a path that belongs to this workspace (paths are `${workspaceId}/...`).
+// We also reject any path containing '..' to prevent traversal-style strings, even though
+// Supabase Storage treats paths as literal keys (not filesystem paths).
+export function audioPublicPath(workspaceId: string, path: string | null): string | null {
+  if (!path) return null
+  if (path.includes('..')) return null
+  return path.startsWith(`${workspaceId}/`) ? path : null
+}
+export const STUDIO_AUDIO_BUCKET = 'studio-audio'
 
 export const CAPTION_STYLES = ['tiktok', 'minimal', 'karaoke', 'none'] as const
 export type CaptionStyle = (typeof CAPTION_STYLES)[number]
