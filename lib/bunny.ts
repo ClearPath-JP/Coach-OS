@@ -99,6 +99,33 @@ export async function createBunnyVideo(title: string): Promise<BunnyCreateResult
   return { videoId, libraryId, tusEndpoint: `${VIDEO_API}/tusupload`, authorizationSignature, authorizationExpire }
 }
 
+/**
+ * Creates a Bunny video object then triggers Bunny's server-side "fetch from URL"
+ * so Bunny pulls and transcodes an existing MP4 (e.g. a rendered reel at output_url).
+ * Bunny transcodes asynchronously — poll getBunnyVideo() to check readiness.
+ * Returns the new Bunny guid and library id.
+ */
+export async function fetchBunnyVideoFromUrl(
+  title: string,
+  sourceUrl: string,
+): Promise<{ guid: string; libraryId: string }> {
+  const created = await createBunnyVideo(title)
+  const { apiKey } = cfg()
+  const res = await fetch(
+    `${VIDEO_API}/library/${created.libraryId}/videos/${created.videoId}/fetch`,
+    {
+      method: 'POST',
+      headers: { AccessKey: apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: sourceUrl }),
+    },
+  )
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`Bunny fetch-from-url failed (${res.status}): ${body.slice(0, 200)}`)
+  }
+  return { guid: created.videoId, libraryId: created.libraryId }
+}
+
 export type BunnyVideoStatus = {
   status: number
   ready: boolean
