@@ -56,6 +56,7 @@ export function VideosPageContent() {
   const [deleteVideo, setDeleteVideo] = useState<Video | null>(null)
   const [infoOpen, setInfoOpen] = useState(false)
   const [driveImportOpen, setDriveImportOpen] = useState(false)
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
@@ -63,6 +64,8 @@ export function VideosPageContent() {
   const [categories, setCategories] = useState<VideoCategory[]>([])
   const [categoryManagerOpen, setCategoryManagerOpen] = useState(false)
   const [storage, setStorage] = useState<{ videoBytes: number; videoMaxGb: number } | null>(null)
+  const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name' | 'duration'>('newest')
   const router = useRouter()
 
   const fetchVideos = useCallback(async () => {
@@ -100,10 +103,30 @@ export function VideosPageContent() {
   }, [categories])
 
   const filteredVideos = useMemo(() => {
-    if (categoryFilter === 'all') return videos
-    if (categoryFilter === '__none__') return videos.filter((v) => !v.category_id)
-    return videos.filter((v) => v.category_id === categoryFilter)
-  }, [videos, categoryFilter])
+    let list =
+      categoryFilter === 'all'
+        ? videos
+        : categoryFilter === '__none__'
+          ? videos.filter((v) => !v.category_id)
+          : videos.filter((v) => v.category_id === categoryFilter)
+    const q = search.trim().toLowerCase()
+    if (q) list = list.filter((v) => (v.title ?? '').toLowerCase().includes(q))
+    const sorted = [...list]
+    switch (sortBy) {
+      case 'oldest':
+        sorted.sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''))
+        break
+      case 'name':
+        sorted.sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', undefined, { sensitivity: 'base' }))
+        break
+      case 'duration':
+        sorted.sort((a, b) => (b.duration_seconds ?? 0) - (a.duration_seconds ?? 0))
+        break
+      default:
+        sorted.sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
+    }
+    return sorted
+  }, [videos, categoryFilter, search, sortBy])
 
   useEffect(() => {
     let mounted = true
@@ -225,27 +248,73 @@ export function VideosPageContent() {
       <div className="flex flex-col gap-4">
         <PageHeader title="Video library" icon={<Icon name="videos" />} {...(videos.length > 0 ? { countLabel: `${videos.length} videos` } : {})}>
           <VideoUploader onUploaded={() => { void fetchVideos(); void fetchStorage() }} />
-          <Button type="button" size="sm" variant="secondary" onClick={() => setDriveImportOpen(true)}>
-            Import from Google Drive
-          </Button>
-          <Link
-            href="/coach/settings"
-            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
-          >
-            Drive settings
-          </Link>
-          <button
-            type="button"
-            onClick={() => setInfoOpen(true)}
-            className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
-            aria-label="How do I add videos from my phone?"
-          >
+          {/* Desktop: secondary actions inline. */}
+          <div className="hidden items-center gap-2 sm:flex">
+            <Button type="button" size="sm" variant="secondary" onClick={() => setDriveImportOpen(true)}>
+              Import from Google Drive
+            </Button>
+            <Link
+              href="/coach/settings"
+              className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
+            >
+              Drive settings
+            </Link>
+            <button
+              type="button"
+              onClick={() => setInfoOpen(true)}
+              className="inline-flex h-8 min-h-8 items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
+              aria-label="How do I add videos from my phone?"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 16v-4M12 8h.01" />
               </svg>
               How do I add videos from my phone?
             </button>
+          </div>
+          {/* Mobile: overflow menu so the header never clips. */}
+          <div className="relative sm:hidden">
+            <button
+              type="button"
+              onClick={() => setHeaderMenuOpen((o) => !o)}
+              aria-label="More options"
+              className="inline-flex h-8 min-h-8 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-2.5 text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-muted)]"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <circle cx="5" cy="12" r="1.6" />
+                <circle cx="12" cy="12" r="1.6" />
+                <circle cx="19" cy="12" r="1.6" />
+              </svg>
+            </button>
+            {headerMenuOpen && (
+              <>
+                <button type="button" className="fixed inset-0 z-30" aria-hidden onClick={() => setHeaderMenuOpen(false)} />
+                <div className="absolute right-0 top-full z-40 mt-1 w-60 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] py-1 shadow-xl">
+                  <button
+                    type="button"
+                    onClick={() => { setDriveImportOpen(true); setHeaderMenuOpen(false) }}
+                    className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                  >
+                    Import from Google Drive
+                  </button>
+                  <Link
+                    href="/coach/settings"
+                    onClick={() => setHeaderMenuOpen(false)}
+                    className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                  >
+                    Drive settings
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => { setInfoOpen(true); setHeaderMenuOpen(false) }}
+                    className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                  >
+                    How do I add videos from my phone?
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </PageHeader>
 
         {storage && storage.videoMaxGb > 0 && (
@@ -284,7 +353,7 @@ export function VideosPageContent() {
                 </button>
               )
             })}
-            {videos.filter((v) => !v.category_id).length > 0 && (
+            {categories.length > 0 && videos.filter((v) => !v.category_id).length > 0 && (
               <button
                 type="button"
                 onClick={() => setCategoryFilter('__none__')}
@@ -301,6 +370,37 @@ export function VideosPageContent() {
 
           {/* ── Actions Bar ── */}
           <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[150px] flex-1 sm:max-w-xs">
+              <svg
+                className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-[var(--text-quaternary)]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.3-4.3" />
+              </svg>
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search videos…"
+                className="h-9 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] pl-8 pr-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-quaternary)] outline-none transition-colors focus:border-[var(--accent)]"
+              />
+            </div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              aria-label="Sort videos"
+              className="h-9 shrink-0 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--bg-app)] px-2.5 text-[13px] text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--accent)]"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="name">Name A–Z</option>
+              <option value="duration">Longest</option>
+            </select>
             <Button
               type="button"
               variant="ghost"
@@ -369,6 +469,7 @@ export function VideosPageContent() {
                 onManage={() => setManageVideo(video)}
                 onRequestDelete={() => setDeleteVideo(video)}
                 onAddToProgram={() => setAddToProgramVideo(video)}
+                onUseInPromote={() => router.push(`/coach/promote?video=${video.id}`)}
               />
               )
             })}
@@ -376,7 +477,9 @@ export function VideosPageContent() {
         )}
 
         {!error && videos.length > 0 && filteredVideos.length === 0 && (
-          <p className="text-[13px] text-[var(--text-tertiary)]">No videos in this category.</p>
+          <p className="text-[13px] text-[var(--text-tertiary)]">
+            {search.trim() ? `No videos match “${search.trim()}”.` : 'No videos in this category.'}
+          </p>
         )}
       </div>
 
@@ -482,7 +585,7 @@ export function VideosPageContent() {
       {manageVideo && (
         <VideoManageModal
           video={manageVideo}
-          categorySuggestions={categories.map((c) => c.name)}
+          categories={categories}
           onClose={() => setManageVideo(null)}
           onSaved={(row) => {
             setVideos((prev) =>
@@ -493,13 +596,14 @@ export function VideosPageContent() {
                       title: row.title,
                       description: row.description,
                       category: row.category ?? null,
+                      category_id: row.category_id ?? null,
                     }
                   : v
               )
             )
             setPlayerVideo((prev) =>
               prev?.id === row.id
-                ? { ...prev, title: row.title, description: row.description, category: row.category ?? null }
+                ? { ...prev, title: row.title, description: row.description, category: row.category ?? null, category_id: row.category_id ?? null }
                 : prev
             )
             setToast('Video updated')
@@ -780,18 +884,24 @@ function BulkCategoryModal({
 
 function VideoManageModal({
   video,
-  categorySuggestions,
+  categories,
   onClose,
   onSaved,
 }: {
   video: Video
-  categorySuggestions: string[]
+  categories: VideoCategory[]
   onClose: () => void
-  onSaved: (row: { id: string; title: string; description: string | null; category: string | null }) => void
+  onSaved: (row: {
+    id: string
+    title: string
+    description: string | null
+    category: string | null
+    category_id: string | null
+  }) => void
 }) {
   const [title, setTitle] = useState(video.title)
   const [description, setDescription] = useState(video.description ?? '')
-  const [category, setCategory] = useState(video.category ?? '')
+  const [categoryId, setCategoryId] = useState<string>(video.category_id ?? '')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [access, setAccess] = useState<AccessPayload | null>(null)
@@ -825,9 +935,9 @@ function VideoManageModal({
   useEffect(() => {
     setTitle(video.title)
     setDescription(video.description ?? '')
-    setCategory(video.category ?? '')
+    setCategoryId(video.category_id ?? '')
     setErr(null)
-  }, [video.id, video.title, video.description, video.category])
+  }, [video.id, video.title, video.description, video.category_id])
 
   useEffect(() => {
     loadAccess()
@@ -860,7 +970,7 @@ function VideoManageModal({
         body: JSON.stringify({
           title: t,
           description: description.trim() === '' ? null : description.trim(),
-          category: category.trim() === '' ? null : category.trim(),
+          category_id: categoryId === '' ? null : categoryId,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -945,20 +1055,24 @@ function VideoManageModal({
           <label htmlFor="vm-cat" className="block text-sm font-medium text-[var(--color-ink)] mb-1">
             Category
           </label>
-          <input
+          <select
             id="vm-cat"
-            list="vm-cat-list"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Organize in your library (optional)"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
             className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-ink)]"
-            maxLength={80}
-          />
-          <datalist id="vm-cat-list">
-            {categorySuggestions.map((s) => (
-              <option key={s} value={s} />
+          >
+            <option value="">No category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
-          </datalist>
+          </select>
+          {categories.length === 0 && (
+            <p className="mt-1 text-xs text-[var(--color-muted)]">
+              No categories yet — create them with “Manage Categories”.
+            </p>
+          )}
         </div>
         {err && <p className="text-sm text-[var(--color-error)]">{err}</p>}
         <div className="flex flex-wrap gap-2">
@@ -1311,7 +1425,7 @@ function StorageMeter({ usedBytes, maxGb }: { usedBytes: number; maxGb: number }
       <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
         <div
           className="h-full rounded-full transition-[width] duration-500"
-          style={{ width: `${pct}%`, background: near ? 'var(--warning)' : 'var(--accent)' }}
+          style={{ width: `${usedBytes > 0 ? Math.max(pct, 2) : 0}%`, background: near ? 'var(--warning)' : 'var(--accent)' }}
         />
       </div>
     </div>
@@ -1330,6 +1444,7 @@ function VideoCard({
   onManage,
   onRequestDelete,
   onAddToProgram,
+  onUseInPromote,
 }: {
   video: Video
   categoryName: string | null
@@ -1342,6 +1457,7 @@ function VideoCard({
   onManage: () => void
   onRequestDelete: () => void
   onAddToProgram: () => void
+  onUseInPromote: () => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const previewRef = useRef<HTMLVideoElement | null>(null)
@@ -1354,7 +1470,7 @@ function VideoCard({
   return (
     <div
       className={`card-glow group relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-all duration-300 ${
-        selected ? 'ring-2 ring-[var(--color-accent)]' : 'hover:shadow-lg hover:-translate-y-1 hover:border-[rgba(159,18,57,0.2)]'
+        selected ? 'ring-2 ring-[var(--accent)]' : 'hover:shadow-lg hover:-translate-y-1 hover:border-[var(--accent)]'
       }`}
     >
       {/* Thumbnail / Preview */}
@@ -1381,8 +1497,8 @@ function VideoCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={posterUrl} alt={video.title} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-neutral-800">
-            <svg className="size-10 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--bg-muted)] to-neutral-900">
+            <svg className="size-10 text-[var(--text-quaternary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z" />
               <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -1463,7 +1579,7 @@ function VideoCard({
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o) }}
-            className="rounded-lg p-1.5 text-white/70 opacity-0 transition-opacity hover:bg-white/20 hover:text-white group-hover:opacity-100"
+            className="rounded-lg bg-black/35 p-1.5 text-white/90 backdrop-blur-sm transition-colors hover:bg-black/55 hover:text-white"
             aria-label="Options"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -1492,6 +1608,16 @@ function VideoCard({
                   <svg className="size-4 text-[var(--text-tertiary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
                   Add to program
                 </button>
+                {isReady && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
+                    onClick={() => { onUseInPromote(); setMenuOpen(false) }}
+                  >
+                    <svg className="size-4 text-[var(--accent)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 11l15-5v12L3 14v-3z"/><path d="M7 15v3a2 2 0 003.5 1.3"/></svg>
+                    Use in Promote
+                  </button>
+                )}
                 <div className="my-1 border-t border-[var(--border-default)]" />
                 <button
                   type="button"
@@ -1510,7 +1636,7 @@ function VideoCard({
       {/* Card body */}
       <div className="px-3 pb-3 pt-2.5">
         <h3
-          className="cursor-pointer truncate text-[14px] font-medium text-[var(--text-primary)] hover:text-[var(--color-accent)]"
+          className="cursor-pointer truncate text-[14px] font-medium text-[var(--text-primary)] hover:text-[var(--accent)]"
           onClick={onManage}
           title={video.title}
         >
