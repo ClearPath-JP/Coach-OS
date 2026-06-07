@@ -12,11 +12,16 @@ export const CropSchema = z.object({
 })
 export type Crop = z.infer<typeof CropSchema>
 
+export const FILL_MODES = ['color', 'blur', 'crop'] as const
+export type FillMode = (typeof FILL_MODES)[number]
+export const FillModeSchema = z.enum(FILL_MODES)
+
 export const TimelineClipSchema = z.object({
   sourceVideoId: z.string().uuid(),
   inSec: z.number().min(0).default(0),
   outSec: z.number().positive(),
   crop: CropSchema.nullable().default(null),
+  fillMode: FillModeSchema.optional(),
   captionsOn: z.boolean().default(true),
 }).refine((c) => c.outSec > c.inSec, { message: 'Clip end must be after its start' })
 export type TimelineClip = z.infer<typeof TimelineClipSchema>
@@ -65,4 +70,9 @@ export function clipFrameRanges(tl: Pick<TimelineClip, 'inSec' | 'outSec'>[]): {
 }
 export function totalFrames(tl: Pick<TimelineClip, 'inSec' | 'outSec'>[]): number {
   return Math.max(1, clipFrameRanges(tl).reduce((s, r) => s + r.durationInFrames, 0))
+}
+
+export function effectiveFillMode(c: { fillMode?: FillMode | null; crop?: Crop | null }): FillMode {
+  if (c.fillMode) return c.fillMode
+  return c.crop ? 'crop' : 'color'
 }
