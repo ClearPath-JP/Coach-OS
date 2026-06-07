@@ -7,6 +7,7 @@ export type TimelineRenderClip = {
   outSec: number
   crop: { x: number; y: number; w: number; h: number } | null
   captionsOn: boolean
+  fillMode?: 'color' | 'blur' | 'crop'
 }
 export type TimelineCaption = { text: string; startMs: number; endMs: number } // timeline-time
 export type TimelineAudio = { musicUrl: string | null; voiceoverUrl: string | null; volumes: { clip: number; music: number; voiceover: number } }
@@ -21,12 +22,36 @@ const FPS = 30
 const tiktokStyle: CSSProperties = { fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 800, fontSize: 64, lineHeight: 1.1, color: 'white', textAlign: 'center', WebkitTextStroke: '8px black', paintOrder: 'stroke fill', textShadow: '0 4px 24px rgba(0,0,0,0.5)', maxWidth: '88%' }
 const minimalStyle: CSSProperties = { fontWeight: 600, fontSize: 46, lineHeight: 1.2, color: 'white', backgroundColor: 'rgba(0,0,0,0.55)', padding: '12px 24px', borderRadius: 12, maxWidth: '88%' }
 
-function coverStyle(crop: TimelineRenderClip['crop']): CSSProperties {
-  if (!crop) return { width: '100%', height: '100%', objectFit: 'cover' }
-  const scale = 1 / Math.max(crop.w || 1, 0.0001)
-  const tx = (0.5 - (crop.x + crop.w / 2)) * 100 * scale
-  const ty = (0.5 - (crop.y + crop.h / 2)) * 100 * scale
-  return { width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${scale}) translate(${tx}%, ${ty}%)`, transformOrigin: 'center' }
+function ClipLayer({ clip, volume }: { clip: TimelineRenderClip; volume: number }) {
+  const trimBefore = Math.round(clip.inSec * FPS)
+  const trimAfter = Math.round(clip.outSec * FPS)
+  const mode = clip.fillMode ?? (clip.crop ? 'crop' : 'color')
+
+  if (mode === 'blur') {
+    return (
+      <AbsoluteFill style={{ backgroundColor: 'black' }}>
+        <OffthreadVideo src={clip.mp4Url} trimBefore={trimBefore} trimAfter={trimAfter} muted
+          style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(40px) brightness(0.55)', transform: 'scale(1.2)' }} />
+        <OffthreadVideo src={clip.mp4Url} trimBefore={trimBefore} trimAfter={trimAfter} volume={volume}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      </AbsoluteFill>
+    )
+  }
+  if (mode === 'crop') {
+    return (
+      <AbsoluteFill style={{ backgroundColor: 'black' }}>
+        <OffthreadVideo src={clip.mp4Url} trimBefore={trimBefore} trimAfter={trimAfter} volume={volume}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </AbsoluteFill>
+    )
+  }
+  // 'color' (default): whole clip centered on black — nothing chopped.
+  return (
+    <AbsoluteFill style={{ backgroundColor: 'black' }}>
+      <OffthreadVideo src={clip.mp4Url} trimBefore={trimBefore} trimAfter={trimAfter} volume={volume}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+    </AbsoluteFill>
+  )
 }
 
 function splitWordsLocal(text: string, startMs: number, endMs: number) {
@@ -74,15 +99,7 @@ export function TimelineVideo({ clips, captions, captionStyle, audio }: Timeline
           const durationInFrames = Math.max(1, Math.round((clip.outSec - clip.inSec) * FPS))
           return (
             <Series.Sequence key={i} durationInFrames={durationInFrames}>
-              <AbsoluteFill>
-                <OffthreadVideo
-                  src={clip.mp4Url}
-                  trimBefore={Math.round(clip.inSec * FPS)}
-                  trimAfter={Math.round(clip.outSec * FPS)}
-                  volume={vol.clip}
-                  style={coverStyle(clip.crop)}
-                />
-              </AbsoluteFill>
+              <ClipLayer clip={clip} volume={vol.clip} />
             </Series.Sequence>
           )
         })}
