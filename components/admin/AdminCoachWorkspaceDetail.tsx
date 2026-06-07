@@ -323,9 +323,9 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 >
                   <option value="free">Free</option>
                   <option value="founding">Founding ($99/mo)</option>
-                  <option value="starter">Starter ($69/mo)</option>
-                  <option value="pro">Pro ($129/mo)</option>
-                  <option value="scale">Scale ($199/mo)</option>
+                  <option value="starter">Starter ($79/mo)</option>
+                  <option value="pro">Pro ($149/mo)</option>
+                  <option value="scale">Scale ($299/mo)</option>
                 </select>
                 <Button className="mt-2 w-full" size="sm" type="button" onClick={() => { setHeaderPlanOpen(false); void savePlan() }} disabled={saving}>
                   Update plan
@@ -423,9 +423,9 @@ export function AdminCoachWorkspaceDetail({ workspaceId }: { workspaceId: string
                 >
                   <option value="free">Free</option>
                   <option value="founding">Founding ($99/mo)</option>
-                  <option value="starter">Starter ($69/mo)</option>
-                  <option value="pro">Pro ($129/mo)</option>
-                  <option value="scale">Scale ($199/mo)</option>
+                  <option value="starter">Starter ($79/mo)</option>
+                  <option value="pro">Pro ($149/mo)</option>
+                  <option value="scale">Scale ($299/mo)</option>
                 </select>
                 <Button size="sm" onClick={() => void savePlan()} disabled={saving}>
                   {saving ? 'Saving…' : 'Update plan'}

@@ -30,7 +30,6 @@ const plans = [
       '50 lead searches / month',
       'Custom dojo branding',
       'Advanced analytics',
-      'Access codes',
     ],
   },
   {
@@ -43,8 +42,6 @@ const plans = [
       '500 GB monthly streaming',
       '200 lead searches / month',
       'White-label branding',
-      'Multiple dojos',
-      'API access',
       'Priority support',
     ],
   },
@@ -80,7 +77,7 @@ export function PricingSection() {
             <span className="text-[var(--accent)]">$99/mo for life</span> — $50/mo off regular Pro pricing, forever.
           </p>
           <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Same as the <span className="text-[var(--text-primary)] font-medium">Pro plan ($149/mo)</span> below — 50 students, custom branding, the works. Founding price never goes up.
+            Same as the <span className="text-[var(--text-primary)] font-medium">Pro plan ($149/mo)</span> below — unlimited students, custom branding, the works. Founding price never goes up.
           </p>
           <Link
             href="/signup?role=coach&plan=founding"
