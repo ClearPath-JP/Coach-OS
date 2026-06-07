@@ -21,6 +21,8 @@ export const TimelineClipSchema = z.object({
   inSec: z.number().min(0).default(0),
   outSec: z.number().positive(),
   crop: CropSchema.nullable().default(null),
+  // Optional (intentionally not defaulted): absent → effectiveFillMode() applies the
+  // back-compat default (legacy clips with a crop → 'crop'; otherwise → 'color').
   fillMode: FillModeSchema.optional(),
   captionsOn: z.boolean().default(true),
 }).refine((c) => c.outSec > c.inSec, { message: 'Clip end must be after its start' })
@@ -73,6 +75,6 @@ export function totalFrames(tl: Pick<TimelineClip, 'inSec' | 'outSec'>[]): numbe
 }
 
 export function effectiveFillMode(c: { fillMode?: FillMode | null; crop?: Crop | null }): FillMode {
-  if (c.fillMode) return c.fillMode
+  if (c.fillMode != null) return c.fillMode
   return c.crop ? 'crop' : 'color'
 }
