@@ -73,18 +73,26 @@ export async function POST(request: Request) {
       let cursorSec = 0
       const renderClips: TimelineRenderInput['clips'] = []
       let captions: TimelineRenderInput['captions'] = []
+      // Cache the best MP4 per source video so split/duplicate clips don't re-hit Bunny.
+      const bestMp4Cache = new Map<string, string>()
       for (const c of tl.data) {
         const v = byId.get(c.sourceVideoId)!
         // Stored mp4_url may be an older/lower rendition — re-derive the sharpest
-        // available now. Fall back to the stored URL if Bunny lookup fails.
-        let bestMp4 = v.mp4_url!
-        try {
-          if (v.bunny_video_guid) {
-            const fresh = await getBunnyVideo(v.bunny_video_guid)
-            if (fresh.mp4Url) bestMp4 = fresh.mp4Url
-          }
-        } catch { /* keep stored mp4_url */ }
-        renderClips.push({ mp4Url: signBunnyUrl(bestMp4), inSec: c.inSec, outSec: c.outSec, crop: c.crop, captionsOn: c.captionsOn, fillMode: effectiveFillMode({ fillMode: c.fillMode ?? null, crop: c.crop }) })
+        // available now, but ONLY when the video is fully transcoded (ready). Fall back
+        // to the stored URL if the lookup fails or the video isn't ready.
+        let bestMp4 = bestMp4Cache.get(c.sourceVideoId) ?? ''
+        if (!bestMp4) {
+          bestMp4 = v.mp4_url!
+          try {
+            if (v.bunny_video_guid) {
+              const fresh = await getBunnyVideo(v.bunny_video_guid)
+              if (fresh.ready && fresh.mp4Url) bestMp4 = fresh.mp4Url
+            }
+          } catch { /* keep stored mp4_url */ }
+          bestMp4Cache.set(c.sourceVideoId, bestMp4)
+        }
+        const signedMp4 = signBunnyUrl(bestMp4)
+        renderClips.push({ mp4Url: signedMp4, inSec: c.inSec, outSec: c.outSec, crop: c.crop, captionsOn: c.captionsOn, fillMode: effectiveFillMode({ fillMode: c.fillMode ?? null, crop: c.crop }) })
         if (c.captionsOn && project.caption_style !== 'none' && v.captions_vtt_url) {
           const { cues } = await fetchBunnyCaptions(signBunnyUrl(v.captions_vtt_url))
           captions = captions.concat(offsetCues(cues, { inSec: c.inSec, outSec: c.outSec, startSec: cursorSec }))
