@@ -8,6 +8,7 @@ import { format, formatDistanceToNow } from 'date-fns'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
 import { parseActionItemsJson } from '@/lib/sessions/action-items'
+import { formatCents } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
 import { initials } from './schedule-lib'
 
@@ -498,7 +499,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
             <div className="space-y-2">
               <p className="text-sm text-[var(--color-text-primary)]">Invoice sent — pending payment</p>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                {(paymentAmountCents != null ? `$${(paymentAmountCents / 100).toFixed(2)}` : 'Amount pending')}
+                {(paymentAmountCents != null ? formatCents(paymentAmountCents) : 'Amount pending')}
                 {paymentDate ? ` · sent ${format(new Date(paymentDate), 'MMM d, yyyy')}` : ''}
               </p>
               <div className="flex gap-2">
@@ -511,7 +512,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
             <div className="space-y-2">
               <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Paid</span>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                {(paymentAmountCents != null ? `$${(paymentAmountCents / 100).toFixed(2)}` : 'Paid')}
+                {(paymentAmountCents != null ? formatCents(paymentAmountCents) : 'Paid')}
                 {paymentMethod ? ` · ${paymentMethod}` : ''}
                 {paymentDate ? ` · ${format(new Date(paymentDate), 'MMM d, yyyy')}` : ''}
               </p>

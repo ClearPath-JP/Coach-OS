@@ -6,5 +6,5 @@ export function resolveAppBaseUrl(request: Request): string {
   if (fromEnv) return fromEnv.replace(/\/$/, '')
   const origin = request.headers.get('origin')?.trim()
   if (origin) return origin.replace(/\/$/, '')
-  return 'https://app.clearpath.com'
+  return 'https://coach.foundos.ai'
 }

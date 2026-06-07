@@ -528,9 +528,10 @@ interface DeleteConfirmProps {
   onCancel: () => void
   onConfirm: () => void
   deleting: boolean
+  error?: string | null
 }
 
-function DeleteConfirm({ plan, onCancel, onConfirm, deleting }: DeleteConfirmProps) {
+function DeleteConfirm({ plan, onCancel, onConfirm, deleting, error }: DeleteConfirmProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -553,6 +554,11 @@ function DeleteConfirm({ plan, onCancel, onConfirm, deleting }: DeleteConfirmPro
             <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
             {plan.memberCount} active member{plan.memberCount !== 1 ? 's' : ''} on this plan.
           </div>
+        )}
+        {error && (
+          <p className="rounded-lg border border-[var(--error-border,_var(--error))] bg-[var(--error-bg,_transparent)] px-3 py-2 text-xs text-[var(--error)]">
+            {error}
+          </p>
         )}
         <div className="flex justify-end gap-2">
           <button
@@ -595,6 +601,7 @@ export function MembershipsContent() {
 
   const [deleteTarget, setDeleteTarget] = useState<MembershipPlan | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -625,17 +632,19 @@ export function MembershipsContent() {
   async function handleDelete() {
     if (!deleteTarget) return
     setDeleting(true)
+    setDeleteError(null)
     try {
       const res = await fetch(`/api/coach/memberships/${deleteTarget.id}`, { method: 'DELETE' })
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
-        alert((json as { error?: string }).error ?? 'Could not archive plan')
+        setDeleteError((json as { error?: string }).error ?? 'Could not archive plan')
         return
       }
       setDeleteTarget(null)
+      setDeleteError(null)
       await load()
     } catch {
-      alert('Network error — try again')
+      setDeleteError('Network error — try again')
     } finally {
       setDeleting(false)
     }
@@ -836,9 +845,10 @@ export function MembershipsContent() {
       {deleteTarget && (
         <DeleteConfirm
           plan={deleteTarget}
-          onCancel={() => setDeleteTarget(null)}
+          onCancel={() => { setDeleteTarget(null); setDeleteError(null) }}
           onConfirm={() => void handleDelete()}
           deleting={deleting}
+          error={deleteError}
         />
       )}
     </main>

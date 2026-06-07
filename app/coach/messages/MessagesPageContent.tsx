@@ -308,12 +308,10 @@ export function CoachMessagesPageContent() {
             /* ignore */
           }
           console.error('Mark messages read failed:', res.status, body)
-          setToast('Could not mark messages as read — try again')
         }
       })
       .catch((err) => {
         console.error('Mark messages read failed:', err)
-        setToast('Could not mark messages as read — try again')
       })
   }, [selectedClientId])
 

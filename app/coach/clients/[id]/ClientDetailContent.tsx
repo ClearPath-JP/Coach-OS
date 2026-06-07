@@ -653,7 +653,7 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
                       {PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}
                     </span>
                   </div>
-                  <p className="mt-2 text-[14px] text-[var(--color-muted)]">{p.payment_date}</p>
+                  <p className="mt-2 text-[14px] text-[var(--color-muted)]">{p.payment_date ? format(parseISO(p.payment_date), 'MMM d, yyyy') : '—'}</p>
                   {p.payment_reference ? (
                     <p className="mt-1 text-[14px] text-[var(--color-muted)]">Ref: {p.payment_reference}</p>
                   ) : null}

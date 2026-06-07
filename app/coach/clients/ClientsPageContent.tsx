@@ -521,13 +521,6 @@ export function CoachClientsPageContent() {
                             >
                               View
                             </Link>
-                            <Link
-                              href={`/coach/clients/${client.id}`}
-                              className="block px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"
-                              onClick={() => setOpenMenuId(null)}
-                            >
-                              Edit
-                            </Link>
                             <button
                               type="button"
                               className="block w-full px-3 py-2 text-left text-[13px] text-[var(--error)] hover:bg-[var(--bg-muted)]"

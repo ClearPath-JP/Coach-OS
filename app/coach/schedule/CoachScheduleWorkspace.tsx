@@ -232,7 +232,7 @@ export function CoachScheduleWorkspace() {
       <header className="mb-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="sensei-page__label">Command Center</p>
+            <p className="sensei-page__label">Schedule</p>
             <h2 className="sensei-page__heading mt-1">{headerDatePill}</h2>
           </div>
           <button
