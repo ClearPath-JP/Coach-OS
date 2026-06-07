@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import { RenderPanel } from './RenderPanel'
 import { AudioPanel } from './AudioPanel'
 import { CropBox } from './CropBox'
-import { totalDurationSec, totalFrames, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle, type Crop, ProjectAudioSchema, type ProjectAudio } from '@/lib/studio/timeline'
+import { totalDurationSec, totalFrames, MAX_CLIPS, MAX_TOTAL_SEC, type CaptionStyle, type Crop, ProjectAudioSchema, type ProjectAudio, effectiveFillMode } from '@/lib/studio/timeline'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Icon } from '@/components/icons/inked'
@@ -136,7 +136,7 @@ export function StudioEditor({ projectId }: { projectId: string }) {
     clips: clips
       .map((c) => {
         const v = library.find((l) => l.id === c.sourceVideoId)
-        return { mp4Url: v?.mp4_url ?? '', inSec: c.inSec, outSec: c.outSec, crop: c.crop, captionsOn: c.captionsOn }
+        return { mp4Url: v?.mp4_url ?? '', inSec: c.inSec, outSec: c.outSec, crop: c.crop, captionsOn: c.captionsOn, fillMode: effectiveFillMode({ fillMode: null, crop: c.crop }) }
       })
       .filter((c) => c.mp4Url),
     captions: [],
