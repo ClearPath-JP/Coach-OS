@@ -21,8 +21,21 @@ type ApiSession = {
 
 function typeLabel(t: string | null | undefined): string {
   if (t === 'in_person') return 'In person'
-  if (t === 'video' || t === 'phone') return 'Video'
+  if (t === 'video') return 'Video'
+  if (t === 'phone') return 'Phone call'
   return 'Session'
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  scheduled: 'Scheduled',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  no_show: 'No-show',
+  rescheduled: 'Rescheduled',
+}
+
+function statusLabel(s: string): string {
+  return STATUS_LABELS[s] ?? (s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' '))
 }
 
 export function ClientSessionsContent() {
@@ -153,7 +166,7 @@ export function ClientSessionsContent() {
                         done ? 'bg-[var(--success-bg)] text-[var(--success)]' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
                       )}
                     >
-                      {done ? 'Completed' : s.status === 'cancelled' ? 'Cancelled' : s.status}
+                      {statusLabel(s.status)}
                     </span>
                   </li>
                 )

@@ -2,8 +2,9 @@
 
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 import { format } from 'date-fns'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 export type InvoiceCardDataClient = {
   type: 'invoice'
@@ -48,7 +49,16 @@ export function InvoiceCardClient({
   const [selectedMethod, setSelectedMethod] = useState<string>('card')
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const canPayByCard = paymentDetails?.stripeCardPaymentsEnabled === true
+
+  useEffect(() => {
+    if (!toast) return
+    const t = window.setTimeout(() => setToast(null), 4000)
+    return () => window.clearTimeout(t)
+  }, [toast])
 
   const methods = useMemo(
     () =>
@@ -102,8 +112,7 @@ export function InvoiceCardClient({
 
   const sendPaymentConfirmation = async () => {
     if (!data.clientId) return
-    const ok = window.confirm('Have you already sent the payment?')
-    if (!ok) return
+    setSending(true)
     const labelMap: Record<string, string> = {
       card: 'card',
       cashapp: 'CashApp',
@@ -111,14 +120,29 @@ export function InvoiceCardClient({
       paypal: 'PayPal',
       zelle: 'Zelle',
     }
-    await fetch('/api/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientId: data.clientId,
-        content: `Hi, I've sent payment via ${labelMap[selectedMethod] ?? 'a payment method'}`,
-      }),
-    }).catch(() => null)
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          clientId: data.clientId,
+          content: `Hi, I've sent payment via ${labelMap[selectedMethod] ?? 'a payment method'}`,
+          messageType: 'text',
+        }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setToast(typeof (json as { error?: string }).error === 'string' ? (json as { error?: string }).error! : 'Could not notify your coach — try Messages.')
+      } else {
+        setToast("Message sent to your coach. They'll confirm once received.")
+      }
+    } catch {
+      setToast('Could not notify your coach — try again.')
+    } finally {
+      setSending(false)
+      setConfirmOpen(false)
+    }
   }
 
   return (
@@ -202,11 +226,32 @@ export function InvoiceCardClient({
             </div>
           ) : null}
 
-          <Button variant="secondary" className="w-full" onClick={() => void sendPaymentConfirmation()}>
+          <Button variant="secondary" className="w-full" onClick={() => setConfirmOpen(true)}>
             I&apos;ve sent payment
           </Button>
         </div>
       )}
+
+      <Modal isOpen={confirmOpen} onClose={() => !sending && setConfirmOpen(false)} title="Confirm payment">
+        <p className="text-[14px] text-[var(--color-muted)]">Have you already sent the payment?</p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" disabled={sending} onClick={() => !sending && setConfirmOpen(false)}>
+            Not yet
+          </Button>
+          <Button type="button" variant="primary" disabled={sending} onClick={() => void sendPaymentConfirmation()}>
+            {sending ? 'Sending…' : 'Yes, I sent it'}
+          </Button>
+        </div>
+      </Modal>
+
+      {toast ? (
+        <div
+          className="fixed bottom-6 left-1/2 z-[60] max-w-sm -translate-x-1/2 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-ink)] px-4 py-2 text-center text-[14px] text-white shadow-lg"
+          role="status"
+        >
+          {toast}
+        </div>
+      ) : null}
     </div>
   )
 }

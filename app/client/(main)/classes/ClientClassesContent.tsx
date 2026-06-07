@@ -108,7 +108,15 @@ export function ClientClassesContent() {
       }
       const url = json.data?.url
       if (url) {
-        window.location.assign(url)
+        // Guard against open-redirect: only allow Stripe Checkout URLs.
+        let parsed: URL | null = null
+        try { parsed = new URL(url) } catch { /* invalid URL */ }
+        if (parsed && parsed.protocol === 'https:' && parsed.hostname === 'checkout.stripe.com') {
+          window.location.assign(url)
+          return
+        }
+        setBookError('Unexpected booking URL — please contact support')
+        setBookingId(null)
         return
       }
       setBookError('Booking link missing')

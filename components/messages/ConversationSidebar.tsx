@@ -1,4 +1,3 @@
-/* TODO Phase 6: virtualize list if coaches have > 50 students */
 'use client'
 
 import { memo, useCallback, useMemo, useState } from 'react'

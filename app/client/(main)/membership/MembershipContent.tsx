@@ -52,6 +52,9 @@ function accessLabel(plan: {
   if (plan.access_type === 'limited' && plan.classes_per_period != null) {
     return `${plan.classes_per_period} classes per month`
   }
+  if (plan.access_type === 'specific') {
+    return 'Specific classes'
+  }
   return 'Unlimited classes'
 }
 
@@ -65,7 +68,17 @@ function remainingLabel(membership: Membership): string {
     const remaining = Math.max(0, total - used)
     return `${remaining} of ${total} classes left this month`
   }
+  if (membership.plan_access_type === 'specific') {
+    return 'Specific classes'
+  }
   return 'Unlimited classes'
+}
+
+function humanizeType(raw: string): string {
+  return raw
+    .split('_')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
 }
 
 function statusPill(status: Membership['status']) {
@@ -449,7 +462,7 @@ export function MembershipContent() {
                       plan.applies_to_types.length > 0 && (
                         <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">
                           Applies to:{' '}
-                          {plan.applies_to_types.join(', ')}
+                          {plan.applies_to_types.map(humanizeType).join(', ')}
                         </p>
                       )}
 

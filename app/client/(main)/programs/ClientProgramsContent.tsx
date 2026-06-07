@@ -130,7 +130,7 @@ export function ClientProgramsContent() {
                   prog.status === 'paused' && 'bg-[var(--color-muted)]/20 text-[var(--color-muted)]'
                 )}
               >
-                {prog.status.charAt(0).toUpperCase() + prog.status.slice(1)}
+                {({ active: 'Active', completed: 'Completed', paused: 'Paused' } as Record<string, string>)[prog.status ?? ''] ?? ((prog.status ?? '').charAt(0).toUpperCase() + (prog.status ?? '').slice(1).replace(/_/g, ' '))}
               </span>
               <Link href={`/client/programs/${prog.programId}`} className="block mt-4">
                 <Button variant="secondary" className="w-full min-h-[44px]">
