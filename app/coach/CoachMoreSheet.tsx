@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Icon, type InkedIconName } from '@/components/icons/inked'
 
-type Row = { href: string; label: string; icon: InkedIconName }
+type Row = { href: string; label: string; icon: InkedIconName; soon?: boolean }
 type Group = { title: string; rows: Row[] }
 
 const GROUPS: Group[] = [
@@ -25,8 +25,8 @@ const GROUPS: Group[] = [
     { href: '/coach/analytics', label: 'Analytics', icon: 'analytics' },
   ] },
   { title: 'Grow', rows: [
-    { href: '/coach/studio', label: 'Studio', icon: 'studio' },
-    { href: '/coach/promote', label: 'Promote', icon: 'promote' },
+    { href: '/coach/studio', label: 'Studio', icon: 'studio', soon: true },
+    { href: '/coach/promote', label: 'Promote', icon: 'promote', soon: true },
     { href: '/coach/leads', label: 'Lead Research', icon: 'leads' },
     { href: '/coach/videos', label: 'Videos', icon: 'videos' },
   ] },
@@ -59,6 +59,11 @@ export function CoachMoreSheet({ open, onClose }: { open: boolean; onClose: () =
                   >
                     <Icon name={r.icon} size={17} />
                     {r.label}
+                    {r.soon && (
+                      <span className="ml-auto rounded bg-[var(--accent)]/15 px-1.5 py-px text-[10px] font-semibold text-[var(--accent)]">
+                        Soon
+                      </span>
+                    )}
                   </Link>
                 )
               })}
