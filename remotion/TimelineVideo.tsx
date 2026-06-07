@@ -22,6 +22,16 @@ const FPS = 30
 const tiktokStyle: CSSProperties = { fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 800, fontSize: 64, lineHeight: 1.1, color: 'white', textAlign: 'center', WebkitTextStroke: '8px black', paintOrder: 'stroke fill', textShadow: '0 4px 24px rgba(0,0,0,0.5)', maxWidth: '88%' }
 const minimalStyle: CSSProperties = { fontWeight: 600, fontSize: 46, lineHeight: 1.2, color: 'white', backgroundColor: 'rgba(0,0,0,0.55)', padding: '12px 24px', borderRadius: 12, maxWidth: '88%' }
 
+// Renders one clip into the 9:16 frame by fill mode. The render route and live preview
+// pass an explicit fillMode via effectiveFillMode() (lib/studio/timeline.ts — the source
+// of truth); the inline `?? (clip.crop ? 'crop' : 'color')` below is only a defensive
+// fallback. Phase A scope:
+//   • 'color' (default) — whole clip on black (objectFit:contain); fixes the landscape hard-crop.
+//   • 'crop'  — plain center-cover; the saved crop RECT is intentionally NOT applied yet.
+//               True drag-crop using the source's real aspect lands in Phase B (spec §3.4).
+//   • 'blur'  — opt-in (no UI until Phase B); decodes the source twice (blurred cover bg +
+//               contained fg), so revisit Lambda memory + a clip-length cap when exposed.
+//               scale(1.2) is the safe margin for blur(40px).
 function ClipLayer({ clip, volume }: { clip: TimelineRenderClip; volume: number }) {
   const trimBefore = Math.round(clip.inSec * FPS)
   const trimAfter = Math.round(clip.outSec * FPS)
