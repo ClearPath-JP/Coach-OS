@@ -50,7 +50,7 @@ export async function startCaptionedRender(input: RenderInput): Promise<{ render
     composition: 'CaptionedClip',
     inputProps: input,
     codec: 'h264',
-    imageFormat: 'jpeg',
+    imageFormat: 'png',     // lossless frames — JPEG (q80) was double-compressing every frame
     privacy: 'public',
     // New AWS accounts cap Lambda concurrency at 10; Remotion fans a render out
     // across many functions and trips "Rate Exceeded". A high framesPerLambda keeps
@@ -85,7 +85,7 @@ export async function startTimelineRender(input: TimelineRenderInput): Promise<{
     composition: 'TimelineVideo',
     inputProps: input,
     codec: 'h264',
-    imageFormat: 'jpeg',
+    imageFormat: 'png',     // lossless frames — JPEG (q80) was double-compressing every frame
     privacy: 'public',
     framesPerLambda: 1000,
     downloadBehavior: { type: 'download', fileName: 'kindo-reel.mp4' },
