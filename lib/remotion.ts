@@ -69,6 +69,7 @@ export type TimelineRenderInput = {
     outSec: number
     crop: { x: number; y: number; w: number; h: number } | null
     captionsOn: boolean
+    fillMode: 'color' | 'blur' | 'crop'
   }[]
   captions: { text: string; startMs: number; endMs: number }[]
   captionStyle: 'tiktok' | 'minimal' | 'karaoke' | 'none'

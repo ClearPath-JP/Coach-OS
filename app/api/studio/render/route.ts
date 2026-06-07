@@ -6,9 +6,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { remotionConfigured, startTimelineRender, type TimelineRenderInput } from '@/lib/remotion'
-import { signBunnyUrl, fetchBunnyCaptions } from '@/lib/bunny'
+import { signBunnyUrl, fetchBunnyCaptions, getBunnyVideo } from '@/lib/bunny'
 import { logServerError } from '@/lib/log-server-error'
-import { TimelineSchema, totalDurationSec, MAX_TOTAL_SEC, ProjectAudioSchema, audioPublicPath, STUDIO_AUDIO_BUCKET } from '@/lib/studio/timeline'
+import { TimelineSchema, totalDurationSec, MAX_TOTAL_SEC, ProjectAudioSchema, audioPublicPath, STUDIO_AUDIO_BUCKET, effectiveFillMode } from '@/lib/studio/timeline'
 import { offsetCues } from '@/lib/studio/captions'
 
 export const runtime = 'nodejs'
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
   const ids = [...new Set(tl.data.map((c) => c.sourceVideoId))]
   const { data: vids } = await service.from('videos')
-    .select('id, mp4_url, captions_vtt_url').in('id', ids).eq('workspace_id', workspaceId)
+    .select('id, mp4_url, captions_vtt_url, bunny_video_guid').in('id', ids).eq('workspace_id', workspaceId)
   const byId = new Map((vids ?? []).map((v) => [v.id, v]))
   for (const c of tl.data) {
     const v = byId.get(c.sourceVideoId)
@@ -75,7 +75,16 @@ export async function POST(request: Request) {
       let captions: TimelineRenderInput['captions'] = []
       for (const c of tl.data) {
         const v = byId.get(c.sourceVideoId)!
-        renderClips.push({ mp4Url: signBunnyUrl(v.mp4_url!), inSec: c.inSec, outSec: c.outSec, crop: c.crop, captionsOn: c.captionsOn })
+        // Stored mp4_url may be an older/lower rendition — re-derive the sharpest
+        // available now. Fall back to the stored URL if Bunny lookup fails.
+        let bestMp4 = v.mp4_url!
+        try {
+          if (v.bunny_video_guid) {
+            const fresh = await getBunnyVideo(v.bunny_video_guid)
+            if (fresh.mp4Url) bestMp4 = fresh.mp4Url
+          }
+        } catch { /* keep stored mp4_url */ }
+        renderClips.push({ mp4Url: signBunnyUrl(bestMp4), inSec: c.inSec, outSec: c.outSec, crop: c.crop, captionsOn: c.captionsOn, fillMode: effectiveFillMode({ fillMode: c.fillMode ?? null, crop: c.crop }) })
         if (c.captionsOn && project.caption_style !== 'none' && v.captions_vtt_url) {
           const { cues } = await fetchBunnyCaptions(signBunnyUrl(v.captions_vtt_url))
           captions = captions.concat(offsetCues(cues, { inSec: c.inSec, outSec: c.outSec, startSec: cursorSec }))
