@@ -1,5 +1,6 @@
 import 'server-only'
 import crypto from 'crypto'
+import { pickBestMp4Resolution } from './bunny-resolution'
 
 /**
  * Bunny Stream helpers (server-only — uses the secret Stream API key).
@@ -169,7 +170,7 @@ export async function getBunnyVideo(videoId: string): Promise<BunnyVideoStatus> 
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean)
-  const mp4Res = resolutions.includes('720p') ? '720p' : (resolutions[resolutions.length - 1] ?? '720p')
+  const mp4Res = pickBestMp4Resolution(resolutions)
 
   return {
     status,
