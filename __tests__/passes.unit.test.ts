@@ -1,4 +1,5 @@
 import { createPassFromCheckout } from '@/lib/stripe-pass-purchase-webhook'
+import { selectUsablePass, type UsablePassCandidate } from '@/lib/pass-selection'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type Stripe from 'stripe'
 
@@ -131,5 +132,59 @@ describe('createPassFromCheckout', () => {
     )
     expect(res.ok).toBe(false)
     expect(db.__rows).toHaveLength(0)
+  })
+})
+
+function pass(over: Partial<UsablePassCandidate>): UsablePassCandidate {
+  return {
+    id: 'p',
+    credits_remaining: 5,
+    expires_at: null,
+    purchased_at: '2026-01-01T00:00:00.000Z',
+    applies_to: 'all',
+    applies_to_types: null,
+    ...over,
+  }
+}
+
+describe('selectUsablePass', () => {
+  const NOW = Date.parse('2026-06-08T00:00:00.000Z')
+
+  it("an 'all' pass covers any class type", () => {
+    const p = pass({ id: 'a' })
+    expect(selectUsablePass([p], 'yoga', NOW)?.id).toBe('a')
+    expect(selectUsablePass([p], null, NOW)?.id).toBe('a')
+  })
+
+  it("a 'types' pass covers only listed class types", () => {
+    const p = pass({ id: 'b', applies_to: 'types', applies_to_types: ['bjj', 'muay-thai'] })
+    expect(selectUsablePass([p], 'bjj', NOW)?.id).toBe('b')
+    expect(selectUsablePass([p], 'yoga', NOW)).toBeNull()
+  })
+
+  it('excludes expired passes, keeps still-valid ones', () => {
+    expect(selectUsablePass([pass({ id: 'e', expires_at: '2026-06-07T00:00:00.000Z' })], 'x', NOW)).toBeNull()
+    expect(selectUsablePass([pass({ id: 'v', expires_at: '2026-06-09T00:00:00.000Z' })], 'x', NOW)?.id).toBe('v')
+  })
+
+  it('excludes zero-credit passes', () => {
+    expect(selectUsablePass([pass({ id: 'z', credits_remaining: 0 })], 'x', NOW)).toBeNull()
+  })
+
+  it('FIFO: spends the soonest-expiring pass first, never-expiring last', () => {
+    const noExpiry = pass({ id: 'none', expires_at: null })
+    const farExpiry = pass({ id: 'far', expires_at: '2026-12-01T00:00:00.000Z' })
+    const soonExpiry = pass({ id: 'soon', expires_at: '2026-07-01T00:00:00.000Z' })
+    expect(selectUsablePass([noExpiry, farExpiry, soonExpiry], 'x', NOW)?.id).toBe('soon')
+  })
+
+  it('tie-breaks equal expiry by oldest purchase', () => {
+    const newer = pass({ id: 'newer', expires_at: null, purchased_at: '2026-05-01T00:00:00.000Z' })
+    const older = pass({ id: 'older', expires_at: null, purchased_at: '2026-01-01T00:00:00.000Z' })
+    expect(selectUsablePass([newer, older], 'x', NOW)?.id).toBe('older')
+  })
+
+  it('returns null when nothing is usable', () => {
+    expect(selectUsablePass([], 'x', NOW)).toBeNull()
   })
 })

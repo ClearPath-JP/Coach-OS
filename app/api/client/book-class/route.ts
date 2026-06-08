@@ -4,6 +4,7 @@ import { requireClient } from '@/lib/api-helpers'
 import { createServiceClient } from '@/lib/supabase/service'
 import { stripe } from '@/lib/stripe'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { selectUsablePass, type UsablePassCandidate } from '@/lib/pass-selection'
 
 const bookSchema = z.object({
   slotId: z.string().uuid(),
@@ -263,6 +264,111 @@ export async function POST(request: Request) {
       }
 
       // covered=false + memberAccess='included' → fall through to Stripe drop-in flow below
+    }
+
+    // 4b. Class-pass credit — a prepaid pass can cover this booking. members_only classes
+    // already 403'd above, so this only applies to drop-in + included classes. If a usable
+    // pass exists we decrement one credit atomically and book for free; otherwise fall through.
+    {
+      const { data: passesRaw } = await service
+        .from('client_passes')
+        .select('id, credits_remaining, expires_at, purchased_at, class_passes:pass_id ( applies_to, applies_to_types )')
+        .eq('client_id', clientId)
+        .eq('workspace_id', workspaceId)
+        .eq('status', 'active')
+        .gt('credits_remaining', 0)
+
+      type PassClass = { applies_to: string; applies_to_types: string[] | null }
+      type PassJoin = {
+        id: string
+        credits_remaining: number
+        expires_at: string | null
+        purchased_at: string
+        class_passes: PassClass | PassClass[] | null
+      }
+      const candidates: UsablePassCandidate[] = ((passesRaw as PassJoin[] | null) ?? []).map((p) => {
+        const cp = Array.isArray(p.class_passes) ? p.class_passes[0] : p.class_passes
+        return {
+          id: p.id,
+          credits_remaining: p.credits_remaining,
+          expires_at: p.expires_at,
+          purchased_at: p.purchased_at,
+          applies_to: cp?.applies_to ?? 'all',
+          applies_to_types: cp?.applies_to_types ?? null,
+        }
+      })
+      const usablePass = selectUsablePass(candidates, pkg.session_type ?? null, Date.now())
+
+      if (usablePass) {
+        // Atomic decrement (optimistic lock): only succeeds if credits_remaining is unchanged
+        // since we read it, so concurrent bookings can't overspend a pass.
+        const newRemaining = usablePass.credits_remaining - 1
+        const { data: decRows, error: decErr } = await service
+          .from('client_passes')
+          .update({
+            credits_remaining: newRemaining,
+            status: newRemaining === 0 ? 'depleted' : 'active',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', usablePass.id)
+          .eq('credits_remaining', usablePass.credits_remaining)
+          .gt('credits_remaining', 0)
+          .select('id')
+
+        if (decErr) {
+          console.error('POST /api/client/book-class pass decrement', decErr)
+          return NextResponse.json({ error: 'Booking failed — please try again' }, { status: 500 })
+        }
+
+        if (decRows && decRows.length > 0) {
+          const passDuration = pkg.duration_minutes
+          const passEnd = new Date(scheduledTime.getTime() + passDuration * 60_000)
+          const { error: passInsErr } = await service
+            .from('sessions')
+            .insert({
+              workspace_id: workspaceId,
+              coach_id: slot.coach_id,
+              client_id: clientId,
+              scheduled_time: scheduledTime.toISOString(),
+              end_time: passEnd.toISOString(),
+              duration_minutes: passDuration,
+              status: 'confirmed',
+              session_product_id: pkg.id,
+              recurring_availability_id: slotId,
+              paid_at: new Date().toISOString(),
+              // stripe_checkout_id omitted — pass-covered booking has no Stripe checkout
+            })
+
+          if (passInsErr) {
+            // Roll back the credit: re-read then +1 (capped at total) so we don't clobber
+            // a concurrent change between our read and this rollback.
+            const { data: cur } = await service
+              .from('client_passes')
+              .select('credits_remaining, credits_total')
+              .eq('id', usablePass.id)
+              .maybeSingle()
+            const curRemaining = cur?.credits_remaining ?? newRemaining
+            const total = cur?.credits_total ?? curRemaining + 1
+            await service
+              .from('client_passes')
+              .update({
+                credits_remaining: Math.min(total, curRemaining + 1),
+                status: 'active',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', usablePass.id)
+
+            if (passInsErr.code === '23505') {
+              return NextResponse.json({ error: 'You are already booked for this class' }, { status: 409 })
+            }
+            console.error('POST /api/client/book-class pass session insert', passInsErr)
+            return NextResponse.json({ error: 'Booking failed — please try again' }, { status: 500 })
+          }
+
+          return NextResponse.json({ data: { booked: true, passUsed: true } })
+        }
+        // Lost the optimistic-lock race (credit spent by a concurrent booking) → fall through.
+      }
     }
 
     // 5. Coach must have Stripe Connect set up
