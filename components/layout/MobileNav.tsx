@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
-import { LayoutDashboard, BookOpen, MessageSquare, Megaphone, User, CreditCard } from 'lucide-react'
+import { LayoutDashboard, BookOpen, MessageSquare, Megaphone, User, CreditCard, Ticket } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 function BillingIcon({ className }: { className?: string }) {
@@ -172,6 +172,7 @@ export const coachTabs = [
 export const clientPortalTabs: readonly { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/client/portal', label: 'Home', icon: LayoutDashboard },
   { href: '/client/programs', label: 'Programs', icon: BookOpen },
+  { href: '/client/passes', label: 'Passes', icon: Ticket },
   { href: '/client/messages', label: 'Messages', icon: MessageSquare },
   { href: '/client/membership', label: 'Membership', icon: CreditCard },
   { href: '/client/profile', label: 'Profile', icon: User },

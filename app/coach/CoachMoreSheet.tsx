@@ -17,6 +17,7 @@ const GROUPS: Group[] = [
   { title: 'Offerings', rows: [
     { href: '/coach/programs', label: 'Programs', icon: 'programs' },
     { href: '/coach/packages', label: 'Packages', icon: 'packages' },
+    { href: '/coach/passes', label: 'Passes', icon: 'packages' },
     { href: '/coach/memberships', label: 'Memberships', icon: 'memberships' },
   ] },
   { title: 'Money', rows: [

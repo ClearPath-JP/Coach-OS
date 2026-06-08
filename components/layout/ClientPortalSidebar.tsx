@@ -20,6 +20,7 @@ import { ClientPortalSidebarFooter } from '@/components/layout/ClientPortalSideb
 const PRIMARY: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/client/portal', label: 'Home', Icon: LayoutDashboard },
   { href: '/client/classes', label: 'Book a class', Icon: Ticket },
+  { href: '/client/passes', label: 'Passes', Icon: Ticket },
   { href: '/client/sessions', label: 'My sessions', Icon: Calendar },
   { href: '/client/programs', label: 'Programs', Icon: BookOpen },
   { href: '/client/goals', label: 'Goals', Icon: Target },
