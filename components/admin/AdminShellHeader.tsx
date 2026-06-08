@@ -26,7 +26,7 @@ export function AdminShellHeader({ email }: { email: string }) {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link href="/admin/overview" className="text-[17px] font-semibold text-[var(--text-primary)]">
-            Sensei
+            Korva
           </Link>
           <span className="rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
             Admin

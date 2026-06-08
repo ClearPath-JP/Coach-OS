@@ -23,8 +23,7 @@ export function AuthMarketingHeroPanel() {
             className="login-hero-fade-up mb-10 text-left text-[clamp(15px,1.2vw,18px)] tracking-[-0.02em]"
             style={{ animationDelay: '0.05s' }}
           >
-            <span className="font-bold text-white">Sensei</span>
-            <span className="font-light text-cp-sky"> App</span>
+            <span className="font-bold text-white">Korva</span>
           </p>
 
           <h2
