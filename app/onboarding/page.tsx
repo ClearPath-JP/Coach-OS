@@ -320,7 +320,7 @@ export default function OnboardingStep1Page() {
               <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--cp-accent)]">
                 1
               </span>
-              <span>Your workspace name is how you&apos;ll spot this account in Kindo and on client-facing surfaces.</span>
+              <span>Your workspace name is how you&apos;ll spot this account in Korva and on client-facing surfaces.</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-[11px] font-bold text-[var(--cp-accent)]">

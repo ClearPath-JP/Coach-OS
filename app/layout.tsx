@@ -22,7 +22,7 @@ const shipporiMincho = Shippori_Mincho({
 })
 
 export const metadata: Metadata = {
-  title: 'Kindo — Coaching platform & client portal',
+  title: 'Korva — Coaching platform & client portal',
   description: 'The coaching platform for martial arts and strength conditioning.',
 }
 

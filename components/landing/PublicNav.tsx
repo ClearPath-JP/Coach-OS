@@ -8,7 +8,7 @@ import { Menu, X } from 'lucide-react'
 const navLinks = [
   { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
-  { label: 'Why Kindo', href: '#founder' },
+  { label: 'Why Korva', href: '#founder' },
 ]
 
 export function PublicNav() {
@@ -17,14 +17,14 @@ export function PublicNav() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-app)]/80 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl flex items-center justify-between px-6 h-16">
-        {/* Logo — KINDO wordmark */}
-        <Link href="/" className="flex items-center group" aria-label="Kindo home">
+        {/* Logo — KORVA wordmark */}
+        <Link href="/" className="flex items-center group" aria-label="Korva home">
           <span
             className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-[0.12em]"
             style={{ lineHeight: 1 }}
           >
-            <span className="text-[var(--text-primary)]">KIN</span>
-            <span className="font-bold" style={{ color: 'var(--accent)' }}>DO</span>
+            <span className="text-[var(--text-primary)]">KOR</span>
+            <span className="font-bold" style={{ color: 'var(--accent)' }}>VA</span>
           </span>
         </Link>
 

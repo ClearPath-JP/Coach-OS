@@ -779,12 +779,12 @@ export function SettingsPageContent() {
               {!stripeConnected ? (
                 <div className="space-y-3">
                   <p className="text-sm text-[var(--color-text-secondary)]">
-                    Accept card payments directly through Kindo. Clients pay instantly - no back and forth.
+                    Accept card payments directly through Korva. Clients pay instantly - no back and forth.
                   </p>
                   <ul className="space-y-1 text-sm text-[var(--color-text-secondary)]">
                     <li>✓ Clients pay on Stripe Checkout</li>
                     <li>✓ Invoices marked paid when checkout completes</li>
-                    <li>✓ Revenue tracked in Kindo</li>
+                    <li>✓ Revenue tracked in Korva</li>
                   </ul>
                   <a href="/api/billing/stripe-connect">
                     <Button type="button">Connect Stripe</Button>
@@ -1069,14 +1069,14 @@ export function SettingsPageContent() {
               <div className="w-[200px] rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] p-3">
                 <div className="flex items-center gap-2 border-b border-[var(--border-subtle)] pb-2">
                   <span className="inline-flex size-5 rounded-[6px]" style={{ backgroundColor: accentColor }} />
-                  <span className="truncate text-[12px] font-medium text-[var(--text-primary)]">{brandName.trim() || 'Kindo'}</span>
+                  <span className="truncate text-[12px] font-medium text-[var(--text-primary)]">{brandName.trim() || 'Korva'}</span>
                 </div>
                 <div className="mt-2 space-y-1">
                   <div className="h-5 rounded-[6px]" style={{ backgroundColor: 'var(--accent-light)' }} />
                   <div className="h-5 rounded-[6px] bg-[var(--bg-muted)]" />
                   <div className="h-5 rounded-[6px] bg-[var(--bg-muted)]" />
                 </div>
-                <p className="mt-3 text-center text-[10px] text-[var(--text-quaternary)]">Powered by Kindo</p>
+                <p className="mt-3 text-center text-[10px] text-[var(--text-quaternary)]">Powered by Korva</p>
               </div>
               <p className="mt-2 text-[12px] text-[var(--text-tertiary)]">Preview — how clients see your portal</p>
             </div>

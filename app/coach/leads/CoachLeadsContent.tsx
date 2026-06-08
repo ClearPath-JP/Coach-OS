@@ -511,7 +511,7 @@ export function CoachLeadsContent() {
   const onExportCsv = useCallback(() => {
     const selectedLeads = displayedLeads.filter((l) => selected.has(l.leadKey))
     if (selectedLeads.length === 0) return
-    downloadCsv(selectedLeads, 'kindo-leads-selected.csv')
+    downloadCsv(selectedLeads, 'korva-leads-selected.csv')
   }, [displayedLeads, selected])
 
   const onMarkContacted = useCallback(() => {
@@ -540,7 +540,7 @@ export function CoachLeadsContent() {
 
   const onExportAll = useCallback(() => {
     if (displayedLeads.length === 0) return
-    downloadCsv(displayedLeads, 'kindo-leads-all.csv')
+    downloadCsv(displayedLeads, 'korva-leads-all.csv')
   }, [displayedLeads])
 
   // Row click — open drawer

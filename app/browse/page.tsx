@@ -3,7 +3,7 @@ import { Footer } from '@/components/landing/Footer'
 import { BrowseCoachesContent } from './BrowseCoachesContent'
 
 export const metadata = {
-  title: 'Browse Coaches — Kindo',
+  title: 'Browse Coaches — Korva',
   description: 'Find martial arts, fitness, and nutrition coaches. Join their dojo and start training.',
 }
 

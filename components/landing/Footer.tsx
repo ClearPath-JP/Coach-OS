@@ -4,7 +4,7 @@ const footerLinks = {
   Product: [
     { label: 'Features', href: '#features' },
     { label: 'Pricing', href: '#pricing' },
-    { label: 'Why Kindo', href: '#founder' },
+    { label: 'Why Korva', href: '#founder' },
   ],
   Company: [
     { label: 'Contact', href: 'mailto:hello@foundos.ai' },
@@ -20,16 +20,16 @@ export function Footer() {
     <footer className="border-t border-[var(--border-subtle)] bg-[var(--bg-app)]">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Brand col — KINDO wordmark */}
+          {/* Brand col — KORVA wordmark */}
           <div className="col-span-2 md:col-span-1">
             <div className="mb-4">
               <span
                 className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-[0.12em]"
                 style={{ lineHeight: 1 }}
-                aria-label="Kindo"
+                aria-label="Korva"
               >
-                <span className="text-[var(--text-primary)]">KIN</span>
-                <span className="font-bold" style={{ color: 'var(--accent)' }}>DO</span>
+                <span className="text-[var(--text-primary)]">KOR</span>
+                <span className="font-bold" style={{ color: 'var(--accent)' }}>VA</span>
               </span>
             </div>
             <p className="text-sm text-[var(--text-tertiary)] max-w-xs leading-relaxed">
@@ -61,7 +61,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-[var(--border-subtle)] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[var(--text-quaternary)]">
-            &copy; {new Date().getFullYear()} Kindo. All rights reserved.
+            &copy; {new Date().getFullYear()} Korva. All rights reserved.
           </p>
           <p className="text-xs text-[var(--text-quaternary)]">
             Your dojo, online.

@@ -83,7 +83,7 @@ export function SubscribePageContent({ userEmail }: Props) {
       {/* Wordmark */}
       <div className="mb-12 text-center">
         <div className="font-display text-[22px] font-medium leading-none tracking-[0.12em] text-[var(--text-primary)]">
-          KIN<span style={{ color: 'var(--accent)' }}>DO</span>
+          KOR<span style={{ color: 'var(--accent)' }}>VA</span>
         </div>
         <p className="mt-1.5 text-[13px] text-[var(--text-tertiary)]">
           Built for coaches. Designed for growth.

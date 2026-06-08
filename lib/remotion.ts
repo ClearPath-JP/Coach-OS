@@ -57,7 +57,7 @@ export async function startCaptionedRender(input: RenderInput): Promise<{ render
     // a short clip on 1–2 functions. Lower this once the AWS quota is raised
     // (`npx remotion lambda quotas increase`) for faster renders of long clips.
     framesPerLambda: 1000,
-    downloadBehavior: { type: 'download', fileName: 'kindo-clip.mp4' },
+    downloadBehavior: { type: 'download', fileName: 'korva-clip.mp4' },
   })
   return { renderId, bucketName }
 }
@@ -89,7 +89,7 @@ export async function startTimelineRender(input: TimelineRenderInput): Promise<{
     imageFormat: 'png',     // lossless frames — JPEG (q80) was double-compressing every frame
     privacy: 'public',
     framesPerLambda: 1000,
-    downloadBehavior: { type: 'download', fileName: 'kindo-reel.mp4' },
+    downloadBehavior: { type: 'download', fileName: 'korva-reel.mp4' },
   })
   return { renderId, bucketName }
 }

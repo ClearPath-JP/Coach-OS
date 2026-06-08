@@ -166,7 +166,7 @@ export function SubscriptionPageContent({
 
       {success && (
         <div className="rounded-xl border border-[var(--color-success)] bg-[var(--color-success-light)] px-4 py-3 text-[15px] text-[var(--color-success)]">
-          Your subscription is active. Welcome to Kindo!
+          Your subscription is active. Welcome to Korva!
         </div>
       )}
       {cancelled && (
@@ -290,7 +290,7 @@ export function SubscriptionPageContent({
         <Card variant="flat" padding="default" className="flex items-start gap-3">
           <Mail className="mt-0.5 size-4 shrink-0 text-[var(--text-tertiary)]" aria-hidden />
           <p className="text-[13px] text-[var(--text-secondary)]">
-            Your plan is managed by the Kindo team. Email{' '}
+            Your plan is managed by the Korva team. Email{' '}
             <a href="mailto:hello@foundos.ai" className="font-medium text-[var(--cp-accent)] hover:underline">
               hello@foundos.ai
             </a>{' '}

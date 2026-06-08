@@ -99,9 +99,9 @@ export default async function CoachLayout({
 
   const brandName = initialWorkspaceSettings.brandName
     || initialWorkspaceSettings.workspaceDisplayName
-    || 'Kindo'
+    || 'Korva'
 
-  // Coach surfaces stay KINDO brass: --cp-accent falls back to globals (var(--accent)).
+  // Coach surfaces stay KORVA brass: --cp-accent falls back to globals (var(--accent)).
   // The workspace/stance accent themes the client portal only (see app/client/layout).
 
   return (

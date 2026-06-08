@@ -18,7 +18,7 @@ export function AppLoadingScreen() {
         <ClearPathLogo size={40} />
       </div>
       <p className="mt-3 text-[15px] font-semibold tracking-[0.12em] text-[var(--text-primary)]">
-        KIN<span style={{ color: 'var(--accent)' }}>DO</span>
+        KOR<span style={{ color: 'var(--accent)' }}>VA</span>
       </p>
     </div>
   )

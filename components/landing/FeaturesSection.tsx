@@ -16,7 +16,7 @@ const features = [
   {
     icon: MapPin,
     title: 'Find Local Clients',
-    description: 'Type your city — Kindo pulls a list of local prospects from Instagram you can DM today. Built-in lead engine, not a third-party plugin.',
+    description: 'Type your city — Korva pulls a list of local prospects from Instagram you can DM today. Built-in lead engine, not a third-party plugin.',
     accent: true,
   },
   {

@@ -208,7 +208,7 @@ export function Nav({
   clientPortalTrailing,
 }: NavProps) {
   const pathname = usePathname() ?? ''
-  const logoLabel = brandName?.trim() || 'Kindo'
+  const logoLabel = brandName?.trim() || 'Korva'
   const [scrolled, setScrolled] = useState(false)
   const clientPortalLogoTrimmed = clientPortalLogoUrl?.trim() ?? ''
   const [portalLogoFailedForUrl, setPortalLogoFailedForUrl] = useState<string | null>(null)

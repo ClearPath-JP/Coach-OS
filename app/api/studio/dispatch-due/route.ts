@@ -146,7 +146,7 @@ async function handler(request: Request): Promise<NextResponse> {
           ` : ''}
 
           <p style="font-size: 12px; color: #999; margin-top: 32px;">
-            Sent by Kindo &mdash; your coaching studio
+            Sent by Korva &mdash; your coaching studio
           </p>
         </div>
       `

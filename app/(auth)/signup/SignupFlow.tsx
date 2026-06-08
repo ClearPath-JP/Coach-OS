@@ -102,7 +102,7 @@ export function SignupFlow() {
     <motion.div className="mx-auto flex max-w-[420px] flex-col gap-5" variants={stagger} initial="initial" animate="animate">
       <motion.div variants={item} className="mb-2 text-center">
         <h1 className="font-display mb-2 text-[24px] font-medium tracking-[0.01em] text-[var(--text-primary)]">
-          Join Kindo
+          Join Korva
         </h1>
         <p className="section-label-accent">
           Who are you signing up as?

@@ -174,7 +174,7 @@ export function SignupPageClient() {
               fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500,
               letterSpacing: '0.12em', color: 'rgba(237,237,239,0.7)', lineHeight: 1,
             }}>
-              KIN<span style={{ color: 'var(--accent)' }}>DO</span>
+              KOR<span style={{ color: 'var(--accent)' }}>VA</span>
             </div>
           </div>
 
@@ -242,7 +242,7 @@ export function SignupPageClient() {
               fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500,
               letterSpacing: '0.12em', color: 'var(--text-primary)', lineHeight: 1,
             }}>
-              KIN<span style={{ color: 'var(--accent)' }}>DO</span>
+              KOR<span style={{ color: 'var(--accent)' }}>VA</span>
             </div>
           </div>
 

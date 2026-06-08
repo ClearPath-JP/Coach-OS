@@ -10,7 +10,7 @@ export function ClientAuthBrandTitle({
 }: {
   className?: string
 }) {
-  const [label, setLabel] = useState('Kindo')
+  const [label, setLabel] = useState('Korva')
 
   useEffect(() => {
     let cancelled = false

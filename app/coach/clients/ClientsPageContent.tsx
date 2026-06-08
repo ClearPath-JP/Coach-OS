@@ -447,7 +447,7 @@ export function CoachClientsPageContent() {
         {!loading && !error && clients.length === 0 && (
           <EmptyState
             title="Add your first client"
-            description="Invite clients to access their programs, schedule sessions, and track progress through Kindo."
+            description="Invite clients to access their programs, schedule sessions, and track progress through Korva."
             action={<Button onClick={() => setAddModalOpen(true)}>Add first client</Button>}
           />
         )}

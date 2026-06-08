@@ -135,10 +135,10 @@ function SidebarWordmark() {
       <div className="min-w-0">
         <span
           className="block font-display text-[15px] font-semibold tracking-[0.12em]"
-          aria-label="Kindo"
+          aria-label="Korva"
         >
-          <span className="text-[var(--text-primary)]">KIN</span>
-          <span style={{ color: 'var(--accent)' }}>DO</span>
+          <span className="text-[var(--text-primary)]">KOR</span>
+          <span style={{ color: 'var(--accent)' }}>VA</span>
         </span>
         {workspaceName ? (
           <span
@@ -166,10 +166,10 @@ function CoachSidebarHeader() {
       <div className="min-w-0 flex-1 leading-tight">
         <div
           className="font-display text-[15px] font-semibold tracking-[0.12em]"
-          aria-label="Kindo"
+          aria-label="Korva"
         >
-          <span className="text-[var(--text-primary)]">KIN</span>
-          <span style={{ color: 'var(--accent)' }}>DO</span>
+          <span className="text-[var(--text-primary)]">KOR</span>
+          <span style={{ color: 'var(--accent)' }}>VA</span>
         </div>
         {workspaceName ? (
           <div

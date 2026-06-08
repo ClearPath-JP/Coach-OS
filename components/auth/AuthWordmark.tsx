@@ -32,10 +32,10 @@ export function AuthWordmark({
           sizeCls,
           className
         )}
-        aria-label="Kindo"
+        aria-label="Korva"
       >
-        <span className="text-[#0B2D5E]">KIN</span>
-        <span className="text-[var(--accent)]">DO</span>
+        <span className="text-[#0B2D5E]">KOR</span>
+        <span className="text-[var(--accent)]">VA</span>
       </p>
     )
   }
@@ -47,10 +47,10 @@ export function AuthWordmark({
         sizeCls,
         className
       )}
-      aria-label="Kindo"
+      aria-label="Korva"
     >
-      <span className="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]">KIN</span>
-      <span className="text-[var(--accent)] drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">DO</span>
+      <span className="text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]">KOR</span>
+      <span className="text-[var(--accent)] drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">VA</span>
     </p>
   )
 }

@@ -1,7 +1,7 @@
 import { ForgotPasswordForm } from './ForgotPasswordForm'
 
 /**
- * Forgot password — KINDO dojo identity, matches the login page.
+ * Forgot password — KORVA dojo identity, matches the login page.
  */
 export default function ForgotPasswordPage() {
   return (
@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       {/* ═══ TOP BAR ═══ */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500, letterSpacing: '0.12em', color: 'rgba(240,237,232,0.95)', lineHeight: 1, textShadow: '0 2px 10px rgba(0,0,0,0.6)' }}>
-          KIN<span style={{ color: 'var(--accent)' }}>DO</span>
+          KOR<span style={{ color: 'var(--accent)' }}>VA</span>
         </div>
         <p style={{ fontSize: 10, letterSpacing: '0.14em', color: 'rgba(200,190,170,0.5)', textShadow: '0 1px 6px rgba(0,0,0,0.6)', margin: 0 }}>
           FOCUS. TRAIN. EVOLVE.

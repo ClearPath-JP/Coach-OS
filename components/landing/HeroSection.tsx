@@ -31,7 +31,7 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 text-center">
-        {/* KINDO brand mark — small, above the headline */}
+        {/* KORVA brand mark — small, above the headline */}
         <motion.div
           custom={0}
           initial="hidden"
@@ -41,10 +41,10 @@ export function HeroSection() {
         >
           <span
             className="font-[family-name:var(--font-display)] text-xs font-semibold tracking-[0.36em]"
-            aria-label="Kindo"
+            aria-label="Korva"
           >
-            <span className="text-white/85">KIN</span>
-            <span className="font-bold" style={{ color: 'var(--accent)' }}>DO</span>
+            <span className="text-white/85">KOR</span>
+            <span className="font-bold" style={{ color: 'var(--accent)' }}>VA</span>
           </span>
         </motion.div>
 

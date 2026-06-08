@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error:
-              'This email already has a Kindo account. The client can log in at /login.',
+              'This email already has a Korva account. The client can log in at /login.',
           },
           { status: 409 }
         )

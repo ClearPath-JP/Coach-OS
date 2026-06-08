@@ -18,7 +18,7 @@ export function FounderSection() {
         className="relative mx-auto max-w-3xl px-6 text-center"
       >
         <span className="text-xs font-semibold tracking-widest uppercase text-[var(--accent)]">
-          Why Kindo
+          Why Korva
         </span>
         <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
           Built by a coach, not a software company.
@@ -36,7 +36,7 @@ export function FounderSection() {
         </div>
 
         <p className="mt-6 text-sm text-[var(--text-tertiary)]">
-          Kindo is in early access — I&apos;m personally onboarding the first 10 founding coaches by hand.
+          Korva is in early access — I&apos;m personally onboarding the first 10 founding coaches by hand.
         </p>
 
         <div className="mt-8">
