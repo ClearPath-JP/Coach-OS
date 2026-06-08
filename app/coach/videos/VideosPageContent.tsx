@@ -597,13 +597,14 @@ export function VideosPageContent() {
                       description: row.description,
                       category: row.category ?? null,
                       category_id: row.category_id ?? null,
+                      shared_with_clients: row.shared_with_clients ?? false,
                     }
                   : v
               )
             )
             setPlayerVideo((prev) =>
               prev?.id === row.id
-                ? { ...prev, title: row.title, description: row.description, category: row.category ?? null, category_id: row.category_id ?? null }
+                ? { ...prev, title: row.title, description: row.description, category: row.category ?? null, category_id: row.category_id ?? null, shared_with_clients: row.shared_with_clients ?? false }
                 : prev
             )
             setToast('Video updated')
@@ -897,11 +898,13 @@ function VideoManageModal({
     description: string | null
     category: string | null
     category_id: string | null
+    shared_with_clients?: boolean | null
   }) => void
 }) {
   const [title, setTitle] = useState(video.title)
   const [description, setDescription] = useState(video.description ?? '')
   const [categoryId, setCategoryId] = useState<string>(video.category_id ?? '')
+  const [sharedWithClients, setSharedWithClients] = useState<boolean>(video.shared_with_clients ?? false)
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [access, setAccess] = useState<AccessPayload | null>(null)
@@ -936,8 +939,9 @@ function VideoManageModal({
     setTitle(video.title)
     setDescription(video.description ?? '')
     setCategoryId(video.category_id ?? '')
+    setSharedWithClients(video.shared_with_clients ?? false)
     setErr(null)
-  }, [video.id, video.title, video.description, video.category_id])
+  }, [video.id, video.title, video.description, video.category_id, video.shared_with_clients])
 
   useEffect(() => {
     loadAccess()
@@ -971,6 +975,7 @@ function VideoManageModal({
           title: t,
           description: description.trim() === '' ? null : description.trim(),
           category_id: categoryId === '' ? null : categoryId,
+          shared_with_clients: sharedWithClients,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -1074,6 +1079,18 @@ function VideoManageModal({
             </p>
           )}
         </div>
+        <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]/40 px-3 py-2.5">
+          <span>
+            <span className="block text-sm font-medium text-[var(--color-ink)]">Share with clients</span>
+            <span className="block text-xs text-[var(--color-muted)]">Show this in every client&apos;s Videos tab.</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={sharedWithClients}
+            onChange={(e) => setSharedWithClients(e.target.checked)}
+            className="size-4 shrink-0 accent-[var(--accent)]"
+          />
+        </label>
         {err && <p className="text-sm text-[var(--color-error)]">{err}</p>}
         <div className="flex flex-wrap gap-2">
           <Button onClick={save} disabled={saving}>

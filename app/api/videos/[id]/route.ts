@@ -136,7 +136,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       description?: string | null
       category?: string | null
       category_id?: string | null
+      shared_with_clients?: boolean
     } = {}
+    if (parsed.data.shared_with_clients !== undefined) updates.shared_with_clients = parsed.data.shared_with_clients
     if (parsed.data.title !== undefined) updates.title = parsed.data.title
     if (parsed.data.description !== undefined) {
       const d = parsed.data.description
@@ -171,7 +173,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       .eq('id', id)
       .eq('workspace_id', workspaceId)
       .is('deleted_at', null)
-      .select('id, title, description, category, category_id')
+      .select('id, title, description, category, category_id, shared_with_clients')
       .maybeSingle()
 
     if (error) {

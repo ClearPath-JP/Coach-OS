@@ -104,13 +104,15 @@ export const patchVideoSchema = z
     // The real, tab-driving link. `category` (text) is legacy/free-form and no
     // longer the source of truth for the library's category tabs.
     category_id: z.union([z.string().uuid('Invalid category'), z.null()]).optional(),
+    shared_with_clients: z.boolean().optional(),
   })
   .refine(
     (d) =>
       d.title !== undefined ||
       d.description !== undefined ||
       d.category !== undefined ||
-      d.category_id !== undefined,
+      d.category_id !== undefined ||
+      d.shared_with_clients !== undefined,
     { message: 'Provide at least one field to update' }
   )
 export type PatchVideoInput = z.infer<typeof patchVideoSchema>

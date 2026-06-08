@@ -41,6 +41,21 @@ export async function clientCanAccessVideo(clientId: string, videoId: string): P
 
   if (ownUpload?.id) return true
 
+  // Coach shared this video with all clients in the workspace (Videos library).
+  const { data: shared } = await supabase
+    .from('videos')
+    .select('workspace_id, shared_with_clients, deleted_at')
+    .eq('id', videoId)
+    .maybeSingle()
+  if (shared?.shared_with_clients && !shared.deleted_at) {
+    const { data: cli } = await supabase
+      .from('clients')
+      .select('workspace_id')
+      .eq('id', clientId)
+      .maybeSingle()
+    if (cli?.workspace_id && cli.workspace_id === shared.workspace_id) return true
+  }
+
   const { data: viaProgram } = await supabase
     .from('program_content')
     .select('id, module_id')

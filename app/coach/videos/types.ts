@@ -13,6 +13,7 @@ export type Video = {
   description: string | null
   category: string | null
   category_id: string | null
+  shared_with_clients?: boolean | null
   drive_file_id: string | null
   drive_file_name: string | null
   drive_folder_id?: string | null

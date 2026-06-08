@@ -13,6 +13,7 @@ import {
   Receipt,
   User,
   CreditCard,
+  Video,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ClientPortalSidebarFooter } from '@/components/layout/ClientPortalSidebarFooter'
@@ -23,6 +24,7 @@ const PRIMARY: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/client/passes', label: 'Passes', Icon: Ticket },
   { href: '/client/sessions', label: 'My sessions', Icon: Calendar },
   { href: '/client/programs', label: 'Programs', Icon: BookOpen },
+  { href: '/client/videos', label: 'Videos', Icon: Video },
   { href: '/client/goals', label: 'Goals', Icon: Target },
   { href: '/client/messages', label: 'Messages', Icon: MessageSquare },
   { href: '/client/invoices', label: 'Invoices', Icon: Receipt },
