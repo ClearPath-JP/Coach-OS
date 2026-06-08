@@ -10,7 +10,7 @@ The goal is never to win an argument. It is to help them think through something
 
 "Totally fair. A notebook is not wrong — it is how most coaches start and some stay with it forever. The question I would ask yourself is: do you actually remember what you covered with every client three sessions ago? Can you look at your business and tell me how many clients you have right now, what each of them is working toward, and who is at risk of dropping off?
 
-A notebook works for the session you are in. It does not work for running the whole business. Kindo is basically what happens when a coach builds a digital version of the notebook that also handles scheduling, billing, and client accountability. If your notebook is covering all of that and you are happy, stick with it. If there are gaps, that is what this is for."
+A notebook works for the session you are in. It does not work for running the whole business. Korva is basically what happens when a coach builds a digital version of the notebook that also handles scheduling, billing, and client accountability. If your notebook is covering all of that and you are happy, stick with it. If there are gaps, that is what this is for."
 
 ---
 
@@ -38,7 +38,7 @@ I am also not asking you to switch everything at once. Start with one client. Lo
 
 "It depends what you are comparing it to. If you are comparing it to a notebook, yeah, $99 is more than free. If you are comparing it to the tools you are already stitching together — scheduling software, payment processing, Google Drive, maybe a membership tool — it is probably cheaper or at least close. And you get one thing that actually works together instead of five things that do not.
 
-More practically: if Kindo helps you retain one client for one extra month, that covers the cost for the whole year. Most coaches find that better session notes and more consistent check-ins directly reduce churn. The math works if the tool actually does what it says."
+More practically: if Korva helps you retain one client for one extra month, that covers the cost for the whole year. Most coaches find that better session notes and more consistent check-ins directly reduce churn. The math works if the tool actually does what it says."
 
 ---
 
@@ -56,7 +56,7 @@ The platform is also not early or broken — it is live. Client tracking, sessio
 
 **The honest response:**
 
-"That is exactly why I built this. Every other tool is either built for big gyms with staff — Mindbody style — or it is a generic service business tool that has nothing to do with how martial arts coaching actually works. Kindo tracks belts and ranks, conditioning benchmarks, the specific things that matter in a martial arts practice. The session notes are built around what a coach needs to log, not what a yoga studio needs. It is the difference between a tool that was adapted for coaching and one that was built for it from scratch."
+"That is exactly why I built this. Every other tool is either built for big gyms with staff — Mindbody style — or it is a generic service business tool that has nothing to do with how martial arts coaching actually works. Korva tracks belts and ranks, conditioning benchmarks, the specific things that matter in a martial arts practice. The session notes are built around what a coach needs to log, not what a yoga studio needs. It is the difference between a tool that was adapted for coaching and one that was built for it from scratch."
 
 ---
 

@@ -32,7 +32,7 @@ Instructions: Fill in every [bracket]. Keep it short. Send as a voice note if yo
 
 > Hey [Name] — I came across your page and your [specific thing: BJJ classes / conditioning work / whatever]. Quick tip I share with private coaches: if you are running clients through a WhatsApp group, the first thing that breaks is accountability. People forget their homework and blame you, not the tool. Happy to share what I do instead if it would be useful.
 
-*If they engage, share the insight naturally. Kindo comes up only if they ask what you use.*
+*If they engage, share the insight naturally. Korva comes up only if they ask what you use.*
 
 ---
 
@@ -46,7 +46,7 @@ Instructions: Fill in every [bracket]. Keep it short. Send as a voice note if yo
 
 ### Cold 3 — Founding invitation (only after 1–2 exchanges, never cold first message)
 
-> I should mention — I am actually the person who built Kindo, a business OS for solo coaches like us. I am bringing on a handful of founding coaches at a locked rate before it opens publicly. It covers client tracking, scheduling, group classes, memberships, billing — the whole backend. If you ever want to see it, I will walk you through it live, no pitch, just show you what it does. No pressure either way.
+> I should mention — I am actually the person who built Korva, a business OS for solo coaches like us. I am bringing on a handful of founding coaches at a locked rate before it opens publicly. It covers client tracking, scheduling, group classes, memberships, billing — the whole backend. If you ever want to see it, I will walk you through it live, no pitch, just show you what it does. No pressure either way.
 
 ---
 
@@ -69,4 +69,4 @@ Instructions: Fill in every [bracket]. Keep it short. Send as a voice note if yo
 - Voice notes outperform text with warm contacts. Read the warm templates out loud, naturally.
 - Never send a link in the first message. Let curiosity pull them.
 - If someone says "I just use a notebook," see the objections doc — do not argue, just share the insight.
-- Cold DMs 1 and 2 are pure relationship-building. Only bring up Kindo when they ask or you have had a real conversation.
+- Cold DMs 1 and 2 are pure relationship-building. Only bring up Korva when they ask or you have had a real conversation.

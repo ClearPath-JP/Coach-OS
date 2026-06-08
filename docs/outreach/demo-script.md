@@ -1,4 +1,4 @@
-# Demo Script — Kindo Walkthrough
+# Demo Script — Korva Walkthrough
 
 Two modes: the 60–90 second verbal pitch (for a DM call, a chance meeting, or opening a Zoom) and the 5-minute core-flow walkthrough (for a scheduled demo or when someone says "show me").
 
@@ -14,7 +14,7 @@ Use this when someone asks "so what does it do?" in a conversation. Speak natura
 
 "So the problem it solves is the scattered mess most solo coaches are living in. You have got client notes in a notebook, schedules in texts, payments going through Venmo, maybe a spreadsheet you half-maintain. Nothing talks to each other and you are always missing something.
 
-Kindo is one place for all of it. You open a client's profile and you can see their belt level, their conditioning benchmarks, the notes from every session, and exactly what you planned for next time. Before I had this, I would sometimes show up and ask 'so what were we working on?' — that is not a great look.
+Korva is one place for all of it. You open a client's profile and you can see their belt level, their conditioning benchmarks, the notes from every session, and exactly what you planned for next time. Before I had this, I would sometimes show up and ask 'so what were we working on?' — that is not a great look.
 
 Beyond client tracking, it handles your scheduling and attendance, group classes where clients actually pay to book their spot before they show up, monthly membership plans for your recurring students, and Stripe billing so invoices go out automatically.
 

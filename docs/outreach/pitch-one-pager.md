@@ -1,4 +1,4 @@
-# Kindo — Founding Coach Pitch
+# Korva — Founding Coach Pitch
 
 ---
 
@@ -19,9 +19,9 @@ That is not a discipline problem. It is a tooling problem.
 
 ---
 
-## What Kindo is
+## What Korva is
 
-Kindo is a business operating system built specifically for solo martial arts and fitness conditioning coaches.
+Korva is a business operating system built specifically for solo martial arts and fitness conditioning coaches.
 
 One place for everything:
 
@@ -51,7 +51,7 @@ This is not built for Mindbody gyms with front desks and staff. This is built fo
 
 **$99 per month, locked in for life.**
 
-That is the founding rate — available now, before public launch. When Kindo opens to the public, pricing goes up. Founding coaches keep $99 forever.
+That is the founding rate — available now, before public launch. When Korva opens to the public, pricing goes up. Founding coaches keep $99 forever.
 
 What founding coaches get:
 - Full access to every feature, now and as it ships
@@ -77,7 +77,7 @@ Try it free. If it does not make your coaching business simpler in the first wee
 
 You are already doing the work. You are already coaching. The question is whether the business around that coaching is organized enough to grow — or whether it is quietly costing you clients, time, and money you never see.
 
-Kindo does not make you a better coach. You already are one. It gives the business side a spine.
+Korva does not make you a better coach. You already are one. It gives the business side a spine.
 
 ---
 

@@ -18,7 +18,7 @@ I have been heads down building something I think you might actually find useful
 
 You know as well as I do that the actual coaching is the easy part. The part that grinds you down is the admin — keeping track of where each client is, chasing payments, remembering what you covered last session, coordinating schedules across texts and spreadsheets.
 
-I got tired of it and built a tool specifically for solo coaches: client tracking with belts and benchmarks, session notes with next-session planning built in, scheduling, group classes with pay-to-book, dojo memberships for recurring revenue, and Stripe billing all in one place. It is called Kindo.
+I got tired of it and built a tool specifically for solo coaches: client tracking with belts and benchmarks, session notes with next-session planning built in, scheduling, group classes with pay-to-book, dojo memberships for recurring revenue, and Stripe billing all in one place. It is called Korva.
 
 I am bringing on a small group of founding coaches at $99/month, locked in for life. Public pricing goes higher later. Founding coaches also get a direct line to influence what gets built.
 
