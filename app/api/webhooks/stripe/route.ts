@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { stripe, STRIPE_WEBHOOK_SECRET, STRIPE_PRICES } from '@/lib/stripe'
 import { markSessionInvoicePaidFromStripeCheckout } from '@/lib/stripe-client-invoice-checkout'
 import { createSessionFromClassBookingCheckout } from '@/lib/stripe-class-booking-webhook'
+import { createPassFromCheckout } from '@/lib/stripe-pass-purchase-webhook'
 import { logServerError } from '@/lib/log-server-error'
 import type Stripe from 'stripe'
 
@@ -80,6 +81,13 @@ export async function POST(request: Request) {
           const result = await createSessionFromClassBookingCheckout(supabase, session)
           if (!result.ok) {
             console.warn('[webhook] class_booking session not created:', result.reason)
+          }
+          return NextResponse.json({ received: true })
+        }
+        if (session.mode === 'payment' && session.metadata?.type === 'pass_purchase') {
+          const result = await createPassFromCheckout(supabase, session)
+          if (!result.ok) {
+            console.warn('[webhook] pass_purchase not fulfilled:', result.reason)
           }
           return NextResponse.json({ received: true })
         }
