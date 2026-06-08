@@ -73,6 +73,9 @@ export function ClientPortalDailyCheckIn({
   const [todayCheckin, setTodayCheckin] = useState<TodayDto['checkin']>(() => serverToday?.checkin ?? null)
   const [error, setError] = useState<string | null>(null)
   const [celebrateMeta, setCelebrateMeta] = useState<{ xp: number; streak: number; record: boolean } | null>(null)
+  // Time-based greeting is computed AFTER mount (client timezone) to avoid an SSR/client
+  // hydration text mismatch (React #418). Start with a time-neutral line both sides agree on.
+  const [greetLine, setGreetLine] = useState(() => `Hi, ${firstName.trim() || 'there'} 👋`)
   const loadToday = useCallback(async () => {
     setError(null)
     try {
@@ -106,6 +109,10 @@ export function ClientPortalDailyCheckIn({
     if (serverToday !== undefined) return
     queueMicrotask(() => void loadToday())
   }, [loadToday, serverToday])
+
+  useEffect(() => {
+    setGreetLine(portalGreetingLine(firstName))
+  }, [firstName])
 
   useEffect(() => {
     const onVis = () => {
@@ -221,7 +228,7 @@ export function ClientPortalDailyCheckIn({
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h2 className="text-[18px] font-semibold leading-snug text-[var(--text-primary)]">
-          {portalGreetingLine(firstName)}
+          {greetLine}
         </h2>
         {streakDays > 0 ? (
           <span className="inline-flex shrink-0 items-center rounded-full bg-[var(--warning-bg)] px-2.5 py-1 text-[12px] font-medium text-[var(--warning)]">

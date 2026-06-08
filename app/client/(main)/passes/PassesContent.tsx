@@ -161,6 +161,18 @@ export function PassesContent() {
         </div>
       )}
 
+      {/* Credits remaining — zero state (so the balance concept is always visible) */}
+      {balances.length === 0 && (
+        <div className="flex items-center justify-between rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-6 py-5">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">Credits remaining</p>
+            <p className="mt-1 font-display text-[32px] font-medium leading-none text-[var(--text-primary)]">0</p>
+            <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Buy a pass below to get started.</p>
+          </div>
+          <Ticket className="size-8 text-[var(--text-quaternary)]" />
+        </div>
+      )}
+
       {/* Your passes */}
       {balances.length > 0 && (
         <section className="space-y-3">
