@@ -220,6 +220,73 @@ export type CreatePackageInput = z.infer<typeof createPackageSchema>
 export const updatePackageSchema = createPackageSchema.partial()
 export type UpdatePackageInput = z.infer<typeof updatePackageSchema>
 
+/** Class pass (credit pack) — create. POST /api/coach/passes */
+export const createClassPassSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(200),
+    description: z.string().max(2000).optional().nullable(),
+    priceCents: z.number().int().min(0, 'Price cannot be negative'),
+    currency: z.string().length(3).optional().default('usd'),
+    creditCount: z.number().int().min(1, 'A pass must include at least 1 class').max(1000),
+    appliesTo: z.enum(['all', 'types']),
+    appliesToTypes: z.array(z.string().max(100)).max(50).optional(),
+    expiresInDays: z.number().int().min(1).max(3650).optional().nullable(),
+    status: z.enum(['active', 'draft']).optional().default('active'),
+  })
+  .superRefine((d, ctx) => {
+    if (d.appliesTo === 'types' && (!d.appliesToTypes || d.appliesToTypes.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'appliesToTypes must have at least one type when appliesTo is "types"',
+        path: ['appliesToTypes'],
+      })
+    }
+  })
+export type CreateClassPassInput = z.infer<typeof createClassPassSchema>
+
+/** Class pass — edit. PATCH /api/coach/passes/[id] */
+export const patchClassPassSchema = z
+  .object({
+    title: z.string().min(1).max(200).optional(),
+    description: z.string().max(2000).nullable().optional(),
+    priceCents: z.number().int().min(0).optional(),
+    currency: z.string().length(3).optional(),
+    creditCount: z.number().int().min(1).max(1000).optional(),
+    appliesTo: z.enum(['all', 'types']).optional(),
+    appliesToTypes: z.array(z.string().max(100)).max(50).nullable().optional(),
+    expiresInDays: z.number().int().min(1).max(3650).nullable().optional(),
+    status: z.enum(['active', 'draft', 'archived']).optional(),
+  })
+  .superRefine((d, ctx) => {
+    const hasAny =
+      d.title !== undefined ||
+      d.description !== undefined ||
+      d.priceCents !== undefined ||
+      d.currency !== undefined ||
+      d.creditCount !== undefined ||
+      d.appliesTo !== undefined ||
+      d.appliesToTypes !== undefined ||
+      d.expiresInDays !== undefined ||
+      d.status !== undefined
+    if (!hasAny) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Provide at least one field to update' })
+    }
+    if (d.appliesTo === 'types' && (!d.appliesToTypes || d.appliesToTypes.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'appliesToTypes must have at least one type when appliesTo is "types"',
+        path: ['appliesToTypes'],
+      })
+    }
+  })
+export type PatchClassPassInput = z.infer<typeof patchClassPassSchema>
+
+/** Client buys a pass. POST /api/client/buy-pass */
+export const buyPassSchema = z.object({
+  passId: z.string().uuid('Invalid pass'),
+})
+export type BuyPassInput = z.infer<typeof buyPassSchema>
+
 /** Create invoice — package, client, optional due date */
 export const createInvoiceSchema = z.object({
   packageId: z.string().uuid('Invalid package'),
