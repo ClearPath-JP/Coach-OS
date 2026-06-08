@@ -54,6 +54,9 @@ export async function GET(request: Request) {
             captions_vtt_url: v.captionsVttUrl,
             duration_seconds: v.durationSeconds,
             processed_at: new Date().toISOString(),
+            // Reconcile the storage meter against Bunny's real encoded size (the create-time
+            // size is client-reported); the recalc trigger then fixes workspace usage.
+            ...(v.storageSizeBytes ? { file_size_bytes: v.storageSizeBytes } : {}),
           })
           .eq('workspace_id', workspaceId)
           .eq('bunny_video_guid', guid)

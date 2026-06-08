@@ -5,6 +5,7 @@ import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { patchVideoSchema } from '@/lib/validations'
 import { createServiceClient } from '@/lib/supabase/service'
 import { userCanStreamVideo } from '@/lib/video-stream-access'
+import { deleteBunnyVideo } from '@/lib/bunny'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -211,15 +212,32 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return res
     }
 
-    const { error } = await supabase
+    const { data: row, error } = await supabase
       .from('videos')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id)
       .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
+      .select('bunny_video_guid, bunny_library_id, storage_provider')
+      .maybeSingle()
 
     if (error) {
       return NextResponse.json({ error: 'Could not delete video' }, { status: 500 })
     }
+
+    // Free the real Bunny storage too (best-effort; the DB soft-delete already succeeded).
+    const purgeRow = row
+      ? (row as {
+          bunny_video_guid: string | null
+          bunny_library_id: string | null
+          storage_provider: string | null
+        })
+      : null
+    if (purgeRow?.storage_provider === 'bunny' && purgeRow.bunny_video_guid) {
+      const purged = await deleteBunnyVideo(purgeRow.bunny_video_guid, purgeRow.bunny_library_id)
+      if (!purged) console.error('DELETE /api/videos/[id]: Bunny purge failed', { id })
+    }
+
     return NextResponse.json({ data: 'ok' })
   } catch {
     return NextResponse.json(

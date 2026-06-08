@@ -111,7 +111,7 @@ export function VideoStep({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ title: file.name }),
+      body: JSON.stringify({ title: file.name, fileSizeBytes: file.size }),
     })
       .then(async (res) => {
         const json = (await res.json().catch(() => ({}))) as {

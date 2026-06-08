@@ -127,6 +127,30 @@ export async function fetchBunnyVideoFromUrl(
   return { guid: created.videoId, libraryId: created.libraryId }
 }
 
+/**
+ * Delete a video object from Bunny Stream so its real storage (and billing) is freed.
+ * Best-effort: returns false on failure (or if Bunny isn't configured) so the caller can
+ * still soft-delete the DB row. A 404 counts as success (already gone). Prefers the
+ * per-row library id, falling back to the env library id.
+ */
+export async function deleteBunnyVideo(videoId: string, libraryId?: string | null): Promise<boolean> {
+  if (!bunnyConfigured()) return false
+  const guid = (videoId ?? '').toString().trim()
+  if (!guid) return false
+  const { libraryId: envLib, apiKey } = cfg()
+  const lib = (libraryId ?? envLib ?? '').toString().trim()
+  if (!lib) return false
+  try {
+    const res = await fetch(`${VIDEO_API}/library/${lib}/videos/${guid}`, {
+      method: 'DELETE',
+      headers: { AccessKey: apiKey, Accept: 'application/json' },
+    })
+    return res.ok || res.status === 404
+  } catch {
+    return false
+  }
+}
+
 export type BunnyVideoStatus = {
   status: number
   ready: boolean
@@ -136,6 +160,8 @@ export type BunnyVideoStatus = {
   thumbnailUrl: string
   captionsVttUrl: string | null
   durationSeconds: number | null
+  /** Bunny's authoritative encoded storage size (bytes), once known — reconciles the quota meter. */
+  storageSizeBytes: number | null
 }
 
 // Bunny status: 0 Created, 1 Uploaded, 2 Processing, 3 Transcoding, 4 Finished, 5 Error, 6 UploadFailed
@@ -155,6 +181,7 @@ export async function getBunnyVideo(videoId: string): Promise<BunnyVideoStatus> 
   const v = (await res.json()) as {
     status?: number
     length?: number
+    storageSize?: number
     captions?: { srclang?: string; label?: string }[]
     availableResolutions?: string | null
   }
@@ -181,6 +208,7 @@ export async function getBunnyVideo(videoId: string): Promise<BunnyVideoStatus> 
     thumbnailUrl: `${base}/thumbnail.jpg`,
     captionsVttUrl: cap ? `${base}/captions/${cap}.vtt` : null,
     durationSeconds: typeof v.length === 'number' && v.length > 0 ? v.length : null,
+    storageSizeBytes: typeof v.storageSize === 'number' && v.storageSize > 0 ? v.storageSize : null,
   }
 }
 
