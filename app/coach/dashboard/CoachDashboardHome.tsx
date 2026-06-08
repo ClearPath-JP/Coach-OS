@@ -247,11 +247,18 @@ export function CoachDashboardHome({ coachName }: { coachName: string }) {
   const msgs = useMemo(() => messageRows(conversations, 3), [conversations])
   const unread = useMemo(() => unreadTotal(conversations), [conversations])
 
-  const greetNow = new Date()
-  const hour = greetNow.getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const coachFirst = coachName.trim().split(/\s+/)[0] || 'Coach'
-  const dateLine = format(greetNow, 'EEEE · MMMM d')
+  // Time-based greeting + date are computed AFTER mount (client-only). Computing them during
+  // render makes the SSR output (server timezone) differ from the client's local timezone,
+  // which causes a hydration text mismatch (React #418). Empty until mounted, then filled in.
+  const [greeting, setGreeting] = useState('')
+  const [dateLine, setDateLine] = useState('')
+  useEffect(() => {
+    const now = new Date()
+    const hour = now.getHours()
+    setGreeting(hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening')
+    setDateLine(format(now, 'EEEE · MMMM d'))
+  }, [])
 
   return (
     <div className="coach-dash-stagger flex flex-col gap-6">
