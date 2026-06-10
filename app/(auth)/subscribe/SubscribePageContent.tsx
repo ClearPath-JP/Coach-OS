@@ -151,7 +151,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       <div
         className="card-glow relative w-full max-w-[440px] rounded-2xl border-2 border-[var(--accent)] bg-[var(--bg-subtle)] px-8 py-10"
         style={{
-          boxShadow: '0 0 40px rgba(159, 18, 57, 0.1), 0 0 80px rgba(159, 18, 57, 0.05)',
+          boxShadow: '0 0 40px rgba(200, 136, 46, 0.1), 0 0 80px rgba(200, 136, 46, 0.05)',
         }}
       >
         {/* Badge */}

@@ -65,16 +65,16 @@ const variantClasses: Record<
   string
 > = {
   primary: cn(
-    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-medium',
-    'btn-primary-gloss text-[var(--text-on-accent)] border border-[var(--accent)]',
+    'h-[38px] min-h-[38px] rounded-[10px] px-[18px] text-[13px] font-medium',
+    'btn-primary-gloss text-[var(--text-on-accent)] border-[3px] border-[var(--border-default)]',
     'btn-shimmer overflow-hidden',
     'hover:-translate-y-px',
     'active:translate-y-0',
     'disabled:hover:translate-y-0'
   ),
   secondary: cn(
-    'h-[38px] min-h-[38px] rounded-[8px] px-[18px] text-[13px] font-medium',
-    'bg-transparent text-[var(--text-secondary)] border border-[var(--border-default)] shadow-none',
+    'h-[38px] min-h-[38px] rounded-[10px] px-[18px] text-[13px] font-medium',
+    'bg-transparent text-[var(--text-secondary)] border-2 border-[var(--border-default)] shadow-none',
     'hover:bg-[var(--bg-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]',
     'active:translate-y-0',
     'disabled:hover:bg-transparent'

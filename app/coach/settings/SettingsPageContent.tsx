@@ -612,7 +612,7 @@ export function SettingsPageContent() {
     cn(
       'min-h-10 shrink-0 rounded-[var(--radius-md)] px-3 py-2.5 text-left text-[13px] font-medium transition-colors duration-[80ms] max-lg:whitespace-nowrap lg:w-full',
       activeTab === key
-        ? 'bg-[var(--cp-offwhite)] text-[var(--cp-accent)] shadow-[var(--shadow-xs)]'
+        ? 'bg-[var(--bg-emphasis)] text-[var(--accent)] shadow-[var(--shadow-xs)]'
         : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-muted)] hover:text-[var(--text-secondary)]'
     )
 
@@ -1054,14 +1054,14 @@ export function SettingsPageContent() {
         {activeTab === 'appearance' && (
           <div className="max-w-5xl space-y-8">
             <p className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[13px] leading-snug text-[var(--color-text-secondary)]">
-              <span className="font-medium text-[var(--color-text-primary)]">Dark mode:</span> use the sun/moon toggle in the top bar.
-              Accent color is saved to your workspace and applies to buttons, nav, focus rings, and your client portal (message bubbles stay brand sapphire).
+              <span className="font-medium text-[var(--color-text-primary)]">Theme:</span> Korva uses a warm dark theme throughout.
+              Your accent color is saved to your workspace and applies to buttons, nav, focus rings, and your client portal.
             </p>
             <div className="rounded-[12px] border border-[var(--cp-border)] bg-[var(--cp-white)] p-6">
               <AccentColorPicker currentAccent={accentColor} onSave={saveCoachAccent} />
             </div>
             <p className="text-[13px] text-[var(--text-tertiary)]">
-              <Link href="/coach/settings/appearance" className="text-[var(--cp-accent)] underline-offset-2 hover:underline">
+              <Link href="/coach/settings/appearance" className="text-[var(--accent)] underline-offset-2 hover:underline">
                 Open appearance-only page
               </Link>
             </p>

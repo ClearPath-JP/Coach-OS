@@ -249,58 +249,58 @@
 }
 
 html[data-theme='dark'] {
-  /* ═══ Dojo Dark — charred wood, ember glow ═══ */
+  /* ═══ Dojo Arcade — cream canvas, belt-bright blocks, hard ink shadows ═══ */
 
-  /* Surfaces — warm-black, like charcoal with faint wood undertone */
-  --bg-app: #0F0D0B;
-  --bg-app-rgb: 15, 13, 11;
-  --bg-subtle: #191612;
-  --bg-muted: #21201A;
-  --bg-emphasis: #252320;
+  /* Surfaces — warm off-white canvas, white cards */
+  --bg-app: #faf7f0;
+  --bg-app-rgb: 250, 247, 240;
+  --bg-subtle: #ffffff;
+  --bg-muted: #f3f0e8;
+  --bg-emphasis: #ece8dd;
 
-  /* Accent — KORVA amber, used surgically (active nav, key CTA only) */
-  --accent: #c8882e;
-  --accent-rgb: 200, 136, 46;
-  --accent-dark: #9c6a22;
-  --accent-light: #181009;
-  --accent-muted: #1F1812;
-  --accent-hover: #dba048;
-  --accent-surface: rgba(200, 136, 46, 0.06);
+  /* Accent — belt yellow primary; ink text rides on it */
+  --accent: #ffd23f;
+  --accent-rgb: 255, 210, 63;
+  --accent-dark: #b8910f;
+  --accent-light: #fff6d2;
+  --accent-muted: #fffbe9;
+  --accent-hover: #ffdc6b;
+  --accent-surface: rgba(255, 210, 63, 0.20);
 
-  /* Text — warm silver, not cold zinc */
-  --text-primary: #E8E6E3;
-  --text-secondary: #9C9890;
-  --text-tertiary: #787068;
-  --text-quaternary: #403C38;
-  --text-placeholder: #2A2825;
-  --text-on-accent: #0C0B0A;
+  /* Text — ink on cream */
+  --text-primary: #101010;
+  --text-secondary: #3d3a34;
+  --text-tertiary: #7a7569;
+  --text-quaternary: #a8a296;
+  --text-placeholder: #b8b2a6;
+  --text-on-accent: #101010;
 
-  /* Borders — warm, barely there, like charcoal grain */
-  --border-subtle: #1E1C19;
-  --border-default: #28261F;
-  --border-strong: #3A3730;
-  --border-accent: var(--accent);
+  /* Borders — bold ink line on cards/buttons, soft hairline for dividers */
+  --border-subtle: #ded8ca;
+  --border-default: #101010;
+  --border-strong: #101010;
+  --border-accent: #101010;
 
-  /* Semantic — restrained, functional */
-  --success: #34d399;
-  --success-bg: #0C1A14;
-  --success-border: #1A3828;
-  --warning: #fbbf24;
-  --warning-bg: #1A1608;
-  --warning-border: #3D2E08;
-  --error: #f87171;
-  --error-bg: #1A0C0C;
-  --error-border: #3D1818;
-  --info: #60a5fa;
-  --info-bg: #0C1424;
-  --info-border: #1E2D4A;
+  /* Semantic — belt brights on light chips, ink borders */
+  --success: #1f9d57;
+  --success-bg: #e1f6ea;
+  --success-border: #101010;
+  --warning: #c2630c;
+  --warning-bg: #ffeede;
+  --warning-border: #101010;
+  --error: #d83a3a;
+  --error-bg: #ffe4e4;
+  --error-border: #101010;
+  --info: #2d6fe0;
+  --info-bg: #e4eeff;
+  --info-border: #101010;
 
-  /* Shadows — deep, warm-black */
-  --shadow-xs: 0 1px 2px 0 rgba(5, 4, 3, 0.5);
-  --shadow-sm: 0 1px 3px 0 rgba(5, 4, 3, 0.5), 0 1px 2px -1px rgba(5, 4, 3, 0.35);
-  --shadow-md: 0 4px 6px -1px rgba(5, 4, 3, 0.55), 0 2px 4px -2px rgba(5, 4, 3, 0.35);
-  --shadow-lg: 0 10px 15px -3px rgba(5, 4, 3, 0.6), 0 4px 6px -4px rgba(5, 4, 3, 0.4);
-  --shadow-xl: 0 20px 25px -5px rgba(5, 4, 3, 0.65), 0 8px 10px -6px rgba(5, 4, 3, 0.45);
+  /* Shadows — hard offset ink (neo-brutalist) */
+  --shadow-xs: 2px 2px 0 #101010;
+  --shadow-sm: 3px 3px 0 #101010;
+  --shadow-md: 4px 4px 0 #101010;
+  --shadow-lg: 5px 5px 0 #101010;
+  --shadow-xl: 7px 7px 0 #101010;
 
   /* Semantic aliases — components reference these */
   --color-bg: var(--bg-app);
@@ -356,12 +356,12 @@ html[data-theme='dark'] {
   --cp-btn-bg: var(--accent);
   --cp-btn-hover: var(--accent-hover);
   --cp-focus-ring: color-mix(in srgb, var(--accent) 25%, transparent);
-  --cp-nav-surface: #0A0908;
+  --cp-nav-surface: #101010;
 
-  /* Accent surface tokens — restrained, barely visible warmth */
-  --accent-surface: rgba(var(--accent-rgb), 0.05);
-  --accent-glow: rgba(var(--accent-rgb), 0.10);
-  --accent-border: rgba(var(--accent-rgb), 0.18);
+  /* Accent surface tokens — arcade yellow wash, ink border */
+  --accent-surface: rgba(var(--accent-rgb), 0.20);
+  --accent-glow: rgba(var(--accent-rgb), 0.32);
+  --accent-border: #101010;
 }
 
 *,
@@ -887,33 +887,113 @@ html[data-theme='dark'] .gloss-panel {
   /* Glossy Card surface — applied by components/ui/Card.tsx; dark-only gloss, override-friendly (utilities still win). */
   .card-gloss {
     background: var(--bg-subtle);
-    border: 1px solid var(--border-default);
-    box-shadow: var(--shadow-xs);
+    border: 3px solid var(--border-default);
+    box-shadow: var(--shadow-lg);
   }
   html[data-theme='dark'] .card-gloss {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 32%),
-      linear-gradient(180deg, #161310, #100e0b);
-    border-color: var(--border-default);
-    border-top-color: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 14px 30px -18px rgba(0, 0, 0, 0.55);
+    background: var(--bg-subtle);
+    border: 3px solid var(--border-default);
+    box-shadow: var(--shadow-lg);
   }
 
   /* Glossy primary button surface — theme-aware via accent tokens. */
   .btn-primary-gloss {
-    background: linear-gradient(180deg, var(--accent-hover), var(--accent) 55%, var(--accent-dark));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.18),
-      0 8px 20px -8px rgba(var(--accent-rgb), 0.45);
+    background: var(--accent);
+    box-shadow: var(--shadow-sm);
   }
   .btn-primary-gloss:hover:not(:disabled) {
-    background: linear-gradient(180deg, var(--accent-hover), var(--accent-hover) 60%, var(--accent));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.18),
-      0 12px 26px -8px rgba(var(--accent-rgb), 0.55);
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-md);
+    transform: translate(-1px, -1px);
   }
+  .btn-primary-gloss:active:not(:disabled) {
+    box-shadow: none;
+    transform: translate(2px, 2px);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DOJO ARCADE — reusable neo-brutalist vocabulary.
+   Belt-bright tiles, brutal badges, progress, streak/belt/medal,
+   ink-dark sidebar. Use across coach + client surfaces.
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --belt-yellow: #ffd23f;
+  --belt-teal:   #2ec4b6;
+  --belt-violet: #b388ff;
+  --belt-coral:  #ff5d5d;
+  --belt-blue:   #4d8dff;
+  --belt-green:  #3dd68c;
+  --belt-orange: #ff8c42;
+  --ink:         #101010;
+}
+
+@layer components {
+  /* Belt-bright stat/feature tiles (hard offset shadow tuned per color) */
+  .arcade-tile   { border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 var(--ink); }
+  .tile-yellow   { background: var(--belt-yellow);            border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #b8910f; }
+  .tile-teal     { background: var(--belt-teal);   color:#fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #1a8a80; }
+  .tile-violet   { background: var(--belt-violet);            border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #7c4fc7; }
+  .tile-coral    { background: var(--belt-coral);  color:#fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #cc2929; }
+  .tile-blue     { background: var(--belt-blue);   color:#fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #1e5bc2; }
+
+  /* Brutal chips/badges */
+  .arcade-badge        { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-display); font-weight:700; font-size:12px; padding:4px 10px; border:2px solid var(--ink); border-radius:999px; background:#fff; box-shadow:2px 2px 0 var(--ink); letter-spacing:-0.01em; }
+  .arcade-badge-yellow { background:var(--belt-yellow); }
+  .arcade-badge-teal   { background:var(--belt-teal);   color:#fff; }
+  .arcade-badge-violet { background:var(--belt-violet); }
+  .arcade-badge-coral  { background:var(--belt-coral);  color:#fff; }
+  .arcade-badge-blue   { background:var(--belt-blue);   color:#fff; }
+  .arcade-badge-dark   { background:var(--ink);         color:#faf7f0; }
+
+  /* Progress track + fill */
+  .arcade-track       { height:14px; background:var(--bg-muted); border:2px solid var(--ink); border-radius:999px; overflow:hidden; }
+  .arcade-fill        { height:100%; border-radius:999px; background:var(--belt-teal); transition:width .4s ease; }
+  .arcade-fill-yellow { background:var(--belt-yellow); }
+  .arcade-fill-coral  { background:var(--belt-coral); }
+  .arcade-fill-blue   { background:var(--belt-blue); }
+  .arcade-fill-violet { background:var(--belt-violet); }
+
+  /* Streak pill */
+  .arcade-streak { display:inline-flex; align-items:center; gap:4px; background:var(--belt-coral); color:#fff; font-family:var(--font-display); font-weight:800; font-size:13px; padding:5px 10px; border:2px solid var(--ink); border-radius:999px; box-shadow:2px 2px 0 var(--ink); }
+
+  /* Medal coin */
+  .arcade-medal { display:inline-flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:50%; border:3px solid var(--ink); box-shadow:3px 3px 0 var(--ink); font-size:22px; background:#fff; }
+
+  /* Belt tiers */
+  .belt-white  { background:#f0f0f0; }
+  .belt-blue   { background:var(--belt-blue);   color:#fff; }
+  .belt-purple { background:var(--belt-violet); }
+  .belt-brown  { background:#a0522d;            color:#fff; }
+  .belt-black  { background:var(--ink);         color:#faf7f0; }
+
+  /* Ink-dark app sidebar (coach + client shells) */
+  .arcade-sb         { background: var(--ink); color:#faf7f0; }
+  .arcade-sb-item    { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; color:rgba(250,247,240,.62); font-family:var(--font-display); font-weight:600; font-size:14px; text-decoration:none; transition:background .1s,color .1s; }
+  .arcade-sb-item:hover  { background:rgba(250,247,240,.1); color:#faf7f0; }
+  .arcade-sb-item.active { background:var(--belt-yellow); color:var(--ink); box-shadow:3px 3px 0 rgba(0,0,0,.3); }
+  .arcade-sb-group   { font-family:var(--font-display); font-size:10px; text-transform:uppercase; letter-spacing:.16em; color:rgba(250,247,240,.35); padding:14px 12px 5px; font-weight:700; }
+
+  /* Hard-shadow hover lift + press */
+  .arcade-lift        { transition: transform .1s, box-shadow .1s; }
+  .arcade-lift:hover  { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--ink); }
+  .arcade-press:active{ transform: translate(2px,2px); box-shadow: none; }
+}
+
+/* Client portal accent bridge: remap coach `--accent*` → the per-workspace
+   `--cp-accent` for everything inside the client subtree, so shared components
+   (Button / .btn-primary-gloss, accent surfaces & borders) render in the coach's
+   chosen portal color instead of brass. `display:contents` = zero layout impact;
+   scoped to `.cp-scope` so coach/admin surfaces stay brass `#c8882e`. */
+.cp-scope {
+  display: contents;
+  --accent: var(--cp-accent);
+  --accent-hover: color-mix(in srgb, var(--cp-accent) 80%, #fff);
+  --accent-dark: color-mix(in srgb, var(--cp-accent) 78%, #000);
+  --accent-light: color-mix(in srgb, var(--cp-accent) 9%, #100f0d);
+  --accent-muted: color-mix(in srgb, var(--cp-accent) 12%, #15140f);
+  --accent-surface: color-mix(in srgb, var(--cp-accent) 8%, transparent);
+  --border-accent: var(--cp-accent);
 }
 
 .card-interactive {

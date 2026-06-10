@@ -1,22 +1,23 @@
 export const dynamic = 'force-dynamic'
 
 import type { Metadata, Viewport } from 'next'
-import { Instrument_Sans, Shippori_Mincho } from 'next/font/google'
+import { DM_Sans, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { AppLoadingScreen } from '@/components/layout/AppLoadingScreen'
-import { KatanaOpening } from '@/components/opening/KatanaOpening'
 
-const instrumentSans = Instrument_Sans({
+// Dojo Arcade type: Space Grotesk (display) + DM Sans (body). Loaded into the
+// same CSS variables the app already consumes, so the whole tree re-typesets.
+const instrumentSans = DM_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-dm-sans',
   display: 'swap',
 })
 
-const shipporiMincho = Shippori_Mincho({
+const shipporiMincho = Space_Grotesk({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-display',
   display: 'swap',
 })
@@ -42,7 +43,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning data-theme="dark" className={`${instrumentSans.variable} ${shipporiMincho.variable}`}>
       <body className="antialiased">
         <ThemeProvider>
-          <KatanaOpening />
           <AppLoadingScreen />
           <div className="page-enter min-h-screen">{children}</div>
         </ThemeProvider>

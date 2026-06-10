@@ -61,6 +61,7 @@ export default async function ClientLayout({
     <>
       <style>{`:root { --cp-accent: ${clientCpAccent}; }`}</style>
       <AccentInjector accentColor={clientCpAccent} />
+    <div className="cp-scope">
     <ClientBrandingProvider
       value={{
         brandName: branding?.brandName ?? null,
@@ -73,6 +74,7 @@ export default async function ClientLayout({
     >
       <CoachClientErrorReportingShell>{children}</CoachClientErrorReportingShell>
     </ClientBrandingProvider>
+    </div>
     </>
   )
 }

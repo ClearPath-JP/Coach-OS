@@ -19,23 +19,23 @@ function resolveVariant(v: CardVariant): 'default' | 'elevated' | 'ghost' | 'acc
 }
 
 const variantClasses: Record<'default' | 'elevated' | 'ghost' | 'accent' | 'glow', string> = {
-  default: cn('card-gloss rounded-[10px] text-[var(--text-primary)]'),
+  default: cn('card-gloss rounded-[16px] text-[var(--text-primary)]'),
   elevated: cn(
-    'card-gloss rounded-[10px] text-[var(--text-primary)]',
+    'card-gloss rounded-[16px] text-[var(--text-primary)]',
     'transition-[box-shadow,transform,border-color] duration-[var(--duration-slow)]',
     '[transition-timing-function:var(--ease-default)]',
     'hover:border-[var(--border-strong)] hover:-translate-y-0.5'
   ),
   ghost: cn(
-    'rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-subtle)]',
+    'rounded-[16px] border border-[var(--border-subtle)] bg-[var(--bg-subtle)]',
     'text-[var(--text-primary)]'
   ),
   accent: cn(
-    'rounded-[10px] border border-[var(--accent)] bg-[var(--bg-subtle)]',
+    'rounded-[16px] border border-[var(--accent)] bg-[var(--bg-subtle)]',
     'shadow-[0_0_0_1px_var(--accent-surface)] text-[var(--text-primary)]'
   ),
   glow: cn(
-    'rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)]',
+    'rounded-[16px] border border-[var(--border-default)] bg-[var(--bg-subtle)]',
     'shadow-[var(--shadow-xs)] text-[var(--text-primary)]',
     'card-glow card-gradient-border'
   ),

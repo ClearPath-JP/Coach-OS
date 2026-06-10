@@ -175,7 +175,7 @@ export const clientPortalTabs: readonly { href: string; label: string; icon: Luc
   { href: '/client/passes', label: 'Passes', icon: Ticket },
   { href: '/client/videos', label: 'Videos', icon: Video },
   { href: '/client/messages', label: 'Messages', icon: MessageSquare },
-  { href: '/client/membership', label: 'Membership', icon: CreditCard },
+  { href: '/client/membership', label: 'Plan', icon: CreditCard },
   { href: '/client/profile', label: 'Profile', icon: User },
 ] as const
 
