@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
+import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { RequestSessionModal } from '@/components/client/RequestSessionModal'
 import { WeeklyUnavailabilityEditor } from '@/components/unavailability/WeeklyUnavailabilityEditor'
 import { Button } from '@/components/ui/Button'
@@ -39,11 +41,31 @@ function statusLabel(s: string): string {
 }
 
 export function ClientSessionsContent() {
+  // Stripe Checkout for class bookings redirects back here with ?booked=1 (success)
+  // or ?booking_cancelled=1 (cancel) — see /api/client/book-class.
+  const searchParams = useSearchParams()
+  const justBooked = searchParams.get('booked') === '1'
+  const bookingCancelled = searchParams.get('booking_cancelled') === '1'
+
   const [upcoming, setUpcoming] = useState<ApiSession[]>([])
   const [past, setPast] = useState<ApiSession[]>([])
   const [loading, setLoading] = useState(true)
   const [requestOpen, setRequestOpen] = useState(false)
   const [pastOpen, setPastOpen] = useState(true)
+  const [banner, setBanner] = useState<{ type: 'success' | 'warning'; text: string } | null>(
+    justBooked
+      ? { type: 'success', text: "You're booked! Your session may take a moment to appear." }
+      : bookingCancelled
+        ? { type: 'warning', text: 'Checkout cancelled — you have not been charged.' }
+        : null
+  )
+
+  // Auto-dismiss banner after 6s (mirrors ClientClassesContent)
+  useEffect(() => {
+    if (!banner) return
+    const t = window.setTimeout(() => setBanner(null), 6000)
+    return () => window.clearTimeout(t)
+  }, [banner])
 
   const loadSessions = useCallback(async () => {
     setLoading(true)
@@ -73,6 +95,25 @@ export function ClientSessionsContent() {
           Request a session
         </Button>
       </div>
+
+      {banner && (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${
+            banner.type === 'success'
+              ? 'border-[var(--cp-accent)]/30 bg-[var(--cp-accent)]/10 text-[var(--cp-accent)]'
+              : 'border-[var(--warning-border)] bg-[var(--warning-bg)] text-[var(--warning)]'
+          }`}
+        >
+          {banner.type === 'success' ? (
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+          ) : (
+            <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          )}
+          <p>{banner.text}</p>
+        </div>
+      )}
 
       <section>
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Upcoming</p>

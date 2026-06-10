@@ -15,7 +15,7 @@ import { PortalSessionRequestBar } from '@/components/client/PortalSessionReques
 import { cn } from '@/lib/utils'
 import { goalProgressPercent } from '@/lib/goal-progress'
 import { getLevelFromXp, getProgressPercent, getXpToNextLevel, LEVELS } from '@/lib/xp-system'
-import { portalGreetingLine } from '@/lib/portal-time-greeting'
+import { PortalLocalDate, PortalLocalGreeting } from '@/components/client/PortalLocalDate'
 
 export const dynamic = 'force-dynamic'
 
@@ -223,9 +223,9 @@ export default async function ClientPortalPage() {
           ══════════════════════════════════════════════ */}
       <div className="lg:hidden px-0 pt-0 pb-24">
 
-        {/* Section 1 — Compact greeting */}
+        {/* Section 1 — Compact greeting (date computed client-side — server clock is UTC) */}
         <div className="mb-3">
-          <p className="text-[12px] text-[var(--text-tertiary)]">{format(now, 'EEEE, MMMM d, yyyy')}</p>
+          <PortalLocalDate className="text-[12px] text-[var(--text-tertiary)]" />
           <h1 className="text-[21px] font-bold tracking-[-0.03em] text-[var(--text-primary)] leading-tight">
             Hey, {firstName} 👋
           </h1>
@@ -264,9 +264,10 @@ export default async function ClientPortalPage() {
           {[
             { label: 'Programs', href: '/client/programs', emoji: '📚', sub: 'Your content', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
             { label: 'Sessions', href: '/client/sessions', emoji: '📅', sub: 'View schedule', color: 'var(--success-bg)', textColor: 'var(--success)' },
+            { label: 'Classes', href: '/client/classes', emoji: '🎟️', sub: 'Book a class', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
             { label: 'Goals', href: '/client/goals', emoji: '🎯', sub: `${activeGoals.length > 0 ? `${activeGoals.length} active` : 'Track progress'}`, color: 'color-mix(in srgb, #a855f7 12%, var(--bg-muted))', textColor: '#a855f7' },
             { label: 'Messages', href: '/client/messages', emoji: '💬', sub: messageUnreadCount > 0 ? `${messageUnreadCount} unread` : 'Chat with coach', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
-            { label: 'Tasks', href: '/client/assignments', emoji: '✅', sub: assignmentRows.length > 0 ? `${assignmentRows.length} open` : 'Your tasks', color: 'var(--warning-bg)', textColor: 'var(--warning)' },
+            { label: 'Passes', href: '/client/passes', emoji: '💳', sub: 'Class credits', color: 'var(--warning-bg)', textColor: 'var(--warning)' },
             { label: 'Invoices', href: '/client/invoices', emoji: '🧾', sub: pendingInvoices.length > 0 ? `${pendingInvoices.length} pending` : 'Billing', color: 'var(--bg-muted)', textColor: 'var(--text-tertiary)' },
           ].map(item => (
             <Link key={item.href} href={item.href}
@@ -305,12 +306,13 @@ export default async function ClientPortalPage() {
           ══════════════════════════════════════════════ */}
       <div className="hidden lg:block">
 
-      {/* Greeting */}
+      {/* Greeting (date + time-of-day greeting computed client-side — server clock is UTC) */}
       <div className="mb-5 border-b border-[var(--border-subtle)] pb-5 lg:mb-6 lg:pb-6">
-        <p className="text-[11px] font-medium text-[var(--text-tertiary)] lg:text-[13px]">{format(now, 'EEEE, MMMM d, yyyy')}</p>
-        <h1 className="mt-0.5 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] [font-family:var(--font-sora)] lg:mt-1 lg:text-[26px] xl:text-[28px]">
-          {portalGreetingLine(firstName, now)}
-        </h1>
+        <PortalLocalDate className="text-[11px] font-medium text-[var(--text-tertiary)] lg:text-[13px]" />
+        <PortalLocalGreeting
+          firstName={firstName}
+          className="mt-0.5 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] [font-family:var(--font-sora)] lg:mt-1 lg:text-[26px] xl:text-[28px]"
+        />
         <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-[var(--text-secondary)] lg:mt-2 lg:text-[14px]">
           Here&apos;s everything in one place — sessions, tasks, progress, and messages with {coachDisplayName}.
         </p>
@@ -536,9 +538,9 @@ export default async function ClientPortalPage() {
                           {emoji}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <Link href="/client/assignments" className="text-[14px] font-medium text-[var(--text-primary)]">
+                          <span className="text-[14px] font-medium text-[var(--text-primary)]">
                             {title}
-                          </Link>
+                          </span>
                           <p className="text-[12px] text-[var(--text-tertiary)]">
                             {due
                               ? overdue
@@ -560,20 +562,9 @@ export default async function ClientPortalPage() {
                     )
                   })}
                 </ul>
-                {assignmentRows.length > 3 ? (
-                  <div className="border-t border-[var(--border-subtle)] px-4 py-3">
-                    <Link href="/client/assignments" className="text-[13px] font-medium text-[var(--cp-accent)]">
-                      View all {assignmentRows.length} tasks →
-                    </Link>
-                  </div>
-                ) : null}
               </Card>
             </section>
-          ) : (
-            <p className="text-[14px] leading-relaxed text-[var(--text-tertiary)]">
-              You&apos;re all caught up! ✨ New tasks from your coach will appear here.
-            </p>
-          )}
+          ) : null}
 
           {/* ── GOALS PREVIEW ── */}
           {portalGoals.length > 0 ? (

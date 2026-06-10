@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { Loader2, AlertCircle, CheckCircle2, Ticket } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
@@ -40,6 +41,9 @@ export function PassesContent() {
   const [buyingId, setBuyingId] = useState<string | null>(null)
   const [buyError, setBuyError] = useState<string | null>(null)
   const [banner, setBanner] = useState<'purchased' | 'cancelled' | null>(null)
+  const [balancePolling, setBalancePolling] = useState(false)
+  const [balanceStale, setBalanceStale] = useState(false)
+  const lastTotalRef = useRef<number | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -52,6 +56,7 @@ export function PassesContent() {
         return
       }
       setData(json.data ?? null)
+      lastTotalRef.current = json.data?.totalCredits ?? null
     } catch {
       setFetchError('Network error — please refresh')
     } finally {
@@ -62,6 +67,55 @@ export function PassesContent() {
   useEffect(() => {
     void load()
   }, [load])
+
+  /** Quiet refetch (no full-page loading state). Returns the new total, or null on failure. */
+  const refetchBalances = useCallback(async (): Promise<number | null> => {
+    try {
+      const res = await fetch('/api/client/passes', { credentials: 'include' })
+      const json = (await res.json().catch(() => ({}))) as { data?: ApiData }
+      if (res.ok && json.data) {
+        setData(json.data)
+        return json.data.totalCredits ?? 0
+      }
+    } catch {
+      /* transient — poll loop just tries again */
+    }
+    return null
+  }, [])
+
+  // After a Stripe return the webhook that grants credits can lag the redirect, so the
+  // success banner would sit above a stale balance. Poll briefly (every 2s, up to 6 tries),
+  // stopping early as soon as the balance increases; offer a manual refresh if it never does.
+  useEffect(() => {
+    if (banner !== 'purchased') return
+    let cancelled = false
+    setBalanceStale(false)
+    setBalancePolling(true)
+    ;(async () => {
+      let baseline = lastTotalRef.current
+      for (let attempt = 0; attempt < 6; attempt++) {
+        await new Promise((r) => setTimeout(r, 2000))
+        if (cancelled) return
+        const total = await refetchBalances()
+        if (cancelled) return
+        if (total == null) continue
+        // Prefer the total seen by the initial page load as the baseline (it may have
+        // completed during our first sleep); fall back to the first polled value.
+        if (baseline == null) baseline = lastTotalRef.current ?? total
+        if (total > baseline) {
+          setBalancePolling(false)
+          return
+        }
+      }
+      if (!cancelled) {
+        setBalancePolling(false)
+        setBalanceStale(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [banner, refetchBalances])
 
   // Read ?purchased / ?cancelled from the Stripe return (client-only — avoids the
   // useSearchParams Suspense requirement), then clean the URL.
@@ -151,7 +205,26 @@ export function PassesContent() {
       {banner === 'purchased' && (
         <div role="status" aria-live="polite" className="flex items-start gap-3 rounded-xl border border-[var(--cp-accent)]/30 bg-[var(--cp-accent)]/10 px-4 py-3 text-sm text-[var(--cp-accent)]">
           <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
-          <p>Pass purchased — your credits are ready. They&rsquo;ll show below in a moment.</p>
+          <div className="space-y-1">
+            <p>Pass purchased — your credits are ready. They&rsquo;ll show below in a moment.</p>
+            {balancePolling && (
+              <p className="flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
+                <Loader2 className="size-3 animate-spin" /> Updating your balance…
+              </p>
+            )}
+            {balanceStale && (
+              <p className="flex items-center gap-2 text-[12px] text-[var(--text-tertiary)]">
+                Still not seeing your credits?
+                <button
+                  type="button"
+                  onClick={() => void refetchBalances()}
+                  className="font-medium text-[var(--cp-accent)] underline-offset-2 hover:underline"
+                >
+                  Refresh
+                </button>
+              </p>
+            )}
+          </div>
         </div>
       )}
       {banner === 'cancelled' && (
@@ -168,6 +241,9 @@ export function PassesContent() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">Credits remaining</p>
             <p className="mt-1 font-display text-[32px] font-medium leading-none text-[var(--text-primary)]">0</p>
             <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Buy a pass below to get started.</p>
+            <Link href="/client/classes" className="mt-2 inline-block text-[13px] font-medium text-[var(--cp-accent)] underline-offset-2 hover:underline">
+              Book a class →
+            </Link>
           </div>
           <Ticket className="size-8 text-[var(--text-quaternary)]" />
         </div>
@@ -201,6 +277,9 @@ export function PassesContent() {
                 </div>
               ))}
             </div>
+            <Link href="/client/classes" className="mt-4 inline-block text-[13px] font-medium text-[var(--cp-accent)] underline-offset-2 hover:underline">
+              Book a class →
+            </Link>
           </div>
         </section>
       )}

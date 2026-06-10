@@ -98,11 +98,27 @@ export function ClientClassesContent() {
         body: JSON.stringify({ slotId: inst.slotId, instanceDate: inst.instanceDate }),
       })
       const json = (await res.json().catch(() => ({}))) as {
-        data?: { url?: string }
+        data?: { url?: string; booked?: boolean; passUsed?: boolean; membershipUsed?: boolean }
         error?: string
       }
       if (!res.ok) {
         setBookError(json.error ?? 'Could not start booking')
+        setBookingId(null)
+        return
+      }
+      if (json.data?.booked === true) {
+        // Pass/membership-covered booking — no Stripe checkout, no URL. The credit is
+        // already spent server-side, so this is a success, not a missing link.
+        setBookError(null)
+        setBanner({
+          type: 'success',
+          text: json.data.passUsed
+            ? "You're booked — covered by your pass."
+            : json.data.membershipUsed
+              ? "You're booked — covered by your membership."
+              : "You're booked — your coach has been notified.",
+        })
+        await load()
         setBookingId(null)
         return
       }

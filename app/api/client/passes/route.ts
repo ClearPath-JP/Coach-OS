@@ -60,16 +60,24 @@ export async function GET() {
       expires_at: string | null
       class_passes: PassTitle | PassTitle[] | null
     }
-    const balances = ((balRaw as unknown as BalJoin[] | null) ?? []).map((b) => {
-      const cp = Array.isArray(b.class_passes) ? b.class_passes[0] : b.class_passes
-      return {
-        id: b.id,
-        title: cp?.title ?? 'Pass',
-        credits_total: b.credits_total,
-        credits_remaining: b.credits_remaining,
-        expires_at: b.expires_at,
-      }
-    })
+    // Exclude expired passes so the displayed balance matches what booking will actually
+    // spend — nothing ever flips status to 'expired', and spend-time selection skips
+    // expired passes. Same check as lib/pass-selection.ts (selectUsablePass), so
+    // displayed credits == spendable credits; otherwise a student could see credits
+    // that silently send them to paid checkout.
+    const nowMs = Date.now()
+    const balances = ((balRaw as unknown as BalJoin[] | null) ?? [])
+      .filter((b) => !b.expires_at || new Date(b.expires_at).getTime() > nowMs)
+      .map((b) => {
+        const cp = Array.isArray(b.class_passes) ? b.class_passes[0] : b.class_passes
+        return {
+          id: b.id,
+          title: cp?.title ?? 'Pass',
+          credits_total: b.credits_total,
+          credits_remaining: b.credits_remaining,
+          expires_at: b.expires_at,
+        }
+      })
     const totalCredits = balances.reduce((sum, b) => sum + b.credits_remaining, 0)
 
     return NextResponse.json({ data: { passes: availRaw ?? [], balances, totalCredits } })
