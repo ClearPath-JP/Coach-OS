@@ -108,11 +108,27 @@ export async function POST(request: Request) {
       .eq('id', workspaceId)
       .maybeSingle()
 
-    const connectId = workspace?.stripe_connect_account_id as string | null
+    const connectId = (workspace?.stripe_connect_account_id as string | null)?.trim()
     if (!connectId) {
       return NextResponse.json(
         { error: "Your coach hasn't finished setting up payments" },
         { status: 503 }
+      )
+    }
+    // Same guard as buy-pass: the connected account must actually be able to take
+    // charges, otherwise Stripe accepts the checkout and the money goes nowhere good.
+    try {
+      const acct = await stripe.accounts.retrieve(connectId)
+      if (acct.charges_enabled !== true) {
+        return NextResponse.json(
+          { error: 'Card payments are not active for this workspace yet.' },
+          { status: 400 }
+        )
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Could not verify payment setup — try again shortly.' },
+        { status: 502 }
       )
     }
 
@@ -123,6 +139,7 @@ export async function POST(request: Request) {
       .eq('client_id', clientId)
       .eq('workspace_id', workspaceId)
       .in('status', ['active', 'trialing', 'past_due'])
+      .limit(1)
       .maybeSingle()
 
     if (rawExisting as unknown as ClientMembershipRow | null) {

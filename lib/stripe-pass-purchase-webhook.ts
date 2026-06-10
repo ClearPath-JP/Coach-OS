@@ -12,7 +12,7 @@ import type Stripe from 'stripe'
 export async function createPassFromCheckout(
   supabase: SupabaseClient,
   session: Stripe.Checkout.Session
-): Promise<{ ok: true; clientPassId: string } | { ok: false; reason: string }> {
+): Promise<{ ok: true; clientPassId: string } | { ok: false; reason: string; permanent?: boolean }> {
   const meta = session.metadata ?? {}
   const passId = meta.pass_id as string | undefined
   const clientId = meta.client_id as string | undefined
@@ -22,7 +22,9 @@ export async function createPassFromCheckout(
   const expiresInDays = expiresInDaysRaw ? parseInt(expiresInDaysRaw, 10) : null
 
   if (!passId || !clientId || !workspaceId || !Number.isFinite(creditCount) || creditCount <= 0) {
-    return { ok: false, reason: 'Missing or invalid pass_purchase metadata' }
+    // Can never heal on retry — permanent, so the webhook acks instead of retrying.
+    // (The webhook logs this failure to the admin Errors feed.)
+    return { ok: false, reason: 'Missing or invalid pass_purchase metadata', permanent: true }
   }
 
   // Idempotency: one fulfillment per Checkout session.
