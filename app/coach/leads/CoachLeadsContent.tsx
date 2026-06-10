@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { format, formatDistanceToNow } from 'date-fns'
 import {
   Loader2,
@@ -587,7 +588,7 @@ export function CoachLeadsContent() {
           {limit && (
             <div className="rounded-full border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-3 py-1.5 text-xs text-[var(--text-tertiary)]">
               {limit.max === 0 ? (
-                <span>Lead Research is a Pro feature — upgrade to search</span>
+                <span>Local Scout is included in the Founding and Pro plans</span>
               ) : (
                 <>
                   <span className="font-semibold text-[var(--text-primary)]">{limit.max - limit.used}</span> /{' '}
@@ -608,8 +609,14 @@ export function CoachLeadsContent() {
             <div>
               <p className="font-medium">Not included in your plan</p>
               <p className="mt-1 text-xs">
-                Lead research is a Pro feature. Upgrade to Pro or Scale to find local clients near you.
+                Local Scout is included in the Founding and Pro plans.
               </p>
+              <Link
+                href="/coach/subscription"
+                className="mt-2 inline-flex items-center rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+              >
+                View plans
+              </Link>
             </div>
           </div>
         )}

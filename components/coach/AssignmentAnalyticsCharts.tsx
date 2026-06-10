@@ -17,8 +17,10 @@ export function AssignmentAnalyticsCharts({ completionRatePct, topClientsByXp }:
     <div className="grid gap-6 lg:grid-cols-2">
       <Card className="p-4">
         <h3 className="mb-2 text-sm font-medium">Completion rate</h3>
-        <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
+        {/* min-height + positive initialDimension: avoids Recharts "width(-1)/height(-1)"
+            warnings when charts mount before the ResizeObserver reports a size. */}
+        <div className="h-48 min-h-48 w-full min-w-0">
+          <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 480, height: 192 }}>
             <PieChart>
               <Pie data={pieData} dataKey="value" innerRadius={50} outerRadius={70} paddingAngle={2}>
                 <Cell fill="var(--cp-accent)" />
@@ -32,8 +34,8 @@ export function AssignmentAnalyticsCharts({ completionRatePct, topClientsByXp }:
       </Card>
       <Card className="p-4">
         <h3 className="mb-2 text-sm font-medium">Top clients by XP</h3>
-        <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-48 min-h-48 w-full min-w-0">
+          <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 480, height: 192 }}>
             <BarChart data={topClientsByXp.slice(0, 5)}>
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} />

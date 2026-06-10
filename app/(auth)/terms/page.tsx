@@ -71,8 +71,8 @@ export default function TermsPage() {
             <h2 className="text-base font-medium text-[var(--color-text-primary)]">7. Contact</h2>
             <p className="text-[var(--color-text-secondary)]">
               For questions about these terms:{' '}
-              <a href="mailto:support@foundos.ai" className="text-[var(--color-accent)] underline">
-                support@foundos.ai
+              <a href="mailto:hello@foundos.ai" className="text-[var(--color-accent)] underline">
+                hello@foundos.ai
               </a>
             </p>
           </section>

@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server'
 import { requireCoach } from '@/lib/api-helpers'
+import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 
 /**
  * GET /api/testimonials — list workspace testimonials (newest first).
+ *
+ * Uses the service-role client (workspace-scoped after requireCoach) because the
+ * testimonials RLS policies still subquery auth.users, which errors with
+ * "permission denied for table users" for authenticated sessions
+ * (same failure mode fixed for daily_checkins in 20260406000000).
  */
 export async function GET() {
   try {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
-    const { user, workspaceId, supabase } = auth
+    const { user, workspaceId } = auth
 
     const { success, retryAfter } = await checkRateLimitAsync(`testimonials-get:${user.id}`, {
       windowMs: 60_000,
@@ -24,7 +30,8 @@ export async function GET() {
       return res
     }
 
-    const { data, error } = await supabase
+    const svc = createServiceClient()
+    const { data, error } = await svc
       .from('testimonials')
       .select(
         'id, workspace_id, client_id, client_name, content, rating, is_approved, is_public, source, created_at'
@@ -34,6 +41,7 @@ export async function GET() {
       .limit(200)
 
     if (error) {
+      console.error('GET /api/testimonials — query failed', error)
       return NextResponse.json({ error: 'Could not load testimonials' }, { status: 500 })
     }
 

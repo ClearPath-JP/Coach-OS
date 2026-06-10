@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server'
 import { requireCoach } from '@/lib/api-helpers'
+import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { patchTestimonialSchema } from '@/lib/validations'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
+// Service-role client (workspace-scoped after requireCoach): the testimonials RLS
+// policies still subquery auth.users, which errors for authenticated sessions.
+
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
-    const { user, workspaceId, supabase } = auth
+    const { user, workspaceId } = auth
     const { id } = await context.params
 
     const { success, retryAfter } = await checkRateLimitAsync(`testimonials-patch:${user.id}`, {
@@ -39,7 +43,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
     }
 
-    const { data: row, error } = await supabase
+    const svc = createServiceClient()
+    const { data: row, error } = await svc
       .from('testimonials')
       .update(patch)
       .eq('id', id)
@@ -79,7 +84,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
-    const { user, workspaceId, supabase } = auth
+    const { user, workspaceId } = auth
     const { id } = await context.params
 
     const { success, retryAfter } = await checkRateLimitAsync(`testimonials-del:${user.id}`, {
@@ -95,7 +100,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return res
     }
 
-    const { data: existing } = await supabase
+    const svc = createServiceClient()
+    const { data: existing } = await svc
       .from('testimonials')
       .select('id')
       .eq('id', id)
@@ -105,8 +111,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "We couldn't find that testimonial" }, { status: 404 })
     }
 
-    const { error: delErr } = await supabase.from('testimonials').delete().eq('id', id).eq('workspace_id', workspaceId)
+    const { error: delErr } = await svc.from('testimonials').delete().eq('id', id).eq('workspace_id', workspaceId)
     if (delErr) {
+      console.error('DELETE /api/testimonials/[id] — delete failed', delErr)
       return NextResponse.json({ error: 'Could not delete testimonial' }, { status: 500 })
     }
     return NextResponse.json({ data: { ok: true } })

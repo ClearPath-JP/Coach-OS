@@ -80,8 +80,8 @@ export default function PrivacyPage() {
             <h2 className="text-base font-medium text-[var(--color-text-primary)]">6. Contact</h2>
             <p className="text-[var(--color-text-secondary)]">
               Questions about this policy, data export, or deletion requests:{' '}
-              <a href="mailto:privacy@foundos.ai" className="text-[var(--color-accent)] underline">
-                privacy@foundos.ai
+              <a href="mailto:hello@foundos.ai" className="text-[var(--color-accent)] underline">
+                hello@foundos.ai
               </a>
             </p>
           </section>

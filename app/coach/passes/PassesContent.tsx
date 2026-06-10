@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Loader2, Plus, Pencil, Trash2, X, Ticket, AlertTriangle } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -373,6 +374,7 @@ export function PassesContent() {
   const [creditsOutstanding, setCreditsOutstanding] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [stripeConnected, setStripeConnected] = useState<boolean | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingPass, setEditingPass] = useState<ClassPass | undefined>(undefined)
@@ -385,14 +387,23 @@ export function PassesContent() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/coach/passes')
+      const [res, settingsRes] = await Promise.all([
+        fetch('/api/coach/passes'),
+        fetch('/api/settings'),
+      ])
       const json = (await res.json().catch(() => ({}))) as { data?: { passes?: ClassPass[]; holderTotal?: number; creditsOutstanding?: number }; error?: string }
+      const settingsJson = (await settingsRes.json().catch(() => ({}))) as { data?: { workspace?: { stripeConnected?: boolean } } }
       if (!res.ok) throw new Error(json.error ?? 'Could not load passes')
       const d = json.data
       if (!d) throw new Error('Unexpected response from server')
       setPasses(d.passes ?? [])
       setHolderTotal(d.holderTotal ?? 0)
       setCreditsOutstanding(d.creditsOutstanding ?? 0)
+      // stripeConnected mirrors Stripe charges_enabled (synced on Connect onboarding return).
+      // If the settings call fails, leave it null (unknown) so we never show a false warning.
+      if (settingsRes.ok) {
+        setStripeConnected(Boolean(settingsJson?.data?.workspace?.stripeConnected))
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load')
     } finally {
@@ -444,6 +455,25 @@ export function PassesContent() {
         <p className="-mt-2 text-sm text-[var(--text-tertiary)]">
           Prepaid class packs — clients buy credits up front, then spend one per class booking.
         </p>
+
+        {/* Stripe Connect warning — same banner as Classes */}
+        {stripeConnected === false && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-xl border border-[var(--warning-border)] bg-[var(--warning-bg)] px-4 py-3 text-sm text-[var(--warning)]"
+          >
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <div>
+              <p className="font-medium">Stripe not connected yet</p>
+              <p className="mt-1 text-xs">
+                Clients can&apos;t pay until you finish Stripe onboarding.{' '}
+                <Link href="/coach/settings?tab=payments" className="underline">
+                  Connect Stripe
+                </Link>
+              </p>
+            </div>
+          </div>
+        )}
 
         {loading && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-10 text-center">

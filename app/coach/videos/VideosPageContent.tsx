@@ -16,6 +16,7 @@ import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { DriveFileBrowser } from '@/components/coach/DriveFileBrowser'
 import { VideoUploader } from './VideoUploader'
 import { getCategoryColor, CATEGORY_COLORS, type CategoryColorKey } from '@/lib/video-category-colors'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 import type { Video, VideoCategory } from './types'
 
 type AccessDirect = {
@@ -445,7 +446,7 @@ export function VideosPageContent() {
         {!error && videos.length === 0 && (
           <EmptyState
             title="No videos yet"
-            description={<>Set your import folder in Settings, put videos in that Drive folder, then click <strong>Import from Google Drive</strong> to add them instantly — no upload to our servers.</>}
+            description={<>Tap <strong>Upload video</strong> above to add your first clip — videos are processed and stored securely, ready to share with clients. You can also import straight from Google Drive.</>}
             action={<Button variant="secondary" onClick={() => setInfoOpen(true)}>How do I add videos from my phone?</Button>}
           />
         )}
@@ -465,7 +466,6 @@ export function VideosPageContent() {
                 selected={selectedIds.has(video.id)}
                 onToggleSelect={() => toggleSelect(video.id)}
                 onPlay={() => setPlayerVideo(video)}
-                onRetry={undefined}
                 onManage={() => setManageVideo(video)}
                 onRequestDelete={() => setDeleteVideo(video)}
                 onAddToProgram={() => setAddToProgramVideo(video)}
@@ -1457,7 +1457,6 @@ function VideoCard({
   selected,
   onToggleSelect,
   onPlay,
-  onRetry,
   onManage,
   onRequestDelete,
   onAddToProgram,
@@ -1470,7 +1469,6 @@ function VideoCard({
   selected: boolean
   onToggleSelect: () => void
   onPlay: () => void
-  onRetry: undefined | (() => void)
   onManage: () => void
   onRequestDelete: () => void
   onAddToProgram: () => void
@@ -1577,16 +1575,10 @@ function VideoCard({
                 <circle cx="12" cy="12" r="10" />
                 <path d="M15 9l-6 6M9 9l6 6" />
               </svg>
-              <span className="text-[11px] font-medium text-red-200">Failed</span>
-              {onRetry && (
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); onRetry() }}
-                  className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium text-white hover:bg-white/30"
-                >
-                  Retry
-                </button>
-              )}
+              <span className="text-[11px] font-medium text-red-200">Processing failed</span>
+              {/* No backend retry path exists (the source file only lived in the browser
+                  during upload) — recovery is delete via the menu, then re-upload. */}
+              <span className="px-3 text-center text-[10px] text-red-200/80">Delete this video from its menu, then upload it again</span>
             </div>
           </div>
         )}
@@ -1625,7 +1617,8 @@ function VideoCard({
                   <svg className="size-4 text-[var(--text-tertiary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
                   Add to program
                 </button>
-                {isReady && (
+                {/* Hidden while Promote is behind the Coming-Soon flag — don't route into the wall. */}
+                {isReady && isFeatureEnabled('promote') && (
                   <button
                     type="button"
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-muted)]"

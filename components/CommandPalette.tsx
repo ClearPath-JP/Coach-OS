@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { OPEN_COMMAND_PALETTE_EVENT } from '@/lib/command-palette'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 
 type CommandItem = {
   id: string
@@ -35,10 +36,14 @@ export function CommandPalette() {
       { id: 'n-prog', section: 'Navigation', label: 'Go to Programs', run: () => router.push('/coach/programs') },
       { id: 'n-pack', section: 'Navigation', label: 'Go to Packages', run: () => router.push('/coach/packages') },
       { id: 'n-member', section: 'Navigation', label: 'Go to Memberships', run: () => router.push('/coach/memberships') },
+      { id: 'n-pass', section: 'Navigation', label: 'Go to Passes', run: () => router.push('/coach/passes') },
       { id: 'n-pay', section: 'Navigation', label: 'Go to Payments', run: () => router.push('/coach/payments') },
       { id: 'n-inv', section: 'Navigation', label: 'Go to Invoices', run: () => router.push('/coach/invoices') },
       { id: 'n-ana', section: 'Navigation', label: 'Go to Analytics', run: () => router.push('/coach/analytics') },
-      { id: 'n-promo', section: 'Navigation', label: 'Go to Promote', run: () => router.push('/coach/promote') },
+      // Promote is hidden while it sits behind the Coming-Soon flag.
+      ...(isFeatureEnabled('promote')
+        ? [{ id: 'n-promo', section: 'Navigation' as const, label: 'Go to Promote', run: () => router.push('/coach/promote') }]
+        : []),
       { id: 'n-leads', section: 'Navigation', label: 'Go to Lead Research', run: () => router.push('/coach/leads') },
       { id: 'n-vid', section: 'Navigation', label: 'Go to Videos', run: () => router.push('/coach/videos') },
       { id: 'a-book', section: 'Actions', label: 'Book a session', shortcut: 'B', run: () => router.push('/coach/schedule') },

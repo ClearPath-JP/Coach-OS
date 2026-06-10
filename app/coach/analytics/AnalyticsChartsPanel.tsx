@@ -46,8 +46,11 @@ export function AnalyticsRevenueChartCard({ chartData, tall }: RevenueProps) {
   return (
     <Card variant="raised" padding="lg">
       <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Revenue</h2>
-      <div className="w-full min-w-0" style={{ height: chartHeight }}>
-        <ResponsiveContainer width="100%" height="100%">
+      {/* Explicit min dimensions + positive initialDimension: avoids Recharts
+          "width(-1) and height(-1)" warnings when the container mounts before
+          the ResizeObserver reports a size (e.g. tab switches, dynamic import swap). */}
+      <div className="w-full min-w-0" style={{ height: chartHeight, minHeight: chartHeight }}>
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 600, height: chartHeight }}>
           <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
             <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="var(--color-muted)" />
@@ -100,8 +103,8 @@ export function AnalyticsPaymentMethodsChartCard({ donutData, methodEntries, met
   return (
     <Card variant="raised" padding="lg">
       <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Payment methods</h2>
-      <div className="flex w-full min-w-0 flex-col items-center" style={{ height: 260 }}>
-        <ResponsiveContainer width="100%" height={240}>
+      <div className="flex w-full min-w-0 flex-col items-center" style={{ height: 260, minHeight: 260 }}>
+        <ResponsiveContainer width="100%" height={240} initialDimension={{ width: 480, height: 240 }}>
           <PieChart>
             <Pie
               data={donutData}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import {
   Loader2,
   Plus,
@@ -595,6 +596,7 @@ export function MembershipsContent() {
   const [memberTotal, setMemberTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [stripeConnected, setStripeConnected] = useState<boolean | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<MembershipPlan | undefined>(undefined)
@@ -607,8 +609,12 @@ export function MembershipsContent() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/coach/memberships')
+      const [res, settingsRes] = await Promise.all([
+        fetch('/api/coach/memberships'),
+        fetch('/api/settings'),
+      ])
       const json = await res.json().catch(() => ({})) as { data?: { plans?: MembershipPlan[]; mrrCents?: number; memberTotal?: number; members?: MemberRow[] }; error?: string }
+      const settingsJson = await settingsRes.json().catch(() => ({})) as { data?: { workspace?: { stripeConnected?: boolean } } }
       if (!res.ok) {
         throw new Error(json.error ?? 'Could not load memberships')
       }
@@ -618,6 +624,11 @@ export function MembershipsContent() {
       setMrrCents(d.mrrCents ?? 0)
       setMemberTotal(d.memberTotal ?? 0)
       setMembers(d.members ?? [])
+      // stripeConnected mirrors Stripe charges_enabled (synced on Connect onboarding return).
+      // If the settings call fails, leave it null (unknown) so we never show a false warning.
+      if (settingsRes.ok) {
+        setStripeConnected(Boolean(settingsJson?.data?.workspace?.stripeConnected))
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load')
     } finally {
@@ -674,6 +685,25 @@ export function MembershipsContent() {
         <p className="-mt-2 text-sm text-[var(--text-tertiary)]">
           Recurring plans clients pay monthly — billed automatically through Stripe.
         </p>
+
+        {/* Stripe Connect warning — same banner as Classes */}
+        {stripeConnected === false && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-xl border border-[var(--warning-border)] bg-[var(--warning-bg)] px-4 py-3 text-sm text-[var(--warning)]"
+          >
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <div>
+              <p className="font-medium">Stripe not connected yet</p>
+              <p className="mt-1 text-xs">
+                Clients can&apos;t pay until you finish Stripe onboarding.{' '}
+                <Link href="/coach/settings?tab=payments" className="underline">
+                  Connect Stripe
+                </Link>
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Loading */}
         {loading && (

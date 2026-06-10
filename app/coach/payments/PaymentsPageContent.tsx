@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { format, parseISO } from 'date-fns'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Icon } from '@/components/icons/inked'
 import { Button } from '@/components/ui/Button'
@@ -18,6 +19,15 @@ import {
 import { formatCents } from '@/lib/format-currency'
 import { getSummaryRange, toDateString } from '@/lib/payment-period'
 import type { PaymentSummaryResult } from '@/lib/payments-summary'
+
+/** Render a YYYY-MM-DD payment date as e.g. "Jun 9, 2026"; falls back to the raw value. */
+function formatPaymentDate(d: string): string {
+  try {
+    return format(parseISO(d), 'MMM d, yyyy')
+  } catch {
+    return d
+  }
+}
 
 type PaymentRow = {
   id: string
@@ -477,7 +487,7 @@ export function PaymentsPageContent() {
                     header: 'Method',
                     render: (p) => <span className="inline-flex items-center gap-2"><StatusDot tone="active" />{PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}</span>,
                   },
-                  { key: 'date', header: 'Date', sortValue: (r) => r.payment_date, render: (p) => p.payment_date },
+                  { key: 'date', header: 'Date', sortValue: (r) => r.payment_date, render: (p) => formatPaymentDate(p.payment_date) },
                   { key: 'reference', header: 'Reference', render: (p) => p.payment_reference ?? '—' },
                   {
                     key: 'actions',
@@ -508,7 +518,7 @@ export function PaymentsPageContent() {
                     >
                       {PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}
                     </span>
-                    <span className="text-[13px] text-[var(--color-muted)]">{p.payment_date}</span>
+                    <span className="text-[13px] text-[var(--color-muted)]">{formatPaymentDate(p.payment_date)}</span>
                   </div>
                   {p.payment_reference ? (
                     <p className="mt-1 text-[13px] text-[var(--color-muted)]">Ref: {p.payment_reference}</p>

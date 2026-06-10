@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireClient } from '@/lib/api-helpers'
+import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { clientTestimonialSubmitSchema } from '@/lib/validations'
 
@@ -44,7 +45,10 @@ export async function POST(request: Request) {
       [cl.first_name, cl.last_name].filter(Boolean).join(' ').trim() || 'Client'
     const text = (parsed.data.content ?? '').trim().slice(0, 500)
 
-    const { data: row, error: insErr } = await supabase
+    // Service-role insert with values verified by requireClient: the testimonials
+    // INSERT policy subqueries auth.users, which errors for authenticated sessions.
+    const svc = createServiceClient()
+    const { data: row, error: insErr } = await svc
       .from('testimonials')
       .insert({
         workspace_id: workspaceId,
@@ -60,6 +64,7 @@ export async function POST(request: Request) {
       .single()
 
     if (insErr || !row) {
+      console.error('POST /api/client/testimonials — insert failed', insErr)
       return NextResponse.json({ error: 'Could not save your review' }, { status: 500 })
     }
 
