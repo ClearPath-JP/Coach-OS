@@ -1,0 +1,375 @@
+/* 06 · Glass Sanctuary — glassmorphism + editorial.
+   Aurora gradient background, frosted-glass panels, violet accent,
+   large Instrument Serif display type, lots of air.
+   Refs: INSPO/sign-in.txt glass inputs + testimonial cards. */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* aurora palette */
+  --aurora-base:   #181233;
+  --aurora-mid:    #241a45;
+  --accent:        #a78bfa;       /* violet */
+  --accent-hi:     #c4b5fd;
+  --accent-lo:     #7c5cff;
+  --rose:          #ff7eb0;
+  --teal:          #36d0c4;
+
+  /* text */
+  --txt:   rgba(255,255,255,.95);
+  --txt2:  rgba(255,255,255,.68);
+  --txt3:  rgba(255,255,255,.45);
+
+  /* glass material */
+  --glass-bg:     rgba(255,255,255,.06);
+  --glass-border: rgba(255,255,255,.14);
+  --glass-hi:     rgba(255,255,255,.10);  /* inner top highlight */
+  --glass-deep:   rgba(20,15,50,.55);     /* darker glass for sidebars */
+
+  /* semantic */
+  --ok:    #6ee7b7;
+  --warn:  #fbbf24;
+  --err:   #f87171;
+  --line:  rgba(255,255,255,.09);
+  --line2: rgba(255,255,255,.15);
+
+  /* typography */
+  --font-d: 'Instrument Serif', Georgia, serif;
+  --font-b: 'Outfit', system-ui, sans-serif;
+}
+
+/* ─── reset ─── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+
+/* ─── aurora background ───
+   html gets the solid deep-indigo fill so the full document height
+   (including areas scrolled beyond the viewport) is always dark —
+   never a white fallback.
+   body::before carries the radial glow blobs as position:fixed so they
+   stay anchored to the viewport while the user scrolls.
+   body::after adds a subtle noise grain on top of everything.
+*/
+html {
+  background: linear-gradient(160deg, var(--aurora-base) 0%, var(--aurora-mid) 50%, #1a1040 100%);
+}
+
+body {
+  font-family: var(--font-b);
+  color: var(--txt);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+  /* transparent so the html gradient shows through below the fold */
+  background: transparent;
+}
+
+/* glow blobs — fixed so they float in the viewport at all scroll depths */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% -10%,  rgba(124,92,255,.40), transparent 65%),
+    radial-gradient(ellipse 60% 55% at 85% 15%,   rgba(255,126,176,.28), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 50% 100%,  rgba(54,208,196,.22),  transparent 65%),
+    radial-gradient(ellipse 50% 40% at 10% 70%,   rgba(167,139,250,.18), transparent 60%);
+}
+
+/* subtle noise overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* ─── typography ─── */
+h1, h2, h3, h4, .display {
+  font-family: var(--font-d);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+.eyebrow {
+  font: 600 11px/1 var(--font-b);
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: var(--accent);
+}
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ─── wordmark ─── */
+.wm { font-family: var(--font-d); font-weight: 400; letter-spacing: -.01em; color: var(--txt); }
+.wm .va { color: var(--accent); font-style: italic; }
+.logo-mark {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--accent-lo), var(--accent));
+  display: grid; place-content: center;
+  box-shadow: 0 0 14px rgba(124,92,255,.5), inset 0 1px 0 rgba(255,255,255,.25);
+  color: #fff; font-size: 13px;
+}
+
+/* ─── glass material ─── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    0 8px 32px rgba(0,0,0,.45),
+    0 2px 8px rgba(0,0,0,.28);
+}
+
+/* deeper glass for sidebars / app shell panels */
+.glass-deep {
+  background: var(--glass-deep);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    0 8px 32px rgba(0,0,0,.55);
+}
+
+/* card = glass panel variant */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    0 4px 20px rgba(0,0,0,.38);
+}
+.card-accent {
+  border-color: rgba(167,139,250,.35);
+  background: rgba(124,92,255,.1);
+  box-shadow:
+    inset 0 1px 0 rgba(196,181,253,.15),
+    0 0 28px rgba(124,92,255,.2),
+    0 4px 20px rgba(0,0,0,.38);
+}
+
+/* ─── glass input ─── */
+.glass-input-wrap {
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.05);
+  backdrop-filter: blur(8px);
+  transition: border-color .15s, background .15s;
+}
+.glass-input-wrap:focus-within {
+  border-color: rgba(167,139,250,.7);
+  background: rgba(124,92,255,.1);
+  box-shadow: 0 0 0 3px rgba(124,92,255,.18);
+}
+.glass-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--txt);
+  font: 400 14px var(--font-b);
+  padding: 12px 16px;
+  border-radius: 14px;
+}
+.glass-input::placeholder { color: var(--txt3); }
+
+/* ─── buttons ─── */
+.btn {
+  font: 500 14px/1 var(--font-b);
+  border-radius: 12px;
+  padding: 11px 20px;
+  border: 1px solid var(--glass-border);
+  color: var(--txt);
+  background: rgba(255,255,255,.07);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: .15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.btn:hover { background: rgba(255,255,255,.12); border-color: var(--line2); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-lo), var(--accent));
+  border-color: rgba(196,181,253,.3);
+  color: #fff;
+  box-shadow: 0 0 22px rgba(124,92,255,.45), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #8b6fff, var(--accent-hi));
+  box-shadow: 0 0 30px rgba(124,92,255,.6), inset 0 1px 0 rgba(255,255,255,.32);
+}
+.btn-ghost { background: transparent; border-color: transparent; color: var(--txt2); }
+.btn-ghost:hover { background: rgba(255,255,255,.06); color: var(--txt); border-color: var(--line); }
+
+/* ─── chips / badges ─── */
+.chip {
+  font: 600 11.5px/1 var(--font-b);
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.07);
+  backdrop-filter: blur(6px);
+  color: var(--txt2);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.chip-accent { color: var(--accent-hi); border-color: rgba(167,139,250,.35); background: rgba(124,92,255,.12); }
+.chip-ok     { color: var(--ok);        border-color: rgba(110,231,183,.3);   background: rgba(110,231,183,.1); }
+.chip-rose   { color: var(--rose);      border-color: rgba(255,126,176,.3);   background: rgba(255,126,176,.1); }
+.chip-teal   { color: var(--teal);      border-color: rgba(54,208,196,.3);    background: rgba(54,208,196,.1); }
+
+/* ─── sidebar ─── */
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--txt2);
+  font: 500 14px var(--font-b);
+  text-decoration: none;
+  transition: .15s;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.sb-item:hover {
+  background: rgba(255,255,255,.06);
+  color: var(--txt);
+  border-color: var(--glass-border);
+}
+.sb-item.active {
+  background: rgba(124,92,255,.15);
+  border-color: rgba(167,139,250,.25);
+  color: var(--accent-hi);
+  box-shadow: inset 0 1px 0 rgba(196,181,253,.12);
+}
+.sb-item.active .sb-icon { color: var(--accent); }
+.sb-group {
+  font: 600 10.5px/1 var(--font-b);
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  color: var(--txt3);
+  padding: 16px 12px 5px;
+}
+
+/* ─── avatar ─── */
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: grid; place-content: center;
+  font: 700 13px var(--font-b);
+  background: linear-gradient(135deg, var(--accent-lo), var(--accent));
+  color: #fff;
+  box-shadow: 0 0 12px rgba(124,92,255,.45);
+  flex-shrink: 0;
+}
+.avatar-sm {
+  width: 28px; height: 28px;
+  font-size: 11px;
+  border-radius: 8px;
+}
+.avatar-lg {
+  width: 48px; height: 48px;
+  font-size: 17px;
+  border-radius: 14px;
+}
+
+/* ─── stat ─── */
+.stat-num {
+  font-family: var(--font-d);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1;
+}
+
+/* ─── progress bar ─── */
+.progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.1);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-lo), var(--accent-hi));
+  box-shadow: 0 0 8px rgba(167,139,250,.6);
+}
+
+/* ─── divider ─── */
+.divide { border-top: 1px solid var(--line); }
+
+/* ─── kbd ─── */
+.kbd {
+  font: 600 11px var(--font-b);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 2px 7px;
+  color: var(--txt3);
+  background: rgba(255,255,255,.05);
+}
+
+/* ─── glow helpers ─── */
+.glow-violet { box-shadow: 0 0 40px rgba(124,92,255,.35); }
+.glow-rose   { box-shadow: 0 0 40px rgba(255,126,176,.25); }
+.glow-teal   { box-shadow: 0 0 40px rgba(54,208,196,.2); }
+
+/* ─── calendar grid ─── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: 52px repeat(7, 1fr);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+  background: rgba(255,255,255,.03);
+}
+.cal-time {
+  font: 500 11px var(--font-b);
+  color: var(--txt3);
+  padding: 0 8px;
+  display: flex; align-items: flex-start; padding-top: 6px;
+  border-right: 1px solid var(--line);
+}
+.cal-cell {
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  min-height: 52px;
+  position: relative;
+  padding: 3px;
+}
+.cal-cell.today { background: rgba(124,92,255,.07); }
+.cal-event {
+  border-radius: 8px;
+  padding: 5px 8px;
+  font: 600 11px var(--font-b);
+  font-size: 11px;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+.cal-hdr {
+  font: 600 12px var(--font-b);
+  text-align: center;
+  padding: 10px 4px;
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255,255,255,.04);
+  color: var(--txt2);
+}
+.cal-hdr.today { background: rgba(124,92,255,.12); color: var(--accent-hi); }

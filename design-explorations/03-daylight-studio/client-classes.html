@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method — Book a Class</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+</head>
+<body>
+
+<div style="min-height:100vh;background:var(--base);">
+
+  <!-- CLIENT NAV (same as portal) -->
+  <header style="background:var(--card);border-bottom:1px solid var(--line);padding:0 24px;">
+    <div class="mx-auto max-w-5xl flex items-center justify-between" style="height:56px;">
+      <div class="flex items-center gap-3">
+        <div class="logo-mark" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">V</div>
+        <div>
+          <div class="font-semibold text-sm" style="color:var(--txt);">Vale Method</div>
+          <div style="font-size:10px;color:var(--txt3);line-height:1;">powered by <span style="color:var(--accent);font-weight:700;">Korva</span></div>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="client-portal.html" class="sb-item" style="font-size:13px;padding:6px 12px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Portal
+        </a>
+        <a href="#" class="sb-item active" style="font-size:13px;padding:6px 12px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Classes
+        </a>
+        <a href="#" class="sb-item" style="font-size:13px;padding:6px 12px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Messages
+        </a>
+        <a href="#" class="sb-item" style="font-size:13px;padding:6px 12px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Videos
+        </a>
+        <a href="#" class="sb-item" style="font-size:13px;padding:6px 12px;">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Invoices
+        </a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <div class="avatar" style="background:linear-gradient(135deg,#60a5fa,#3b82f6);">DS</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="mx-auto max-w-5xl px-5 py-8">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
+      <div>
+        <div class="eyebrow mb-1">Vale Method</div>
+        <h1 class="display text-[2rem] font-bold" style="color:var(--txt);">Book a class</h1>
+        <p style="color:var(--txt2);margin-top:4px;font-size:14px;">Choose a class below. Your passes cover group classes.</p>
+      </div>
+      <!-- Pass balance pill — prominent -->
+      <div class="card-lavender flex items-center gap-3 px-5 py-3" style="border-radius:20px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:var(--accent);display:grid;place-content:center;">
+          <span style="font-size:17px;">🎟</span>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);">Pass balance</div>
+          <div class="font-bold text-xl tnum" style="color:var(--txt);">3 <span style="font-size:14px;font-weight:500;color:var(--txt2);">class credits</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLASS CARDS -->
+    <div class="space-y-4">
+
+      <!-- 1. FUNDAMENTALS — covered by pass, primary action -->
+      <div class="card p-6" style="border-radius:28px;">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex items-start gap-4">
+            <div style="width:56px;height:56px;border-radius:18px;background:var(--accent-wash);display:grid;place-content:center;flex-shrink:0;">
+              <span style="font-size:26px;">🥋</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="font-bold text-lg" style="color:var(--txt);">Fundamentals</h2>
+                <span class="chip chip-ok" style="font-size:11px;">Open</span>
+              </div>
+              <div style="font-size:14px;color:var(--txt2);margin-top:3px;">Mon &amp; Wed · 6:00 PM · Cap 12</div>
+              <div style="font-size:13px;color:var(--txt3);margin-top:2px;">Vale Method Dojo</div>
+
+              <!-- pass coverage -->
+              <div style="display:inline-flex;align-items:center;gap:6px;background:var(--ok-wash);border:1px solid rgba(34,197,94,.25);border-radius:12px;padding:5px 10px;margin-top:10px;">
+                <svg width="13" height="13" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size:12px;font-weight:600;color:#16a34a;">Covered by your pass · 3 left</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <!-- capacity -->
+            <div style="text-align:right;">
+              <div style="font-size:12px;color:var(--txt3);margin-bottom:4px;">8 / 12 booked</div>
+              <div class="progress-track" style="width:120px;"><div class="progress-fill" style="width:66%;"></div></div>
+            </div>
+            <a href="#" class="btn btn-primary text-sm px-6 py-2.5">Book with pass →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. SPARRING — members only -->
+      <div class="card p-6" style="border-radius:28px;opacity:.85;">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex items-start gap-4">
+            <div style="width:56px;height:56px;border-radius:18px;background:#fef3c7;display:grid;place-content:center;flex-shrink:0;">
+              <span style="font-size:26px;">⚔️</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="font-bold text-lg" style="color:var(--txt);">Sparring</h2>
+                <span class="chip chip-warn" style="font-size:11px;">Members only</span>
+              </div>
+              <div style="font-size:14px;color:var(--txt2);margin-top:3px;">Tue &amp; Thu · 7:00 PM · Cap 10</div>
+              <div style="font-size:13px;color:var(--txt3);margin-top:2px;">Vale Method Dojo</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;background:var(--warn-wash);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:5px 10px;margin-top:10px;">
+                <svg width="13" height="13" fill="none" stroke="#b45309" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <span style="font-size:12px;font-weight:600;color:#b45309;">Members only — upgrade your plan</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <div style="text-align:right;">
+              <div style="font-size:12px;color:var(--txt3);margin-bottom:4px;">6 / 10 booked</div>
+              <div class="progress-track" style="width:120px;"><div class="progress-fill" style="width:60%;background:linear-gradient(90deg,#fcd34d,#f59e0b);"></div></div>
+            </div>
+            <a href="#" class="btn text-sm px-5 py-2.5" style="opacity:.7;cursor:not-allowed;">Upgrade plan</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. OPEN MAT — free for members -->
+      <div class="card p-6" style="border-radius:28px;">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex items-start gap-4">
+            <div style="width:56px;height:56px;border-radius:18px;background:#dcfce7;display:grid;place-content:center;flex-shrink:0;">
+              <span style="font-size:26px;">🤸</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="font-bold text-lg" style="color:var(--txt);">Open Mat</h2>
+                <span class="chip chip-ok" style="font-size:11px;">Open</span>
+              </div>
+              <div style="font-size:14px;color:var(--txt2);margin-top:3px;">Saturday · 10:00 AM · Cap 16</div>
+              <div style="font-size:13px;color:var(--txt3);margin-top:2px;">Vale Method Dojo</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;background:var(--ok-wash);border:1px solid rgba(34,197,94,.25);border-radius:12px;padding:5px 10px;margin-top:10px;">
+                <span style="font-size:12px;font-weight:600;color:#16a34a;">🎁 Free for members</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <div style="text-align:right;">
+              <div style="font-size:12px;color:var(--txt3);margin-bottom:4px;">11 / 16 booked</div>
+              <div class="progress-track" style="width:120px;"><div class="progress-fill" style="width:69%;background:linear-gradient(90deg,#86efac,#22c55e);"></div></div>
+            </div>
+            <a href="#" class="btn btn-primary text-sm px-6 py-2.5">Book — free →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. PRIVATE 1:1 — $80 request -->
+      <div class="card p-6" style="border-radius:28px;">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex items-start gap-4">
+            <div style="width:56px;height:56px;border-radius:18px;background:var(--accent-wash);display:grid;place-content:center;flex-shrink:0;">
+              <span style="font-size:26px;">🎯</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="font-bold text-lg" style="color:var(--txt);">Private 1:1</h2>
+                <span class="chip chip-accent" style="font-size:11px;">$80</span>
+              </div>
+              <div style="font-size:14px;color:var(--txt2);margin-top:3px;">By appointment · 60 min</div>
+              <div style="font-size:13px;color:var(--txt3);margin-top:2px;">Your schedule, your pace</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-wash);border:1px solid rgba(109,92,255,.2);border-radius:12px;padding:5px 10px;margin-top:10px;">
+                <span style="font-size:12px;font-weight:600;color:var(--accent);">$80 · Paid via Stripe</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-end justify-center">
+            <a href="#" class="btn btn-dark text-sm px-6 py-2.5">Request →</a>
+            <div style="font-size:11px;color:var(--txt3);margin-top:6px;text-align:right;">Coach confirms availability</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- bottom pass upsell -->
+    <div class="card-lavender p-5 mt-8 flex items-center justify-between gap-4 flex-wrap" style="border-radius:24px;">
+      <div class="flex items-center gap-3">
+        <span style="font-size:28px;">🎟</span>
+        <div>
+          <div class="font-semibold text-sm" style="color:var(--txt);">Running low on credits?</div>
+          <div style="font-size:13px;color:var(--txt2);">Buy a 10-class pass and save on every booking.</div>
+        </div>
+      </div>
+      <a href="#" class="btn btn-primary text-sm px-6 py-2.5">Buy a pass →</a>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

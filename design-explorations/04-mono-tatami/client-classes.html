@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method — Book a class · Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  body { overflow: hidden; }
+  .main-scroll { overflow-y: auto; height: calc(100vh - 48px); }
+  .client-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: var(--p1);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .csb-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: var(--txt2);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+  .csb-item:hover { background: var(--p4); color: var(--txt); }
+  .csb-item.active { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+
+  /* Filter chip (rendered, non-interactive for mockup) */
+  .fc-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line2);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--txt2);
+    cursor: pointer;
+    background: var(--p1);
+    transition: background .1s, color .1s, border-color .1s;
+    white-space: nowrap;
+  }
+  .fc-pill:hover { border-color: var(--line2); color: var(--txt); background: var(--p2); }
+  .fc-pill.active {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Booking class card */
+  .bk-card {
+    background: var(--p1);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .bk-card:hover { border-color: var(--line2); }
+  .bk-card-head {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .bk-card-body {
+    padding: 12px 16px;
+  }
+  .coverage-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--p2);
+    border: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--txt2);
+    margin-bottom: 10px;
+  }
+  .coverage-row.pass-cover {
+    border-color: rgba(52,211,153,.2);
+    background: rgba(52,211,153,.05);
+    color: var(--ok);
+  }
+</style>
+</head>
+<body>
+<div class="app-shell" style="height:100vh;">
+
+  <!-- ── CLIENT SIDEBAR ────────────────────────────────────── -->
+  <aside class="client-sidebar">
+    <div class="sb-logo">
+      <div class="flex items-center gap-2 mb-1">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.5)"/><rect x="8" y="1.5" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="8" y="8" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.08)"/></svg>
+        <span style="font-family:'Inter Tight',sans-serif;font-weight:700;letter-spacing:-0.03em;font-size:14px;">Vale Method</span>
+      </div>
+      <div style="font-size:10px;color:var(--txt4);margin-top:2px;">powered by <span style="font-weight:700;color:var(--accent);">Korva</span></div>
+    </div>
+    <div style="padding:8px;">
+      <a href="client-portal.html" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+        Home
+      </a>
+      <a href="client-classes.html" class="csb-item active">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5.5h11" stroke="currentColor" stroke-width="1.2"/><path d="M5 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M9 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Book a class
+      </a>
+      <a href="#" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10a1 1 0 011 1v5a1 1 0 01-1 1H5l-3 2V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Message coach
+      </a>
+      <a href="#" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="currentColor"/></svg>
+        My videos
+      </a>
+      <a href="#" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3" width="11" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6h11" stroke="currentColor" stroke-width="1.2"/></svg>
+        Invoices
+      </a>
+    </div>
+    <div style="padding:8px;border-top:1px solid var(--line);margin-top:auto;">
+      <div class="flex items-center gap-3">
+        <div class="avatar">DS</div>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:600;">Diego Santos</div>
+          <div style="font-size:11px;color:var(--txt4);">Member</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────────────────── -->
+  <div class="main">
+    <div class="topbar">
+      <span style="font-size:13px;color:var(--txt2);">Vale Method</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="color:var(--txt4);"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:13px;font-weight:600;">Book a class</span>
+      <div class="flex items-center gap-3 ml-auto">
+        <span style="font-size:12px;color:var(--txt3);">Tue, Jun 10</span>
+        <div class="avatar">DS</div>
+      </div>
+    </div>
+
+    <div class="main-scroll">
+      <div class="page-pad" style="max-width:820px;">
+
+        <!-- Header row -->
+        <div class="flex items-start justify-between mb-5">
+          <div>
+            <div class="eyebrow mb-1.5">Vale Method · BJJ &amp; Striking</div>
+            <h1 class="display" style="font-size:22px;font-weight:800;">Book a class</h1>
+          </div>
+          <!-- Passes balance callout -->
+          <div style="display:flex;align-items:center;gap:8px;background:var(--p1);border:1px solid var(--line2);border-radius:8px;padding:10px 14px;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3.5" width="11" height="7" rx="1" stroke="var(--ok)" stroke-width="1.2"/><path d="M1.5 6.5h11" stroke="var(--ok)" stroke-width="1.2"/><circle cx="5" cy="9" r="0.75" fill="var(--ok)"/></svg>
+            <span style="font-size:13px;font-weight:600;">3 class credits</span>
+            <span style="font-size:12px;color:var(--txt3);">remaining</span>
+            <a href="#" class="btn btn-sm" style="margin-left:6px;">Buy more</a>
+          </div>
+        </div>
+
+        <!-- Filter row (Linear-style chips) -->
+        <div class="filter-row mb-5">
+          <!-- Active filter chip: Type = Group  -->
+          <div class="fchip">
+            <div class="fchip-label">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1" y="1" width="3.5" height="3.5" rx=".5" stroke="currentColor" stroke-width="1"/><rect x="6.5" y="1" width="3.5" height="3.5" rx=".5" stroke="currentColor" stroke-width="1"/><rect x="1" y="6.5" width="3.5" height="3.5" rx=".5" stroke="currentColor" stroke-width="1"/><rect x="6.5" y="6.5" width="3.5" height="3.5" rx=".5" stroke="currentColor" stroke-width="1"/></svg>
+              Type
+            </div>
+            <div class="fchip-op">is any of</div>
+            <div class="fchip-val">
+              <span class="dot dot-ok"></span>
+              Group, Private
+            </div>
+            <div class="fchip-x">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 1.5l5 5M6.5 1.5l-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+
+          <!-- Availability filter chip -->
+          <div class="fchip">
+            <div class="fchip-label">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1"/></svg>
+              Availability
+            </div>
+            <div class="fchip-op">is</div>
+            <div class="fchip-val">
+              <span class="dot dot-ok"></span>
+              Has spots
+            </div>
+            <div class="fchip-x">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 1.5l5 5M6.5 1.5l-5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+
+          <!-- Add filter button -->
+          <button class="btn btn-ghost btn-sm" style="gap:4px;font-size:12px;color:var(--txt3);">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Filter
+          </button>
+
+          <!-- Quick pills -->
+          <div style="margin-left:auto;display:flex;gap:5px;">
+            <button class="fc-pill active">All</button>
+            <button class="fc-pill">Group</button>
+            <button class="fc-pill">Private</button>
+            <button class="fc-pill">Pass covered</button>
+          </div>
+        </div>
+
+        <!-- CLASS CARDS -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <!-- 1. Fundamentals — pass covered, primary action -->
+          <div class="bk-card">
+            <div class="bk-card-head">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span style="font-size:15px;font-weight:700;letter-spacing:-0.02em;">Fundamentals</span>
+                  <span class="chip" style="font-size:11px;">Group</span>
+                </div>
+                <div style="font-size:12.5px;color:var(--txt2);">Mon &amp; Wed · 6:00 pm · 1 hour</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0;">
+                <div class="chip chip-ok mb-1.5" style="font-size:11px;"><span class="dot dot-ok"></span>8 / 12 spots</div>
+                <div style="font-size:12px;color:var(--txt3);">$25 drop-in</div>
+              </div>
+            </div>
+            <div class="bk-card-body">
+              <div class="coverage-row pass-cover">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="3" width="11" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1 6h11" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="8.5" r=".75" fill="currentColor"/></svg>
+                <span>Covered by your pass · <strong>3 credits left</strong></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="prog-track" style="flex:1;margin-right:16px;">
+                  <div class="prog-fill" style="width:66.7%;background:var(--ok);"></div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn btn-ghost btn-sm">Details</button>
+                  <button class="btn btn-primary btn-sm">Book → uses 1 pass</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Sparring — members only -->
+          <div class="bk-card">
+            <div class="bk-card-head">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span style="font-size:15px;font-weight:700;letter-spacing:-0.02em;">Sparring</span>
+                  <span class="chip" style="font-size:11px;">Group</span>
+                  <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line2);font-size:11px;color:var(--txt3);">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="2" y="4" width="6" height="5" rx="1" stroke="currentColor" stroke-width="1"/><path d="M3.5 4V3a1.5 1.5 0 013 0v1" stroke="currentColor" stroke-width="1"/></svg>
+                    Members only
+                  </span>
+                </div>
+                <div style="font-size:12.5px;color:var(--txt2);">Tue &amp; Thu · 7:00 pm · 1.5 hours</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0;">
+                <div class="chip mb-1.5" style="font-size:11px;">6 / 10 spots</div>
+                <div style="font-size:12px;color:var(--txt3);">Members only</div>
+              </div>
+            </div>
+            <div class="bk-card-body">
+              <div class="coverage-row">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="2" y="4.5" width="9" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 4.5V3.5a2.5 2.5 0 015 0v1" stroke="currentColor" stroke-width="1.2"/></svg>
+                <span>You're a member — this class is included in your plan</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="prog-track" style="flex:1;margin-right:16px;">
+                  <div class="prog-fill" style="width:60%;background:var(--warn);"></div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn btn-ghost btn-sm">Details</button>
+                  <button class="btn btn-primary btn-sm">Book</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Open Mat — free for members -->
+          <div class="bk-card">
+            <div class="bk-card-head">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span style="font-size:15px;font-weight:700;letter-spacing:-0.02em;">Open Mat</span>
+                  <span class="chip" style="font-size:11px;">Group</span>
+                  <span class="chip chip-ok" style="font-size:11px;">Booked</span>
+                </div>
+                <div style="font-size:12.5px;color:var(--txt2);">Sat · 10:00 am · 2 hours</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0;">
+                <div class="chip chip-ok mb-1.5" style="font-size:11px;"><span class="dot dot-ok"></span>11 / 16 spots</div>
+                <div style="font-size:12px;color:var(--txt3);">Free for members</div>
+              </div>
+            </div>
+            <div class="bk-card-body">
+              <div class="coverage-row pass-cover">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Free for members · no credits used</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="prog-track" style="flex:1;margin-right:16px;">
+                  <div class="prog-fill" style="width:68.75%;background:var(--ok);"></div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="btn btn-ghost btn-sm">Details</button>
+                  <button class="btn btn-ghost btn-sm" style="color:var(--txt3);">Cancel booking</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Private 1:1 — $80, request -->
+          <div class="bk-card">
+            <div class="bk-card-head">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span style="font-size:15px;font-weight:700;letter-spacing:-0.02em;">Private 1:1</span>
+                  <span class="chip" style="font-size:11px;">Private</span>
+                </div>
+                <div style="font-size:12.5px;color:var(--txt2);">By appointment · 1 hour</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0;">
+                <div style="font-size:18px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;">$80</div>
+                <div style="font-size:12px;color:var(--txt3);">per session</div>
+              </div>
+            </div>
+            <div class="bk-card-body">
+              <div class="coverage-row">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M2 11.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <span>One-on-one with Coach Marcus Vale · $80 billed on confirmation</span>
+              </div>
+              <div class="flex items-center justify-end">
+                <div class="flex gap-2">
+                  <button class="btn btn-ghost btn-sm">Details</button>
+                  <button class="btn btn-primary btn-sm">$80 · Request</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Past bookings compact table -->
+        <div class="section-gap">
+          <div class="panel" style="overflow:hidden;">
+            <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid var(--line);">
+              <span style="font-size:13px;font-weight:600;">My booking history</span>
+              <a href="#" style="font-size:12px;color:var(--txt3);text-decoration:none;">View all →</a>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Class</th>
+                  <th>Type</th>
+                  <th>Credits used</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="tnum" style="color:var(--txt2);">Jun 9</td>
+                  <td>Fundamentals</td>
+                  <td style="color:var(--txt2);">Group</td>
+                  <td class="tnum" style="color:var(--txt2);">1</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Attended</span></td>
+                </tr>
+                <tr>
+                  <td class="tnum" style="color:var(--txt2);">Jun 7</td>
+                  <td>Open Mat</td>
+                  <td style="color:var(--txt2);">Group</td>
+                  <td class="tnum" style="color:var(--txt2);">—</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Attended</span></td>
+                </tr>
+                <tr>
+                  <td class="tnum" style="color:var(--txt2);">Jun 4</td>
+                  <td>Private 1:1</td>
+                  <td style="color:var(--txt2);">Private</td>
+                  <td class="tnum" style="color:var(--txt2);">—</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Attended</span></td>
+                </tr>
+                <tr>
+                  <td class="tnum" style="color:var(--txt2);">Jun 2</td>
+                  <td>Sparring</td>
+                  <td style="color:var(--txt2);">Group</td>
+                  <td class="tnum" style="color:var(--txt2);">—</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Attended</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

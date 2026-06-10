@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — Schedule · Vale Method</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  html, body { height: 100%; }
+  .app-shell { display: flex; height: 100vh; overflow: hidden; background: var(--base); }
+  .sidebar { width: 228px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .top-bar { flex-shrink: 0; border-bottom: 3px solid var(--border); background: var(--surface); }
+  .scroll-area { flex: 1; overflow-y: auto; }
+
+  /* Calendar grid */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: 52px repeat(7, 1fr);
+    min-width: 680px;
+  }
+  .cal-header-cell {
+    padding: 10px 6px;
+    text-align: center;
+    font-family: var(--font-h);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--txt3);
+    border-bottom: 3px solid var(--border);
+    border-right: 2px solid var(--border);
+    background: var(--surface2);
+  }
+  .cal-header-cell:last-child { border-right: none; }
+  .cal-header-cell.today-header {
+    background: var(--yellow);
+    color: var(--txt);
+  }
+  .cal-time-cell {
+    padding: 0 8px;
+    font-family: var(--font-h);
+    font-weight: 700;
+    font-size: 10px;
+    color: var(--txt3);
+    text-align: right;
+    border-right: 2px solid var(--border);
+    height: 56px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 6px;
+    background: var(--surface2);
+  }
+  .cal-day-cell {
+    height: 56px;
+    border-right: 2px solid rgba(16,16,16,.12);
+    border-bottom: 1px solid rgba(16,16,16,.07);
+    position: relative;
+    background: var(--surface);
+  }
+  .cal-day-cell:last-child { border-right: none; }
+  .cal-day-cell.today-col { background: rgba(255,210,63,.07); }
+
+  /* Event blocks */
+  .cal-block {
+    position: absolute;
+    left: 4px; right: 4px;
+    border-radius: 8px;
+    padding: 4px 7px;
+    font-family: var(--font-h);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    box-shadow: 3px 3px 0 var(--border);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .cal-block:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--border); }
+  .cal-block.block-yellow { background: var(--yellow); color: var(--txt); }
+  .cal-block.block-violet { background: var(--violet); color: var(--txt); }
+  .cal-block.block-green  { background: var(--green);  color: var(--txt); }
+  .cal-block.block-teal   { background: var(--teal);   color: #fff; }
+  .cal-block.block-private { background: var(--base); color: var(--txt); }
+
+  /* Selected today highlight */
+  .cal-block.today-block { box-shadow: 5px 5px 0 #b8910f; }
+
+  /* Class card in side panel */
+  .class-card {
+    background: var(--surface);
+    border: 3px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR (same as dashboard, Schedule active) -->
+  <aside class="sidebar sb px-3 py-4">
+    <div class="wm-pill mb-5 mx-2" style="font-size:1.1rem;align-self:flex-start">Kor<span class="va">va</span></div>
+
+    <div class="mx-2 mb-5 px-3 py-2 brutal-card-sm" style="background:rgba(250,247,240,.07);border-color:rgba(250,247,240,.2);box-shadow:none;display:flex;align-items:center;gap:8px">
+      <span style="font-family:var(--font-h);font-weight:700;font-size:12px;color:var(--yellow)">Vale Method</span>
+      <span style="margin-left:auto;color:rgba(250,247,240,.4);font-size:12px">▾</span>
+    </div>
+
+    <div class="mx-2 mb-4">
+      <div class="streak-badge" style="width:100%;justify-content:center">🔥 12-day streak</div>
+    </div>
+
+    <div class="sb-group">Workspace</div>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1.5"/><rect x="10" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="sb-item active">
+      <svg class="ico" style="width:16px;height:16px;stroke:var(--txt)" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2"/><line x1="6" y1="2" x2="6" y2="16"/><line x1="2" y1="7" x2="16" y2="7"/></svg>
+      Schedule
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3.5"/><path d="M2 16c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg>
+      Clients
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M6 9h6M9 6v6"/></svg>
+      Classes
+    </a>
+    <div class="sb-group mt-2">Tools</div>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><path d="M3 4h12M3 9h8M3 14h5"/></svg>
+      Messages
+      <span style="background:var(--coral);color:#fff;font-family:var(--font-h);font-weight:800;font-size:10px;border-radius:999px;padding:1px 7px;border:2px solid var(--border);margin-left:auto">3</span>
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><rect x="2" y="5" width="14" height="10" rx="2"/><path d="M6 5V4a3 3 0 0 1 6 0v1"/></svg>
+      Payments
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 3"/></svg>
+      Settings
+    </a>
+
+    <div class="mt-auto mx-0 pt-4" style="border-top:3px solid rgba(250,247,240,.15)">
+      <div class="flex items-center gap-3 px-2 py-3">
+        <div class="avatar">MV</div>
+        <div class="min-w-0">
+          <div style="font-family:var(--font-h);font-weight:700;font-size:13px;color:#faf7f0">Marcus Vale</div>
+          <div style="font-size:11px;font-family:var(--font-h);font-weight:600;color:rgba(250,247,240,.4)">Pro Coach</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- TOP BAR -->
+    <div class="top-bar px-6 py-3 flex items-center gap-4">
+      <button class="flex items-center gap-3 px-4 py-2.5 text-sm flex-1 max-w-sm brutal-card-sm" style="background:var(--base);color:var(--txt3);font-family:var(--font-h);font-weight:600;cursor:text">
+        <svg class="ico" style="width:15px;height:15px" viewBox="0 0 18 18"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l4 4"/></svg>
+        Search anything…
+        <span class="kbd ml-auto">⌘K</span>
+      </button>
+      <div class="flex items-center gap-3 ml-auto">
+        <div class="avatar">MV</div>
+      </div>
+    </div>
+
+    <!-- CONTENT ROW -->
+    <div class="scroll-area">
+      <div style="display:flex;height:100%;min-height:0">
+
+        <!-- CALENDAR PANEL -->
+        <div style="flex:1;overflow:auto;padding:20px 16px 20px 20px;min-width:0">
+
+          <!-- Week nav -->
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="eyebrow mb-1">Vale Method</div>
+              <h2 class="display text-2xl font-black">Week of June 9–15, 2026</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="brutal-btn brutal-btn-ghost brutal-btn-sm">← Prev</button>
+              <button class="brutal-btn brutal-btn-primary brutal-btn-sm">Today</button>
+              <button class="brutal-btn brutal-btn-ghost brutal-btn-sm">Next →</button>
+              <a href="#" class="brutal-btn brutal-btn-teal brutal-btn-sm">+ Add class</a>
+            </div>
+          </div>
+
+          <!-- Calendar grid -->
+          <div class="brutal-card" style="overflow:hidden;padding:0">
+            <div style="overflow-x:auto">
+              <div class="cal-grid" style="min-width:660px">
+                <!-- HEADER -->
+                <div class="cal-header-cell" style="border-right:2px solid var(--border)"></div>
+                <div class="cal-header-cell">MON<br/><span style="font-size:15px;letter-spacing:-0.02em">9</span></div>
+                <div class="cal-header-cell today-header">TUE<br/><span style="font-size:15px;letter-spacing:-0.02em">10</span></div>
+                <div class="cal-header-cell">WED<br/><span style="font-size:15px;letter-spacing:-0.02em">11</span></div>
+                <div class="cal-header-cell">THU<br/><span style="font-size:15px;letter-spacing:-0.02em">12</span></div>
+                <div class="cal-header-cell">FRI<br/><span style="font-size:15px;letter-spacing:-0.02em">13</span></div>
+                <div class="cal-header-cell">SAT<br/><span style="font-size:15px;letter-spacing:-0.02em">14</span></div>
+                <div class="cal-header-cell">SUN<br/><span style="font-size:15px;letter-spacing:-0.02em">15</span></div>
+
+                <!-- 7am -->
+                <div class="cal-time-cell">7am</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 8am -->
+                <div class="cal-time-cell">8am</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 9am — Diego private Tue -->
+                <div class="cal-time-cell">9am</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block block-private today-block" style="top:4px;height:44px">
+                    Diego Santos<div style="font-weight:600;opacity:.65;font-size:10px">Private · $80</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 10am -->
+                <div class="cal-time-cell">10am</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+                <!-- Sat Open Mat -->
+                <div class="cal-day-cell">
+                  <div class="cal-block block-green" style="top:4px;height:44px">
+                    Open Mat<div style="font-weight:600;opacity:.75;font-size:10px">11 / 16 · free</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 11am — Sarah private Tue -->
+                <div class="cal-time-cell">11am</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block block-private today-block" style="top:4px;height:44px">
+                    Sarah Chen<div style="font-weight:600;opacity:.65;font-size:10px">Private · $80</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 12pm -->
+                <div class="cal-time-cell">12pm</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 1pm -->
+                <div class="cal-time-cell">1pm</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 2pm -->
+                <div class="cal-time-cell">2pm</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 3pm -->
+                <div class="cal-time-cell">3pm</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 4pm -->
+                <div class="cal-time-cell">4pm</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 5pm -->
+                <div class="cal-time-cell">5pm</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 6pm — Fundamentals Mon/Wed/Tue -->
+                <div class="cal-time-cell">6pm</div>
+                <!-- Mon Fundamentals -->
+                <div class="cal-day-cell">
+                  <div class="cal-block block-yellow" style="top:4px;height:44px">
+                    Fundamentals<div style="font-weight:600;opacity:.7;font-size:10px">8 / 12 booked</div>
+                  </div>
+                </div>
+                <!-- Tue Fundamentals today -->
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block block-yellow today-block" style="top:4px;height:44px;box-shadow:5px 5px 0 #b8910f">
+                    Fundamentals<div style="font-weight:600;opacity:.7;font-size:10px">8 / 12 · TODAY</div>
+                  </div>
+                </div>
+                <!-- Wed Fundamentals -->
+                <div class="cal-day-cell">
+                  <div class="cal-block block-yellow" style="top:4px;height:44px">
+                    Fundamentals<div style="font-weight:600;opacity:.7;font-size:10px">8 / 12 booked</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 7pm — Sparring Tue/Thu -->
+                <div class="cal-time-cell">7pm</div>
+                <div class="cal-day-cell"></div>
+                <!-- Tue Sparring today -->
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block block-violet today-block" style="top:4px;height:44px">
+                    Sparring<div style="font-weight:600;opacity:.75;font-size:10px">6 / 10 · members</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+                <!-- Thu Sparring -->
+                <div class="cal-day-cell">
+                  <div class="cal-block block-violet" style="top:4px;height:44px">
+                    Sparring<div style="font-weight:600;opacity:.75;font-size:10px">6 / 10 · members</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+
+                <!-- 8pm -->
+                <div class="cal-time-cell">8pm</div>
+                <div class="cal-day-cell"></div><div class="cal-day-cell today-col"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div><div class="cal-day-cell"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDE PANEL: class list -->
+        <div style="flex-shrink:0;width:270px;padding:20px 16px;overflow-y:auto;border-left:3px solid var(--border);background:var(--surface)">
+
+          <div class="eyebrow mb-4">Classes this week</div>
+
+          <!-- Fundamentals -->
+          <div class="class-card" style="border-left:6px solid var(--yellow)">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div>
+                <div style="font-family:var(--font-h);font-weight:800;font-size:14px">Fundamentals</div>
+                <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">Mon &amp; Wed · 6:00pm</div>
+              </div>
+              <span class="badge badge-yellow">$25</span>
+            </div>
+            <div class="flex justify-between text-xs font-bold mb-1.5" style="font-family:var(--font-h)">
+              <span style="color:var(--txt3)">Capacity</span><span>8 / 12</span>
+            </div>
+            <div class="progress-track" style="height:10px;margin-bottom:10px">
+              <div class="progress-fill progress-fill-yellow" style="width:66.7%"></div>
+            </div>
+            <div class="flex gap-2">
+              <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="flex:1;font-size:11px">Roster</a>
+              <a href="#" class="brutal-btn brutal-btn-primary brutal-btn-sm" style="flex:1;font-size:11px">Details</a>
+            </div>
+          </div>
+
+          <!-- Sparring -->
+          <div class="class-card" style="border-left:6px solid var(--violet)">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div>
+                <div style="font-family:var(--font-h);font-weight:800;font-size:14px">Sparring</div>
+                <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">Tue &amp; Thu · 7:00pm</div>
+              </div>
+              <span class="badge badge-dark">Members</span>
+            </div>
+            <div class="flex justify-between text-xs font-bold mb-1.5" style="font-family:var(--font-h)">
+              <span style="color:var(--txt3)">Capacity</span><span>6 / 10</span>
+            </div>
+            <div class="progress-track" style="height:10px;margin-bottom:10px">
+              <div class="progress-fill progress-fill-violet" style="width:60%"></div>
+            </div>
+            <div class="flex gap-2">
+              <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="flex:1;font-size:11px">Roster</a>
+              <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="flex:1;font-size:11px">Details</a>
+            </div>
+          </div>
+
+          <!-- Open Mat -->
+          <div class="class-card" style="border-left:6px solid var(--green)">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div>
+                <div style="font-family:var(--font-h);font-weight:800;font-size:14px">Open Mat</div>
+                <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">Sat · 10:00am</div>
+              </div>
+              <span class="badge badge-green">Free</span>
+            </div>
+            <div class="flex justify-between text-xs font-bold mb-1.5" style="font-family:var(--font-h)">
+              <span style="color:var(--txt3)">Capacity</span><span>11 / 16</span>
+            </div>
+            <div class="progress-track" style="height:10px;margin-bottom:10px">
+              <div class="progress-fill progress-fill-teal" style="width:68.75%"></div>
+            </div>
+            <div class="flex gap-2">
+              <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="flex:1;font-size:11px">Roster</a>
+              <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="flex:1;font-size:11px">Details</a>
+            </div>
+          </div>
+
+          <!-- Private 1:1 -->
+          <div class="class-card" style="border-left:6px solid var(--txt)">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <div>
+                <div style="font-family:var(--font-h);font-weight:800;font-size:14px">Private 1:1</div>
+                <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">By appointment</div>
+              </div>
+              <span class="badge">$80</span>
+            </div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:12px;color:var(--txt3);margin-bottom:10px">2 today: Diego + Sarah</div>
+            <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="width:100%;font-size:11px">Today's sessions</a>
+          </div>
+
+          <!-- Legend -->
+          <div style="border-top:3px solid var(--border);padding-top:14px;margin-top:4px">
+            <div class="eyebrow mb-3">Legend</div>
+            <div class="space-y-2 text-xs" style="font-family:var(--font-h);font-weight:600">
+              <div class="flex items-center gap-2">
+                <span style="width:14px;height:14px;border-radius:4px;background:var(--yellow);border:2px solid var(--border);display:inline-block"></span>
+                <span style="color:var(--txt2)">Group class</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span style="width:14px;height:14px;border-radius:4px;background:var(--violet);border:2px solid var(--border);display:inline-block"></span>
+                <span style="color:var(--txt2)">Members only</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span style="width:14px;height:14px;border-radius:4px;background:var(--green);border:2px solid var(--border);display:inline-block"></span>
+                <span style="color:var(--txt2)">Free for members</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span style="width:14px;height:14px;border-radius:4px;background:var(--base);border:2px solid var(--border);display:inline-block"></span>
+                <span style="color:var(--txt2)">Private session</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span style="width:14px;height:14px;border-radius:4px;background:var(--yellow);border:2px solid var(--border);opacity:.3;display:inline-block"></span>
+                <span style="color:var(--txt2)">Today's column</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

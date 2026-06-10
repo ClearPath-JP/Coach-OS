@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method — Book a Class · Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  body { background: var(--base); }
+  .client-shell { min-height: 100vh; display: flex; flex-direction: column; }
+  .client-nav {
+    background: var(--surface);
+    border-bottom: 3px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .main-scroll { flex: 1; padding: 28px 20px 48px; max-width: 680px; margin: 0 auto; width: 100%; }
+
+  /* Class card */
+  .class-card {
+    background: var(--surface);
+    border: 3px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+    overflow: hidden;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .class-card:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--border); }
+  .class-card-header {
+    padding: 18px 20px 14px;
+    border-bottom: 3px solid var(--border);
+  }
+  .class-card-body { padding: 16px 20px; }
+
+  .cov-banner {
+    border-radius: 8px;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    font-family: var(--font-h);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="client-shell">
+
+  <!-- CLIENT NAV -->
+  <nav class="client-nav">
+    <div style="display:flex;align-items:center;gap:10px">
+      <a href="client-portal.html" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="padding:7px 10px;font-size:12px">← Back</a>
+      <div>
+        <div style="font-family:var(--font-h);font-weight:800;font-size:1rem;letter-spacing:-0.02em">Vale Method</div>
+        <div style="font-family:var(--font-h);font-weight:600;font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em">powered by <span style="color:var(--teal)">Korva</span></div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="streak-badge text-xs">🔥 7-day streak</div>
+      <div class="avatar" style="background:var(--blue);color:#fff">DS</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-scroll">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <div class="eyebrow mb-1">Diego Santos · Vale Method</div>
+      <h1 class="display text-3xl font-black mb-2">Book a class 🥋</h1>
+      <!-- Passes balance banner -->
+      <div style="background:var(--teal);border:3px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-teal);padding:14px 18px;display:flex;align-items:center;gap:14px">
+        <div style="background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);border-radius:12px;padding:8px 14px;text-align:center;flex-shrink:0">
+          <div style="font-family:var(--font-h);font-weight:800;font-size:2rem;color:#fff;line-height:1">3</div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:9px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.1em">credits</div>
+        </div>
+        <div style="color:#fff">
+          <div style="font-family:var(--font-h);font-weight:800;font-size:15px">3 class credits left</div>
+          <div style="font-family:var(--font-h);font-weight:600;font-size:12px;opacity:.8">Classes covered by pass are free to book · Expires Aug 10</div>
+        </div>
+        <a href="#" class="brutal-btn brutal-btn-primary brutal-btn-sm ml-auto" style="flex-shrink:0;font-size:12px;white-space:nowrap">Buy more</a>
+      </div>
+    </div>
+
+    <!-- ── CLASS 1: Fundamentals ─────────────── -->
+    <div class="class-card">
+      <div class="class-card-header" style="background:var(--yellow)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-family:var(--font-h);font-weight:800;font-size:1.3rem;letter-spacing:-0.02em">Fundamentals</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:12px;color:var(--txt2);margin-top:2px">Mon &amp; Wed · 6:00pm · Vale Method Dojo</div>
+          </div>
+          <span class="badge badge-dark">$25 drop-in</span>
+        </div>
+        <!-- Capacity bar -->
+        <div style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-family:var(--font-h);font-weight:700;font-size:11px;color:var(--txt2)">8 / 12 spots filled</span>
+            <span style="font-family:var(--font-h);font-weight:700;font-size:11px;color:var(--txt2)">4 left</span>
+          </div>
+          <div class="progress-track" style="height:10px">
+            <div class="progress-fill progress-fill-teal" style="width:66.7%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="class-card-body">
+        <div class="cov-banner" style="background:rgba(46,196,182,.12);border-color:var(--teal)">
+          <span style="color:var(--teal);font-size:18px">🎟️</span>
+          <div>
+            <span style="color:var(--teal)">Covered by your pass</span>
+            <span style="color:var(--txt3);font-weight:600;font-size:12px;margin-left:6px">3 credits left after booking: 2</span>
+          </div>
+        </div>
+        <p style="font-family:var(--font-b);font-size:13px;color:var(--txt2);margin-bottom:14px">Beginner-friendly BJJ and striking fundamentals. Great for new and returning students. Open to all levels.</p>
+        <div style="display:flex;gap:8px;align-items:center">
+          <a href="#" class="brutal-btn brutal-btn-teal" style="flex:1;font-size:15px">Book with pass →</a>
+          <a href="#" style="font-family:var(--font-h);font-weight:700;font-size:12px;color:var(--txt3);text-decoration:none;padding:8px">Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLASS 2: Sparring ──────────────────── -->
+    <div class="class-card">
+      <div class="class-card-header" style="background:var(--violet)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-family:var(--font-h);font-weight:800;font-size:1.3rem;letter-spacing:-0.02em">Sparring</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:12px;color:var(--txt2);margin-top:2px">Tue &amp; Thu · 7:00pm · Vale Method Dojo</div>
+          </div>
+          <span class="badge badge-dark">Members only</span>
+        </div>
+        <!-- Capacity bar -->
+        <div style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-family:var(--font-h);font-weight:700;font-size:11px;color:var(--txt2)">6 / 10 spots filled</span>
+            <span style="font-family:var(--font-h);font-weight:700;font-size:11px;color:var(--txt2)">4 left</span>
+          </div>
+          <div class="progress-track" style="height:10px">
+            <div class="progress-fill progress-fill-violet" style="width:60%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="class-card-body">
+        <div class="cov-banner" style="background:var(--surface2);border-color:var(--border)">
+          <span style="font-size:18px">🔒</span>
+          <div>
+            <span style="color:var(--txt2)">Members only</span>
+            <span style="color:var(--txt3);font-weight:600;font-size:12px;margin-left:6px">Upgrade to a membership to access sparring</span>
+          </div>
+        </div>
+        <p style="font-family:var(--font-b);font-size:13px;color:var(--txt2);margin-bottom:14px">Live rolling and striking exchanges. Structured rounds with coach supervision. Blue belt+ recommended.</p>
+        <div style="display:flex;gap:8px;align-items:center">
+          <a href="#" class="brutal-btn brutal-btn-ghost" style="flex:1;font-size:15px">Get membership →</a>
+          <a href="#" style="font-family:var(--font-h);font-weight:700;font-size:12px;color:var(--txt3);text-decoration:none;padding:8px">Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLASS 3: Open Mat ──────────────────── -->
+    <div class="class-card">
+      <div class="class-card-header" style="background:var(--green)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-family:var(--font-h);font-weight:800;font-size:1.3rem;letter-spacing:-0.02em">Open Mat</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:12px;color:var(--txt2);margin-top:2px">Sat · 10:00am · Vale Method Dojo</div>
+          </div>
+          <span class="badge badge-dark">Free</span>
+        </div>
+        <!-- Capacity bar -->
+        <div style="margin-top:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-family:var(--font-h);font-weight:700;font-size:11px;color:var(--txt2)">11 / 16 spots filled</span>
+            <span style="font-family:var(--font-h);font-weight:700;font-size:11px;color:var(--txt2)">5 left</span>
+          </div>
+          <div class="progress-track" style="height:10px">
+            <div class="progress-fill progress-fill-teal" style="width:68.75%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="class-card-body">
+        <div class="cov-banner" style="background:rgba(61,214,140,.12);border-color:var(--green)">
+          <span style="color:var(--green);font-size:18px">✅</span>
+          <div>
+            <span style="color:#1a7a4a">Free for members</span>
+            <span style="color:var(--txt3);font-weight:600;font-size:12px;margin-left:6px">No credits needed · Just show up!</span>
+          </div>
+        </div>
+        <p style="font-family:var(--font-b);font-size:13px;color:var(--txt2);margin-bottom:14px">Unstructured open training time. Roll, drill, drill, repeat. Coach Marcus will be on the mat. All members welcome.</p>
+        <div style="display:flex;gap:8px;align-items:center">
+          <a href="#" class="brutal-btn" style="flex:1;font-size:15px;background:var(--green);box-shadow:5px 5px 0 #1a7a4a">Book free spot →</a>
+          <a href="#" style="font-family:var(--font-h);font-weight:700;font-size:12px;color:var(--txt3);text-decoration:none;padding:8px">Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLASS 4: Private 1:1 ──────────────── -->
+    <div class="class-card">
+      <div class="class-card-header" style="background:var(--txt);color:#faf7f0">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-family:var(--font-h);font-weight:800;font-size:1.3rem;letter-spacing:-0.02em;color:#faf7f0">Private 1:1</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:12px;color:rgba(250,247,240,.6);margin-top:2px">By appointment · 60 min · any location</div>
+          </div>
+          <span class="badge badge-yellow">$80</span>
+        </div>
+        <!-- No capacity bar for private -->
+        <div style="margin-top:10px;font-family:var(--font-h);font-weight:600;font-size:11px;color:rgba(250,247,240,.5)">Next available: Thu June 12 · 9:00am</div>
+      </div>
+      <div class="class-card-body">
+        <div class="cov-banner" style="background:rgba(255,210,63,.12);border-color:var(--yellow)">
+          <span style="font-size:18px">⚡</span>
+          <div>
+            <span style="color:var(--txt2)">$80 · Direct payment</span>
+            <span style="color:var(--txt3);font-weight:600;font-size:12px;margin-left:6px">Pass credits don't apply to privates</span>
+          </div>
+        </div>
+        <p style="font-family:var(--font-b);font-size:13px;color:var(--txt2);margin-bottom:14px">One-on-one session focused entirely on your goals. Technique deep-dives, gameplan work, or anything you need. Coach Marcus's full attention.</p>
+        <div style="display:flex;gap:8px;align-items:center">
+          <a href="#" class="brutal-btn brutal-btn-primary" style="flex:1;font-size:15px">Request session →</a>
+          <a href="#" style="font-family:var(--font-h);font-weight:700;font-size:12px;color:var(--txt3);text-decoration:none;padding:8px">Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom pass reminder -->
+    <div style="background:var(--surface2);border:2px dashed var(--border);border-radius:var(--radius);padding:16px 18px;text-align:center;margin-top:8px">
+      <div style="font-family:var(--font-h);font-weight:700;font-size:13px;margin-bottom:4px">Running low? 🎟️</div>
+      <div style="font-family:var(--font-h);font-weight:600;font-size:12px;color:var(--txt3);margin-bottom:10px">You have 3 credits left. Buy a 10-class pack to save $30.</div>
+      <a href="#" class="brutal-btn brutal-btn-teal brutal-btn-sm" style="font-size:13px">Buy 10-class pack — $220</a>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — Coach Dashboard · Vale Method</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  html, body { height: 100%; }
+  .app-shell { display: flex; height: 100vh; overflow: hidden; background: var(--base); }
+  .sidebar { width: 228px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .top-bar { flex-shrink: 0; border-bottom: 3px solid var(--border); background: var(--surface); }
+  .scroll-area { flex: 1; overflow-y: auto; padding: 28px 24px; }
+  .session-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 3px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .session-row:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--border); }
+  .quick-action {
+    background: var(--surface);
+    border: 3px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .quick-action:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--border); }
+  .quick-action:active { transform: translate(3px,3px); box-shadow: none; }
+  .activity-row { display: flex; align-items: flex-start; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar sb px-3 py-4">
+    <!-- Wordmark -->
+    <div class="wm-pill mb-5 mx-2" style="font-size:1.1rem;align-self:flex-start">Kor<span class="va">va</span></div>
+
+    <!-- Workspace chip -->
+    <div class="mx-2 mb-5 px-3 py-2 brutal-card-sm" style="background:rgba(250,247,240,.07);border-color:rgba(250,247,240,.2);box-shadow:none;display:flex;align-items:center;gap:8px">
+      <span style="font-family:var(--font-h);font-weight:700;font-size:12px;color:var(--yellow)">Vale Method</span>
+      <span style="margin-left:auto;color:rgba(250,247,240,.4);font-size:12px">▾</span>
+    </div>
+
+    <!-- Streak badge in sidebar -->
+    <div class="mx-2 mb-4">
+      <div class="streak-badge" style="width:100%;justify-content:center">
+        🔥 12-day streak — keep it up!
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="sb-group">Workspace</div>
+    <a href="#" class="sb-item active">
+      <svg class="ico" style="width:16px;height:16px;stroke:#101010" viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1.5"/><rect x="10" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2"/><line x1="6" y1="2" x2="6" y2="16"/><line x1="2" y1="7" x2="16" y2="7"/></svg>
+      Schedule
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3.5"/><path d="M2 16c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg>
+      Clients
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M6 9h6M9 6v6"/></svg>
+      Classes
+    </a>
+
+    <div class="sb-group mt-2">Tools</div>
+    <a href="#" class="sb-item" style="position:relative">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><path d="M3 4h12M3 9h8M3 14h5"/></svg>
+      Messages
+      <span style="background:var(--coral);color:#fff;font-family:var(--font-h);font-weight:800;font-size:10px;border-radius:999px;padding:1px 7px;border:2px solid var(--border);margin-left:auto">3</span>
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><rect x="2" y="5" width="14" height="10" rx="2"/><path d="M6 5V4a3 3 0 0 1 6 0v1"/></svg>
+      Payments
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" style="width:16px;height:16px;stroke:rgba(250,247,240,.65)" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 3"/></svg>
+      Settings
+    </a>
+
+    <!-- XP bar -->
+    <div class="mx-2 mt-4 mb-2 px-3 py-3 brutal-card-sm" style="background:rgba(250,247,240,.06);border-color:rgba(250,247,240,.15);box-shadow:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-family:var(--font-h);font-weight:700;font-size:10px;color:rgba(250,247,240,.5);text-transform:uppercase;letter-spacing:.1em">Weekly XP</span>
+        <span style="font-family:var(--font-h);font-weight:800;font-size:11px;color:var(--yellow)">840 / 1000</span>
+      </div>
+      <div class="xp-bar-wrap">
+        <div class="xp-bar" style="width:84%"></div>
+      </div>
+    </div>
+
+    <!-- Coach account -->
+    <div class="mt-auto mx-0 pt-4" style="border-top:3px solid rgba(250,247,240,.15)">
+      <div class="flex items-center gap-3 px-2 py-3">
+        <div class="avatar">MV</div>
+        <div class="min-w-0">
+          <div style="font-family:var(--font-h);font-weight:700;font-size:13px;color:#faf7f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Marcus Vale</div>
+          <div style="font-size:11px;font-family:var(--font-h);font-weight:600;color:rgba(250,247,240,.4)">Pro Coach</div>
+        </div>
+        <svg class="ico ml-auto flex-shrink-0" style="color:rgba(250,247,240,.35)" viewBox="0 0 18 18"><path d="M6 13l5-4-5-4"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- TOP BAR -->
+    <div class="top-bar px-6 py-3 flex items-center gap-4">
+      <button class="flex items-center gap-3 px-4 py-2.5 text-sm flex-1 max-w-sm brutal-card-sm" style="background:var(--base);color:var(--txt3);font-family:var(--font-h);font-weight:600;cursor:text">
+        <svg class="ico" style="width:15px;height:15px;color:var(--txt3)" viewBox="0 0 18 18"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l4 4"/></svg>
+        Search anything…
+        <span class="kbd ml-auto">⌘K</span>
+      </button>
+      <div class="flex items-center gap-3 ml-auto">
+        <button class="brutal-btn brutal-btn-sm brutal-btn-ghost" style="padding:8px 12px">
+          <svg class="ico" viewBox="0 0 18 18"><path d="M9 2a5 5 0 0 1 5 5v3l1.5 2.5H2.5L4 10V7a5 5 0 0 1 5-5z"/><path d="M7 14.5a2 2 0 0 0 4 0"/></svg>
+          <span style="background:var(--coral);width:8px;height:8px;border-radius:999px;position:absolute;top:6px;right:6px;border:2px solid var(--surface)"></span>
+        </button>
+        <div class="avatar">MV</div>
+      </div>
+    </div>
+
+    <!-- SCROLL AREA -->
+    <div class="scroll-area">
+
+      <!-- Greeting -->
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <div class="eyebrow mb-1">Tuesday, June 10 · Vale Method</div>
+          <h1 class="display text-4xl font-black leading-tight">Good morning, Marcus 👊</h1>
+          <p class="mt-1.5 text-sm font-medium" style="color:var(--txt3);font-family:var(--font-h)">3 sessions today · 3 unread messages</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm">+ New class</a>
+          <a href="#" class="brutal-btn brutal-btn-primary brutal-btn-sm">+ Book session</a>
+        </div>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="tile-yellow p-5">
+          <div class="eyebrow mb-2">Active students</div>
+          <div class="stat-num tnum">24</div>
+          <div class="text-xs font-bold mt-2" style="font-family:var(--font-h);color:var(--txt2)">↑ 2 this month</div>
+        </div>
+        <div class="tile-teal p-5">
+          <div class="eyebrow mb-2" style="color:rgba(255,255,255,.6)">This week</div>
+          <div class="stat-num tnum" style="color:#fff">$1,840</div>
+          <div class="text-xs font-bold mt-2" style="font-family:var(--font-h);color:rgba(255,255,255,.7)">+$240 today</div>
+        </div>
+        <div class="tile-coral p-5">
+          <div class="eyebrow mb-2" style="color:rgba(255,255,255,.6)">Unread msgs</div>
+          <div class="stat-num tnum" style="color:#fff">3</div>
+          <div class="text-xs font-bold mt-2" style="font-family:var(--font-h);color:rgba(255,255,255,.7)">Diego · Sarah · Aisha</div>
+        </div>
+        <div class="tile-violet p-5">
+          <div class="eyebrow mb-2">Classes / week</div>
+          <div class="stat-num tnum">6</div>
+          <div class="text-xs font-bold mt-2" style="font-family:var(--font-h);color:var(--txt2)">2 today remaining</div>
+        </div>
+      </div>
+
+      <!-- TWO-COL LOWER -->
+      <div class="grid md:grid-cols-3 gap-4">
+
+        <!-- TODAY'S SCHEDULE (2/3) -->
+        <div class="brutal-card p-5 md:col-span-2">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <div class="eyebrow mb-1">Today</div>
+              <div style="font-family:var(--font-h);font-weight:800;font-size:1.05rem">Schedule</div>
+            </div>
+            <a href="#" class="badge badge-teal text-xs" style="text-decoration:none">View full week →</a>
+          </div>
+
+          <div class="space-y-3">
+            <!-- 9am Diego -->
+            <div class="session-row">
+              <div class="tile-yellow text-center flex-shrink-0" style="width:52px;padding:8px 4px;box-shadow:none;border-radius:10px">
+                <div style="font-family:var(--font-h);font-weight:800;font-size:1rem;line-height:1">9:00</div>
+                <div style="font-family:var(--font-h);font-weight:700;font-size:10px;letter-spacing:.05em">AM</div>
+              </div>
+              <div style="width:3px;background:var(--yellow);border-radius:2px;align-self:stretch;border:1.5px solid var(--border)"></div>
+              <div class="flex-1 min-w-0">
+                <div style="font-family:var(--font-h);font-weight:700;font-size:14px">Diego Santos</div>
+                <div class="text-xs font-medium mt-0.5" style="color:var(--txt3);font-family:var(--font-h)">Private 1:1 · 60 min</div>
+              </div>
+              <span class="badge badge-teal">✓ Confirmed</span>
+            </div>
+
+            <!-- 11am Sarah -->
+            <div class="session-row">
+              <div class="tile-base text-center flex-shrink-0" style="width:52px;padding:8px 4px;box-shadow:none;border-radius:10px">
+                <div style="font-family:var(--font-h);font-weight:800;font-size:1rem;line-height:1">11:00</div>
+                <div style="font-family:var(--font-h);font-weight:700;font-size:10px;letter-spacing:.05em">AM</div>
+              </div>
+              <div style="width:3px;background:var(--base);border-radius:2px;align-self:stretch;border:1.5px solid var(--border)"></div>
+              <div class="flex-1 min-w-0">
+                <div style="font-family:var(--font-h);font-weight:700;font-size:14px">Sarah Chen</div>
+                <div class="text-xs font-medium mt-0.5" style="color:var(--txt3);font-family:var(--font-h)">Private 1:1 · 60 min</div>
+              </div>
+              <span class="badge">Pending</span>
+            </div>
+
+            <!-- 6pm Fundamentals -->
+            <div class="session-row">
+              <div class="tile-violet text-center flex-shrink-0" style="width:52px;padding:8px 4px;box-shadow:none;border-radius:10px">
+                <div style="font-family:var(--font-h);font-weight:800;font-size:1rem;line-height:1">6:00</div>
+                <div style="font-family:var(--font-h);font-weight:700;font-size:10px;letter-spacing:.05em">PM</div>
+              </div>
+              <div style="width:3px;background:var(--violet);border-radius:2px;align-self:stretch;border:1.5px solid var(--border)"></div>
+              <div class="flex-1 min-w-0">
+                <div style="font-family:var(--font-h);font-weight:700;font-size:14px">Fundamentals</div>
+                <div class="text-xs font-medium mt-0.5" style="color:var(--txt3);font-family:var(--font-h)">Group class · Mon &amp; Wed</div>
+              </div>
+              <span class="badge badge-yellow">8 / 12 🥋</span>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="flex items-center gap-2 mt-5 pt-4 divide">
+            <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm text-xs">➕ Add session</a>
+            <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm text-xs">💬 Message all</a>
+            <a href="#" class="brutal-btn brutal-btn-teal brutal-btn-sm text-xs ml-auto">💳 Collect payment</a>
+          </div>
+        </div>
+
+        <!-- RECENT ACTIVITY + GOAL (1/3) -->
+        <div class="brutal-card p-5">
+          <div class="eyebrow mb-1">Recent</div>
+          <div style="font-family:var(--font-h);font-weight:800;font-size:1.05rem;margin-bottom:20px">Activity</div>
+
+          <div class="space-y-4">
+            <div class="activity-row">
+              <div class="medal" style="background:var(--green);border-color:var(--border);width:40px;height:40px;font-size:18px;flex-shrink:0">💰</div>
+              <div class="min-w-0">
+                <div style="font-family:var(--font-h);font-weight:700;font-size:13px">Invoice paid</div>
+                <div class="text-xs font-medium mt-0.5" style="color:var(--txt2);font-family:var(--font-h)">$240 from Diego Santos</div>
+                <div class="text-xs mt-1" style="color:var(--txt3);font-family:var(--font-h)">2 hours ago</div>
+              </div>
+            </div>
+
+            <div style="border-top:2px dashed var(--border);opacity:.3"></div>
+
+            <div class="activity-row">
+              <div class="medal" style="background:var(--yellow);border-color:var(--border);width:40px;height:40px;font-size:18px;flex-shrink:0">🌟</div>
+              <div class="min-w-0">
+                <div style="font-family:var(--font-h);font-weight:700;font-size:13px">New student joined</div>
+                <div class="text-xs font-medium mt-0.5" style="color:var(--txt2);font-family:var(--font-h)">Aisha Khan signed up</div>
+                <div class="text-xs mt-1" style="color:var(--txt3);font-family:var(--font-h)">Yesterday</div>
+              </div>
+            </div>
+
+            <div style="border-top:2px dashed var(--border);opacity:.3"></div>
+
+            <div class="activity-row">
+              <div class="medal" style="background:var(--teal);border-color:var(--border);width:40px;height:40px;font-size:18px;flex-shrink:0">📅</div>
+              <div class="min-w-0">
+                <div style="font-family:var(--font-h);font-weight:700;font-size:13px">New booking</div>
+                <div class="text-xs font-medium mt-0.5" style="color:var(--txt2);font-family:var(--font-h)">Sarah booked Sparring (Thu)</div>
+                <div class="text-xs mt-1" style="color:var(--txt3);font-family:var(--font-h)">Yesterday</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekly revenue goal -->
+          <div class="mt-5 pt-4 divide">
+            <div class="flex items-center justify-between mb-2">
+              <span style="font-family:var(--font-h);font-weight:700;font-size:12px">🎯 Weekly goal</span>
+              <span class="tnum" style="font-family:var(--font-h);font-weight:800;font-size:12px;color:var(--teal)">$1,840 / $2,400</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill progress-fill-teal" style="width:76.7%"></div>
+            </div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3);margin-top:5px">77% · $560 to goal 🏆</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- QUICK ACTIONS ROW -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        <a href="#" class="quick-action">
+          <div class="medal" style="background:var(--yellow);width:40px;height:40px;font-size:18px">💸</div>
+          <div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:13px">New invoice</div>
+            <div class="text-xs font-medium" style="color:var(--txt3);font-family:var(--font-h)">Send payment request</div>
+          </div>
+        </a>
+        <a href="#" class="quick-action">
+          <div class="medal" style="background:var(--teal);width:40px;height:40px;font-size:18px">👤</div>
+          <div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:13px">Add client</div>
+            <div class="text-xs font-medium" style="color:var(--txt3);font-family:var(--font-h)">Invite to your dojo</div>
+          </div>
+        </a>
+        <a href="#" class="quick-action">
+          <div class="medal" style="background:var(--blue);width:40px;height:40px;font-size:18px">🎥</div>
+          <div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:13px">Upload video</div>
+            <div class="text-xs font-medium" style="color:var(--txt3);font-family:var(--font-h)">Share technique clip</div>
+          </div>
+        </a>
+        <a href="#" class="quick-action">
+          <div class="medal" style="background:var(--violet);width:40px;height:40px;font-size:18px">✨</div>
+          <div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:13px">Create post</div>
+            <div class="text-xs font-medium" style="color:var(--txt3);font-family:var(--font-h)">AI content · Promote</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="h-8"></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

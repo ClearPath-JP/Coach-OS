@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — Coach Dashboard · Vale Method</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  html, body { height: 100%; }
+  .app-shell { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .top-bar { flex-shrink: 0; }
+  .scroll-area { flex: 1; overflow-y: auto; }
+  .progress-track { height: 5px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); border-radius: 999px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar sb px-3 py-4 gap-0">
+    <!-- Wordmark -->
+    <div class="flex items-center gap-2 px-2 py-2 mb-4">
+      <span class="enso text-lg">◯</span>
+      <span class="wm text-lg">Kor<span class="va">va</span></span>
+    </div>
+
+    <!-- Workspace chip -->
+    <div class="mx-2 mb-5 px-3 py-2 rounded-xl flex items-center gap-2" style="background:rgba(200,136,46,.08);border:1px solid rgba(200,136,46,.18)">
+      <span class="text-xs font-semibold" style="color:var(--accent-hi)">Vale Method</span>
+      <span class="ml-auto text-xs" style="color:var(--txt3)">⌄</span>
+    </div>
+
+    <!-- Nav: Workspace -->
+    <div class="sb-group">Workspace</div>
+    <a href="#" class="sb-item active">
+      <svg class="ico" viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1.5"/><rect x="10" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2"/><line x1="6" y1="2" x2="6" y2="16"/><line x1="2" y1="7" x2="16" y2="7"/></svg>
+      Schedule
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3.5"/><path d="M2 16c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg>
+      Clients
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M6 9h6M9 6v6"/></svg>
+      Classes
+    </a>
+
+    <!-- Nav: Tools -->
+    <div class="sb-group mt-2">Tools</div>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><path d="M3 4h12M3 9h8M3 14h5"/></svg>
+      Messages
+      <span class="ml-auto" style="background:var(--accent);color:#1a1208;font:700 10px var(--font-b);border-radius:999px;padding:1px 6px">3</span>
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><rect x="2" y="5" width="14" height="10" rx="2"/><path d="M6 5V4a3 3 0 0 1 6 0v1"/></svg>
+      Payments
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 3"/></svg>
+      Settings
+    </a>
+
+    <!-- Coach account -->
+    <div class="mt-auto mx-0 pt-4 divide">
+      <div class="flex items-center gap-3 px-2 py-3">
+        <div class="avatar">MV</div>
+        <div class="min-w-0">
+          <div class="text-sm font-semibold truncate">Marcus Vale</div>
+          <div class="text-xs truncate" style="color:var(--txt3)">Pro Coach</div>
+        </div>
+        <svg class="ico ml-auto flex-shrink-0" style="color:var(--txt3)" viewBox="0 0 18 18"><path d="M6 13l5-4-5-4"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- TOP BAR -->
+    <div class="top-bar px-6 py-3 flex items-center gap-4" style="background:var(--base);border-bottom:1px solid var(--line)">
+      <!-- Search -->
+      <button class="flex items-center gap-3 px-4 py-2 rounded-xl text-sm flex-1 max-w-xs" style="background:var(--raised);border:1px solid var(--line);color:var(--txt3)">
+        <svg class="ico" style="width:15px;height:15px" viewBox="0 0 18 18"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l4 4"/></svg>
+        Search anything…
+        <span class="ml-auto kbd">⌘K</span>
+      </button>
+      <div class="flex items-center gap-3 ml-auto">
+        <!-- Notifications -->
+        <button class="relative btn btn-ghost p-2.5">
+          <svg class="ico" viewBox="0 0 18 18"><path d="M9 2a5 5 0 0 1 5 5v3l1.5 2.5H2.5L4 10V7a5 5 0 0 1 5-5z"/><path d="M7 14.5a2 2 0 0 0 4 0"/></svg>
+          <span class="absolute top-1.5 right-1.5 dot" style="background:var(--accent);width:6px;height:6px"></span>
+        </button>
+        <div class="avatar">MV</div>
+      </div>
+    </div>
+
+    <!-- SCROLL AREA -->
+    <div class="scroll-area px-6 py-7">
+
+      <!-- Greeting row -->
+      <div class="flex items-start justify-between mb-7">
+        <div>
+          <div class="eyebrow mb-1">Tuesday, June 10 · Vale Method</div>
+          <h1 class="display text-4xl font-bold">Good morning, Marcus</h1>
+          <p class="mt-2 text-sm" style="color:var(--txt2)">You have 3 sessions today and 3 unread messages.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="#" class="btn btn-ghost text-sm">+ New class</a>
+          <a href="#" class="btn btn-primary text-sm">+ Book session</a>
+        </div>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="card p-5">
+          <div class="eyebrow">Active students</div>
+          <div class="stat-num mt-3 tnum">24</div>
+          <div class="text-xs mt-2" style="color:var(--ok)">↑ 2 this month</div>
+        </div>
+        <div class="card card-hi p-5" style="border-color:rgba(200,136,46,.3)">
+          <div class="eyebrow">This week</div>
+          <div class="stat-num mt-3 tnum" style="color:var(--accent-hi)">$1,840</div>
+          <div class="text-xs mt-2" style="color:var(--txt3)">+$240 today</div>
+        </div>
+        <div class="card p-5">
+          <div class="eyebrow">Unread messages</div>
+          <div class="stat-num mt-3 tnum">3</div>
+          <div class="text-xs mt-2" style="color:var(--txt3)">Diego · Sarah · Aisha</div>
+        </div>
+        <div class="card p-5">
+          <div class="eyebrow">Classes this week</div>
+          <div class="stat-num mt-3 tnum">6</div>
+          <div class="text-xs mt-2" style="color:var(--txt3)">2 today remaining</div>
+        </div>
+      </div>
+
+      <!-- TWO-COL LOWER -->
+      <div class="grid md:grid-cols-3 gap-4">
+
+        <!-- TODAY'S SCHEDULE (2/3) -->
+        <div class="card p-5 md:col-span-2">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <div class="eyebrow mb-1">Today</div>
+              <div class="font-semibold text-[15px]">Schedule</div>
+            </div>
+            <a href="#" class="chip text-xs">View full week →</a>
+          </div>
+
+          <!-- Session rows -->
+          <div class="space-y-3">
+            <!-- 9am Diego -->
+            <div class="flex items-center gap-4 px-4 py-3 rounded-xl" style="background:var(--overlay)">
+              <div class="text-right flex-shrink-0 w-12">
+                <div class="tnum text-sm font-semibold" style="color:var(--accent-hi)">9:00</div>
+                <div class="text-xs" style="color:var(--txt3)">am</div>
+              </div>
+              <div class="w-px self-stretch" style="background:rgba(200,136,46,.3)"></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-sm">Diego Santos</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Private 1:1 · 60 min</div>
+              </div>
+              <span class="chip chip-accent">Confirmed</span>
+            </div>
+
+            <!-- 11am Sarah -->
+            <div class="flex items-center gap-4 px-4 py-3 rounded-xl" style="background:var(--overlay)">
+              <div class="text-right flex-shrink-0 w-12">
+                <div class="tnum text-sm font-semibold">11:00</div>
+                <div class="text-xs" style="color:var(--txt3)">am</div>
+              </div>
+              <div class="w-px self-stretch" style="background:var(--line2)"></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-sm">Sarah Chen</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Private 1:1 · 60 min</div>
+              </div>
+              <span class="chip">Pending</span>
+            </div>
+
+            <!-- 6pm Fundamentals -->
+            <div class="flex items-center gap-4 px-4 py-3 rounded-xl" style="background:var(--overlay)">
+              <div class="text-right flex-shrink-0 w-12">
+                <div class="tnum text-sm font-semibold">6:00</div>
+                <div class="text-xs" style="color:var(--txt3)">pm</div>
+              </div>
+              <div class="w-px self-stretch" style="background:var(--line2)"></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-medium text-sm">Fundamentals</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Group class · Mon &amp; Wed</div>
+              </div>
+              <span class="chip chip-ok">8 / 12 booked</span>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="flex items-center gap-2 mt-5 pt-4 divide">
+            <a href="#" class="btn btn-ghost text-xs gap-2">
+              <svg class="ico" style="width:14px;height:14px" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2"/><line x1="9" y1="6" x2="9" y2="12"/><line x1="6" y1="9" x2="12" y2="9"/></svg>
+              Add session
+            </a>
+            <a href="#" class="btn btn-ghost text-xs gap-2">
+              <svg class="ico" style="width:14px;height:14px" viewBox="0 0 18 18"><path d="M3 4h12M3 9h8M3 14h5"/></svg>
+              Message all
+            </a>
+            <a href="#" class="btn btn-ghost text-xs gap-2 ml-auto">
+              <svg class="ico" style="width:14px;height:14px" viewBox="0 0 18 18"><rect x="2" y="5" width="14" height="10" rx="2"/><path d="M6 5V4a3 3 0 0 1 6 0v1"/></svg>
+              Collect payment
+            </a>
+          </div>
+        </div>
+
+        <!-- RECENT ACTIVITY (1/3) -->
+        <div class="card p-5">
+          <div class="eyebrow mb-1">Recent</div>
+          <div class="font-semibold text-[15px] mb-5">Activity</div>
+
+          <div class="space-y-4">
+            <!-- Invoice paid -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(111,174,111,.12)">
+                <span style="color:var(--ok);font-size:13px">$</span>
+              </div>
+              <div class="min-w-0">
+                <div class="text-sm font-medium leading-snug">Invoice paid</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">$240 from Diego Santos</div>
+                <div class="text-xs mt-1" style="color:var(--txt3)">2 hours ago</div>
+              </div>
+            </div>
+
+            <div class="divide"></div>
+
+            <!-- New student -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(200,136,46,.12)">
+                <span style="color:var(--accent-hi);font-size:13px">◉</span>
+              </div>
+              <div class="min-w-0">
+                <div class="text-sm font-medium leading-snug">New student joined</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Aisha Khan signed up</div>
+                <div class="text-xs mt-1" style="color:var(--txt3)">Yesterday</div>
+              </div>
+            </div>
+
+            <div class="divide"></div>
+
+            <!-- Booking -->
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(255,255,255,.05)">
+                <span style="color:var(--txt2);font-size:13px">▤</span>
+              </div>
+              <div class="min-w-0">
+                <div class="text-sm font-medium leading-snug">New booking</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Sarah booked Sparring (Thu)</div>
+                <div class="text-xs mt-1" style="color:var(--txt3)">Yesterday</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress bar for this week's revenue goal -->
+          <div class="mt-6 pt-4 divide">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-medium">Weekly goal</span>
+              <span class="tnum text-xs" style="color:var(--accent-hi)">$1,840 / $2,400</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:76.7%"></div>
+            </div>
+            <div class="text-xs mt-1.5" style="color:var(--txt3)">77% · $560 to go</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- QUICK ACTIONS ROW -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        <a href="#" class="card p-4 flex items-center gap-3 hover:border-opacity-20 cursor-pointer" style="border-color:var(--line)">
+          <div class="w-9 h-9 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(200,136,46,.1)">
+            <span style="color:var(--accent-hi);font-size:16px">+</span>
+          </div>
+          <div>
+            <div class="text-sm font-semibold">New invoice</div>
+            <div class="text-xs" style="color:var(--txt3)">Send payment request</div>
+          </div>
+        </a>
+        <a href="#" class="card p-4 flex items-center gap-3 cursor-pointer">
+          <div class="w-9 h-9 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(255,255,255,.05)">
+            <span style="color:var(--txt2);font-size:16px">◉</span>
+          </div>
+          <div>
+            <div class="text-sm font-semibold">Add client</div>
+            <div class="text-xs" style="color:var(--txt3)">Invite to your dojo</div>
+          </div>
+        </a>
+        <a href="#" class="card p-4 flex items-center gap-3 cursor-pointer">
+          <div class="w-9 h-9 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(255,255,255,.05)">
+            <span style="color:var(--txt2);font-size:16px">▶</span>
+          </div>
+          <div>
+            <div class="text-sm font-semibold">Upload video</div>
+            <div class="text-xs" style="color:var(--txt3)">Share technique clip</div>
+          </div>
+        </a>
+        <a href="#" class="card p-4 flex items-center gap-3 cursor-pointer">
+          <div class="w-9 h-9 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(255,255,255,.05)">
+            <span style="color:var(--txt2);font-size:16px">✺</span>
+          </div>
+          <div>
+            <div class="text-sm font-semibold">Create post</div>
+            <div class="text-xs" style="color:var(--txt3)">AI content · Promote</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- footer breathing room -->
+      <div class="h-8"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

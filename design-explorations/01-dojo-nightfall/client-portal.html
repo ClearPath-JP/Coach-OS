@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method — Client Portal · Powered by Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  /* Client portal uses a slightly lighter surface treatment
+     to differentiate it from the coach app, while staying
+     within the Dojo Nightfall palette. */
+  :root {
+    --cp-accent: var(--accent);
+  }
+  .client-shell { min-height: 100vh; }
+  .client-nav { position: sticky; top: 0; z-index: 30; }
+  .belt-track { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .belt-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #4a8fd4, #6aabf7); }
+  .upcoming-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 12px; }
+  .upcoming-row:not(:last-child) { margin-bottom: 8px; }
+  .quick-link { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; border-radius: 14px; text-decoration: none; }
+  .quick-link:hover { background: rgba(255,255,255,.06); }
+  .quick-link .icon-wrap { width: 42px; height: 42px; border-radius: 12px; display: grid; place-content: center; font-size: 18px; }
+  .pass-pip { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="client-shell">
+
+  <!-- CLIENT NAV -->
+  <header class="client-nav" style="background:rgba(20,18,16,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--line)">
+    <div class="mx-auto max-w-5xl px-5 py-3 flex items-center justify-between">
+      <!-- Dojo branding -->
+      <div class="flex items-center gap-3">
+        <div class="avatar">MV</div>
+        <div>
+          <div class="font-semibold text-sm leading-tight">Vale Method</div>
+          <div class="text-xs leading-tight" style="color:var(--txt3)">powered by <span style="color:var(--accent-hi)">Kor<span style="">va</span></span></div>
+        </div>
+      </div>
+      <!-- Nav links -->
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#" class="font-semibold" style="color:var(--accent-hi)">Home</a>
+        <a href="#" style="color:var(--txt2)" class="hover:text-white">Classes</a>
+        <a href="#" style="color:var(--txt2)" class="hover:text-white">Progress</a>
+        <a href="#" style="color:var(--txt2)" class="hover:text-white flex items-center gap-1">
+          Messages
+          <span style="background:var(--accent);color:#1a1208;font:700 10px var(--font-b);border-radius:999px;padding:1px 5px;margin-left:4px">1</span>
+        </a>
+      </nav>
+      <!-- Student avatar -->
+      <div class="flex items-center gap-3">
+        <div class="avatar" style="background:linear-gradient(180deg,#6aabf7,#4a8fd4)">DS</div>
+        <div class="hidden sm:block text-sm">
+          <div class="font-semibold">Diego Santos</div>
+          <div class="text-xs" style="color:var(--txt3)">Blue Belt</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <div class="mx-auto max-w-5xl px-5 py-9">
+
+    <!-- Greeting row -->
+    <div class="flex items-start justify-between mb-8">
+      <div>
+        <div class="eyebrow mb-1">Tuesday, June 10</div>
+        <h1 class="display text-4xl font-bold">Welcome back, Diego</h1>
+        <p class="mt-2 text-sm" style="color:var(--txt2)">Your next class is today at 6:00pm — you're all set.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="#" class="btn btn-primary">Book a class →</a>
+      </div>
+    </div>
+
+    <!-- TOP CARDS ROW -->
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+
+      <!-- Next class card -->
+      <div class="card card-hi p-5 md:col-span-1" style="border-color:rgba(200,136,46,.3)">
+        <div class="eyebrow mb-3">Next class</div>
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(200,136,46,.15);border:1px solid rgba(200,136,46,.25)">
+            <span style="color:var(--accent-hi);font-size:18px">▤</span>
+          </div>
+          <div>
+            <div class="font-semibold text-[15px]">Fundamentals</div>
+            <div class="text-xs mt-0.5" style="color:var(--txt2)">Today · 6:00pm · Group</div>
+            <div class="text-xs mt-0.5" style="color:var(--txt3)">Vale Method Dojo</div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <span class="chip chip-ok text-xs">Booked ✓</span>
+          <a href="#" class="text-xs" style="color:var(--accent-hi)">Get directions →</a>
+        </div>
+      </div>
+
+      <!-- My passes card -->
+      <div class="card p-5">
+        <div class="eyebrow mb-3">My passes</div>
+        <div class="flex items-end gap-2">
+          <div class="stat-num tnum" style="color:var(--accent-hi)">3</div>
+          <div class="text-sm pb-1" style="color:var(--txt2)">class credits left</div>
+        </div>
+        <!-- Pass pips -->
+        <div class="flex items-center gap-2 mt-3">
+          <span class="pass-pip" style="background:var(--accent)"></span>
+          <span class="pass-pip" style="background:var(--accent)"></span>
+          <span class="pass-pip" style="background:var(--accent)"></span>
+          <span class="pass-pip" style="background:var(--line2)"></span>
+          <span class="pass-pip" style="background:var(--line2)"></span>
+        </div>
+        <div class="text-xs mt-2" style="color:var(--txt3)">5-class pack · 2 used</div>
+        <a href="#" class="btn btn-ghost text-xs w-full justify-center mt-3">Buy more passes</a>
+      </div>
+
+      <!-- Progress card -->
+      <div class="card p-5">
+        <div class="eyebrow mb-3">My progress</div>
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl grid place-content-center flex-shrink-0 text-xl" style="background:rgba(74,143,212,.12);border:1px solid rgba(74,143,212,.25)">🥋</div>
+          <div>
+            <div class="font-semibold text-sm">Blue Belt</div>
+            <div class="text-xs" style="color:var(--txt3)">2nd stripe target</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs mb-1.5">
+          <span style="color:var(--txt3)">To next stripe</span>
+          <span class="tnum font-semibold" style="color:#6aabf7">60%</span>
+        </div>
+        <div class="belt-track">
+          <div class="belt-fill" style="width:60%"></div>
+        </div>
+        <a href="#" class="text-xs mt-3 block" style="color:var(--txt3)">View full progress →</a>
+      </div>
+    </div>
+
+    <!-- LOWER TWO-COL -->
+    <div class="grid md:grid-cols-3 gap-4">
+
+      <!-- Quick links + upcoming (2/3) -->
+      <div class="md:col-span-2 flex flex-col gap-4">
+
+        <!-- Quick links -->
+        <div class="card p-5">
+          <div class="eyebrow mb-4">Quick links</div>
+          <div class="grid grid-cols-4 gap-1">
+            <a href="#" class="quick-link card" style="background:transparent;border:none">
+              <div class="icon-wrap" style="background:rgba(200,136,46,.1)">
+                <span style="color:var(--accent-hi)">▤</span>
+              </div>
+              <span class="text-xs font-medium text-center" style="color:var(--txt2)">Book a class</span>
+            </a>
+            <a href="#" class="quick-link card" style="background:transparent;border:none">
+              <div class="icon-wrap" style="background:rgba(255,255,255,.05)">
+                <span style="color:var(--txt2)">✉</span>
+              </div>
+              <span class="text-xs font-medium text-center" style="color:var(--txt2)">Message coach</span>
+            </a>
+            <a href="#" class="quick-link card" style="background:transparent;border:none">
+              <div class="icon-wrap" style="background:rgba(255,255,255,.05)">
+                <span style="color:var(--txt2)">▶</span>
+              </div>
+              <span class="text-xs font-medium text-center" style="color:var(--txt2)">My videos</span>
+            </a>
+            <a href="#" class="quick-link card" style="background:transparent;border:none">
+              <div class="icon-wrap" style="background:rgba(255,255,255,.05)">
+                <span style="color:var(--txt2)">$</span>
+              </div>
+              <span class="text-xs font-medium text-center" style="color:var(--txt2)">Invoices</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Upcoming -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="eyebrow mb-1">Up next</div>
+              <div class="font-semibold text-[15px]">Upcoming classes</div>
+            </div>
+            <a href="#" class="chip text-xs">See all →</a>
+          </div>
+
+          <!-- Today: Fundamentals -->
+          <div class="upcoming-row" style="background:rgba(200,136,46,.06);border:1px solid rgba(200,136,46,.15)">
+            <div class="w-10 h-10 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(200,136,46,.12)">
+              <span style="color:var(--accent-hi)">▤</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm">Fundamentals</div>
+              <div class="text-xs mt-0.5" style="color:var(--txt2)">Today · 6:00pm · Group</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="chip chip-ok text-xs">Booked</span>
+              <span class="pass-pip" style="background:var(--accent)"></span>
+            </div>
+          </div>
+
+          <!-- Sat: Open Mat -->
+          <div class="upcoming-row" style="background:rgba(255,255,255,.03);border:1px solid var(--line)">
+            <div class="w-10 h-10 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(111,174,111,.1)">
+              <span style="color:var(--ok)">◯</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-sm">Open Mat</div>
+              <div class="text-xs mt-0.5" style="color:var(--txt2)">Sat Jun 14 · 10:00am · Free for members</div>
+            </div>
+            <a href="#" class="btn btn-ghost text-xs px-3 py-1.5">RSVP</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coach card (1/3) -->
+      <div class="flex flex-col gap-4">
+        <div class="card p-5">
+          <div class="eyebrow mb-4">Your coach</div>
+          <div class="flex flex-col items-center text-center">
+            <div class="avatar" style="width:52px;height:52px;font-size:17px;border-radius:14px;margin-bottom:12px">MV</div>
+            <div class="font-semibold">Marcus Vale</div>
+            <div class="text-xs mt-1" style="color:var(--txt3)">BJJ &amp; Striking · Vale Method</div>
+            <a href="#" class="btn btn-primary w-full justify-center mt-4 text-sm">Message Marcus</a>
+            <a href="#" class="btn btn-ghost w-full justify-center mt-2 text-sm">Book private session · $80</a>
+          </div>
+        </div>
+
+        <!-- Message preview -->
+        <div class="card p-4">
+          <div class="eyebrow mb-3">Latest message</div>
+          <div class="text-sm" style="color:var(--txt2)">"Great work on your guard passing yesterday. Keep drilling the hip escape."</div>
+          <div class="text-xs mt-2" style="color:var(--txt3)">Marcus · 1 day ago</div>
+          <a href="#" class="text-xs mt-3 block" style="color:var(--accent-hi)">Reply →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- breathing room -->
+    <div class="h-10"></div>
+  </div>
+
+</div>
+</body>
+</html>

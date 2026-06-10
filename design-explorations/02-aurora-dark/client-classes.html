@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method · Book a Class — Powered by Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+body { background: #0d0d18; min-height: 100vh; }
+.cp-header { background: rgba(20,20,36,.92); backdrop-filter: blur(24px); border-bottom: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<!-- AURORA GLOW — contained ellipse, clipped so it stays near the top only -->
+<div style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:520px;height:240px;pointer-events:none;z-index:0;overflow:hidden;border-radius:0 0 9999px 9999px">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% -5%,rgba(109,92,255,.17),transparent 70%)"></div>
+</div>
+
+<!-- CLIENT HEADER -->
+<header class="cp-header sticky top-0 z-30">
+  <div class="mx-auto max-w-3xl px-5 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="avatar" style="width:34px;height:34px;font-size:13px">MV</div>
+      <div>
+        <div class="font-semibold" style="font-size:14px">Vale Method</div>
+        <div style="font-size:11px;color:var(--txt3)">powered by <span class="wm" style="font-size:11px"><span class="kor">Kor</span><span class="va">va</span></span></div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="client-portal.html" class="btn text-xs py-2 px-3">← My portal</a>
+      <div class="avatar" style="background:linear-gradient(135deg,#3b82f6,var(--aur-1))">DS</div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="relative z-10 mx-auto max-w-3xl px-5 py-8">
+
+  <!-- PAGE HEADER -->
+  <div class="flex items-start justify-between mb-6">
+    <div>
+      <h1 class="display font-bold grad-white" style="font-size:1.8rem">Book a class</h1>
+      <p class="text-sm mt-1" style="color:var(--txt2)">Vale Method · 4 class types available</p>
+    </div>
+    <!-- passes balance -->
+    <div class="card card-glow p-4 text-center flex-shrink-0 ml-4">
+      <div class="eyebrow mb-1" style="font-size:10px">Your balance</div>
+      <div class="stat-num tnum grad-aurora" style="font-size:1.8rem">3</div>
+      <div style="font-size:11px;color:var(--txt3)">class credits</div>
+      <a href="#" class="block mt-2 text-xs" style="color:var(--aur-2)">Buy more</a>
+    </div>
+  </div>
+
+  <!-- FILTER CHIPS -->
+  <div class="flex gap-2 flex-wrap mb-6">
+    <button class="chip chip-aurora" style="cursor:pointer">All classes</button>
+    <button class="chip" style="cursor:pointer">Today</button>
+    <button class="chip" style="cursor:pointer">This week</button>
+    <button class="chip" style="cursor:pointer">Group</button>
+    <button class="chip" style="cursor:pointer">Private</button>
+  </div>
+
+  <!-- CLASS CARDS -->
+  <div class="space-y-4">
+
+    <!-- 1. FUNDAMENTALS — covered by pass -->
+    <div class="card p-6 relative overflow-hidden">
+      <!-- accent bar left -->
+      <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--amber),var(--amber-hi));border-radius:4px 0 0 4px"></div>
+      <div class="pl-3">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 class="font-bold" style="font-size:1.1rem">Fundamentals</h2>
+              <span class="chip chip-amber" style="font-size:11px">Covered by your pass · 3 left</span>
+            </div>
+            <div class="text-sm" style="color:var(--txt2)">Mon &amp; Wed · 6:00 PM · 1 hour</div>
+            <div class="flex items-center gap-4 mt-3 flex-wrap" style="font-size:13px">
+              <span style="color:var(--txt3)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:4px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                8 / 12 spots
+              </span>
+              <span style="color:var(--txt3)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-2px;margin-right:4px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Cap 12
+              </span>
+              <span class="chip chip-ok" style="font-size:11px">Open</span>
+            </div>
+          </div>
+          <!-- capacity ring -->
+          <div class="flex-shrink-0 text-center">
+            <div class="relative" style="width:56px;height:56px">
+              <svg width="56" height="56" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+                <circle cx="28" cy="28" r="22" fill="none" stroke="url(#ring-fundamentals)" stroke-width="5"
+                  stroke-dasharray="138.2" stroke-dashoffset="46.1" stroke-linecap="round" transform="rotate(-90 28 28)"/>
+                <defs><linearGradient id="ring-fundamentals" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#e0a44a"/><stop offset="1" stop-color="#f0bc6a"/></linearGradient></defs>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--font-d)">67%</div>
+            </div>
+            <div style="font-size:10px;color:var(--txt3);margin-top:4px">8/12</div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <span class="cta-ring-wrap flex-1">
+            <span class="cta-ring-spin"></span>
+            <a href="#" class="cta-ring-inner" style="width:100%;padding:11px 16px;font-size:14px;justify-content:center">Book with pass →</a>
+          </span>
+          <a href="#" class="btn text-sm">Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SPARRING — members only -->
+    <div class="card p-6 relative overflow-hidden" style="opacity:.75">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--aur-3),#ff4d9e);border-radius:4px 0 0 4px"></div>
+      <div class="pl-3">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 class="font-bold" style="font-size:1.1rem">Sparring</h2>
+              <span class="chip" style="font-size:11px;background:rgba(255,126,176,.08);border-color:rgba(255,126,176,.2);color:var(--aur-3)">◈ Members only</span>
+            </div>
+            <div class="text-sm" style="color:var(--txt2)">Tue &amp; Thu · 7:00 PM · 90 min</div>
+            <div class="flex items-center gap-4 mt-3 flex-wrap" style="font-size:13px">
+              <span style="color:var(--txt3)">6 / 10 spots</span>
+              <span style="color:var(--txt3)">Cap 10</span>
+            </div>
+            <p class="text-sm mt-3" style="color:var(--txt3)">Membership required to access this class. Contact coach to upgrade.</p>
+          </div>
+          <!-- lock icon -->
+          <div class="flex-shrink-0" style="width:56px;height:56px;border-radius:12px;background:rgba(255,126,176,.08);border:1px solid rgba(255,126,176,.15);display:grid;place-content:center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--aur-3)" stroke-width="1.8" opacity=".6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <a href="#" class="btn text-sm flex-1 justify-center" style="cursor:not-allowed;opacity:.5">Members only</a>
+          <a href="#" class="btn text-sm" style="color:var(--aur-2)">Get membership</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. OPEN MAT — free for members -->
+    <div class="card p-6 relative overflow-hidden">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--ok),#16a34a);border-radius:4px 0 0 4px"></div>
+      <div class="pl-3">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 class="font-bold" style="font-size:1.1rem">Open Mat</h2>
+              <span class="chip chip-ok" style="font-size:11px">Free for members</span>
+            </div>
+            <div class="text-sm" style="color:var(--txt2)">Saturday · 10:00 AM · 2 hours</div>
+            <div class="flex items-center gap-4 mt-3 flex-wrap" style="font-size:13px">
+              <span style="color:var(--txt3)">11 / 16 spots</span>
+              <span style="color:var(--txt3)">Cap 16</span>
+              <span class="chip chip-ok" style="font-size:11px">Open</span>
+            </div>
+          </div>
+          <!-- capacity ring -->
+          <div class="flex-shrink-0 text-center">
+            <div class="relative" style="width:56px;height:56px">
+              <svg width="56" height="56" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+                <circle cx="28" cy="28" r="22" fill="none" stroke="url(#ring-openmat)" stroke-width="5"
+                  stroke-dasharray="138.2" stroke-dashoffset="47.6" stroke-linecap="round" transform="rotate(-90 28 28)"/>
+                <defs><linearGradient id="ring-openmat" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ade80"/><stop offset="1" stop-color="#16a34a"/></linearGradient></defs>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--font-d)">69%</div>
+            </div>
+            <div style="font-size:10px;color:var(--txt3);margin-top:4px">11/16</div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <a href="#" class="btn btn-amber text-sm flex-1 justify-center">Reserve spot →</a>
+          <a href="#" class="btn text-sm">Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. PRIVATE 1:1 -->
+    <div class="card p-6 relative overflow-hidden">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--aur-1),var(--aur-2));border-radius:4px 0 0 4px"></div>
+      <div class="pl-3">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 class="font-bold" style="font-size:1.1rem">Private 1:1</h2>
+              <span class="chip chip-aurora" style="font-size:11px">$80 · By appointment</span>
+            </div>
+            <div class="text-sm" style="color:var(--txt2)">By appointment · 60 min · Any day</div>
+            <p class="text-sm mt-2" style="color:var(--txt3)">Focused 1-on-1 session tailored to your exact goals. Send a request and coach will confirm a time.</p>
+          </div>
+          <div class="flex-shrink-0 text-center">
+            <div style="width:56px;height:56px;border-radius:12px;background:rgba(109,92,255,.1);border:1px solid rgba(109,92,255,.2);display:grid;place-content:center">
+              <span class="display font-bold grad-amber" style="font-size:1rem">$80</span>
+            </div>
+            <div style="font-size:10px;color:var(--txt3);margin-top:4px">per session</div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <span class="cta-ring-wrap flex-1">
+            <span class="cta-ring-spin"></span>
+            <a href="#" class="cta-ring-inner" style="width:100%;padding:11px 16px;font-size:14px;justify-content:center">Request session →</a>
+          </span>
+          <a href="#" class="btn text-sm">Message coach</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PASSES BALANCE FOOTER -->
+  <div class="card card-glow p-5 mt-6 flex items-center justify-between gap-4">
+    <div>
+      <div class="eyebrow mb-1" style="font-size:10px">Your pass balance</div>
+      <div class="flex items-center gap-2">
+        <span class="stat-num tnum grad-aurora" style="font-size:1.5rem">3</span>
+        <span style="color:var(--txt2);font-size:13px">class credits remaining</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- pips -->
+      <div class="flex gap-1.5">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--aur-2);box-shadow:0 0 6px rgba(176,108,255,.6)"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--aur-2);box-shadow:0 0 6px rgba(176,108,255,.6)"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--aur-2);box-shadow:0 0 6px rgba(176,108,255,.6)"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--line2)"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--line2)"></div>
+      </div>
+      <a href="#" class="btn btn-amber text-sm">Buy more passes</a>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

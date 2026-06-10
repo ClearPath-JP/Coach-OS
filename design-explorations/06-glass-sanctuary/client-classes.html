@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — Book a Class</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  /* client top nav */
+  .client-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(18,12,44,.6);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border-bottom: 1px solid rgba(255,255,255,.09);
+  }
+  .powered-by {
+    font: 400 11px var(--font-b);
+    color: var(--txt3);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* class booking card */
+  .class-card {
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 22px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 4px 20px rgba(0,0,0,.35);
+    padding: 26px;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+  }
+  .class-card:hover {
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 12px 40px rgba(0,0,0,.42);
+  }
+  .class-card.highlighted {
+    background: rgba(124,92,255,.1);
+    border-color: rgba(167,139,250,.35);
+    box-shadow: inset 0 1px 0 rgba(196,181,253,.15), 0 0 40px rgba(124,92,255,.2), 0 8px 32px rgba(0,0,0,.4);
+  }
+
+  /* capacity bar */
+  .capacity-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.1);
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .capacity-fill {
+    height: 100%;
+    border-radius: 999px;
+  }
+
+  /* day badge */
+  .day-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font: 500 12px var(--font-b);
+    color: var(--txt3);
+  }
+
+  /* passes summary bar at top */
+  .passes-bar {
+    background: rgba(124,92,255,.1);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(167,139,250,.25);
+    border-radius: 16px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    box-shadow: inset 0 1px 0 rgba(196,181,253,.12), 0 0 30px rgba(124,92,255,.15);
+  }
+
+  /* filter tabs */
+  .filter-tab {
+    padding: 7px 16px;
+    border-radius: 999px;
+    font: 500 13px var(--font-b);
+    color: var(--txt2);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: .15s;
+  }
+  .filter-tab:hover {
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.1);
+  }
+  .filter-tab.active {
+    background: rgba(124,92,255,.15);
+    border-color: rgba(167,139,250,.3);
+    color: var(--accent-hi);
+  }
+</style>
+</head>
+<body>
+
+  <!-- CLIENT TOPBAR -->
+  <header class="client-topbar">
+    <div class="flex items-center gap-3">
+      <a href="client-portal.html">
+        <div class="logo-mark" style="width:28px;height:28px;font-size:12px;border-radius:8px">◈</div>
+      </a>
+      <div>
+        <div class="text-base font-semibold" style="font-family:var(--font-d)">Vale Method</div>
+        <div class="powered-by">powered by Kor<span style="color:var(--accent);font-style:italic">va</span></div>
+      </div>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-6 text-sm" style="color:var(--txt2)">
+      <a href="client-portal.html" class="hover:text-white transition-colors">Home</a>
+      <a href="#" class="text-white font-medium">Classes</a>
+      <a href="#" class="hover:text-white transition-colors">My videos</a>
+      <a href="#" class="hover:text-white transition-colors">Invoices</a>
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <div class="avatar avatar-sm" style="background:linear-gradient(135deg,#3b82f6,#7c5cff)">DS</div>
+      <span class="text-sm hidden sm:block">Diego Santos</span>
+    </div>
+  </header>
+
+  <!-- PAGE -->
+  <main class="mx-auto max-w-3xl px-5 py-10">
+
+    <!-- page title -->
+    <div class="mb-7">
+      <h1 class="display text-4xl">Book a class</h1>
+      <p class="mt-2 text-base" style="color:var(--txt2)">Pick a session, use your credits or pay as you go.</p>
+    </div>
+
+    <!-- passes balance bar -->
+    <div class="passes-bar mb-8">
+      <div class="flex items-center gap-4">
+        <div class="flex gap-2">
+          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent-lo),var(--accent));display:grid;place-content:center;font:700 12px var(--font-b);color:#fff;box-shadow:0 0 10px rgba(124,92,255,.5)">1</div>
+          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent-lo),var(--accent));display:grid;place-content:center;font:700 12px var(--font-b);color:#fff;box-shadow:0 0 10px rgba(124,92,255,.5)">2</div>
+          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent-lo),var(--accent));display:grid;place-content:center;font:700 12px var(--font-b);color:#fff;box-shadow:0 0 10px rgba(124,92,255,.5)">3</div>
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);display:grid;place-content:center;font:700 12px var(--font-b);color:var(--txt3)">✕</div>
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);display:grid;place-content:center;font:700 12px var(--font-b);color:var(--txt3)">✕</div>
+        </div>
+        <div>
+          <div class="font-semibold text-sm">3 class credits</div>
+          <div class="text-xs" style="color:var(--txt3)">Never expire · covers eligible classes</div>
+        </div>
+      </div>
+      <a href="#" class="btn btn-primary text-sm px-5 py-2.5">Buy more credits</a>
+    </div>
+
+    <!-- filter tabs -->
+    <div class="flex items-center gap-2 mb-6 flex-wrap">
+      <div class="filter-tab active">All classes</div>
+      <div class="filter-tab">Group</div>
+      <div class="filter-tab">Private</div>
+      <div class="filter-tab">Members</div>
+    </div>
+
+    <!-- CLASS CARDS -->
+    <div class="space-y-4">
+
+      <!-- Fundamentals — highlighted, covered by pass -->
+      <div class="class-card highlighted">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap mb-2">
+              <h2 class="font-semibold text-xl display">Fundamentals</h2>
+              <span class="chip chip-accent text-xs">Pass covered</span>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap mb-4">
+              <span class="day-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="2.5" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M1 5.5h10" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>
+                Mon / Wed · 6:00 pm
+              </span>
+              <span class="day-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="5.5" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M2 10.5c0-2.209 1.791-4 4-4s4 1.791 4 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                Cap 12
+              </span>
+              <span class="day-badge" style="color:var(--accent)">$25 drop-in</span>
+            </div>
+
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs" style="color:var(--txt3)">8 of 12 booked</span>
+              <span class="chip chip-ok text-xs">4 spots left</span>
+            </div>
+            <div class="capacity-track" style="max-width:200px">
+              <div class="capacity-fill" style="width:67%;background:linear-gradient(90deg,var(--accent-lo),var(--accent-hi))"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-end gap-3">
+            <div class="text-right">
+              <div class="text-xs mb-1" style="color:var(--accent)">Covered by your pass</div>
+              <div class="text-xs" style="color:var(--txt3)">3 credits remaining</div>
+            </div>
+            <a href="#" class="btn btn-primary text-sm px-6 py-2.5">Book → use credit</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sparring — members only -->
+      <div class="class-card">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap mb-2">
+              <h2 class="font-semibold text-xl display">Sparring</h2>
+              <span class="chip chip-rose text-xs">Members only</span>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap mb-4">
+              <span class="day-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="2.5" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M1 5.5h10" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>
+                Tue / Thu · 7:00 pm
+              </span>
+              <span class="day-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="5.5" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M2 10.5c0-2.209 1.791-4 4-4s4 1.791 4 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                Cap 10
+              </span>
+              <span class="day-badge" style="color:var(--rose)">Members only</span>
+            </div>
+
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs" style="color:var(--txt3)">6 of 10 booked</span>
+            </div>
+            <div class="capacity-track" style="max-width:200px">
+              <div class="capacity-fill" style="width:60%;background:linear-gradient(90deg,#ff7eb0,#c084fc)"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-end gap-3">
+            <div class="text-right">
+              <div class="text-xs mb-1" style="color:var(--rose)">Requires membership</div>
+              <div class="text-xs" style="color:var(--txt3)">Upgrade to unlock</div>
+            </div>
+            <a href="#" class="btn text-sm px-6 py-2.5" style="opacity:.7;cursor:not-allowed">Members only</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Open Mat — free for members -->
+      <div class="class-card">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap mb-2">
+              <h2 class="font-semibold text-xl display">Open Mat</h2>
+              <span class="chip chip-ok text-xs">Free for members</span>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap mb-4">
+              <span class="day-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="2.5" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M1 5.5h10" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>
+                Saturday · 10:00 am
+              </span>
+              <span class="day-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="5.5" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M2 10.5c0-2.209 1.791-4 4-4s4 1.791 4 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                Cap 16
+              </span>
+              <span class="day-badge" style="color:var(--ok)">Free for members</span>
+            </div>
+
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs" style="color:var(--txt3)">11 of 16 booked</span>
+              <span class="chip chip-ok text-xs">5 spots left</span>
+            </div>
+            <div class="capacity-track" style="max-width:200px">
+              <div class="capacity-fill" style="width:69%;background:linear-gradient(90deg,#36d0c4,#6ee7b7)"></div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-end gap-3">
+            <div class="text-right">
+              <div class="text-xs mb-1" style="color:var(--ok)">Free for members</div>
+              <div class="text-xs" style="color:var(--txt3)">Saturday · 10 am</div>
+            </div>
+            <a href="#" class="btn text-sm px-6 py-2.5">Book free spot</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Private 1:1 -->
+      <div class="class-card">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 flex-wrap mb-2">
+              <h2 class="font-semibold text-xl display">Private 1:1</h2>
+              <span class="chip text-xs">By appointment</span>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap mb-4">
+              <span class="day-badge">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.1"/><path d="M6 3.5v2.8l2 1.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+                Flexible scheduling
+              </span>
+              <span class="day-badge" style="color:var(--accent-hi)">$80 · 60 min</span>
+            </div>
+            <p class="text-sm" style="color:var(--txt2)">One-on-one focused training. Pick your time, Marcus confirms. Includes video review.</p>
+          </div>
+
+          <div class="flex flex-col items-end gap-3">
+            <div class="text-right">
+              <div class="display text-2xl">$80</div>
+              <div class="text-xs" style="color:var(--txt3)">per session</div>
+            </div>
+            <a href="#" class="btn btn-primary text-sm px-6 py-2.5">Request →</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- footer note -->
+    <div class="mt-10 text-center">
+      <p class="text-sm" style="color:var(--txt3)">Questions? <a href="#" style="color:var(--accent)">Message Marcus</a> directly.</p>
+    </div>
+  </main>
+
+</body>
+</html>

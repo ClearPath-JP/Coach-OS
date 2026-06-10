@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method — Classes &amp; Booking · Powered by Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  .client-shell { min-height: 100vh; }
+  .class-card { transition: transform .15s, box-shadow .15s; }
+  .class-card:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 28px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.35); }
+  .belt-track { height: 4px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .belt-fill { height: 100%; border-radius: 999px; }
+  .pass-pip { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .cover-banner {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 9px; margin-bottom: 14px;
+    font-size: 12px; font-weight: 600;
+  }
+  .day-dot { width: 7px; height: 7px; border-radius: 999px; display: inline-block; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="client-shell">
+
+  <!-- CLIENT NAV -->
+  <header style="position:sticky;top:0;z-index:30;background:rgba(20,18,16,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--line)">
+    <div class="mx-auto max-w-5xl px-5 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="avatar">MV</div>
+        <div>
+          <div class="font-semibold text-sm leading-tight">Vale Method</div>
+          <div class="text-xs leading-tight" style="color:var(--txt3)">powered by <span style="color:var(--accent-hi)">Korva</span></div>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#" style="color:var(--txt2)" class="hover:text-white">Home</a>
+        <a href="#" class="font-semibold" style="color:var(--accent-hi)">Classes</a>
+        <a href="#" style="color:var(--txt2)" class="hover:text-white">Progress</a>
+        <a href="#" style="color:var(--txt2)" class="hover:text-white">Messages</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <div class="avatar" style="background:linear-gradient(180deg,#6aabf7,#4a8fd4)">DS</div>
+        <div class="hidden sm:block text-sm">
+          <div class="font-semibold">Diego Santos</div>
+          <div class="text-xs" style="color:var(--txt3)">Blue Belt</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE HEADER -->
+  <div style="background:var(--raised);border-bottom:1px solid var(--line)">
+    <div class="mx-auto max-w-5xl px-5 py-6 flex items-end justify-between">
+      <div>
+        <div class="eyebrow mb-1">Vale Method</div>
+        <h1 class="display text-3xl font-bold">Classes &amp; Booking</h1>
+        <p class="text-sm mt-1" style="color:var(--txt2)">Book into any open class — your pass covers Fundamentals.</p>
+      </div>
+      <!-- Passes balance pill -->
+      <div class="flex items-center gap-3">
+        <div class="card px-4 py-2.5 flex items-center gap-3" style="border-color:rgba(200,136,46,.3)">
+          <span style="color:var(--txt3);font-size:13px">◈</span>
+          <div>
+            <div class="text-xs" style="color:var(--txt3)">Pass balance</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="tnum font-bold" style="color:var(--accent-hi);font-family:var(--font-d)">3</span>
+              <span class="text-xs" style="color:var(--txt2)">class credits</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 ml-1">
+            <span class="pass-pip" style="background:var(--accent)"></span>
+            <span class="pass-pip" style="background:var(--accent)"></span>
+            <span class="pass-pip" style="background:var(--accent)"></span>
+            <span class="pass-pip" style="background:var(--line2)"></span>
+            <span class="pass-pip" style="background:var(--line2)"></span>
+          </div>
+        </div>
+        <a href="#" class="btn btn-ghost text-sm">Buy passes</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLASSES GRID -->
+  <div class="mx-auto max-w-5xl px-5 py-8">
+    <div class="grid md:grid-cols-2 gap-5">
+
+      <!-- CARD 1: Fundamentals — covered by pass -->
+      <div class="card class-card p-6" style="border-color:rgba(200,136,46,.25)">
+        <!-- Coverage banner -->
+        <div class="cover-banner" style="background:rgba(200,136,46,.1);border:1px solid rgba(200,136,46,.25);color:var(--accent-hi)">
+          <span>◈</span>
+          Covered by your pass · 3 left
+        </div>
+
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="font-semibold text-xl" style="font-family:var(--font-d)">Fundamentals</h2>
+            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span class="chip text-xs">
+                <span class="day-dot" style="background:var(--accent)"></span>
+                Mon &amp; Wed
+              </span>
+              <span class="chip chip-accent text-xs">$25 drop-in</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(200,136,46,.12);border:1px solid rgba(200,136,46,.2)">
+            <span style="color:var(--accent-hi);font-size:22px">▤</span>
+          </div>
+        </div>
+
+        <p class="text-sm mt-3" style="color:var(--txt2)">Core BJJ technique — takedowns, positional control, submissions. Open to all levels. Perfect for building your foundation.</p>
+
+        <!-- Schedule + capacity -->
+        <div class="mt-4 pt-4 divide grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <div style="color:var(--txt3)">Time</div>
+            <div class="font-semibold mt-0.5">6:00 pm · 1 hour</div>
+          </div>
+          <div>
+            <div style="color:var(--txt3)">Capacity</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="font-semibold tnum">8 / 12</span>
+              <span style="color:var(--ok)">· 4 open</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="belt-track">
+            <div class="belt-fill" style="width:66.7%;background:linear-gradient(90deg,var(--accent),var(--accent-hi))"></div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="flex items-center gap-3 mt-5">
+          <a href="#" class="btn btn-primary flex-1 justify-center">Book — use 1 credit</a>
+          <a href="#" class="btn btn-ghost text-sm">Details</a>
+        </div>
+        <div class="text-xs mt-2 text-center" style="color:var(--txt3)">2 credits remaining after booking</div>
+      </div>
+
+      <!-- CARD 2: Sparring — members only -->
+      <div class="card class-card p-6">
+        <!-- Coverage banner: members only -->
+        <div class="cover-banner" style="background:rgba(255,255,255,.04);border:1px solid var(--line2);color:var(--txt2)">
+          <span>◉</span>
+          Members only
+        </div>
+
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="font-semibold text-xl" style="font-family:var(--font-d)">Sparring</h2>
+            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span class="chip text-xs">
+                <span class="day-dot" style="background:#9b7ab5"></span>
+                Tue &amp; Thu
+              </span>
+              <span class="chip text-xs" style="color:var(--txt3)">Members only</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(255,255,255,.05);border:1px solid var(--line)">
+            <span style="color:var(--txt2);font-size:22px">⚔</span>
+          </div>
+        </div>
+
+        <p class="text-sm mt-3" style="color:var(--txt2)">Live rolling and controlled sparring rounds. Members and experienced students only. Bring a mouthguard.</p>
+
+        <!-- Schedule + capacity -->
+        <div class="mt-4 pt-4 divide grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <div style="color:var(--txt3)">Time</div>
+            <div class="font-semibold mt-0.5">7:00 pm · 1.5 hours</div>
+          </div>
+          <div>
+            <div style="color:var(--txt3)">Capacity</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="font-semibold tnum">6 / 10</span>
+              <span style="color:var(--ok)">· 4 open</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="belt-track">
+            <div class="belt-fill" style="width:60%;background:linear-gradient(90deg,#9b7ab5,#b898cc)"></div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="flex items-center gap-3 mt-5">
+          <a href="#" class="btn flex-1 justify-center" style="background:rgba(255,255,255,.04);cursor:not-allowed;opacity:.6">Members only</a>
+          <a href="#" class="btn btn-primary text-sm">Upgrade</a>
+        </div>
+        <div class="text-xs mt-2 text-center" style="color:var(--txt3)">Upgrade to membership to unlock Sparring</div>
+      </div>
+
+      <!-- CARD 3: Open Mat — free for members -->
+      <div class="card class-card p-6">
+        <!-- Coverage banner: free for members -->
+        <div class="cover-banner" style="background:rgba(111,174,111,.1);border:1px solid rgba(111,174,111,.25);color:var(--ok)">
+          <span>✓</span>
+          Free for members
+        </div>
+
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="font-semibold text-xl" style="font-family:var(--font-d)">Open Mat</h2>
+            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span class="chip text-xs">
+                <span class="day-dot" style="background:var(--ok)"></span>
+                Saturday
+              </span>
+              <span class="chip chip-ok text-xs">Free · members</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(111,174,111,.1);border:1px solid rgba(111,174,111,.2)">
+            <span style="color:var(--ok);font-size:22px">◯</span>
+          </div>
+        </div>
+
+        <p class="text-sm mt-3" style="color:var(--txt2)">Unstructured mat time — drill, roll, ask questions. Coach is present but not leading. Open to all members. Bring water.</p>
+
+        <!-- Schedule + capacity -->
+        <div class="mt-4 pt-4 divide grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <div style="color:var(--txt3)">Time</div>
+            <div class="font-semibold mt-0.5">10:00 am · 2 hours</div>
+          </div>
+          <div>
+            <div style="color:var(--txt3)">Capacity</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="font-semibold tnum">11 / 16</span>
+              <span style="color:var(--ok)">· 5 open</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="belt-track">
+            <div class="belt-fill" style="width:68.75%;background:linear-gradient(90deg,var(--ok),#8ec98e)"></div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="flex items-center gap-3 mt-5">
+          <a href="#" class="btn flex-1 justify-center" style="background:rgba(255,255,255,.04);cursor:not-allowed;opacity:.6">Members only · Free</a>
+          <a href="#" class="btn btn-primary text-sm">Upgrade</a>
+        </div>
+        <div class="text-xs mt-2 text-center" style="color:var(--txt3)">Upgrade to membership to attend Open Mat free</div>
+      </div>
+
+      <!-- CARD 4: Private 1:1 — $80, request -->
+      <div class="card class-card p-6" style="border-color:rgba(255,255,255,.1)">
+        <!-- Coverage banner: pay per session -->
+        <div class="cover-banner" style="background:rgba(255,255,255,.04);border:1px solid var(--line2);color:var(--txt2)">
+          <span style="color:var(--accent-hi)">✦</span>
+          <span>$80 · Request a time</span>
+        </div>
+
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="font-semibold text-xl" style="font-family:var(--font-d)">Private 1:1</h2>
+            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span class="chip text-xs">
+                <span class="day-dot" style="background:var(--accent)"></span>
+                By appointment
+              </span>
+              <span class="chip chip-accent text-xs">$80/session</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(200,136,46,.12);border:1px solid rgba(200,136,46,.2)">
+            <span style="color:var(--accent-hi);font-size:22px">✦</span>
+          </div>
+        </div>
+
+        <p class="text-sm mt-3" style="color:var(--txt2)">One-on-one sessions tailored entirely to your game. Marcus sets the agenda around your specific goals, gaps, and competition schedule.</p>
+
+        <!-- Details -->
+        <div class="mt-4 pt-4 divide grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <div style="color:var(--txt3)">Duration</div>
+            <div class="font-semibold mt-0.5">60 min · Flexible</div>
+          </div>
+          <div>
+            <div style="color:var(--txt3)">Payment</div>
+            <div class="font-semibold mt-0.5 tnum" style="color:var(--accent-hi)">$80 at booking</div>
+          </div>
+        </div>
+
+        <!-- Upcoming private session note -->
+        <div class="mt-3 px-3 py-2.5 rounded-xl text-xs" style="background:rgba(200,136,46,.07);border:1px solid rgba(200,136,46,.15)">
+          <span style="color:var(--accent-hi)">◈</span>
+          <span style="color:var(--txt2);margin-left:6px">Your next private: <strong style="color:var(--txt)">Today 9:00am</strong> — already booked</span>
+        </div>
+
+        <!-- CTA -->
+        <div class="flex items-center gap-3 mt-5">
+          <a href="#" class="btn btn-primary flex-1 justify-center">$80 · Request session</a>
+          <a href="#" class="btn btn-ghost text-sm">Message Marcus</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Passes upsell banner -->
+    <div class="card mt-6 p-5 flex items-center gap-5" style="border-color:rgba(200,136,46,.2);background:linear-gradient(90deg,rgba(200,136,46,.06),transparent 60%),var(--raised)">
+      <div class="w-12 h-12 rounded-xl grid place-content-center flex-shrink-0" style="background:rgba(200,136,46,.15);border:1px solid rgba(200,136,46,.25)">
+        <span style="color:var(--accent-hi);font-size:20px">◈</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold">Stock up on class credits</div>
+        <div class="text-sm mt-0.5" style="color:var(--txt2)">You have 3 credits left. Buy a 10-class pack and save — $22/class instead of $25.</div>
+      </div>
+      <a href="#" class="btn btn-primary flex-shrink-0">Buy 10-class pack</a>
+    </div>
+
+    <div class="h-10"></div>
+  </div>
+
+</div>
+</body>
+</html>

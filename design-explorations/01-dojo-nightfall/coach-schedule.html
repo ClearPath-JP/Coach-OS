@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — Schedule · Vale Method</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  html, body { height: 100%; }
+  .app-shell { display: flex; height: 100vh; overflow: hidden; }
+  .sidebar { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .top-bar { flex-shrink: 0; }
+  .scroll-area { flex: 1; overflow-y: auto; }
+
+  /* Calendar grid */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: 52px repeat(7, 1fr);
+    min-width: 720px;
+  }
+  .cal-header-cell {
+    padding: 10px 6px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--txt3);
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+  .cal-header-cell:last-child { border-right: none; }
+  .cal-header-cell.today { color: var(--accent-hi); }
+  .cal-time-cell {
+    padding: 0 8px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--txt3);
+    text-align: right;
+    border-right: 1px solid var(--line);
+    height: 56px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 6px;
+  }
+  .cal-day-cell {
+    height: 56px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    position: relative;
+  }
+  .cal-day-cell:last-child { border-right: none; }
+  .cal-day-cell.today-col { background: rgba(200,136,46,.04); }
+  .cal-block {
+    position: absolute;
+    left: 4px; right: 4px;
+    border-radius: 8px;
+    padding: 4px 7px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(200,136,46,.28), rgba(200,136,46,.16));
+    border: 1px solid rgba(200,136,46,.4);
+    color: var(--accent-hi);
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+  .cal-block:hover { background: linear-gradient(180deg, rgba(200,136,46,.38), rgba(200,136,46,.22)); }
+  .cal-block.private {
+    background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
+    border-color: var(--line2);
+    color: var(--txt2);
+  }
+  .cal-block.free {
+    background: linear-gradient(180deg, rgba(111,174,111,.22), rgba(111,174,111,.1));
+    border-color: rgba(111,174,111,.35);
+    color: var(--ok);
+  }
+  /* Classes today col highlight stripe */
+  .today-header { background: rgba(200,136,46,.1); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar sb px-3 py-4 gap-0">
+    <div class="flex items-center gap-2 px-2 py-2 mb-4">
+      <span class="enso text-lg">◯</span>
+      <span class="wm text-lg">Kor<span class="va">va</span></span>
+    </div>
+
+    <div class="mx-2 mb-5 px-3 py-2 rounded-xl flex items-center gap-2" style="background:rgba(200,136,46,.08);border:1px solid rgba(200,136,46,.18)">
+      <span class="text-xs font-semibold" style="color:var(--accent-hi)">Vale Method</span>
+      <span class="ml-auto text-xs" style="color:var(--txt3)">⌄</span>
+    </div>
+
+    <div class="sb-group">Workspace</div>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1.5"/><rect x="10" y="2" width="6" height="6" rx="1.5"/><rect x="2" y="10" width="6" height="6" rx="1.5"/><rect x="10" y="10" width="6" height="6" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a href="#" class="sb-item active">
+      <svg class="ico" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2"/><line x1="6" y1="2" x2="6" y2="16"/><line x1="2" y1="7" x2="16" y2="7"/></svg>
+      Schedule
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><circle cx="9" cy="6" r="3.5"/><path d="M2 16c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg>
+      Clients
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M6 9h6M9 6v6"/></svg>
+      Classes
+    </a>
+
+    <div class="sb-group mt-2">Tools</div>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><path d="M3 4h12M3 9h8M3 14h5"/></svg>
+      Messages
+      <span class="ml-auto" style="background:var(--accent);color:#1a1208;font:700 10px var(--font-b);border-radius:999px;padding:1px 6px">3</span>
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><rect x="2" y="5" width="14" height="10" rx="2"/><path d="M6 5V4a3 3 0 0 1 6 0v1"/></svg>
+      Payments
+    </a>
+    <a href="#" class="sb-item">
+      <svg class="ico" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 3"/></svg>
+      Settings
+    </a>
+
+    <div class="mt-auto mx-0 pt-4 divide">
+      <div class="flex items-center gap-3 px-2 py-3">
+        <div class="avatar">MV</div>
+        <div class="min-w-0">
+          <div class="text-sm font-semibold truncate">Marcus Vale</div>
+          <div class="text-xs truncate" style="color:var(--txt3)">Pro Coach</div>
+        </div>
+        <svg class="ico ml-auto flex-shrink-0" style="color:var(--txt3)" viewBox="0 0 18 18"><path d="M6 13l5-4-5-4"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- TOP BAR -->
+    <div class="top-bar px-6 py-3 flex items-center gap-4" style="background:var(--base);border-bottom:1px solid var(--line)">
+      <button class="flex items-center gap-3 px-4 py-2 rounded-xl text-sm flex-1 max-w-xs" style="background:var(--raised);border:1px solid var(--line);color:var(--txt3)">
+        <svg class="ico" style="width:15px;height:15px" viewBox="0 0 18 18"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l4 4"/></svg>
+        Search anything…
+        <span class="ml-auto kbd">⌘K</span>
+      </button>
+      <div class="flex items-center gap-3 ml-auto">
+        <button class="relative btn btn-ghost p-2.5">
+          <svg class="ico" viewBox="0 0 18 18"><path d="M9 2a5 5 0 0 1 5 5v3l1.5 2.5H2.5L4 10V7a5 5 0 0 1 5-5z"/><path d="M7 14.5a2 2 0 0 0 4 0"/></svg>
+          <span class="absolute top-1.5 right-1.5 dot" style="background:var(--accent);width:6px;height:6px"></span>
+        </button>
+        <div class="avatar">MV</div>
+      </div>
+    </div>
+
+    <!-- SCROLL AREA -->
+    <div class="scroll-area">
+      <div class="flex h-full" style="min-height:0">
+
+        <!-- CALENDAR PANEL -->
+        <div class="flex-1 overflow-auto px-5 py-5 min-w-0">
+
+          <!-- Week nav -->
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="eyebrow mb-1">Vale Method</div>
+              <h2 class="display text-2xl font-bold">Week of June 9–15, 2026</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-ghost text-sm px-3 py-2">← Prev</button>
+              <button class="btn btn-ghost text-sm px-3 py-2" style="color:var(--accent-hi);border-color:rgba(200,136,46,.3)">Today</button>
+              <button class="btn btn-ghost text-sm px-3 py-2">Next →</button>
+              <a href="#" class="btn btn-primary text-sm">+ Add class</a>
+            </div>
+          </div>
+
+          <!-- Calendar -->
+          <div class="card overflow-hidden">
+            <div class="overflow-x-auto">
+              <div class="cal-grid" style="min-width:700px">
+                <!-- HEADER ROW -->
+                <div class="cal-header-cell" style="border-bottom:1px solid var(--line)"></div>
+                <div class="cal-header-cell">MON<br/><span class="tnum" style="font-size:15px;color:var(--txt2)">9</span></div>
+                <div class="cal-header-cell today today-header">TUE<br/><span class="tnum" style="font-size:15px;color:var(--accent-hi)">10</span></div>
+                <div class="cal-header-cell">WED<br/><span class="tnum" style="font-size:15px;color:var(--txt2)">11</span></div>
+                <div class="cal-header-cell">THU<br/><span class="tnum" style="font-size:15px;color:var(--txt2)">12</span></div>
+                <div class="cal-header-cell">FRI<br/><span class="tnum" style="font-size:15px;color:var(--txt2)">13</span></div>
+                <div class="cal-header-cell">SAT<br/><span class="tnum" style="font-size:15px;color:var(--txt2)">14</span></div>
+                <div class="cal-header-cell">SUN<br/><span class="tnum" style="font-size:15px;color:var(--txt2)">15</span></div>
+
+                <!-- 7am row -->
+                <div class="cal-time-cell">7am</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 8am row -->
+                <div class="cal-time-cell">8am</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 9am row — Diego Private (Tue) -->
+                <div class="cal-time-cell">9am</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block private" style="top:4px;height:44px">
+                    <div>Diego Santos</div>
+                    <div style="font-weight:400;opacity:.7">Private · $80</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 10am row -->
+                <div class="cal-time-cell">10am</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <!-- Sat 10am Open Mat — spans ~1 hour cell -->
+                <div class="cal-day-cell">
+                  <div class="cal-block free" style="top:4px;height:44px">
+                    <div>Open Mat</div>
+                    <div style="font-weight:400;opacity:.8">11 / 16 booked</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 11am row — Sarah Private (Tue) -->
+                <div class="cal-time-cell">11am</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block private" style="top:4px;height:44px">
+                    <div>Sarah Chen</div>
+                    <div style="font-weight:400;opacity:.7">Private · $80</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 12pm row -->
+                <div class="cal-time-cell">12pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 1pm row -->
+                <div class="cal-time-cell">1pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 2pm row -->
+                <div class="cal-time-cell">2pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 3pm row -->
+                <div class="cal-time-cell">3pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 4pm row -->
+                <div class="cal-time-cell">4pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 5pm row -->
+                <div class="cal-time-cell">5pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 6pm row — Fundamentals Mon+Wed, Sparring Tue+Thu -->
+                <div class="cal-time-cell">6pm</div>
+                <!-- Mon: Fundamentals -->
+                <div class="cal-day-cell">
+                  <div class="cal-block" style="top:4px;height:44px">
+                    <div>Fundamentals</div>
+                    <div style="font-weight:400;opacity:.75">8 / 12 booked</div>
+                  </div>
+                </div>
+                <!-- Tue: Fundamentals (today) + today color -->
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block" style="top:4px;height:44px;box-shadow:0 0 0 1px var(--accent),0 4px 14px rgba(200,136,46,.4)">
+                    <div>Fundamentals</div>
+                    <div style="font-weight:400;opacity:.75">8 / 12</div>
+                  </div>
+                </div>
+                <!-- Wed: Fundamentals -->
+                <div class="cal-day-cell">
+                  <div class="cal-block" style="top:4px;height:44px">
+                    <div>Fundamentals</div>
+                    <div style="font-weight:400;opacity:.75">8 / 12 booked</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 7pm row — Sparring Tue+Thu -->
+                <div class="cal-time-cell">7pm</div>
+                <div class="cal-day-cell"></div>
+                <!-- Tue: Sparring (today) -->
+                <div class="cal-day-cell today-col">
+                  <div class="cal-block" style="top:4px;height:44px;background:linear-gradient(180deg,rgba(200,136,46,.18),rgba(200,136,46,.08));border-color:rgba(200,136,46,.28)">
+                    <div>Sparring</div>
+                    <div style="font-weight:400;opacity:.75">6 / 10 · members</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+                <!-- Thu: Sparring -->
+                <div class="cal-day-cell">
+                  <div class="cal-block" style="top:4px;height:44px;background:linear-gradient(180deg,rgba(200,136,46,.18),rgba(200,136,46,.08));border-color:rgba(200,136,46,.28)">
+                    <div>Sparring</div>
+                    <div style="font-weight:400;opacity:.75">6 / 10 · members</div>
+                  </div>
+                </div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 8pm row -->
+                <div class="cal-time-cell">8pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+
+                <!-- 9pm row -->
+                <div class="cal-time-cell">9pm</div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell today-col"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+                <div class="cal-day-cell"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDE PANEL -->
+        <div class="flex-shrink-0 w-72 px-4 py-5 overflow-y-auto" style="border-left:1px solid var(--line)">
+
+          <!-- Classes list -->
+          <div class="eyebrow mb-4">Classes this week</div>
+
+          <!-- Fundamentals -->
+          <div class="card p-4 mb-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-semibold text-sm">Fundamentals</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Mon &amp; Wed · 6:00pm</div>
+              </div>
+              <span class="chip chip-accent">$25</span>
+            </div>
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span style="color:var(--txt3)">Capacity</span>
+                <span class="tnum font-semibold">8 / 12</span>
+              </div>
+              <div class="progress-track" style="height:4px;background:var(--line);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:66.7%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px"></div>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <a href="#" class="btn btn-ghost text-xs px-3 py-1.5">Roster</a>
+              <a href="#" class="btn btn-primary text-xs px-3 py-1.5">Details</a>
+            </div>
+          </div>
+
+          <!-- Sparring -->
+          <div class="card p-4 mb-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-semibold text-sm">Sparring</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Tue &amp; Thu · 7:00pm</div>
+              </div>
+              <span class="chip" style="color:var(--txt3)">Members</span>
+            </div>
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span style="color:var(--txt3)">Capacity</span>
+                <span class="tnum font-semibold">6 / 10</span>
+              </div>
+              <div class="progress-track" style="height:4px;background:var(--line);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:60%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px"></div>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <a href="#" class="btn btn-ghost text-xs px-3 py-1.5">Roster</a>
+              <a href="#" class="btn btn-ghost text-xs px-3 py-1.5">Details</a>
+            </div>
+          </div>
+
+          <!-- Open Mat -->
+          <div class="card p-4 mb-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-semibold text-sm">Open Mat</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">Sat · 10:00am</div>
+              </div>
+              <span class="chip chip-ok">Free</span>
+            </div>
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span style="color:var(--txt3)">Capacity</span>
+                <span class="tnum font-semibold">11 / 16</span>
+              </div>
+              <div class="progress-track" style="height:4px;background:var(--line);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:68.75%;background:linear-gradient(90deg,var(--ok),#8ec98e);border-radius:999px"></div>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <a href="#" class="btn btn-ghost text-xs px-3 py-1.5">Roster</a>
+              <a href="#" class="btn btn-ghost text-xs px-3 py-1.5">Details</a>
+            </div>
+          </div>
+
+          <!-- Private 1:1 -->
+          <div class="card p-4 mb-5">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="font-semibold text-sm">Private 1:1</div>
+                <div class="text-xs mt-0.5" style="color:var(--txt2)">By appointment</div>
+              </div>
+              <span class="chip chip-accent">$80</span>
+            </div>
+            <div class="mt-3 text-xs" style="color:var(--txt3)">2 sessions today (Diego + Sarah)</div>
+            <div class="flex gap-2 mt-3">
+              <a href="#" class="btn btn-ghost text-xs px-3 py-1.5">Today's sessions</a>
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div class="divide pt-4">
+            <div class="eyebrow mb-3">Legend</div>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded" style="background:rgba(200,136,46,.25);border:1px solid rgba(200,136,46,.4)"></span><span style="color:var(--txt2)">Group class</span></div>
+              <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded" style="background:rgba(255,255,255,.08);border:1px solid var(--line2)"></span><span style="color:var(--txt2)">Private session</span></div>
+              <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded" style="background:rgba(111,174,111,.18);border:1px solid rgba(111,174,111,.35)"></span><span style="color:var(--txt2)">Free for members</span></div>
+              <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded" style="background:rgba(200,136,46,.08);border:1px solid rgba(200,136,46,.2)"></span><span style="color:var(--txt2)">Today's column</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

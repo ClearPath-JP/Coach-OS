@@ -1,0 +1,300 @@
+/* 02 · Aurora Dark — premium animated dark SaaS, v0/Linear-grade.
+   Palette: near-black #0a0a0f, panels #13131c/#1a1a26, amber #e0a44a, aurora indigo→violet→rose.
+   Fonts: Space Grotesk (display) + Inter (body). */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --base:      #0a0a0f;
+  --raised:    #13131c;
+  --overlay:   #1a1a26;
+  --float:     #20202e;
+  --amber:     #e0a44a;
+  --amber-hi:  #f0bc6a;
+  --amber-lo:  #b07c2e;
+  --aur-1:     #6d5cff;   /* indigo */
+  --aur-2:     #b06cff;   /* violet */
+  --aur-3:     #ff7eb0;   /* rose */
+  --txt:       rgba(255,255,255,.92);
+  --txt2:      rgba(255,255,255,.58);
+  --txt3:      rgba(255,255,255,.36);
+  --line:      rgba(255,255,255,.08);
+  --line2:     rgba(255,255,255,.13);
+  --ok:        #4ade80;
+  --ok-dim:    rgba(74,222,128,.14);
+  --amber-dim: rgba(224,164,74,.12);
+  --aur-dim:   rgba(109,92,255,.12);
+  --font-d:    'Space Grotesk', system-ui, sans-serif;
+  --font-b:    'Inter', system-ui, sans-serif;
+}
+
+/* reset */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--base);
+  color: var(--txt);
+  font-family: var(--font-b);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.012em;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ─── TYPOGRAPHY ─── */
+h1, h2, h3, .display { font-family: var(--font-d); letter-spacing: -0.03em; }
+.tnum { font-variant-numeric: tabular-nums; }
+.eyebrow {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .18em;
+  color: var(--txt3); font-weight: 600; font-family: var(--font-d);
+}
+
+/* ─── WORDMARK ─── */
+.wm { font-family: var(--font-d); font-weight: 700; letter-spacing: -.02em; font-size: inherit; }
+.wm .kor { color: var(--txt); }
+.wm .va  { background: linear-gradient(135deg, var(--aur-1), var(--aur-3)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+/* ─── GRADIENT TEXT ─── */
+/* Solid near-white — avoids the transparent-text trap when the gradient fades too far */
+.grad-white {
+  color: #f5f5fa;
+}
+.grad-aurora {
+  background: linear-gradient(135deg, var(--aur-1) 0%, var(--aur-2) 50%, var(--aur-3) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.grad-amber {
+  background: linear-gradient(135deg, var(--amber-hi), var(--amber));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* ─── SURFACES ─── */
+.card {
+  position: relative;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 0 rgba(255,255,255,.06) inset, 0 6px 24px rgba(0,0,0,.52);
+}
+.card-glow {
+  background: linear-gradient(160deg, rgba(109,92,255,.07) 0%, transparent 60%), var(--raised);
+  border-color: rgba(109,92,255,.2);
+  box-shadow: 0 0 0 1px rgba(109,92,255,.1), 0 8px 32px rgba(109,92,255,.12), 0 1px 0 rgba(255,255,255,.06) inset;
+}
+.card-amber {
+  background: linear-gradient(160deg, rgba(224,164,74,.08) 0%, transparent 60%), var(--raised);
+  border-color: rgba(224,164,74,.25);
+  box-shadow: 0 0 0 1px rgba(224,164,74,.1), 0 8px 32px rgba(224,164,74,.1), 0 1px 0 rgba(255,255,255,.06) inset;
+}
+.glass {
+  background: rgba(10,10,15,.85);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--line2);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 12px 48px rgba(0,0,0,.7);
+}
+
+/* ─── RETRO GRID ─── */
+.retro-grid-wrap {
+  position: absolute; inset: 0; overflow: hidden;
+  perspective: 220px;
+  pointer-events: none;
+}
+.retro-grid-inner {
+  position: absolute; inset: 0;
+  transform: rotateX(62deg);
+  transform-origin: 50% 0;
+}
+.retro-grid-lines {
+  position: absolute;
+  top: 0; left: -200%; width: 600vw; height: 300vh;
+  background-image:
+    linear-gradient(to right, rgba(109,92,255,.05) 1px, transparent 0),
+    linear-gradient(to bottom, rgba(109,92,255,.05) 1px, transparent 0);
+  background-size: 60px 60px;
+  animation: grid-scroll 18s linear infinite;
+}
+@keyframes grid-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(60px); }
+}
+.retro-grid-fade {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, var(--base) 0%, transparent 42%, transparent 68%, var(--base) 100%);
+}
+.retro-grid-fade-sides {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 100% at 50% 100%, transparent 40%, var(--base) 80%);
+}
+
+/* ─── FLAT GRID (subtle texture, no perspective convergence) ─── */
+.flat-grid {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(109,92,255,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109,92,255,.055) 1px, transparent 1px);
+  background-size: 54px 54px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, #000 8%, transparent 72%);
+  mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, #000 8%, transparent 72%);
+}
+
+/* ─── RADIAL GLOW ─── */
+/* Tamed: small ellipse behind hero headline only, clipped by parent overflow:hidden */
+.hero-glow {
+  position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
+  width: 520px; height: 290px; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 55% 50% at 50% 0%,
+    rgba(109,92,255,.16) 0%,
+    rgba(176,108,255,.06) 50%,
+    transparent 70%);
+}
+.amber-glow {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 400px; height: 180px; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 50% 50% at 50% 0%,
+    rgba(224,164,74,.10) 0%, transparent 70%);
+}
+
+/* ─── PRIMARY CTA (conic-gradient spinning ring) ─── */
+.cta-ring-wrap {
+  position: relative; display: inline-flex; border-radius: 999px; padding: 1.5px;
+  overflow: hidden; /* CRITICAL: clip the inset:-1000% spinning ring to the button,
+                       otherwise the bright conic-gradient blooms across the page */
+}
+.cta-ring-spin {
+  position: absolute; inset: -1000%;
+  animation: ring-spin 2.2s linear infinite;
+  background: conic-gradient(from 90deg at 50% 50%, #e2cbff 0%, var(--aur-1) 50%, #e2cbff 100%);
+  border-radius: 999px;
+}
+@keyframes ring-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.cta-ring-inner {
+  position: relative; z-index: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(109,92,255,.18), rgba(176,108,255,.12));
+  border: 1px solid rgba(109,92,255,.3);
+  padding: 14px 32px;
+  font: 600 15px var(--font-d);
+  color: var(--txt);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .2s;
+  white-space: nowrap;
+}
+.cta-ring-inner:hover {
+  background: linear-gradient(135deg, rgba(109,92,255,.28), rgba(176,108,255,.2));
+}
+
+/* ─── STANDARD BUTTONS ─── */
+.btn {
+  font: 600 14px var(--font-b);
+  border-radius: 12px; padding: 11px 20px;
+  border: 1px solid var(--line2);
+  color: var(--txt); background: transparent;
+  cursor: pointer; transition: .15s;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:hover { background: rgba(255,255,255,.05); }
+.btn-amber {
+  color: #0a0a0f;
+  background: linear-gradient(180deg, var(--amber-hi), var(--amber));
+  border-color: var(--amber-lo);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 16px rgba(224,164,74,.25);
+}
+.btn-amber:hover { background: linear-gradient(180deg, #f5cb7e, var(--amber-hi)); }
+
+/* ─── CHIPS / BADGES ─── */
+.chip {
+  font: 600 12px var(--font-b); padding: 4px 10px;
+  border-radius: 999px; border: 1px solid var(--line2);
+  color: var(--txt2); display: inline-flex; align-items: center; gap: 5px;
+}
+.chip-aurora {
+  color: var(--aur-2); border-color: rgba(176,108,255,.3);
+  background: rgba(109,92,255,.1);
+}
+.chip-amber {
+  color: var(--amber-hi); border-color: rgba(224,164,74,.3);
+  background: var(--amber-dim);
+}
+.chip-ok {
+  color: var(--ok); border-color: rgba(74,222,128,.3);
+  background: var(--ok-dim);
+}
+
+/* ─── SIDEBAR ─── */
+.sb { background: #0b0b12; border-right: 1px solid var(--line); }
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 10px;
+  color: var(--txt2); font-weight: 500; font-size: 14px;
+  text-decoration: none; transition: .12s;
+}
+.sb-item:hover { background: rgba(255,255,255,.04); color: var(--txt); }
+.sb-item.active {
+  color: var(--aur-2);
+  background: rgba(109,92,255,.1);
+  box-shadow: inset 2px 0 0 var(--aur-1);
+}
+.sb-group {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .15em;
+  color: var(--txt3); padding: 18px 12px 6px; font-weight: 600;
+}
+
+/* ─── STATS / NUMBERS ─── */
+.stat-num {
+  font-family: var(--font-d); font-weight: 700; font-size: 32px;
+  line-height: 1; letter-spacing: -.03em;
+}
+
+/* ─── AVATAR ─── */
+.avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: grid; place-content: center;
+  font: 700 13px var(--font-d);
+  background: linear-gradient(135deg, var(--aur-1), var(--aur-3));
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ─── MISC ─── */
+.divide-t  { border-top: 1px solid var(--line); }
+.divide-b  { border-bottom: 1px solid var(--line); }
+.kbd {
+  font: 600 11px var(--font-b); border: 1px solid var(--line2);
+  border-radius: 6px; padding: 2px 6px; color: var(--txt3);
+}
+.dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; flex-shrink: 0; }
+
+/* ─── PROGRESS BAR ─── */
+.progress-track {
+  height: 6px; border-radius: 999px; background: var(--line2); overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--aur-1), var(--aur-2));
+  box-shadow: 0 0 8px rgba(176,108,255,.5);
+}
+
+/* ─── SCHEDULE GRID LINES ─── */
+.gridlines {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 100% 64px, 14.28% 100%;
+}
+
+/* ─── SPARKLE DOTS (decorative) ─── */
+.sparkle-field {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.sparkle-dot {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle, rgba(176,108,255,.8) 0%, transparent 70%);
+  animation: sparkle-pulse 3s ease-in-out infinite;
+}
+@keyframes sparkle-pulse {
+  0%, 100% { opacity: .3; transform: scale(1); }
+  50%       { opacity: .9; transform: scale(1.4); }
+}

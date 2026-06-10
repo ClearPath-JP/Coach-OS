@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — The operating system for solo coaches</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     NAV
+═══════════════════════════════════════════════════ -->
+<header class="sticky top-0 z-40">
+  <div class="glass mx-auto mt-4 max-w-6xl px-5 py-3 flex items-center justify-between" style="border-radius:16px">
+    <div class="flex items-center gap-2">
+      <!-- aurora sigil -->
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,18 2,18" stroke="url(#aur-s)" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+        <defs><linearGradient id="aur-s" x1="2" y1="2" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#6d5cff"/><stop offset=".5" stop-color="#b06cff"/><stop offset="1" stop-color="#ff7eb0"/></linearGradient></defs>
+      </svg>
+      <span class="wm text-xl"><span class="kor">Kor</span><span class="va">va</span></span>
+    </div>
+    <nav class="hidden md:flex items-center gap-7 text-sm" style="color:var(--txt2)">
+      <a href="#features" class="hover:text-white transition-colors">Features</a>
+      <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
+      <a href="#" class="hover:text-white transition-colors">For coaches</a>
+      <a href="#" class="hover:text-white transition-colors">Story</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a href="#" class="text-sm hidden sm:block transition-colors hover:text-white" style="color:var(--txt2)">Sign in</a>
+      <span class="cta-ring-wrap">
+        <span class="cta-ring-spin"></span>
+        <a href="#" class="cta-ring-inner" style="padding:9px 20px;font-size:13px">Start free</a>
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════ -->
+<section class="relative overflow-hidden" style="min-height:700px">
+  <!-- subtle top glow via box-shadow on a thin bar (predictable, can't bloom) -->
+  <div style="position:absolute;top:0;left:0;right:0;height:1px;box-shadow:0 0 160px 40px rgba(109,92,255,.14);z-index:0;pointer-events:none"></div>
+
+  <!-- hero content -->
+  <div class="relative z-10 mx-auto max-w-5xl px-6 pt-24 pb-12 text-center">
+    <!-- announcement chip -->
+    <div class="inline-flex items-center gap-2 mb-7">
+      <span class="chip chip-aurora">
+        <span style="font-size:9px;line-height:1">◆</span>
+        10 founding spots — $99/mo for life
+      </span>
+    </div>
+
+    <!-- headline -->
+    <h1 class="display font-bold leading-[1.06]" style="font-size:clamp(2.6rem,6vw,4.5rem);color:#f5f5fa;text-shadow:0 2px 28px rgba(8,6,20,.65)">
+      Run your whole<br/>coaching practice<br/>
+      <span class="grad-aurora">from one place.</span>
+    </h1>
+
+    <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed" style="color:var(--txt2)">
+      Scheduling, classes, payments, progress, and messaging — the calm, crafted operating system built for solo martial-arts &amp; fitness coaches.
+    </p>
+
+    <!-- CTA row -->
+    <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <span class="cta-ring-wrap">
+        <span class="cta-ring-spin"></span>
+        <a href="#" class="cta-ring-inner">Open your dojo →</a>
+      </span>
+      <a href="#" class="btn text-sm">▶ Watch the 60s tour</a>
+    </div>
+    <p class="mt-4 text-xs" style="color:var(--txt3)">No card to start · Replaces 5 apps · Set up in an afternoon</p>
+  </div>
+
+  <!-- APP PREVIEW MOCK -->
+  <div class="relative z-10 mx-auto max-w-5xl px-6 pb-24">
+    <div class="card card-glow p-2.5">
+      <!-- glow behind preview -->
+      <div style="position:absolute;inset:0;border-radius:16px;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(109,92,255,.1),transparent 70%);pointer-events:none"></div>
+      <div class="rounded-xl overflow-hidden relative" style="background:var(--base);border:1px solid var(--line)">
+        <div class="flex">
+          <!-- mini sidebar -->
+          <div class="hidden sm:flex flex-col gap-1 w-44 p-3 flex-shrink-0" style="background:#0b0b12;border-right:1px solid var(--line)">
+            <div class="flex items-center gap-2 px-2 py-2">
+              <svg width="16" height="16" viewBox="0 0 22 22" fill="none"><polygon points="11,2 20,18 2,18" stroke="url(#aur-s2)" stroke-width="1.6" fill="none" stroke-linejoin="round"/><defs><linearGradient id="aur-s2" x1="2" y1="2" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#6d5cff"/><stop offset="1" stop-color="#ff7eb0"/></linearGradient></defs></svg>
+              <span class="wm" style="font-size:14px"><span class="kor">Kor</span><span class="va">va</span></span>
+            </div>
+            <div class="sb-item active mt-1" style="font-size:12px;padding:7px 10px">⬡ Dashboard</div>
+            <div class="sb-item" style="font-size:12px;padding:7px 10px">◈ Schedule</div>
+            <div class="sb-item" style="font-size:12px;padding:7px 10px">◉ Clients</div>
+            <div class="sb-item" style="font-size:12px;padding:7px 10px">▣ Classes</div>
+            <div class="sb-item" style="font-size:12px;padding:7px 10px">✦ Payments</div>
+          </div>
+          <!-- mini main -->
+          <div class="flex-1 p-5 min-w-0">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="eyebrow" style="font-size:10px">Tuesday · Vale Method</div>
+                <div class="display font-semibold mt-1" style="font-size:20px">Good morning, Marcus</div>
+              </div>
+              <div class="avatar" style="width:32px;height:32px;font-size:12px">MV</div>
+            </div>
+            <!-- stat cards -->
+            <div class="grid grid-cols-3 gap-2 mt-4">
+              <div class="card p-3">
+                <div class="eyebrow" style="font-size:9px">Active</div>
+                <div class="stat-num mt-1.5 tnum" style="font-size:22px">24</div>
+              </div>
+              <div class="card p-3">
+                <div class="eyebrow" style="font-size:9px">This week</div>
+                <div class="stat-num mt-1.5 tnum grad-amber" style="font-size:22px">$1,840</div>
+              </div>
+              <div class="card p-3">
+                <div class="eyebrow" style="font-size:9px">Unread</div>
+                <div class="stat-num mt-1.5 tnum" style="font-size:22px">3</div>
+              </div>
+            </div>
+            <!-- today's schedule -->
+            <div class="card p-3 mt-2">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-semibold" style="font-size:13px">Today's schedule</span>
+                <span class="chip" style="font-size:11px;padding:3px 8px">3 sessions</span>
+              </div>
+              <div class="space-y-1.5" style="font-size:12px">
+                <div class="flex items-center justify-between">
+                  <span><span class="tnum" style="color:var(--txt3)">9:00a</span>&nbsp; Diego Santos · Private</span>
+                  <span class="chip chip-ok" style="font-size:10px;padding:2px 7px">Confirmed</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span><span class="tnum" style="color:var(--txt3)">11:00a</span>&nbsp; Sarah Chen · Private</span>
+                  <span class="chip" style="font-size:10px;padding:2px 7px">Pending</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span><span class="tnum" style="color:var(--txt3)">6:00p</span>&nbsp; Fundamentals · Group</span>
+                  <span class="chip chip-aurora" style="font-size:10px;padding:2px 7px">8 booked</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     TESTIMONIALS
+═══════════════════════════════════════════════════ -->
+<section class="mx-auto max-w-6xl px-6 py-16">
+  <div class="text-center mb-10">
+    <span class="eyebrow">Coaches who switched</span>
+  </div>
+  <div class="grid md:grid-cols-3 gap-5">
+    <!-- card 1 -->
+    <div class="card card-glow p-6 flex flex-col gap-4">
+      <div style="font-size:28px;line-height:1;color:var(--aur-2);opacity:.5">"</div>
+      <p style="color:var(--txt);font-size:15px;line-height:1.65">"Korva replaced 5 apps. I run my whole gym from my phone now."</p>
+      <div class="flex items-center gap-3 mt-auto pt-3 divide-t">
+        <div class="avatar" style="width:32px;height:32px;font-size:11px">ER</div>
+        <div style="font-size:13px">
+          <div class="font-semibold">Elena R.</div>
+          <div style="color:var(--txt3)">Kickboxing coach</div>
+        </div>
+      </div>
+    </div>
+    <!-- card 2 -->
+    <div class="card card-glow p-6 flex flex-col gap-4" style="border-color:rgba(176,108,255,.25)">
+      <div style="font-size:28px;line-height:1;color:var(--aur-2);opacity:.5">"</div>
+      <p style="color:var(--txt);font-size:15px;line-height:1.65">"Booking + payments in one tap. My students actually show up."</p>
+      <div class="flex items-center gap-3 mt-auto pt-3 divide-t">
+        <div class="avatar" style="width:32px;height:32px;font-size:11px">DM</div>
+        <div style="font-size:13px">
+          <div class="font-semibold">Dré M.</div>
+          <div style="color:var(--txt3)">BJJ coach</div>
+        </div>
+      </div>
+    </div>
+    <!-- card 3 -->
+    <div class="card card-glow p-6 flex flex-col gap-4">
+      <div style="font-size:28px;line-height:1;color:var(--aur-2);opacity:.5">"</div>
+      <p style="color:var(--txt);font-size:15px;line-height:1.65">"Set it up in an afternoon. Looks like I hired a designer."</p>
+      <div class="flex items-center gap-3 mt-auto pt-3 divide-t">
+        <div class="avatar" style="width:32px;height:32px;font-size:11px">ST</div>
+        <div style="font-size:13px">
+          <div class="font-semibold">Sam T.</div>
+          <div style="color:var(--txt3)">Strength coach</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     FEATURES
+═══════════════════════════════════════════════════ -->
+<section id="features" class="mx-auto max-w-6xl px-6 py-16">
+  <div class="text-center mb-12">
+    <span class="eyebrow">One tool, the whole practice</span>
+    <h2 class="display font-bold mt-4" style="font-size:2.4rem">
+      <span class="grad-white">Everything a coach juggles</span><br/>
+      <span class="grad-aurora">unified.</span>
+    </h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card p-6 hover:border-[rgba(109,92,255,.25)] transition-colors">
+      <div class="text-2xl mb-4 grad-aurora" style="display:inline-block">◈</div>
+      <h3 class="font-semibold text-base mb-2">Scheduling &amp; classes</h3>
+      <p class="text-sm leading-relaxed" style="color:var(--txt2)">Weekly slots, group classes, capacity, recurring sessions — clients book in a tap.</p>
+    </div>
+    <div class="card p-6 hover:border-[rgba(109,92,255,.25)] transition-colors">
+      <div class="text-2xl mb-4" style="display:inline-block;color:var(--amber-hi)">✦</div>
+      <h3 class="font-semibold text-base mb-2">Payments &amp; passes</h3>
+      <p class="text-sm leading-relaxed" style="color:var(--txt2)">Stripe built in. Sell class packs, memberships, and 1:1s — money straight to your bank.</p>
+    </div>
+    <div class="card p-6 hover:border-[rgba(109,92,255,.25)] transition-colors">
+      <div class="text-2xl mb-4 grad-aurora" style="display:inline-block">◉</div>
+      <h3 class="font-semibold text-base mb-2">Progress &amp; belts</h3>
+      <p class="text-sm leading-relaxed" style="color:var(--txt2)">Track belt ranks, benchmarks, and notes so every student feels seen.</p>
+    </div>
+    <div class="card p-6 hover:border-[rgba(109,92,255,.25)] transition-colors">
+      <div class="text-2xl mb-4 grad-aurora" style="display:inline-block">✉</div>
+      <h3 class="font-semibold text-base mb-2">Messaging</h3>
+      <p class="text-sm leading-relaxed" style="color:var(--txt2)">Coach-to-client chat that keeps check-ins and reminders in one thread.</p>
+    </div>
+    <div class="card p-6 hover:border-[rgba(109,92,255,.25)] transition-colors">
+      <div class="text-2xl mb-4 grad-aurora" style="display:inline-block">▶</div>
+      <h3 class="font-semibold text-base mb-2">Video library</h3>
+      <p class="text-sm leading-relaxed" style="color:var(--txt2)">Share technique clips privately with your students — your own training vault.</p>
+    </div>
+    <div class="card p-6 hover:border-[rgba(109,92,255,.25)] transition-colors">
+      <div class="text-2xl mb-4" style="display:inline-block;color:var(--aur-3)">✺</div>
+      <h3 class="font-semibold text-base mb-2">Promote (AI)</h3>
+      <p class="text-sm leading-relaxed" style="color:var(--txt2)">Turn a session into a week of posts. Fill more classes without the marketing grind.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     PRICING
+═══════════════════════════════════════════════════ -->
+<section id="pricing" class="mx-auto max-w-6xl px-6 py-20 relative overflow-hidden">
+  <!-- contained pricing glow — overflow:hidden keeps it inside this section -->
+  <!-- pricing glow removed (was blooming far brighter than its alpha implied) -->
+  <!-- sparkle top -->
+  <div class="sparkle-field" style="height:200px;pointer-events:none">
+    <div class="sparkle-dot" style="width:3px;height:3px;top:20%;left:30%;animation-delay:.5s"></div>
+    <div class="sparkle-dot" style="width:4px;height:4px;top:40%;left:70%;animation-delay:1.2s"></div>
+    <div class="sparkle-dot" style="width:3px;height:3px;top:15%;left:50%;animation-delay:0s"></div>
+  </div>
+
+  <div class="text-center mb-12 relative z-10">
+    <span class="eyebrow">Founder pricing</span>
+    <h2 class="display font-bold mt-4" style="font-size:2.4rem">
+      <span class="grad-white">Lock in </span><span class="grad-aurora">$99/mo</span><span class="grad-white"> — for life.</span>
+    </h2>
+    <p class="mt-3 max-w-sm mx-auto" style="color:var(--txt2)">The first 10 founding coaches keep this rate forever.</p>
+  </div>
+
+  <div class="grid md:grid-cols-4 gap-4 items-stretch relative z-10">
+    <!-- FOUNDING (highlighted) -->
+    <div class="card card-amber p-6 relative md:scale-[1.04]" style="border-color:rgba(224,164,74,.35)">
+      <span class="chip chip-amber absolute -top-3 left-5" style="font-size:11px">◆ Founding · 10 spots</span>
+      <div class="font-semibold mt-3">Founding Coach</div>
+      <div class="mt-3 flex items-end gap-1">
+        <span class="stat-num tnum grad-amber" style="font-size:2.6rem">$99</span>
+        <span class="pb-1" style="color:var(--txt3);font-size:13px">/mo for life</span>
+      </div>
+      <div class="mt-5">
+        <span class="cta-ring-wrap w-full">
+          <span class="cta-ring-spin"></span>
+          <a href="#" class="cta-ring-inner" style="width:100%;padding:11px 16px;font-size:14px">Claim a spot</a>
+        </span>
+      </div>
+      <ul class="mt-5 space-y-2 text-sm" style="color:var(--txt2)">
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--amber)"></span>Everything in Scale</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--amber)"></span>Locked rate forever</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--amber)"></span>Founding badge</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--amber)"></span>Direct line to founder</li>
+      </ul>
+    </div>
+    <!-- STARTER -->
+    <div class="card p-6 flex flex-col">
+      <div class="font-semibold">Starter</div>
+      <div class="mt-3 flex items-end gap-1">
+        <span class="stat-num tnum" style="font-size:2.2rem">$79</span>
+        <span class="pb-1" style="color:var(--txt3);font-size:13px">/mo</span>
+      </div>
+      <a href="#" class="btn mt-5 justify-center" style="font-size:13px">Start</a>
+      <ul class="mt-4 space-y-2 text-sm flex-1" style="color:var(--txt2)">
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-1)"></span>Scheduling + classes</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-1)"></span>Payments</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-1)"></span>Up to 30 clients</li>
+      </ul>
+    </div>
+    <!-- PRO -->
+    <div class="card p-6 flex flex-col">
+      <div class="font-semibold">Pro</div>
+      <div class="mt-3 flex items-end gap-1">
+        <span class="stat-num tnum" style="font-size:2.2rem">$149</span>
+        <span class="pb-1" style="color:var(--txt3);font-size:13px">/mo</span>
+      </div>
+      <a href="#" class="btn mt-5 justify-center" style="font-size:13px">Start</a>
+      <ul class="mt-4 space-y-2 text-sm flex-1" style="color:var(--txt2)">
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-2)"></span>Everything in Starter</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-2)"></span>Memberships + video</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-2)"></span>AI Promote</li>
+      </ul>
+    </div>
+    <!-- SCALE -->
+    <div class="card p-6 flex flex-col">
+      <div class="font-semibold">Scale</div>
+      <div class="mt-3 flex items-end gap-1">
+        <span class="stat-num tnum" style="font-size:2.2rem">$299</span>
+        <span class="pb-1" style="color:var(--txt3);font-size:13px">/mo</span>
+      </div>
+      <a href="#" class="btn mt-5 justify-center" style="font-size:13px">Start</a>
+      <ul class="mt-4 space-y-2 text-sm flex-1" style="color:var(--txt2)">
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-3)"></span>Everything in Pro</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-3)"></span>Lead engine</li>
+        <li class="flex items-center gap-2"><span class="dot" style="background:var(--aur-3)"></span>Priority support</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════ -->
+<footer class="divide-t mt-10">
+  <div class="mx-auto max-w-6xl px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <svg width="18" height="18" viewBox="0 0 22 22" fill="none"><polygon points="11,2 20,18 2,18" stroke="url(#aur-f)" stroke-width="1.6" fill="none" stroke-linejoin="round"/><defs><linearGradient id="aur-f" x1="2" y1="2" x2="20" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#6d5cff"/><stop offset="1" stop-color="#ff7eb0"/></linearGradient></defs></svg>
+      <span class="wm" style="font-size:16px"><span class="kor">Kor</span><span class="va">va</span></span>
+      <span class="text-xs ml-1" style="color:var(--txt3)">© 2026 · Built for coaches</span>
+    </div>
+    <div class="flex gap-6 text-sm" style="color:var(--txt2)">
+      <a href="#" class="hover:text-white transition-colors">Privacy</a>
+      <a href="#" class="hover:text-white transition-colors">Terms</a>
+      <a href="#" class="hover:text-white transition-colors">hello@foundos.ai</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

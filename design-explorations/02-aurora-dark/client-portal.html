@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method · Diego's Portal — Powered by Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+/* Client portal overrides: slightly lighter tint for the client-facing surface */
+:root {
+  --cp-base: #0d0d18;
+  --cp-raised: #141424;
+}
+body { background: var(--cp-base); min-height: 100vh; }
+.cp-header { background: rgba(20,20,36,.92); backdrop-filter: blur(24px); border-bottom: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<!-- AURORA GLOW TOP — small ellipse, clipped to top 280px -->
+<div style="position:fixed;top:0;left:50%;transform:translateX(-50%);width:560px;height:280px;pointer-events:none;z-index:0;overflow:hidden;border-radius:0 0 9999px 9999px">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% -5%,rgba(109,92,255,.20),transparent 70%)"></div>
+</div>
+<!-- sparkles -->
+<div class="sparkle-field" style="position:fixed;top:0;height:300px;pointer-events:none;z-index:0">
+  <div class="sparkle-dot" style="width:3px;height:3px;top:15%;left:25%;animation-delay:.5s"></div>
+  <div class="sparkle-dot" style="width:4px;height:4px;top:25%;left:75%;animation-delay:1.2s"></div>
+  <div class="sparkle-dot" style="width:3px;height:3px;top:10%;left:55%;animation-delay:.2s"></div>
+</div>
+
+<!-- CLIENT HEADER -->
+<header class="cp-header sticky top-0 z-30">
+  <div class="mx-auto max-w-3xl px-5 py-3 flex items-center justify-between">
+    <!-- dojo branding -->
+    <div class="flex items-center gap-3">
+      <div class="avatar" style="width:34px;height:34px;font-size:13px">MV</div>
+      <div>
+        <div class="font-semibold" style="font-size:14px;letter-spacing:-.01em">Vale Method</div>
+        <div style="font-size:11px;color:var(--txt3)">
+          powered by
+          <span class="wm" style="font-size:11px"><span class="kor">Kor</span><span class="va">va</span></span>
+        </div>
+      </div>
+    </div>
+    <!-- diego's avatar -->
+    <div class="flex items-center gap-3">
+      <div class="chip chip-aurora" style="font-size:11px">Blue belt</div>
+      <div class="avatar" style="background:linear-gradient(135deg,#3b82f6,var(--aur-1))">DS</div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="relative z-10 mx-auto max-w-3xl px-5 py-8">
+
+  <!-- GREETING -->
+  <div class="mb-8">
+    <div class="eyebrow mb-2">Tuesday, June 10, 2026</div>
+    <h1 class="display font-bold" style="font-size:2rem">
+      <span class="grad-white">Welcome back, </span><span class="grad-aurora">Diego</span>
+    </h1>
+    <p class="text-sm mt-1" style="color:var(--txt2)">You're on a roll. Next class is today.</p>
+  </div>
+
+  <!-- NEXT CLASS CARD (highlighted) -->
+  <div class="card card-glow p-6 mb-5 relative overflow-hidden">
+    <!-- ambient glow inside card -->
+    <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(109,92,255,.12),transparent 70%);pointer-events:none"></div>
+    <div class="flex items-center justify-between mb-4">
+      <div class="eyebrow">Next class</div>
+      <span class="chip chip-ok">Booked</span>
+    </div>
+    <div class="flex items-start gap-5">
+      <!-- time block -->
+      <div class="text-center flex-shrink-0 p-3 rounded-xl" style="background:rgba(109,92,255,.12);border:1px solid rgba(109,92,255,.2);min-width:72px">
+        <div class="display font-bold tnum grad-aurora" style="font-size:1.6rem;line-height:1">6:00</div>
+        <div style="color:var(--txt3);font-size:12px;margin-top:2px">PM today</div>
+      </div>
+      <div class="flex-1">
+        <div class="font-bold" style="font-size:1.2rem">Fundamentals</div>
+        <div class="text-sm mt-1" style="color:var(--txt2)">Group class · Vale Method Dojo</div>
+        <div class="flex items-center gap-3 mt-3">
+          <span class="chip chip-amber" style="font-size:12px">3 credits left</span>
+          <span class="text-sm" style="color:var(--txt3)">8 of 12 spots filled</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-2 mt-5">
+      <a href="#" class="btn btn-amber text-sm flex-1 justify-center">View details</a>
+      <a href="client-classes.html" class="btn text-sm">Browse all classes</a>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4 mb-5">
+    <!-- PASSES -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="eyebrow">My passes</div>
+        <a href="client-classes.html" class="text-xs" style="color:var(--aur-2)">Use a pass →</a>
+      </div>
+      <div class="flex items-end gap-3">
+        <div class="stat-num tnum grad-aurora" style="font-size:3rem;line-height:1">3</div>
+        <div style="padding-bottom:6px">
+          <div class="font-semibold" style="font-size:14px">class credits</div>
+          <div style="color:var(--txt3);font-size:12px">remaining</div>
+        </div>
+      </div>
+      <!-- visual credit pips -->
+      <div class="flex gap-2 mt-4">
+        <div style="flex:1;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--aur-1),var(--aur-2))"></div>
+        <div style="flex:1;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--aur-1),var(--aur-2))"></div>
+        <div style="flex:1;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--aur-1),var(--aur-2))"></div>
+        <div style="flex:1;height:6px;border-radius:99px;background:var(--line2)"></div>
+        <div style="flex:1;height:6px;border-radius:99px;background:var(--line2)"></div>
+      </div>
+      <div class="flex justify-between mt-1.5" style="font-size:11px;color:var(--txt3)">
+        <span>3 of 5 credits left</span>
+        <a href="#" style="color:var(--aur-2)">Buy more</a>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div class="eyebrow">My progress</div>
+        <span class="chip chip-aurora" style="font-size:11px">Blue belt</span>
+      </div>
+      <!-- belt display -->
+      <div class="flex items-center gap-3 mb-4">
+        <div style="width:48px;height:14px;border-radius:4px;background:linear-gradient(90deg,#2563eb,#3b82f6);box-shadow:0 0 12px rgba(59,130,246,.4)"></div>
+        <div>
+          <div class="font-semibold" style="font-size:15px">Blue belt</div>
+          <div style="color:var(--txt3);font-size:12px">60% to next stripe</div>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:60%"></div>
+      </div>
+      <div class="flex justify-between mt-1.5" style="font-size:11px;color:var(--txt3)">
+        <span>Current stripe</span>
+        <span>60% / 100%</span>
+      </div>
+      <!-- milestones -->
+      <div class="grid grid-cols-3 gap-2 mt-4">
+        <div class="text-center p-2 rounded-lg" style="background:var(--overlay);font-size:11px">
+          <div class="font-semibold" style="color:var(--ok)">✓</div>
+          <div style="color:var(--txt3)">Guard</div>
+        </div>
+        <div class="text-center p-2 rounded-lg" style="background:var(--overlay);font-size:11px">
+          <div class="font-semibold" style="color:var(--ok)">✓</div>
+          <div style="color:var(--txt3)">Mount</div>
+        </div>
+        <div class="text-center p-2 rounded-lg" style="background:var(--overlay);font-size:11px">
+          <div class="font-semibold grad-aurora">→</div>
+          <div style="color:var(--txt3)">Back ctrl</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK LINKS -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    <a href="client-classes.html" class="card p-4 flex flex-col items-center gap-2 text-center hover:border-[rgba(109,92,255,.3)] transition-colors">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="url(#ql1)" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><defs><linearGradient id="ql1" x1="3" y1="4" x2="21" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#6d5cff"/><stop offset="1" stop-color="#b06cff"/></linearGradient></defs></svg>
+      <span class="font-semibold" style="font-size:13px">Book a class</span>
+    </a>
+    <a href="#" class="card p-4 flex flex-col items-center gap-2 text-center hover:border-[rgba(176,108,255,.3)] transition-colors">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aur-2)" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="font-semibold" style="font-size:13px">Message coach</span>
+    </a>
+    <a href="#" class="card p-4 flex flex-col items-center gap-2 text-center hover:border-[rgba(255,126,176,.3)] transition-colors">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--aur-3)" stroke-width="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      <span class="font-semibold" style="font-size:13px">My videos</span>
+    </a>
+    <a href="#" class="card p-4 flex flex-col items-center gap-2 text-center hover:border-[rgba(224,164,74,.3)] transition-colors">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="font-semibold" style="font-size:13px">Invoices</span>
+    </a>
+  </div>
+
+  <!-- UPCOMING CLASSES -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-semibold" style="font-size:15px">Upcoming classes</h2>
+      <a href="client-classes.html" class="text-xs" style="color:var(--aur-2)">View all →</a>
+    </div>
+    <div class="space-y-3">
+      <!-- today -->
+      <div class="flex items-center gap-4 p-3 rounded-xl" style="background:rgba(109,92,255,.06);border:1px solid rgba(109,92,255,.15)">
+        <div class="flex-shrink-0 text-center" style="min-width:56px">
+          <div class="display font-bold tnum grad-aurora" style="font-size:1.3rem;line-height:1">6:00</div>
+          <div style="color:var(--txt3);font-size:10px">PM Today</div>
+        </div>
+        <div style="width:2px;height:36px;background:linear-gradient(180deg,var(--aur-1),var(--aur-2));border-radius:99px;flex-shrink:0"></div>
+        <div class="flex-1">
+          <div class="font-semibold" style="font-size:14px">Fundamentals</div>
+          <div style="color:var(--txt3);font-size:12px">Group · 8 of 12 spots</div>
+        </div>
+        <span class="chip chip-ok">Booked</span>
+      </div>
+      <!-- sat -->
+      <div class="flex items-center gap-4 p-3 rounded-xl" style="background:var(--overlay);border:1px solid var(--line)">
+        <div class="flex-shrink-0 text-center" style="min-width:56px">
+          <div class="display font-bold tnum" style="font-size:1.3rem;line-height:1;color:var(--txt2)">10:00</div>
+          <div style="color:var(--txt3);font-size:10px">AM Sat</div>
+        </div>
+        <div style="width:2px;height:36px;background:linear-gradient(180deg,var(--ok),#16a34a);border-radius:99px;flex-shrink:0"></div>
+        <div class="flex-1">
+          <div class="font-semibold" style="font-size:14px">Open Mat</div>
+          <div style="color:var(--txt3);font-size:12px">Free for members · 11 of 16</div>
+        </div>
+        <span class="chip chip-ok">Free</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

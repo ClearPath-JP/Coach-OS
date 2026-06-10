@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method — Client Portal · Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  body { background: var(--base); }
+  .client-shell { min-height: 100vh; display: flex; flex-direction: column; }
+  .client-nav {
+    background: var(--surface);
+    border-bottom: 3px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .main-scroll { flex: 1; overflow-y: auto; padding: 28px 20px 40px; max-width: 680px; margin: 0 auto; width: 100%; }
+  .portal-card {
+    background: var(--surface);
+    border: 3px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .portal-card-header {
+    padding: 14px 18px 0;
+    font-family: var(--font-h);
+    font-weight: 800;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--txt3);
+  }
+  .belt-track {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .belt-pip {
+    height: 8px;
+    flex: 1;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+  }
+  .quick-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 3px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--txt);
+    font-family: var(--font-h);
+    font-weight: 700;
+    font-size: 14px;
+    transition: transform .08s, box-shadow .08s;
+  }
+  .quick-link:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--border); }
+  .quick-link:active { transform: translate(3px,3px); box-shadow: none; }
+  .upcoming-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-top: 2px solid rgba(16,16,16,.08);
+  }
+  .upcoming-row:first-child { border-top: none; }
+</style>
+</head>
+<body>
+<div class="client-shell">
+
+  <!-- CLIENT NAV -->
+  <nav class="client-nav">
+    <div>
+      <div style="font-family:var(--font-h);font-weight:800;font-size:1rem;letter-spacing:-0.02em">Vale Method</div>
+      <div style="font-family:var(--font-h);font-weight:600;font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em">powered by <span style="color:var(--teal)">Korva</span></div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="streak-badge text-xs">🔥 7-day streak</div>
+      <div class="avatar" style="background:var(--blue);color:#fff">DS</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-scroll">
+
+    <!-- GREETING -->
+    <div class="mb-6">
+      <div class="eyebrow mb-1">Tuesday, June 10</div>
+      <h1 class="display text-3xl font-black mb-1">Welcome back, Diego 👊</h1>
+      <p class="text-sm font-medium" style="color:var(--txt3);font-family:var(--font-h)">You're on a 7-day streak. Keep training!</p>
+    </div>
+
+    <!-- STREAK + RANK banner -->
+    <div class="portal-card" style="background:linear-gradient(135deg, var(--teal) 0%, var(--blue) 100%);box-shadow:var(--shadow-teal)">
+      <div style="padding:20px;display:flex;align-items:center;gap:16px">
+        <div class="medal" style="background:var(--yellow);width:60px;height:60px;font-size:28px;flex-shrink:0">🔥</div>
+        <div style="color:#fff">
+          <div style="font-family:var(--font-h);font-weight:800;font-size:1.4rem;letter-spacing:-0.02em">7-day streak!</div>
+          <div style="font-family:var(--font-h);font-weight:600;font-size:13px;opacity:.8">3 more days to unlock the Iron Dedication medal 🏅</div>
+        </div>
+        <div style="margin-left:auto;text-align:center;flex-shrink:0">
+          <div style="font-family:var(--font-h);font-weight:800;font-size:1.8rem;color:var(--yellow);letter-spacing:-0.03em">840</div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em">XP total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEXT CLASS CARD -->
+    <div class="portal-card" style="background:var(--yellow);box-shadow:var(--shadow-yellow)">
+      <div style="padding:18px">
+        <div class="eyebrow mb-2" style="color:rgba(16,16,16,.5)">Next class</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div>
+            <div style="font-family:var(--font-h);font-weight:800;font-size:1.35rem;letter-spacing:-0.02em">Fundamentals</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:13px;color:var(--txt2)">Today · 6:00pm · Vale Method Dojo</div>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="badge badge-teal" style="font-size:11px">✓ Booked</span>
+              <span class="badge" style="font-size:11px">8 / 12 spots</span>
+            </div>
+          </div>
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-family:var(--font-h);font-weight:800;font-size:2rem;letter-spacing:-0.04em;line-height:1">6:00</div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:11px;color:var(--txt3)">PM TODAY</div>
+          </div>
+        </div>
+        <a href="#" class="brutal-btn brutal-btn-blue" style="width:100%;margin-top:14px;font-size:14px">View class details →</a>
+      </div>
+    </div>
+
+    <!-- MY PASSES -->
+    <div class="portal-card">
+      <div class="portal-card-header">My passes</div>
+      <div style="padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:16px">
+          <!-- Big credit counter -->
+          <div class="tile-teal" style="border-radius:14px;padding:16px 20px;text-align:center;flex-shrink:0;min-width:90px">
+            <div style="font-family:var(--font-h);font-weight:800;font-size:2.8rem;color:#fff;letter-spacing:-0.04em;line-height:1">3</div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:10px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.1em">class<br/>credits</div>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:var(--font-h);font-weight:700;font-size:15px;margin-bottom:4px">Class pass · 5-pack</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:12px;color:var(--txt3);margin-bottom:10px">3 of 5 credits remaining</div>
+            <div class="progress-track" style="height:12px;margin-bottom:6px">
+              <div class="progress-fill progress-fill-teal" style="width:60%"></div>
+            </div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">Expires: Aug 10, 2026</div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <a href="client-classes.html" class="brutal-btn brutal-btn-teal brutal-btn-sm" style="flex:1;font-size:13px">Book a class →</a>
+          <a href="#" class="brutal-btn brutal-btn-ghost brutal-btn-sm" style="font-size:13px">Buy more passes</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- BELT PROGRESS -->
+    <div class="portal-card">
+      <div class="portal-card-header">My progress</div>
+      <div style="padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+          <!-- Belt tile -->
+          <div style="width:56px;height:56px;border-radius:12px;border:3px solid var(--border);box-shadow:3px 3px 0 var(--border);background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-size:26px">🥋</span>
+          </div>
+          <div>
+            <div style="font-family:var(--font-h);font-weight:800;font-size:1.1rem;letter-spacing:-0.02em">Blue Belt</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="badge badge-blue" style="font-size:11px">Diego Santos</span>
+              <span class="badge" style="font-size:11px">Vale Method</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-family:var(--font-h);font-weight:700;font-size:12px">Progress to next stripe</span>
+          <span style="font-family:var(--font-h);font-weight:800;font-size:13px;color:var(--teal)">60%</span>
+        </div>
+        <div class="progress-track" style="height:16px;margin-bottom:8px">
+          <div class="progress-fill progress-fill-blue" style="width:60%"></div>
+        </div>
+        <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">🏆 Next stripe unlocks after 10 more classes</div>
+        <!-- Belt pips showing rank journey -->
+        <div class="flex items-center gap-2 mt-4">
+          <div class="belt-pip" style="background:var(--base);border-color:var(--border)"></div>
+          <div class="belt-pip" style="background:var(--yellow);border-color:var(--border)"></div>
+          <div class="belt-pip belt-blue" style="background:var(--blue);border-color:var(--border)"></div>
+          <div class="belt-pip" style="background:var(--violet);border-color:var(--border)"></div>
+          <div class="belt-pip" style="background:#a0522d;border-color:var(--border)"></div>
+          <div class="belt-pip" style="background:var(--txt);border-color:var(--border)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span style="font-family:var(--font-h);font-weight:600;font-size:9px;color:var(--txt3)">White</span>
+          <span style="font-family:var(--font-h);font-weight:600;font-size:9px;color:var(--txt3)">Yellow</span>
+          <span style="font-family:var(--font-h);font-weight:700;font-size:9px;color:var(--blue)">Blue ←</span>
+          <span style="font-family:var(--font-h);font-weight:600;font-size:9px;color:var(--txt3)">Purple</span>
+          <span style="font-family:var(--font-h);font-weight:600;font-size:9px;color:var(--txt3)">Brown</span>
+          <span style="font-family:var(--font-h);font-weight:600;font-size:9px;color:var(--txt3)">Black</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDALS / ACHIEVEMENTS -->
+    <div class="portal-card">
+      <div class="portal-card-header">Achievements</div>
+      <div style="padding:14px 18px;display:flex;gap:12px;flex-wrap:wrap">
+        <div style="text-align:center;min-width:64px">
+          <div class="medal" style="background:var(--yellow);margin:0 auto 6px">🥇</div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:10px;color:var(--txt2)">First Class</div>
+        </div>
+        <div style="text-align:center;min-width:64px">
+          <div class="medal" style="background:var(--teal);margin:0 auto 6px">🔥</div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:10px;color:var(--txt2)">5-Day Streak</div>
+        </div>
+        <div style="text-align:center;min-width:64px">
+          <div class="medal" style="background:var(--blue);margin:0 auto 6px">💪</div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:10px;color:var(--txt2)">10 Classes</div>
+        </div>
+        <div style="text-align:center;min-width:64px;opacity:.35">
+          <div class="medal" style="background:var(--surface2);margin:0 auto 6px">🏅</div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:10px;color:var(--txt3)">Iron Dedic.</div>
+        </div>
+        <div style="text-align:center;min-width:64px;opacity:.35">
+          <div class="medal" style="background:var(--surface2);margin:0 auto 6px">🎖️</div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:10px;color:var(--txt3)">Blue Belt</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK LINKS -->
+    <div class="mb-5">
+      <div class="eyebrow mb-3">Quick actions</div>
+      <div class="grid grid-cols-2 gap-3">
+        <a href="client-classes.html" class="quick-link" style="background:var(--yellow)">
+          <span class="text-2xl">📅</span>
+          <span>Book a class</span>
+        </a>
+        <a href="#" class="quick-link" style="background:var(--violet)">
+          <span class="text-2xl">💬</span>
+          <span>Message coach</span>
+        </a>
+        <a href="#" class="quick-link" style="background:var(--teal);color:#fff">
+          <span class="text-2xl">🎥</span>
+          <span style="color:#fff">My videos</span>
+        </a>
+        <a href="#" class="quick-link" style="background:var(--base)">
+          <span class="text-2xl">🧾</span>
+          <span>Invoices</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- UPCOMING CLASSES -->
+    <div class="portal-card">
+      <div class="portal-card-header" style="padding-bottom:4px">Upcoming classes</div>
+      <div>
+        <!-- Today Fundamentals -->
+        <div class="upcoming-row">
+          <div class="tile-yellow" style="border-radius:10px;padding:8px 10px;text-align:center;flex-shrink:0;min-width:52px;box-shadow:none">
+            <div style="font-family:var(--font-h);font-weight:800;font-size:0.95rem;line-height:1">6pm</div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:9px;letter-spacing:.06em;text-transform:uppercase">Today</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-h);font-weight:700;font-size:14px">Fundamentals</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">Vale Method Dojo · 8 / 12 spots</div>
+          </div>
+          <span class="badge badge-teal">Booked ✓</span>
+        </div>
+        <!-- Sat Open Mat -->
+        <div class="upcoming-row">
+          <div class="tile-base" style="border-radius:10px;padding:8px 10px;text-align:center;flex-shrink:0;min-width:52px;box-shadow:none">
+            <div style="font-family:var(--font-h);font-weight:800;font-size:0.95rem;line-height:1">10am</div>
+            <div style="font-family:var(--font-h);font-weight:700;font-size:9px;letter-spacing:.06em;text-transform:uppercase">Sat</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-h);font-weight:700;font-size:14px">Open Mat</div>
+            <div style="font-family:var(--font-h);font-weight:600;font-size:11px;color:var(--txt3)">Vale Method Dojo · Free for members</div>
+          </div>
+          <a href="#" class="brutal-btn brutal-btn-primary brutal-btn-sm" style="font-size:11px">Book</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

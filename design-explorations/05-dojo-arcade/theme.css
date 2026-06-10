@@ -1,0 +1,358 @@
+/* 05 · Dojo Arcade — bold gamified neo-brutalist. Thick borders, hard shadows, belt-bright blocks.
+   Fonts: Space Grotesk (700/800 headings) + DM Sans (600 body).
+   Palette: warm off-white #faf7f0 base, #101010 borders/text, belt-brights as color blocks. */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Base */
+  --base:       #faf7f0;
+  --surface:    #ffffff;
+  --surface2:   #f3f0e8;
+  --border:     #101010;
+  --txt:        #101010;
+  --txt2:       #3d3a34;
+  --txt3:       #7a7569;
+
+  /* Belt-bright fills */
+  --yellow:     #ffd23f;
+  --teal:       #2ec4b6;
+  --violet:     #b388ff;
+  --coral:      #ff5d5d;
+  --blue:       #4d8dff;
+  --green:      #3dd68c;
+  --orange:     #ff8c42;
+
+  /* Shadows */
+  --shadow:     5px 5px 0 #101010;
+  --shadow-sm:  3px 3px 0 #101010;
+  --shadow-lg:  7px 7px 0 #101010;
+  --shadow-teal:  5px 5px 0 #1a8a80;
+  --shadow-yellow: 5px 5px 0 #b8910f;
+  --shadow-violet: 5px 5px 0 #7c4fc7;
+  --shadow-coral:  5px 5px 0 #cc2929;
+  --shadow-blue:   5px 5px 0 #1e5bc2;
+
+  --font-h: 'Space Grotesk', system-ui, sans-serif;
+  --font-b: 'DM Sans', system-ui, sans-serif;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--base);
+  color: var(--txt);
+  font-family: var(--font-b);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .display { font-family: var(--font-h); letter-spacing: -0.03em; }
+
+/* ─── WORDMARK ────────────────────────────── */
+.wm {
+  font-family: var(--font-h);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--txt);
+}
+.wm .va {
+  color: var(--teal);
+}
+.wm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--txt);
+  color: #faf7f0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: var(--font-h);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 1.1rem;
+}
+.wm-pill .va { color: var(--yellow); }
+
+/* ─── BRUTAL CARD ─────────────────────────── */
+.brutal-card {
+  background: var(--surface);
+  border: 3px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.brutal-card-sm {
+  background: var(--surface);
+  border: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+.brutal-card-lg {
+  background: var(--surface);
+  border: 3px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Color tile variants */
+.tile-yellow  { background: var(--yellow);  border: 3px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-yellow); }
+.tile-teal    { background: var(--teal);    border: 3px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-teal); }
+.tile-violet  { background: var(--violet);  border: 3px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-violet); }
+.tile-coral   { background: var(--coral);   border: 3px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-coral); }
+.tile-blue    { background: var(--blue);    border: 3px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-blue); }
+.tile-base    { background: var(--base);    border: 3px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+/* ─── BRUTAL BUTTONS ──────────────────────── */
+.brutal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-h);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 12px 22px;
+  border: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  background: var(--surface);
+  color: var(--txt);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.08s, box-shadow 0.08s;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.brutal-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+.brutal-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--border);
+}
+
+.brutal-btn-primary {
+  background: var(--yellow);
+  box-shadow: var(--shadow-yellow);
+}
+.brutal-btn-primary:hover  { box-shadow: 7px 7px 0 #b8910f; }
+.brutal-btn-primary:active { box-shadow: none; }
+
+.brutal-btn-teal {
+  background: var(--teal);
+  color: #fff;
+  box-shadow: var(--shadow-teal);
+}
+.brutal-btn-teal:hover  { box-shadow: 7px 7px 0 #1a8a80; }
+.brutal-btn-teal:active { box-shadow: none; }
+
+.brutal-btn-coral {
+  background: var(--coral);
+  color: #fff;
+  box-shadow: var(--shadow-coral);
+}
+.brutal-btn-coral:hover  { box-shadow: 7px 7px 0 #cc2929; }
+.brutal-btn-coral:active { box-shadow: none; }
+
+.brutal-btn-blue {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: var(--shadow-blue);
+}
+.brutal-btn-blue:hover  { box-shadow: 7px 7px 0 #1e5bc2; }
+.brutal-btn-blue:active { box-shadow: none; }
+
+.brutal-btn-ghost {
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--border);
+}
+.brutal-btn-ghost:hover { background: var(--surface2); box-shadow: var(--shadow-sm); }
+
+.brutal-btn-sm {
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--border);
+}
+.brutal-btn-sm:active { transform: translate(3px,3px); box-shadow: none; }
+
+.brutal-btn-lg {
+  font-size: 18px;
+  padding: 16px 32px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.brutal-btn-lg:active { transform: translate(5px,5px); box-shadow: none; }
+
+/* ─── BADGES / CHIPS ──────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-h);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--border);
+  letter-spacing: -0.01em;
+}
+.badge-yellow  { background: var(--yellow); }
+.badge-teal    { background: var(--teal);   color: #fff; }
+.badge-violet  { background: var(--violet); }
+.badge-coral   { background: var(--coral);  color: #fff; }
+.badge-blue    { background: var(--blue);   color: #fff; }
+.badge-green   { background: var(--green); }
+.badge-dark    { background: var(--txt);    color: var(--base); }
+
+/* ─── PROGRESS BARS ───────────────────────── */
+.progress-track {
+  height: 14px;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.progress-fill-yellow { background: var(--yellow); }
+.progress-fill-teal   { background: var(--teal); }
+.progress-fill-violet { background: var(--violet); }
+.progress-fill-coral  { background: var(--coral); }
+.progress-fill-blue   { background: var(--blue); }
+
+/* ─── STAT BLOCK ──────────────────────────── */
+.stat-num {
+  font-family: var(--font-h);
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+/* ─── AVATAR ──────────────────────────────── */
+.avatar {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  border: 3px solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  display: grid;
+  place-content: center;
+  font-family: var(--font-h);
+  font-weight: 800;
+  font-size: 14px;
+  background: var(--yellow);
+  color: var(--txt);
+  flex-shrink: 0;
+}
+.avatar-sm {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  font-size: 11px;
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+/* ─── SIDEBAR ─────────────────────────────── */
+.sb {
+  background: var(--txt);
+  color: #faf7f0;
+  border-right: 3px solid var(--border);
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: rgba(250,247,240,.65);
+  font-family: var(--font-h);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.1s, color 0.1s;
+}
+.sb-item:hover { background: rgba(250,247,240,.1); color: #faf7f0; }
+.sb-item.active {
+  background: var(--yellow);
+  color: var(--txt);
+  box-shadow: 3px 3px 0 rgba(0,0,0,.3);
+}
+.sb-group {
+  font-family: var(--font-h);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: rgba(250,247,240,.35);
+  padding: 14px 12px 5px;
+  font-weight: 700;
+}
+
+/* ─── XP / STREAK ─────────────────────────── */
+.xp-bar-wrap { background: rgba(250,247,240,.12); border-radius: 999px; height: 8px; overflow: hidden; }
+.xp-bar { height: 100%; background: var(--yellow); border-radius: 999px; }
+
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--coral);
+  color: #fff;
+  font-family: var(--font-h);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 5px 10px;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+/* ─── BELT TIER ───────────────────────────── */
+.belt-white  { background: #f0f0f0; }
+.belt-blue   { background: var(--blue);   color: #fff; }
+.belt-purple { background: var(--violet); }
+.belt-brown  { background: #a0522d;       color: #fff; }
+.belt-black  { background: var(--txt);    color: var(--base); }
+
+/* ─── MISC ────────────────────────────────── */
+.tnum { font-variant-numeric: tabular-nums; }
+.ico  { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+.divide { border-top: 3px solid var(--border); }
+.kbd {
+  font-family: var(--font-h);
+  font-weight: 700;
+  font-size: 11px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 7px;
+  background: var(--surface2);
+  box-shadow: 2px 2px 0 var(--border);
+}
+.eyebrow {
+  font-family: var(--font-h);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-weight: 700;
+  color: var(--txt3);
+}
+.medal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  font-size: 22px;
+}

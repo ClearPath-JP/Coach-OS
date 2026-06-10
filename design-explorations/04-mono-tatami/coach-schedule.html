@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — Schedule</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  body { overflow: hidden; }
+  .main-scroll { overflow-y: auto; height: calc(100vh - 48px); }
+
+  /* Week calendar */
+  .week-grid {
+    display: grid;
+    grid-template-columns: 52px repeat(7, 1fr);
+    border-left: 1px solid var(--line);
+    border-top: 1px solid var(--line);
+    flex: 1;
+  }
+  .wk-head {
+    padding: 8px 10px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--txt3);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+    background: var(--p1);
+  }
+  .wk-head.today { color: var(--accent); background: var(--p2); }
+  .wk-head-gutter {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--p1);
+  }
+  .wk-time {
+    font-size: 10px;
+    color: var(--txt4);
+    padding: 4px 6px 0;
+    text-align: right;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line3);
+    background: var(--p1);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+  .wk-cell {
+    position: relative;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line3);
+    min-height: 56px;
+  }
+  .wk-cell.today-col { background: rgba(237,237,237,.018); }
+  .wk-event {
+    position: absolute;
+    left: 3px; right: 3px;
+    border-radius: 4px;
+    border: 1px solid var(--line2);
+    background: var(--p2);
+    padding: 4px 7px;
+    font-size: 11px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .wk-event:hover { border-color: rgba(255,255,255,.22); background: var(--p3); }
+  .wk-event.private {
+    border-left: 2px solid var(--txt4);
+  }
+  .wk-event.group {
+    border-left: 2px solid var(--ok);
+  }
+  .wk-event.selected {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+  .wk-event.selected:hover { background: #f0f0f0; }
+
+  /* Side panel */
+  .side-panel {
+    width: 280px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--line);
+    background: var(--p1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+<div class="app-shell" style="height:100vh;">
+
+  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="flex items-center gap-2 mb-3">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.5)"/><rect x="8.5" y="1.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="1.5" y="8.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="8.5" y="8.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.08)"/></svg>
+        <span class="wm" style="font-size:15px;">Kor<span class="va">va</span></span>
+      </div>
+      <div style="font-size:11px;color:var(--txt4);font-weight:500;">Vale Method</div>
+    </div>
+    <div style="padding:10px 8px;">
+      <div class="cmd-bar" style="min-width:unset;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M8.5 8.5L11 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Search…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Workspace</div>
+      <a href="coach-dashboard.html" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+        Dashboard
+      </a>
+      <a href="coach-schedule.html" class="sb-item active">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5.5h11" stroke="currentColor" stroke-width="1.2"/><path d="M5 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M9 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Schedule
+      </a>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 12.5c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Clients
+        <span class="chip ml-auto" style="font-size:10px;padding:1px 6px;">24</span>
+      </a>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="currentColor"/></svg>
+        Classes
+      </a>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><path d="M2 3h10a1 1 0 011 1v5a1 1 0 01-1 1H5l-3 2V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Messages
+        <span class="chip chip-warn ml-auto" style="font-size:10px;padding:1px 6px;">3</span>
+      </a>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><rect x="1.5" y="3" width="11" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6h11" stroke="currentColor" stroke-width="1.2"/></svg>
+        Payments
+      </a>
+    </div>
+    <div style="padding:10px 8px;border-top:1px solid var(--line);margin-top:auto;">
+      <div class="flex items-center gap-3">
+        <div class="avatar">MV</div>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:600;">Marcus Vale</div>
+          <div style="font-size:11px;color:var(--txt4);">Pro plan</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────────────────── -->
+  <div class="main" style="min-width:0;display:flex;flex-direction:column;">
+    <!-- Top bar -->
+    <div class="topbar">
+      <span style="font-size:13px;font-weight:600;">Schedule</span>
+      <div class="flex items-center gap-2 ml-4">
+        <button class="btn btn-ghost btn-sm">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span style="font-size:13px;font-weight:500;">Week of Jun 9 – 15, 2026</span>
+        <button class="btn btn-ghost btn-sm">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <button class="btn btn-ghost btn-sm">Today</button>
+        <button class="btn btn-primary btn-sm">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Add session
+        </button>
+      </div>
+      <div class="avatar ml-2">MV</div>
+    </div>
+
+    <!-- Calendar + side panel -->
+    <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
+
+      <!-- Calendar area -->
+      <div class="main-scroll" style="flex:1;min-width:0;">
+        <div style="min-width:640px;">
+          <!-- Column headers -->
+          <div class="week-grid" style="border-bottom:none;">
+            <div class="wk-head-gutter"></div>
+            <div class="wk-head">Mon 9</div>
+            <div class="wk-head today">Tue 10</div>
+            <div class="wk-head">Wed 11</div>
+            <div class="wk-head">Thu 12</div>
+            <div class="wk-head">Fri 13</div>
+            <div class="wk-head">Sat 14</div>
+            <div class="wk-head">Sun 15</div>
+          </div>
+
+          <!-- Time rows: 8am–9pm -->
+
+          <!-- 8:00am -->
+          <div class="week-grid">
+            <div class="wk-time">8am</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 9:00am -->
+          <div class="week-grid">
+            <div class="wk-time">9am</div>
+            <div class="wk-cell"></div>
+            <!-- Today: Diego private -->
+            <div class="wk-cell today-col" style="position:relative;">
+              <div class="wk-event selected" style="top:2px;height:50px;">
+                <div style="font-weight:600;font-size:11px;">Diego Santos</div>
+                <div style="font-size:10px;opacity:.75;">9:00a · Private</div>
+              </div>
+            </div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 10:00am -->
+          <div class="week-grid">
+            <div class="wk-time">10am</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <!-- Sat: Open Mat -->
+            <div class="wk-cell" style="position:relative;">
+              <div class="wk-event group" style="top:2px;height:52px;">
+                <div style="font-weight:600;font-size:11px;">Open Mat</div>
+                <div style="font-size:10px;color:var(--txt3);">10:00a · 11 / 16</div>
+              </div>
+            </div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 11:00am -->
+          <div class="week-grid">
+            <div class="wk-time">11am</div>
+            <div class="wk-cell"></div>
+            <!-- Today: Sarah private -->
+            <div class="wk-cell today-col" style="position:relative;">
+              <div class="wk-event private" style="top:2px;height:50px;">
+                <div style="font-weight:600;font-size:11px;">Sarah Chen</div>
+                <div style="font-size:10px;color:var(--txt3);">11:00a · Private</div>
+              </div>
+            </div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 12:00pm -->
+          <div class="week-grid">
+            <div class="wk-time">12pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 1pm -->
+          <div class="week-grid">
+            <div class="wk-time">1pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 2pm -->
+          <div class="week-grid">
+            <div class="wk-time">2pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 3pm -->
+          <div class="week-grid">
+            <div class="wk-time">3pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 4pm -->
+          <div class="week-grid">
+            <div class="wk-time">4pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 5pm -->
+          <div class="week-grid">
+            <div class="wk-time">5pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 6pm — Fundamentals Mon, today, Wed + Sparring Thu -->
+          <div class="week-grid">
+            <div class="wk-time">6pm</div>
+            <!-- Mon: Fundamentals -->
+            <div class="wk-cell" style="position:relative;">
+              <div class="wk-event group" style="top:2px;height:52px;">
+                <div style="font-weight:600;font-size:11px;">Fundamentals</div>
+                <div style="font-size:10px;color:var(--txt3);">6:00p · 8 / 12</div>
+              </div>
+            </div>
+            <!-- Today: Fundamentals (selected) -->
+            <div class="wk-cell today-col" style="position:relative;">
+              <div class="wk-event group" style="top:2px;height:52px;">
+                <div style="font-weight:600;font-size:11px;">Fundamentals</div>
+                <div style="font-size:10px;color:var(--txt3);">6:00p · 8 / 12</div>
+              </div>
+            </div>
+            <!-- Wed: Fundamentals -->
+            <div class="wk-cell" style="position:relative;">
+              <div class="wk-event group" style="top:2px;height:52px;">
+                <div style="font-weight:600;font-size:11px;">Fundamentals</div>
+                <div style="font-size:10px;color:var(--txt3);">6:00p · 8 / 12</div>
+              </div>
+            </div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 7pm — Sparring Tue, Thu -->
+          <div class="week-grid">
+            <div class="wk-time">7pm</div>
+            <div class="wk-cell"></div>
+            <!-- Tue: Sparring -->
+            <div class="wk-cell today-col" style="position:relative;">
+              <div class="wk-event private" style="top:2px;height:52px;">
+                <div style="font-weight:600;font-size:11px;">Sparring</div>
+                <div style="font-size:10px;color:var(--txt3);">7:00p · 6 / 10</div>
+              </div>
+            </div>
+            <div class="wk-cell"></div>
+            <!-- Thu: Sparring -->
+            <div class="wk-cell" style="position:relative;">
+              <div class="wk-event private" style="top:2px;height:52px;">
+                <div style="font-weight:600;font-size:11px;">Sparring</div>
+                <div style="font-size:10px;color:var(--txt3);">7:00p · 6 / 10</div>
+              </div>
+            </div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 8pm -->
+          <div class="week-grid">
+            <div class="wk-time">8pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+          <!-- 9pm -->
+          <div class="week-grid" style="border-bottom:1px solid var(--line);">
+            <div class="wk-time">9pm</div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell today-col"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+            <div class="wk-cell"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SIDE PANEL: Class roster ─────────────────── -->
+      <div class="side-panel">
+        <div style="padding:14px;border-bottom:1px solid var(--line);">
+          <div class="eyebrow mb-2">Classes this week</div>
+          <div style="font-size:13.5px;font-weight:700;letter-spacing:-0.02em;">4 classes · 6 sessions</div>
+        </div>
+
+        <!-- class list -->
+        <div style="flex:1;overflow-y:auto;padding:8px;">
+
+          <!-- Fundamentals -->
+          <div style="padding:12px;border-radius:6px;border:1px solid var(--accent);background:var(--p2);margin-bottom:6px;">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <div style="font-size:13px;font-weight:600;">Fundamentals</div>
+                <div style="font-size:11px;color:var(--txt3);">Mon / Wed · 6:00pm</div>
+              </div>
+              <span class="chip chip-ok" style="font-size:10px;">Open</span>
+            </div>
+            <div class="flex items-center gap-3" style="font-size:12px;color:var(--txt2);">
+              <span class="tnum">8 / 12 cap</span>
+              <span style="color:var(--txt4);">·</span>
+              <span>$25 drop-in</span>
+            </div>
+            <div class="prog-track mt-2.5">
+              <div class="prog-fill" style="width:66.7%;background:var(--ok);"></div>
+            </div>
+            <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px;">
+              <div class="eyebrow mb-2" style="font-size:9.5px;">Booked students</div>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <div class="flex items-center gap-2">
+                  <div class="avatar avatar-sm">DS</div>
+                  <span style="font-size:12px;">Diego Santos</span>
+                  <span class="chip chip-ok ml-auto" style="font-size:10px;">Pass</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="avatar avatar-sm">SC</div>
+                  <span style="font-size:12px;">Sarah Chen</span>
+                  <span class="chip chip-ok ml-auto" style="font-size:10px;">Pass</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="avatar avatar-sm">AK</div>
+                  <span style="font-size:12px;">Aisha Khan</span>
+                  <span class="chip ml-auto" style="font-size:10px;">Drop-in</span>
+                </div>
+                <div style="font-size:11px;color:var(--txt4);padding-top:2px;">+5 more booked</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sparring -->
+          <div style="padding:12px;border-radius:6px;border:1px solid var(--line);background:var(--p1);margin-bottom:6px;">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <div style="font-size:13px;font-weight:600;">Sparring</div>
+                <div style="font-size:11px;color:var(--txt3);">Tue / Thu · 7:00pm</div>
+              </div>
+              <span class="chip" style="font-size:10px;">Members</span>
+            </div>
+            <div class="flex items-center gap-3" style="font-size:12px;color:var(--txt2);">
+              <span class="tnum">6 / 10 cap</span>
+              <span style="color:var(--txt4);">·</span>
+              <span>Members only</span>
+            </div>
+            <div class="prog-track mt-2.5">
+              <div class="prog-fill" style="width:60%;background:var(--warn);"></div>
+            </div>
+          </div>
+
+          <!-- Open Mat -->
+          <div style="padding:12px;border-radius:6px;border:1px solid var(--line);background:var(--p1);margin-bottom:6px;">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <div style="font-size:13px;font-weight:600;">Open Mat</div>
+                <div style="font-size:11px;color:var(--txt3);">Sat · 10:00am</div>
+              </div>
+              <span class="chip chip-ok" style="font-size:10px;">Open</span>
+            </div>
+            <div class="flex items-center gap-3" style="font-size:12px;color:var(--txt2);">
+              <span class="tnum">11 / 16 cap</span>
+              <span style="color:var(--txt4);">·</span>
+              <span>Free for members</span>
+            </div>
+            <div class="prog-track mt-2.5">
+              <div class="prog-fill" style="width:68.75%;background:var(--ok);"></div>
+            </div>
+          </div>
+
+          <!-- Private 1:1 -->
+          <div style="padding:12px;border-radius:6px;border:1px solid var(--line);background:var(--p1);margin-bottom:6px;">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <div style="font-size:13px;font-weight:600;">Private 1:1</div>
+                <div style="font-size:11px;color:var(--txt3);">By appointment</div>
+              </div>
+              <span class="chip" style="font-size:10px;">On request</span>
+            </div>
+            <div style="font-size:12px;color:var(--txt2);">$80 per session</div>
+          </div>
+
+        </div>
+
+        <!-- legend -->
+        <div style="padding:10px 14px;border-top:1px solid var(--line);">
+          <div class="flex items-center gap-4" style="font-size:11px;color:var(--txt3);">
+            <span class="flex items-center gap-1.5"><span style="width:8px;height:8px;background:var(--ok);border-radius:999px;display:inline-block;"></span> Group</span>
+            <span class="flex items-center gap-1.5"><span style="width:8px;height:8px;background:var(--txt4);border-radius:999px;display:inline-block;"></span> Private</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

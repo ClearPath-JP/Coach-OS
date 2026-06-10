@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — 6 Design Directions</title>
+<style>
+  :root { --bg:#0c0c0e; --panel:#141417; --line:rgba(255,255,255,.09); --txt:rgba(255,255,255,.92); --txt2:rgba(255,255,255,.5); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font-family:'Inter',system-ui,-apple-system,sans-serif; -webkit-font-smoothing:antialiased; }
+  header.top { padding:48px 32px 24px; max-width:1500px; margin:0 auto; }
+  header.top h1 { font-size:34px; margin:0 0 6px; letter-spacing:-.02em; }
+  header.top p { color:var(--txt2); margin:0; max-width:680px; line-height:1.55; }
+  .nav { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+  .nav a { font-size:13px; color:var(--txt2); text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:6px 13px; }
+  .nav a:hover { color:var(--txt); background:rgba(255,255,255,.05); }
+  section.dir { max-width:1500px; margin:0 auto; padding:40px 32px; border-top:1px solid var(--line); }
+  .dirhead { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:6px; }
+  .dirnum { font-size:13px; color:var(--txt2); font-variant-numeric:tabular-nums; }
+  .dirhead h2 { font-size:26px; margin:0; letter-spacing:-.02em; }
+  .mood { color:var(--txt2); margin:2px 0 14px; max-width:760px; line-height:1.5; }
+  .sw { display:inline-flex; gap:5px; vertical-align:middle; margin-left:6px; }
+  .sw i { width:15px; height:15px; border-radius:4px; display:inline-block; border:1px solid rgba(255,255,255,.15); }
+  .screens { display:flex; flex-direction:column; gap:26px; margin-top:8px; }
+  .screen .lab { font-size:12px; color:var(--txt2); text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px; }
+  .pair { display:grid; grid-template-columns: 1fr 230px; gap:14px; align-items:start; }
+  @media (max-width:780px){ .pair{ grid-template-columns:1fr; } }
+  .frame { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--panel); display:block; text-decoration:none; color:inherit; }
+  .frame img { width:100%; display:block; }
+  .cap { font-size:11px; color:var(--txt2); padding:6px 10px; border-top:1px solid var(--line); }
+  footer { max-width:1500px; margin:0 auto; padding:40px 32px 80px; color:var(--txt2); font-size:13px; border-top:1px solid var(--line); }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Korva — 6 design directions</h1>
+  <p>Same product, same content, six art directions. Each shows the landing page, the coach side, and the client portal in desktop + mobile. Pick whatever resonates — that's what we build, deploy, and ship to your first coach. Click any frame to open it full-size.</p>
+  <div class="nav" id="nav"></div>
+</header>
+<div id="root"></div>
+<footer>Built overnight · screenshots are live HTML renders (Tailwind + custom CSS) · see <code>MORNING-REPORT.md</code> for my take on each + the build path.</footer>
+
+<script>
+// All values below are hardcoded constants (no user/network input). Built with
+// DOM methods + textContent (no innerHTML interpolation) for a clean, safe page.
+const DIRECTIONS = [
+  {slug:'01-dojo-nightfall', name:'Dojo Nightfall', mood:'Your current brand, elevated — warm near-black, polished brass, dojo craft, glossy material.', sw:['#141210','#c8882e','#1c1a17']},
+  {slug:'02-aurora-dark', name:'Aurora Dark', mood:'Animated premium dark SaaS — perspective grid, radial glow, gradient text, spinning-ring CTAs.', sw:['#0a0a0f','#e0a44a','#6d5cff','#ff7eb0']},
+  {slug:'03-daylight-studio', name:'Daylight Studio', mood:'Soft light mode — warm cream + lavender, rounded cards, calm and approachable.', sw:['#f6f2ec','#6d5cff','#ece9ff','#18181b']},
+  {slug:'04-mono-tatami', name:'Mono Tatami', mood:'Near-monochrome Linear/Vercel precision — hairlines, density, one near-white accent.', sw:['#0a0a0a','#ededed','#34d399']},
+  {slug:'05-dojo-arcade', name:'Dojo Arcade', mood:'Bold gamified neo-brutalist — thick borders, hard shadows, belt colors, streaks & medals.', sw:['#faf7f0','#ffd23f','#2ec4b6','#ff5d5d']},
+  {slug:'06-glass-sanctuary', name:'Glass Sanctuary', mood:'Ethereal glassmorphism — frosted panels over an aurora gradient, elegant serif, lots of air.', sw:['#181233','#a78bfa','#ff7eb0','#36d0c4']},
+];
+const SCREENS = [
+  {file:'landing', label:'Landing page'},
+  {file:'coach-dashboard', label:'Coach · Dashboard'},
+  {file:'coach-schedule', label:'Coach · Schedule'},
+  {file:'client-portal', label:'Client · Portal'},
+  {file:'client-classes', label:'Client · Booking'},
+];
+const VIEWPORTS = [['desktop','Desktop'],['mobile','Mobile · 390px']];
+
+const nav = document.getElementById('nav');
+const root = document.getElementById('root');
+if (nav && root) {
+  DIRECTIONS.forEach((d, i) => {
+    const link = document.createElement('a');
+    link.href = '#' + d.slug;
+    link.textContent = (i + 1) + ' · ' + d.name;
+    nav.appendChild(link);
+
+    const sec = document.createElement('section');
+    sec.className = 'dir';
+    sec.id = d.slug;
+
+    const head = document.createElement('div');
+    head.className = 'dirhead';
+    const num = document.createElement('span');
+    num.className = 'dirnum';
+    num.textContent = '0' + (i + 1);
+    const h2 = document.createElement('h2');
+    h2.textContent = d.name;
+    const sw = document.createElement('span');
+    sw.className = 'sw';
+    d.sw.forEach((c) => { const chip = document.createElement('i'); chip.style.background = c; sw.appendChild(chip); });
+    head.append(num, h2, sw);
+    sec.appendChild(head);
+
+    const mood = document.createElement('div');
+    mood.className = 'mood';
+    mood.textContent = d.mood;
+    sec.appendChild(mood);
+
+    const screens = document.createElement('div');
+    screens.className = 'screens';
+    SCREENS.forEach((s) => {
+      const screen = document.createElement('div');
+      screen.className = 'screen';
+      const lab = document.createElement('div');
+      lab.className = 'lab';
+      lab.textContent = s.label;
+      const pair = document.createElement('div');
+      pair.className = 'pair';
+      VIEWPORTS.forEach(([vp, capText]) => {
+        const path = d.slug + '/shots/' + s.file + '-' + vp + '.png';
+        const frame = document.createElement('a');
+        frame.className = 'frame';
+        frame.target = '_blank';
+        frame.href = path;
+        const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.src = path;
+        img.alt = d.name + ' — ' + s.label + ' (' + vp + ')';
+        const cap = document.createElement('div');
+        cap.className = 'cap';
+        cap.textContent = capText;
+        frame.append(img, cap);
+        pair.appendChild(frame);
+      });
+      screen.append(lab, pair);
+      screens.appendChild(screen);
+    });
+    sec.appendChild(screens);
+    root.appendChild(sec);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vale Method — Client Portal · Korva</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  body { overflow: hidden; }
+  .main-scroll { overflow-y: auto; height: calc(100vh - 48px); }
+  /* Client sidebar is slightly narrower + lighter accent */
+  .client-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: var(--p1);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .csb-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: var(--txt2);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+  .csb-item:hover { background: var(--p4); color: var(--txt); }
+  .csb-item.active { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+  .csb-item.active svg { stroke: var(--accent-text); }
+
+  .next-class-card {
+    background: var(--p2);
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .belt-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: rgba(59,130,246,.12);
+    border: 1px solid rgba(59,130,246,.22);
+    color: #60a5fa;
+  }
+</style>
+</head>
+<body>
+<div class="app-shell" style="height:100vh;">
+
+  <!-- ── CLIENT SIDEBAR ────────────────────────────────────── -->
+  <aside class="client-sidebar">
+    <div class="sb-logo">
+      <div class="flex items-center gap-2 mb-1">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.5)"/><rect x="8" y="1.5" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="8" y="8" width="4.5" height="4.5" rx="1" fill="rgba(255,255,255,.08)"/></svg>
+        <span style="font-family:'Inter Tight',sans-serif;font-weight:700;letter-spacing:-0.03em;font-size:14px;">Vale Method</span>
+      </div>
+      <div style="font-size:10px;color:var(--txt4);margin-top:2px;">powered by <span style="font-weight:700;color:var(--accent);">Korva</span></div>
+    </div>
+
+    <div style="padding:8px;">
+      <a href="client-portal.html" class="csb-item active">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+        Home
+      </a>
+      <a href="client-classes.html" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5.5h11" stroke="currentColor" stroke-width="1.2"/><path d="M5 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M9 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Book a class
+      </a>
+      <a href="#" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10a1 1 0 011 1v5a1 1 0 01-1 1H5l-3 2V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Message coach
+      </a>
+      <a href="#" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="currentColor"/></svg>
+        My videos
+      </a>
+      <a href="#" class="csb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3" width="11" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6h11" stroke="currentColor" stroke-width="1.2"/></svg>
+        Invoices
+      </a>
+    </div>
+
+    <div style="padding:8px;border-top:1px solid var(--line);margin-top:auto;">
+      <div class="flex items-center gap-3">
+        <div class="avatar">DS</div>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:600;">Diego Santos</div>
+          <div style="font-size:11px;color:var(--txt4);">Member</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────────────────── -->
+  <div class="main">
+    <div class="topbar">
+      <span style="font-size:13px;color:var(--txt2);">Vale Method</span>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="color:var(--txt4);"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span style="font-size:13px;font-weight:600;">Home</span>
+      <div class="flex items-center gap-3 ml-auto">
+        <span style="font-size:12px;color:var(--txt3);">Tue, Jun 10</span>
+        <div class="avatar">DS</div>
+      </div>
+    </div>
+
+    <div class="main-scroll">
+      <div class="page-pad" style="max-width:760px;">
+
+        <!-- Greeting -->
+        <div class="mb-6">
+          <div class="eyebrow mb-1.5">Vale Method · BJJ &amp; Striking</div>
+          <h1 class="display" style="font-size:24px;font-weight:800;">Welcome back, Diego</h1>
+        </div>
+
+        <!-- Two column: main + aside -->
+        <div class="grid md:grid-cols-3 gap-4">
+
+          <!-- Left column (2/3) -->
+          <div style="grid-column:span 2;display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Next class -->
+            <div class="next-class-card">
+              <div class="eyebrow mb-2.5">Next class</div>
+              <div class="flex items-start justify-between">
+                <div>
+                  <div style="font-size:17px;font-weight:700;letter-spacing:-0.02em;">Fundamentals</div>
+                  <div style="font-size:13px;color:var(--txt2);margin-top:3px;">
+                    <span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Today</span>
+                    &ensp;6:00 pm · 8 booked
+                  </div>
+                </div>
+                <a href="client-classes.html" class="btn btn-primary btn-sm" style="margin-top:2px;">Manage booking</a>
+              </div>
+              <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:flex;gap:16px;font-size:12px;color:var(--txt3);">
+                <span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M6 1C3.24 1 1 3.24 1 6s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5z" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  1 hour class
+                </span>
+                <span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M10 5c0 3.5-4 6.5-4 6.5S2 8.5 2 5a4 4 0 018 0z" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Vale Method Dojo · Marietta GA
+                </span>
+                <span>Covered by your pass</span>
+              </div>
+            </div>
+
+            <!-- Upcoming sessions -->
+            <div class="panel" style="overflow:hidden;">
+              <div style="padding:12px 14px;border-bottom:1px solid var(--line);">
+                <span style="font-size:13px;font-weight:600;">Upcoming</span>
+              </div>
+              <div style="padding:4px 0;">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line3);">
+                  <div style="width:52px;text-align:center;flex-shrink:0;">
+                    <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--txt4);font-weight:600;">Tue</div>
+                    <div class="tnum" style="font-size:16px;font-weight:700;line-height:1.1;">10</div>
+                  </div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13.5px;font-weight:600;">Fundamentals</div>
+                    <div style="font-size:12px;color:var(--txt3);">6:00 pm · 1 hr · Pass covered</div>
+                  </div>
+                  <span class="chip chip-ok" style="font-size:11px;">Booked</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;">
+                  <div style="width:52px;text-align:center;flex-shrink:0;">
+                    <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--txt4);font-weight:600;">Sat</div>
+                    <div class="tnum" style="font-size:16px;font-weight:700;line-height:1.1;">14</div>
+                  </div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13.5px;font-weight:600;">Open Mat</div>
+                    <div style="font-size:12px;color:var(--txt3);">10:00 am · Free for members</div>
+                  </div>
+                  <span class="chip chip-ok" style="font-size:11px;">Booked</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right column (1/3) -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <!-- Passes -->
+            <div class="panel p-4">
+              <div class="eyebrow mb-3">My passes</div>
+              <div class="flex items-baseline gap-1 mb-2">
+                <span class="stat-num tnum" style="font-size:32px;">3</span>
+                <span style="font-size:13px;color:var(--txt3);">credits left</span>
+              </div>
+              <div class="prog-track mb-3">
+                <div class="prog-fill" style="width:60%;"></div>
+              </div>
+              <div style="font-size:12px;color:var(--txt3);">3 of 5 remaining</div>
+              <a href="client-classes.html" class="btn btn-sm" style="width:100%;justify-content:center;margin-top:12px;">Buy more passes</a>
+            </div>
+
+            <!-- Progress -->
+            <div class="panel p-4">
+              <div class="eyebrow mb-3">My progress</div>
+              <div class="belt-badge mb-3">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.3"/></svg>
+                Blue belt
+              </div>
+              <div style="font-size:12px;color:var(--txt3);margin-bottom:6px;">60% to next stripe</div>
+              <div class="prog-track">
+                <div class="prog-fill" style="width:60%;background:#60a5fa;"></div>
+              </div>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--txt3);">
+                <div class="flex justify-between mb-1">
+                  <span>Classes attended</span>
+                  <span class="tnum" style="color:var(--txt);">47</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Member since</span>
+                  <span class="tnum" style="color:var(--txt);">Jan 2025</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick links -->
+            <div class="panel p-3">
+              <div class="eyebrow mb-2" style="padding:0 2px;">Quick links</div>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <a href="client-classes.html" class="csb-item" style="padding:8px;">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5.5h11" stroke="currentColor" stroke-width="1.2"/><path d="M5 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M9 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  Book a class
+                </a>
+                <a href="#" class="csb-item" style="padding:8px;">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10a1 1 0 011 1v5a1 1 0 01-1 1H5l-3 2V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+                  Message coach
+                </a>
+                <a href="#" class="csb-item" style="padding:8px;">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="currentColor"/></svg>
+                  My videos
+                </a>
+                <a href="#" class="csb-item" style="padding:8px;">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="3" width="11" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6h11" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Invoices
+                </a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

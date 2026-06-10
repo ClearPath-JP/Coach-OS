@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korva — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  body { overflow: hidden; }
+  .main-scroll { overflow-y: auto; height: calc(100vh - 48px); }
+</style>
+</head>
+<body>
+<div class="app-shell" style="height:100vh;">
+
+  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="flex items-center gap-2 mb-3">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.5)"/><rect x="8.5" y="1.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="1.5" y="8.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.2)"/><rect x="8.5" y="8.5" width="5" height="5" rx="1" fill="rgba(255,255,255,.08)"/></svg>
+        <span class="wm" style="font-size:15px;">Kor<span class="va">va</span></span>
+      </div>
+      <div style="font-size:11px;color:var(--txt4);font-weight:500;">Vale Method</div>
+    </div>
+
+    <!-- ⌘K -->
+    <div style="padding:10px 8px;">
+      <div class="cmd-bar" style="min-width:unset;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M8.5 8.5L11 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Search…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Workspace</div>
+      <a href="coach-dashboard.html" class="sb-item active">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><rect x="1.5" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="1.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="1.5" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/><rect x="8" y="8" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
+        Dashboard
+      </a>
+      <a href="coach-schedule.html" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 5.5h11" stroke="currentColor" stroke-width="1.2"/><path d="M5 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M9 1.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Schedule
+      </a>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 12.5c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Clients
+        <span class="chip ml-auto" style="font-size:10px;padding:1px 6px;">24</span>
+      </a>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 4.5l4 2.5-4 2.5V4.5z" fill="currentColor"/></svg>
+        Classes
+      </a>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><path d="M2 3h10a1 1 0 011 1v5a1 1 0 01-1 1H5l-3 2V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Messages
+        <span class="chip chip-warn ml-auto" style="font-size:10px;padding:1px 6px;">3</span>
+      </a>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Billing</div>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><rect x="1.5" y="3" width="11" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6h11" stroke="currentColor" stroke-width="1.2"/></svg>
+        Payments
+      </a>
+    </div>
+
+    <div class="sb-section" style="margin-top:auto;">
+      <div class="sb-section-label">Account</div>
+      <a href="#" class="sb-item">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ico"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><circle cx="7" cy="7" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
+        Settings
+      </a>
+    </div>
+
+    <!-- coach account -->
+    <div style="padding:10px 8px;border-top:1px solid var(--line);margin-top:auto;">
+      <div class="flex items-center gap-3">
+        <div class="avatar">MV</div>
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Marcus Vale</div>
+          <div style="font-size:11px;color:var(--txt4);">Pro plan</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────────────────────────── -->
+  <div class="main">
+    <!-- Top bar -->
+    <div class="topbar">
+      <div class="cmd-bar flex-1" style="max-width:320px;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M8.5 8.5L11 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Search anything…</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="flex items-center gap-3 ml-auto">
+        <button class="btn btn-ghost btn-sm" style="gap:5px;">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v1M6.5 11v1M1 6.5H2M11 6.5h1M2.5 2.5l.7.7M9.8 9.8l.7.7M2.5 10.5l.7-.7M9.8 3.2l.7-.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="6.5" r="2.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          Tue 10 Jun
+        </button>
+        <div class="avatar">MV</div>
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="main-scroll">
+      <div class="page-pad" style="max-width:900px;">
+
+        <!-- greeting -->
+        <div class="flex items-start justify-between mb-7">
+          <div>
+            <div class="eyebrow mb-1.5">Tuesday · Vale Method</div>
+            <h1 class="display" style="font-size:26px;font-weight:800;">Good morning, Marcus</h1>
+          </div>
+          <button class="btn btn-primary btn-sm">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            New session
+          </button>
+        </div>
+
+        <!-- STATS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div class="panel p-4">
+            <div class="eyebrow mb-2">Active students</div>
+            <div class="stat-num tnum">24</div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:4px;">+2 this month</div>
+          </div>
+          <div class="panel p-4">
+            <div class="eyebrow mb-2">This week</div>
+            <div class="stat-num tnum">$1,840</div>
+            <div style="font-size:11px;color:var(--ok);margin-top:4px;">↑ 12% vs last week</div>
+          </div>
+          <div class="panel p-4">
+            <div class="eyebrow mb-2">Unread messages</div>
+            <div class="stat-num tnum">3</div>
+            <div style="font-size:11px;color:var(--warn);margin-top:4px;">Needs attention</div>
+          </div>
+          <div class="panel p-4">
+            <div class="eyebrow mb-2">Classes this week</div>
+            <div class="stat-num tnum">6</div>
+            <div style="font-size:11px;color:var(--txt3);margin-top:4px;">2 today</div>
+          </div>
+        </div>
+
+        <!-- Two columns: today + activity -->
+        <div class="grid md:grid-cols-2 gap-4">
+
+          <!-- Today's schedule -->
+          <div class="panel" style="overflow:hidden;">
+            <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid var(--line);">
+              <span style="font-size:13px;font-weight:600;">Today's schedule</span>
+              <span class="chip" style="font-size:11px;">3 sessions</span>
+            </div>
+            <div style="padding:4px 0;">
+              <!-- session row -->
+              <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line3);">
+                <div style="width:44px;text-align:right;font-size:12px;color:var(--txt3);font-variant-numeric:tabular-nums;flex-shrink:0;">9:00a</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:500;">Diego Santos</div>
+                  <div style="font-size:11px;color:var(--txt3);">Private · 1:1</div>
+                </div>
+                <div class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Confirmed</div>
+              </div>
+              <!-- session row -->
+              <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line3);">
+                <div style="width:44px;text-align:right;font-size:12px;color:var(--txt3);font-variant-numeric:tabular-nums;flex-shrink:0;">11:00a</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:500;">Sarah Chen</div>
+                  <div style="font-size:11px;color:var(--txt3);">Private · 1:1</div>
+                </div>
+                <div class="chip chip-warn" style="font-size:11px;"><span class="dot dot-warn"></span>Pending</div>
+              </div>
+              <!-- session row -->
+              <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;">
+                <div style="width:44px;text-align:right;font-size:12px;color:var(--txt3);font-variant-numeric:tabular-nums;flex-shrink:0;">6:00p</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:500;">Fundamentals</div>
+                  <div style="font-size:11px;color:var(--txt3);">Group · 8 booked of 12</div>
+                </div>
+                <div class="chip" style="font-size:11px;">8 / 12</div>
+              </div>
+            </div>
+            <div style="padding:10px 14px;border-top:1px solid var(--line);">
+              <a href="coach-schedule.html" style="font-size:12px;color:var(--txt3);text-decoration:none;display:flex;align-items:center;gap:4px;">
+                View full schedule
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3V2z" fill="currentColor"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Recent activity + quick actions -->
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div class="panel" style="overflow:hidden;flex:1;">
+              <div style="padding:12px 14px;border-bottom:1px solid var(--line);">
+                <span style="font-size:13px;font-weight:600;">Recent activity</span>
+              </div>
+              <div style="padding:4px 14px;">
+                <div class="act-row">
+                  <div class="act-dot" style="background:var(--ok);"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;">Invoice paid — $240 from Diego</div>
+                    <div style="font-size:11px;color:var(--txt4);">2 hours ago</div>
+                  </div>
+                  <span class="chip chip-ok" style="font-size:10px;">Paid</span>
+                </div>
+                <div class="act-row">
+                  <div class="act-dot" style="background:var(--accent);"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;">New student joined — Aisha Khan</div>
+                    <div style="font-size:11px;color:var(--txt4);">5 hours ago</div>
+                  </div>
+                  <span class="chip" style="font-size:10px;">New</span>
+                </div>
+                <div class="act-row">
+                  <div class="act-dot" style="background:var(--txt4);"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;">Sarah booked Sparring (Thu)</div>
+                    <div style="font-size:11px;color:var(--txt4);">Yesterday</div>
+                  </div>
+                  <span class="chip" style="font-size:10px;">Booked</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick actions -->
+            <div class="panel p-3 mt-0">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--txt4);margin-bottom:8px;padding:0 2px;">Quick actions</div>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="qlink">
+                  <svg class="qlink-ico" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                  <span>New invoice</span>
+                </button>
+                <button class="qlink">
+                  <svg class="qlink-ico" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12a1 1 0 011 1v6a1 1 0 01-1 1H5l-3 2V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+                  <span>Message student</span>
+                </button>
+                <button class="qlink">
+                  <svg class="qlink-ico" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1.5 6.5h13" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 1.5v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10.5 1.5v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  <span>Add class</span>
+                </button>
+                <button class="qlink">
+                  <svg class="qlink-ico" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M3 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  <span>Add student</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active clients snapshot table -->
+        <div class="section-gap">
+          <div class="panel" style="overflow:hidden;">
+            <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid var(--line);">
+              <span style="font-size:13px;font-weight:600;">Active clients</span>
+              <a href="#" style="font-size:12px;color:var(--txt3);text-decoration:none;">View all 24 →</a>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Belt</th>
+                  <th class="tnum">Next session</th>
+                  <th class="tnum">Balance</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="avatar avatar-sm">DS</div>
+                      Diego Santos
+                    </div>
+                  </td>
+                  <td style="color:var(--txt2);">Blue belt</td>
+                  <td class="tnum" style="color:var(--txt2);">Today 9:00a</td>
+                  <td class="tnum" style="color:var(--ok);">$240</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Active</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="avatar avatar-sm">SC</div>
+                      Sarah Chen
+                    </div>
+                  </td>
+                  <td style="color:var(--txt2);">White belt</td>
+                  <td class="tnum" style="color:var(--txt2);">Today 11:00a</td>
+                  <td class="tnum" style="color:var(--txt2);">—</td>
+                  <td><span class="chip chip-warn" style="font-size:11px;"><span class="dot dot-warn"></span>Pending</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="avatar avatar-sm">TB</div>
+                      Tom Becker
+                    </div>
+                  </td>
+                  <td style="color:var(--txt2);">Purple belt</td>
+                  <td class="tnum" style="color:var(--txt2);">Thu 7:00p</td>
+                  <td class="tnum" style="color:var(--txt2);">$80</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Active</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="avatar avatar-sm">AK</div>
+                      Aisha Khan
+                    </div>
+                  </td>
+                  <td style="color:var(--txt2);">White belt</td>
+                  <td class="tnum" style="color:var(--txt2);">Mon 6:00p</td>
+                  <td class="tnum" style="color:var(--txt2);">—</td>
+                  <td><span class="chip" style="font-size:11px;"><span class="dot dot-ok" style="background:var(--ok);"></span>New</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="avatar avatar-sm">ML</div>
+                      Marcus Lee
+                    </div>
+                  </td>
+                  <td style="color:var(--txt2);">Blue belt</td>
+                  <td class="tnum" style="color:var(--txt2);">Sat 10:00a</td>
+                  <td class="tnum" style="color:var(--ok);">$160</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Active</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <div class="avatar avatar-sm">PP</div>
+                      Priya Patel
+                    </div>
+                  </td>
+                  <td style="color:var(--txt2);">White belt</td>
+                  <td class="tnum" style="color:var(--txt2);">Wed 6:00p</td>
+                  <td class="tnum" style="color:var(--txt2);">—</td>
+                  <td><span class="chip chip-ok" style="font-size:11px;"><span class="dot dot-ok"></span>Active</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /main-scroll -->
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+</body>
+</html>
