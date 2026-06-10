@@ -6,29 +6,27 @@ import { ArrowRight } from 'lucide-react'
 
 export function CTASection() {
   return (
-    <section className="relative py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-6">
+    <section className="relative border-b-[3px] border-[var(--ink)] bg-[var(--bg-app)] py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-3xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/8 to-[var(--accent)]/3 p-12 md:p-20 text-center overflow-hidden"
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="relative overflow-hidden rounded-[24px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] p-12 md:p-16 text-center shadow-[8px_8px_0_var(--ink)]"
         >
-          {/* Background glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[var(--accent)] opacity-[0.06] blur-[100px]" />
-
           <div className="relative z-10">
-            <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-5xl font-bold text-[var(--text-primary)] leading-tight">
-              The mat is ready.
+            <span className="arcade-badge arcade-badge-dark">🥋 The mat is ready</span>
+            <h2 className="mt-5 font-[family-name:var(--font-display)] text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-[-0.04em] leading-[1.03] text-[var(--ink)]">
+              Open your dojo today.
             </h2>
-            <p className="mt-4 text-[var(--text-secondary)] text-lg max-w-xl mx-auto">
-              Coaches: open your dojo. Students: find yours.
+            <p className="mt-4 text-base md:text-lg font-medium text-[var(--ink)]/75 max-w-xl mx-auto">
+              Coaches: open your dojo. Students: find yours. Set up in an afternoon.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[var(--accent)] text-[var(--text-on-accent)] font-semibold hover:bg-[var(--accent-hover)] transition-all shadow-lg shadow-[var(--accent)]/20"
+                className="inline-flex items-center gap-2 font-[family-name:var(--font-display)] font-bold text-base text-[#faf7f0] bg-[var(--ink)] border-[3px] border-[var(--ink)] rounded-[14px] px-8 py-4 shadow-[5px_5px_0_#b8910f] hover:-translate-x-px hover:-translate-y-px hover:shadow-[7px_7px_0_#b8910f] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
               >
                 Open Your Dojo
                 <ArrowRight size={18} />

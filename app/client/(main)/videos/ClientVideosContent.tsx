@@ -65,7 +65,7 @@ export function ClientVideosContent() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <header className="space-y-1">
-        <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">Videos</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">Videos</h1>
         <p className="text-sm text-[var(--text-tertiary)]">Technique videos and lessons your coach has shared.</p>
       </header>
 
@@ -89,32 +89,32 @@ export function ClientVideosContent() {
 
       {!loading && !error && groups.map(([category, items]) => (
         <section key={category} className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">{category}</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <h2 className="font-[family-name:var(--font-display)] text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-quaternary)]">{category}</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {items.map((v) => (
               <button
                 key={v.id}
                 type="button"
                 onClick={() => setPlaying(v)}
-                className="group overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] text-left transition-colors hover:border-[var(--cp-accent)]"
+                className="arcade-lift group overflow-hidden rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] text-left shadow-[5px_5px_0_var(--ink)]"
               >
                 <div
-                  className="relative aspect-video w-full bg-[var(--bg-muted)] bg-cover bg-center"
+                  className="relative aspect-video w-full border-b-[3px] border-[var(--ink)] bg-[var(--bg-muted)] bg-cover bg-center"
                   style={v.thumbnail_url ? { backgroundImage: `url(${v.thumbnail_url})` } : undefined}
                 >
                   <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="flex size-10 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-transform group-hover:scale-110">
+                    <span className="flex size-11 items-center justify-center rounded-full border-2 border-[var(--ink)] bg-[var(--belt-yellow)] text-[var(--ink)] shadow-[2px_2px_0_var(--ink)] transition-transform group-hover:scale-110">
                       <Play className="size-4 translate-x-px" fill="currentColor" />
                     </span>
                   </span>
                   {formatDuration(v.duration_seconds) && (
-                    <span className="absolute bottom-1.5 right-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-medium text-white tabular-nums">
+                    <span className="absolute bottom-1.5 right-1.5 rounded-md border-2 border-[var(--ink)] bg-[var(--ink)] px-1.5 py-0.5 text-[11px] font-bold text-white tabular-nums">
                       {formatDuration(v.duration_seconds)}
                     </span>
                   )}
                 </div>
                 <div className="px-3 py-2.5">
-                  <p className="line-clamp-2 text-[13px] font-medium text-[var(--text-primary)]">{v.title}</p>
+                  <p className="line-clamp-2 font-[family-name:var(--font-display)] text-[13px] font-bold text-[var(--text-primary)]">{v.title}</p>
                 </div>
               </button>
             ))}

@@ -151,7 +151,7 @@ function Avatar({ name, photoUrl, size = 24 }: { name: string; photoUrl: string 
   const safePhoto = photoUrl && isSafeUrl(photoUrl) ? photoUrl : null
   return (
     <span
-      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-[var(--bg-app)] text-[10px] font-semibold text-white"
+      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[var(--ink)] text-[10px] font-bold text-white"
       style={{
         width: size,
         height: size,
@@ -243,22 +243,23 @@ function ClassCard({ cls, nextDate, onEdit, onDelete, onOpenBookings }: ClassCar
   }
 
   const accentColor = safeHexColor(cls.color) ?? 'var(--accent)'
+  const pct = capacity > 0 ? Math.min(100, Math.round((booked / capacity) * 100)) : 0
 
   return (
-    <div className="flex overflow-hidden rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] transition-shadow hover:shadow-md">
+    <div className="arcade-tile arcade-lift flex overflow-hidden bg-[var(--bg-subtle)]">
       {/* Left color stripe */}
-      <div className="w-1 shrink-0 rounded-l-2xl" style={{ backgroundColor: accentColor }} />
+      <div className="w-1.5 shrink-0 border-r-2 border-[var(--ink)]" style={{ backgroundColor: accentColor }} />
 
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-4">
         {/* Top row: name + type tag + schedule badge */}
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-display text-base font-semibold text-[var(--text-primary)] truncate">
+              <h3 className="font-[family-name:var(--font-display)] text-base font-extrabold tracking-[-0.02em] text-[var(--text-primary)] truncate">
                 {cls.name ?? 'Untitled'}
               </h3>
               {cls.type && (
-                <span className="shrink-0 rounded-full border border-[var(--border-default)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-secondary)]">
+                <span className="arcade-badge">
                   {cls.type}
                 </span>
               )}
@@ -282,9 +283,7 @@ function ClassCard({ cls, nextDate, onEdit, onDelete, onOpenBookings }: ClassCar
 
               {/* Status if draft */}
               {cls.status === 'draft' && (
-                <span className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-[11px] font-medium text-[var(--text-quaternary)]">
-                  draft
-                </span>
+                <span className="arcade-badge">draft</span>
               )}
             </div>
           </div>
@@ -316,7 +315,7 @@ function ClassCard({ cls, nextDate, onEdit, onDelete, onOpenBookings }: ClassCar
           <span className="flex items-center gap-1 text-xs text-[var(--text-tertiary)]">
             <Users className="size-3.5 shrink-0" />
             <span>
-              <span className={booked > 0 ? 'font-semibold text-[var(--text-secondary)]' : ''}>
+              <span className={booked > 0 ? 'font-[family-name:var(--font-display)] font-bold text-[var(--text-secondary)]' : ''}>
                 {booked}
               </span>
               {' '}/ {capacity > 0 ? capacity : '—'} booked
@@ -324,8 +323,15 @@ function ClassCard({ cls, nextDate, onEdit, onDelete, onOpenBookings }: ClassCar
           </span>
         </div>
 
+        {/* Capacity progress */}
+        {capacity > 0 && (
+          <div className="arcade-track">
+            <div className="arcade-fill arcade-fill-yellow" style={{ width: `${pct}%` }} />
+          </div>
+        )}
+
         {/* Price row */}
-        <p className="text-xs text-[var(--text-tertiary)]">{priceLabel}</p>
+        <p className="font-[family-name:var(--font-display)] text-xs font-bold text-[var(--text-secondary)]">{priceLabel}</p>
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 pt-1 border-t border-[var(--border-subtle)]">
@@ -441,9 +447,9 @@ export function ClassScheduleView({ classes, onEdit, onDelete, onOpenBookings }:
     <div className="space-y-6">
       {sorted.map((bucket) => (
         <section key={bucket.dayIndex}>
-          <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">
+          <h2 className="mb-3 flex items-center gap-2 font-[family-name:var(--font-display)] text-xs font-extrabold uppercase tracking-widest text-[var(--text-secondary)]">
             {bucket.label}
-            <span className="rounded-full bg-[var(--bg-muted)] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-[var(--text-quaternary)]">
+            <span className="arcade-badge-dark inline-flex items-center rounded-full border-2 border-[var(--ink)] px-2 py-0.5 text-[10px] font-bold tabular-nums">
               {bucket.items.length}
             </span>
           </h2>

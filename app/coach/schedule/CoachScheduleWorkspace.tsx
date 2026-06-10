@@ -17,7 +17,6 @@ import {
 } from 'date-fns'
 import { CalendarPlus, ChevronLeft, ChevronRight, ClipboardList, Clock, DollarSign, Ticket, Users, Video } from 'lucide-react'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { cn } from '@/lib/utils'
 import { BookSessionModal } from './BookSessionModal'
@@ -620,13 +619,20 @@ export function CoachScheduleWorkspace() {
                                           <p className="mt-1 truncate text-[12px] italic text-[var(--text-quaternary)]">{s.notes}</p>
                                         )}
                                       </div>
-                                      <Badge
-                                        variant={
-                                          s.status === 'confirmed' ? 'active' : s.status === 'completed' ? 'inactive' : 'pending'
-                                        }
+                                      <span
+                                        className={cn(
+                                          'arcade-badge shrink-0',
+                                          s.status === 'confirmed'
+                                            ? 'arcade-badge-teal'
+                                            : s.status === 'completed'
+                                              ? 'arcade-badge-blue'
+                                              : s.status === 'cancelled'
+                                                ? 'arcade-badge-coral'
+                                                : 'arcade-badge-yellow'
+                                        )}
                                       >
-                                        {s.status}
-                                      </Badge>
+                                        {s.status.charAt(0).toUpperCase() + s.status.slice(1)}
+                                      </span>
                                     </button>
                                   </li>
                                 )

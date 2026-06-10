@@ -15,26 +15,22 @@ export function PublicNav() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-app)]/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl flex items-center justify-between px-6 h-16">
-        {/* Logo — KORVA wordmark */}
-        <Link href="/" className="flex items-center group" aria-label="Korva home">
-          <span
-            className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-[0.12em]"
-            style={{ lineHeight: 1 }}
-          >
-            <span className="text-[var(--text-primary)]">KOR</span>
-            <span className="font-bold" style={{ color: 'var(--accent)' }}>VA</span>
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b-[3px] border-[var(--ink)] bg-[var(--ink)]">
+      <div className="mx-auto max-w-7xl flex items-center justify-between px-5 h-16">
+        {/* KORVA wordmark */}
+        <Link href="/" className="flex items-center" aria-label="Korva home">
+          <span className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-[-0.03em] text-[#faf7f0]">
+            Kor<span style={{ color: 'var(--belt-yellow)' }}>va</span>
           </span>
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-7">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#faf7f0]/70 hover:text-[#faf7f0] transition-colors"
             >
               {link.label}
             </a>
@@ -45,22 +41,22 @@ export function PublicNav() {
         <div className="hidden md:flex items-center gap-3">
           <Link
             href="/login"
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors px-4 py-2"
+            className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#faf7f0]/80 hover:text-[#faf7f0] px-3 py-2 transition-colors"
           >
             Log in
           </Link>
           <Link
             href="/signup"
-            className="text-sm font-medium text-[var(--text-on-accent)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors px-5 py-2.5 rounded-xl"
+            className="font-[family-name:var(--font-display)] text-sm font-bold text-[var(--ink)] bg-[var(--belt-yellow)] border-2 border-[var(--ink)] rounded-[10px] px-4 py-2 shadow-[3px_3px_0_#b8910f] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#b8910f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
           >
-            Open Your Dojo
+            Open Your Dojo →
           </Link>
         </div>
 
         {/* Mobile hamburger */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden p-2 text-[var(--text-secondary)]"
+          className="md:hidden p-2 text-[#faf7f0]"
           aria-label="Toggle menu"
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -75,7 +71,7 @@ export function PublicNav() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden overflow-hidden border-t border-[var(--border-subtle)] bg-[var(--bg-app)]"
+            className="md:hidden overflow-hidden border-t-[3px] border-[#faf7f0]/15 bg-[var(--ink)]"
           >
             <div className="px-6 py-4 flex flex-col gap-3">
               {navLinks.map((link) => (
@@ -83,25 +79,25 @@ export function PublicNav() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] py-2"
+                  className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#faf7f0]/75 py-2"
                 >
                   {link.label}
                 </a>
               ))}
-              <hr className="border-[var(--border-subtle)]" />
+              <hr className="border-[#faf7f0]/15" />
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="text-sm text-[var(--text-secondary)] py-2"
+                className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#faf7f0]/80 py-2"
               >
                 Log in
               </Link>
               <Link
                 href="/signup"
                 onClick={() => setMobileOpen(false)}
-                className="text-sm font-medium text-center text-[var(--text-on-accent)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors px-5 py-2.5 rounded-xl"
+                className="font-[family-name:var(--font-display)] text-sm font-bold text-center text-[var(--ink)] bg-[var(--belt-yellow)] border-2 border-[var(--ink)] rounded-[10px] px-5 py-2.5"
               >
-                Open Your Dojo
+                Open Your Dojo →
               </Link>
             </div>
           </motion.div>

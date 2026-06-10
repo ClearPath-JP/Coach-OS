@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/Card'
 import { CountUpValue } from '@/components/ui/CountUpValue'
 import { PAYMENT_METHOD_LABELS, type PaymentMethodValue } from '@/lib/payment-methods'
 import { formatCents } from '@/lib/format-currency'
+import { cn } from '@/lib/utils'
 
 function ChartLoadingBlock({ minHeight }: { minHeight: number }) {
   return (
@@ -165,7 +166,7 @@ function AnalyticsTestimonialsSection() {
                     {format(parseISO(t.createdAt), 'MMM d, yyyy')}
                   </p>
                 </div>
-                <span className="text-[12px] font-medium text-[var(--color-muted)]">
+                <span className={cn('arcade-badge', !t.isApproved ? 'arcade-badge-yellow' : t.isPublic ? 'arcade-badge-teal' : 'arcade-badge-blue')}>
                   {!t.isApproved ? 'Pending approval' : t.isPublic ? 'Public' : 'Approved'}
                 </span>
               </div>
@@ -414,30 +415,30 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
             <>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Summary</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Card variant="raised" padding="lg">
-                  <p className="text-[13px] text-[var(--text-tertiary)]">Total revenue</p>
-                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                <div className="tile-teal arcade-lift p-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/65">Total revenue</p>
+                  <p className="mt-2 font-[family-name:var(--font-display)] text-[36px] font-extrabold tabular-nums tracking-[-0.03em] text-white">
                     <CountUpValue value={summary.totalRevenue} formatter={(n) => formatCents(Math.round(n))} />
                   </p>
-                </Card>
-                <Card variant="raised" padding="lg">
-                  <p className="text-[13px] text-[var(--text-tertiary)]">Sessions completed</p>
-                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                </div>
+                <div className="tile-yellow arcade-lift p-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/65">Sessions completed</p>
+                  <p className="mt-2 font-[family-name:var(--font-display)] text-[36px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--ink)]">
                     <CountUpValue value={data.sessionsCompleted} formatter={(n) => String(Math.round(n))} />
                   </p>
-                </Card>
-                <Card variant="raised" padding="lg">
-                  <p className="text-[13px] text-[var(--text-tertiary)]">Active clients</p>
-                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                </div>
+                <div className="tile-violet arcade-lift p-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/65">Active clients</p>
+                  <p className="mt-2 font-[family-name:var(--font-display)] text-[36px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--ink)]">
                     <CountUpValue value={data.activeClients} formatter={(n) => String(Math.round(n))} />
                   </p>
-                </Card>
-                <Card variant="raised" padding="lg">
-                  <p className="text-[13px] text-[var(--text-tertiary)]">Avg revenue per client</p>
-                  <p className="mt-2 text-[36px] font-bold tracking-[-0.04em] text-[var(--text-primary)]">
+                </div>
+                <div className="tile-coral arcade-lift p-5">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/65">Avg revenue per client</p>
+                  <p className="mt-2 font-[family-name:var(--font-display)] text-[36px] font-extrabold tabular-nums tracking-[-0.03em] text-white">
                     <CountUpValue value={data.avgRevenuePerClient} formatter={(n) => formatCents(Math.round(n))} />
                   </p>
-                </Card>
+                </div>
               </div>
 
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Revenue trend</p>
@@ -455,13 +456,13 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
                         return (
                           <li key={c.clientId}>
                             <div className="flex items-center justify-between gap-2 text-[15px]">
-                              <span className="truncate font-medium text-[var(--text-primary)]">{c.clientName}</span>
-                              <span className="shrink-0 text-[var(--text-tertiary)]">
+                              <span className="truncate font-semibold text-[var(--text-primary)]">{c.clientName}</span>
+                              <span className="shrink-0 font-[family-name:var(--font-display)] font-bold tabular-nums text-[var(--text-secondary)]">
                                 {formatCents(c.total)} · {c.count} payments
                               </span>
                             </div>
-                            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-subtle)]">
-                              <div className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-700 ease-out" style={{ width: `${w}%` }} />
+                            <div className="arcade-track mt-2">
+                              <div className="arcade-fill" style={{ width: `${w}%` }} />
                             </div>
                           </li>
                         )
@@ -548,11 +549,11 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
                       return (
                         <li key={c.clientId}>
                           <div className="flex items-center justify-between gap-2 text-[15px]">
-                            <span className="truncate font-medium text-[var(--text-primary)]">{c.clientName}</span>
-                            <span className="shrink-0 text-[var(--text-tertiary)]">{formatCents(c.total)}</span>
+                            <span className="truncate font-semibold text-[var(--text-primary)]">{c.clientName}</span>
+                            <span className="shrink-0 font-[family-name:var(--font-display)] font-bold tabular-nums text-[var(--text-secondary)]">{formatCents(c.total)}</span>
                           </div>
-                          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-subtle)]">
-                            <div className="h-full rounded-full bg-[var(--cp-accent)]" style={{ width: `${w}%` }} />
+                          <div className="arcade-track mt-2">
+                            <div className="arcade-fill arcade-fill-yellow" style={{ width: `${w}%` }} />
                           </div>
                         </li>
                       )
@@ -584,11 +585,11 @@ export function AnalyticsPageContent({ wrapCharts = (n) => n }: AnalyticsPageCon
 
           {mainTab === 'sessions' && (
             <div className="grid gap-6 lg:grid-cols-3">
-              <Card variant="raised" padding="lg" className="lg:col-span-1">
-                <p className="text-[13px] text-[var(--text-tertiary)]">Completed (sample window)</p>
-                <p className="mt-2 text-[36px] font-bold text-[var(--text-primary)]">{completedSessionsInSample}</p>
-                <p className="mt-1 text-[12px] text-[var(--text-quaternary)]">From upcoming sessions API snapshot</p>
-              </Card>
+              <div className="tile-violet lg:col-span-1 p-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/65">Completed (sample window)</p>
+                <p className="mt-2 font-[family-name:var(--font-display)] text-[36px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--ink)]">{completedSessionsInSample}</p>
+                <p className="mt-1 text-[12px] font-medium text-[var(--ink)]/55">From upcoming sessions API snapshot</p>
+              </div>
               <Card variant="raised" padding="lg" className="lg:col-span-2">
                 <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">Period summary</h2>
                 <p className="text-[14px] text-[var(--text-tertiary)]">

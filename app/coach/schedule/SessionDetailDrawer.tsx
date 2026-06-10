@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
 import { format, formatDistanceToNow } from 'date-fns'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
@@ -355,7 +354,15 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
     }
   }
 
-  const statusVariant = session.status === 'confirmed' ? 'active' : session.status === 'completed' ? 'inactive' : 'pending'
+  const statusBadgeTone =
+    session.status === 'confirmed'
+      ? 'arcade-badge-teal'
+      : session.status === 'completed'
+        ? 'arcade-badge-blue'
+        : session.status === 'cancelled'
+          ? 'arcade-badge-coral'
+          : 'arcade-badge-yellow'
+  const statusBadgeLabel = session.status.charAt(0).toUpperCase() + session.status.slice(1)
 
   const clientEmail = session.clients?.email?.trim() || null
 
@@ -380,16 +387,16 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
       </div>
       <div className="flex-1 overflow-auto">
         <div className="flex gap-3 border-b border-[var(--border-subtle)] p-4">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-sm font-medium text-white">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--ink)] bg-[var(--cp-accent)] text-sm font-bold text-white shadow-[2px_2px_0_var(--ink)]">
             {initials(clientName)}
           </span>
           <div className="min-w-0">
-            <Link href={`/coach/clients/${session.client_id}`} className="text-[15px] font-semibold text-[var(--cp-accent)] hover:underline">
+            <Link href={`/coach/clients/${session.client_id}`} className="font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--cp-accent)] hover:underline">
               {clientName}
             </Link>
             {clientEmail ? <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">{clientEmail}</p> : null}
             <div className="mt-2">
-              <Badge variant={statusVariant}>{session.status}</Badge>
+              <span className={cn('arcade-badge', statusBadgeTone)}>{statusBadgeLabel}</span>
             </div>
           </div>
         </div>
@@ -542,7 +549,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
           ) : null}
           {paymentState === 'paid' ? (
             <div className="space-y-2">
-              <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Paid</span>
+              <span className="arcade-badge arcade-badge-teal">Paid</span>
               <p className="text-xs text-[var(--color-text-secondary)]">
                 {(paymentAmountCents != null ? formatCents(paymentAmountCents) : 'Paid')}
                 {paymentMethod ? ` · ${paymentMethod}` : ''}
@@ -586,7 +593,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
           {notesTab === 'client' ? (
             <div className="space-y-3">
               {notesSentAt ? (
-                <span className="inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
+                <span className="arcade-badge arcade-badge-teal">
                   Sent {formatDistanceToNow(new Date(notesSentAt), { addSuffix: true })}
                 </span>
               ) : null}

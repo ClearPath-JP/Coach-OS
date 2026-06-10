@@ -37,34 +37,23 @@ export function ForgotPasswordForm() {
     return (
       <div className="text-center">
         <div
-          className="mx-auto flex size-12 items-center justify-center rounded-full"
-          style={{ background: 'rgba(22, 163, 74, 0.12)', color: '#16A34A' }}
+          className="mx-auto grid size-12 place-content-center rounded-full border-[3px] border-[var(--ink)] bg-[var(--belt-teal)] shadow-[3px_3px_0_var(--ink)]"
           aria-hidden
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
-        <h2
-          className="mt-6"
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 22,
-            fontWeight: 500,
-            letterSpacing: '0.01em',
-            color: 'var(--text-primary)',
-          }}
-        >
+        <h2 className="mt-6 font-[family-name:var(--font-display)] text-[22px] font-extrabold tracking-[-0.02em] text-[var(--ink)]">
           Check your email
         </h2>
-        <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+        <p className="mt-2 text-[14px] font-medium leading-relaxed text-[var(--text-tertiary)]">
           We sent a reset link to{' '}
-          <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{email.trim()}</span>
+          <span className="font-bold text-[var(--ink)]">{email.trim()}</span>
         </p>
         <Link
           href="/login"
-          className="mt-6 inline-block text-[14px] font-medium no-underline transition-colors duration-150 hover:underline"
-          style={{ color: 'var(--accent)' }}
+          className="mt-6 inline-block font-[family-name:var(--font-display)] text-[14px] font-bold text-[var(--ink)] underline decoration-[var(--belt-yellow)] decoration-2 underline-offset-2 hover:decoration-[3px]"
         >
           Back to sign in
         </Link>
@@ -74,19 +63,10 @@ export function ForgotPasswordForm() {
 
   return (
     <div>
-      <h1
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 24,
-          fontWeight: 500,
-          letterSpacing: '0.01em',
-          color: 'var(--text-primary)',
-          margin: 0,
-        }}
-      >
+      <h1 className="font-[family-name:var(--font-display)] text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[var(--ink)]">
         Reset your password
       </h1>
-      <p style={{ fontSize: 14, color: 'var(--text-tertiary)', marginTop: 6, marginBottom: 24 }}>
+      <p className="mt-1.5 mb-6 text-[14px] font-medium text-[var(--text-tertiary)]">
         Enter your email and we&apos;ll send you a reset link.
       </p>
 
@@ -94,8 +74,7 @@ export function ForgotPasswordForm() {
         <div>
           <label
             htmlFor="forgot-email"
-            className="mb-1.5 block text-[12px] font-medium uppercase tracking-[0.08em]"
-            style={{ color: 'var(--text-quaternary)' }}
+            className="mb-1.5 block font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-secondary)]"
           >
             Email
           </label>
@@ -108,32 +87,14 @@ export function ForgotPasswordForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="h-11 w-full rounded-[10px] border px-4 text-[14px] outline-none transition-[border-color,box-shadow] duration-200"
-            style={{
-              background: 'var(--bg-subtle)',
-              borderColor: 'var(--border-strong)',
-              color: 'var(--text-primary)',
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = 'var(--accent)'
-              e.target.style.boxShadow = '0 0 0 3px rgba(232,148,58,0.15)'
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'var(--border-strong)'
-              e.target.style.boxShadow = 'none'
-            }}
+            className="h-12 w-full rounded-[12px] border-2 border-[var(--ink)] bg-white px-3.5 text-[15px] text-[var(--ink)] outline-none transition-shadow duration-150 placeholder:text-[var(--text-quaternary)] focus:shadow-[0_0_0_3px_var(--belt-yellow)]"
           />
         </div>
 
         {error && (
           <p
             role="alert"
-            className="rounded-[8px] border px-3 py-2 text-[13px]"
-            style={{
-              background: 'var(--error-bg)',
-              borderColor: 'var(--error-border)',
-              color: 'var(--error)',
-            }}
+            className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]"
           >
             {error}
           </p>
@@ -142,43 +103,24 @@ export function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={loading}
-          className="relative mt-2 flex h-12 w-full items-center justify-center overflow-hidden rounded-[10px] border-none text-[14px] font-semibold transition-all duration-200 disabled:opacity-60"
-          style={{
-            background: 'var(--accent)',
-            color: 'var(--text-on-accent)',
-            cursor: loading ? 'not-allowed' : 'pointer',
-          }}
+          className="mt-1 flex h-12 w-full items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] font-[family-name:var(--font-display)] text-[15px] font-extrabold tracking-[-0.01em] text-[var(--ink)] shadow-[4px_4px_0_var(--ink)] transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-[6px_6px_0_var(--ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_var(--ink)]"
         >
           {loading ? (
-            <div
-              style={{
-                width: 18,
-                height: 18,
-                border: '2px solid rgba(255,255,255,0.3)',
-                borderTopColor: 'currentColor',
-                borderRadius: '50%',
-                animation: 'cp-spin 0.7s linear infinite',
-              }}
-            />
+            <span className="size-[18px] animate-spin rounded-full border-2 border-[var(--ink)]/30 border-t-[var(--ink)]" />
           ) : (
             'Send reset link'
           )}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
+      <p className="mt-6 text-center text-[13px] font-medium text-[var(--text-tertiary)]">
         <Link
           href="/login"
-          className="font-medium no-underline transition-colors duration-150 hover:underline"
-          style={{ color: 'var(--accent)' }}
+          className="font-bold text-[var(--ink)] underline decoration-[var(--belt-yellow)] decoration-2 underline-offset-2 hover:decoration-[3px]"
         >
           Back to sign in
         </Link>
       </p>
-
-      <style>{`
-        @keyframes cp-spin { to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   )
 }

@@ -117,11 +117,12 @@ function accessSummary(plan: MembershipPlan): string {
   return types.slice(0, 2).join(', ') + (types.length > 2 ? ` +${types.length - 2}` : '')
 }
 
-function statusPillClass(status: string): string {
-  if (status === 'active') return 'bg-emerald-500/15 text-emerald-400'
-  if (status === 'trialing') return 'bg-blue-500/15 text-blue-400'
-  if (status === 'past_due') return 'bg-amber-500/15 text-amber-400'
-  return 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
+/** Arcade badge tone class for a subscription status. */
+function statusBadgeTone(status: string): string {
+  if (status === 'active') return 'arcade-badge-teal'
+  if (status === 'trialing') return 'arcade-badge-blue'
+  if (status === 'past_due') return 'arcade-badge-coral'
+  return ''
 }
 
 function statusLabel(status: string): string {
@@ -723,22 +724,22 @@ export function MembershipsContent() {
           <>
             {/* MRR strip */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
-              <Card className="px-5 py-4">
-                <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-quaternary)]">
+              <div className="tile-teal arcade-lift px-5 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/65">
                   Monthly revenue
                 </p>
-                <p className="mt-1 font-display text-2xl font-medium text-[var(--text-primary)]">
+                <p className="mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums tracking-[-0.03em] text-white">
                   {formatCents(mrrCents)}
                 </p>
-              </Card>
-              <Card className="px-5 py-4">
-                <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-quaternary)]">
+              </div>
+              <div className="tile-yellow arcade-lift px-5 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/65">
                   Active members
                 </p>
-                <p className="mt-1 font-display text-2xl font-medium text-[var(--text-primary)]">
+                <p className="mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--ink)]">
                   {memberTotal}
                 </p>
-              </Card>
+              </div>
             </div>
 
             {/* Plans section */}
@@ -766,25 +767,23 @@ export function MembershipsContent() {
                   {activePlans.map((plan) => (
                     <div
                       key={plan.id}
-                      className="flex items-center gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-5 py-4"
+                      className="arcade-tile flex items-center gap-4 bg-[var(--bg-subtle)] px-5 py-4"
                     >
                       {/* Plan info */}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium text-[var(--text-primary)]">{plan.name}</p>
+                          <p className="font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--text-primary)]">{plan.name}</p>
                           {plan.status === 'draft' && (
-                            <span className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-xs font-medium text-[var(--text-tertiary)]">
-                              Draft
-                            </span>
+                            <span className="arcade-badge">Draft</span>
                           )}
                         </div>
                         <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">
-                          {formatCents(plan.price_cents)}/mo &middot; {accessSummary(plan)}
+                          <span className="font-[family-name:var(--font-display)] font-bold text-[var(--text-secondary)]">{formatCents(plan.price_cents)}/mo</span> &middot; {accessSummary(plan)}
                         </p>
                       </div>
 
                       {/* Member count */}
-                      <div className="flex items-center gap-1 text-xs text-[var(--text-tertiary)]">
+                      <div className="flex items-center gap-1 text-xs font-semibold text-[var(--text-secondary)]">
                         <Users className="size-3.5" />
                         {plan.memberCount}
                       </div>
@@ -845,12 +844,7 @@ export function MembershipsContent() {
                             ? `${m.classesUsed} / ${m.classesPerPeriod}`
                             : '—'}
                         </span>
-                        <span
-                          className={[
-                            'rounded-full px-2 py-0.5 text-xs font-medium',
-                            statusPillClass(m.status),
-                          ].join(' ')}
-                        >
+                        <span className={['arcade-badge justify-self-end', statusBadgeTone(m.status)].join(' ')}>
                           {statusLabel(m.status)}
                         </span>
                       </li>

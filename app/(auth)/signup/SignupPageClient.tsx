@@ -24,37 +24,18 @@ function EyeIcon({ off }: { off?: boolean }) {
   )
 }
 
-/* ───── Decorative alchemy symbol ───── */
-function AlchemySymbol() {
-  return (
-    <svg width="48" height="48" viewBox="0 0 100 100" fill="none" aria-hidden style={{ opacity: 0.25 }}>
-      {/* Outer circle */}
-      <circle cx="50" cy="50" r="44" stroke="rgba(200,170,100,0.4)" strokeWidth="1" />
-      {/* Inner triangle (fire/transmutation) */}
-      <polygon points="50,16 82,72 18,72" stroke="rgba(200,170,100,0.35)" strokeWidth="1" fill="none" />
-      {/* Center dot */}
-      <circle cx="50" cy="50" r="3" fill="rgba(200,170,100,0.3)" />
-      {/* Cross-line */}
-      <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(200,170,100,0.15)" strokeWidth="0.5" />
-      <line x1="10" y1="50" x2="90" y2="50" stroke="rgba(200,170,100,0.15)" strokeWidth="0.5" />
-    </svg>
-  )
-}
-
 const INPUT_CLASS =
-  'h-11 w-full rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-subtle)] px-4 text-[14px] text-[var(--text-primary)] outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-[var(--text-quaternary)]'
+  'h-12 w-full rounded-[12px] border-2 border-[var(--ink)] bg-white px-3.5 text-[15px] text-[var(--ink)] outline-none transition-shadow duration-150 placeholder:text-[var(--text-quaternary)] focus:shadow-[0_0_0_3px_var(--belt-yellow)]'
 
 const LABEL_CLASS =
-  'mb-1.5 block text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--text-quaternary)]'
+  'mb-1.5 block font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-secondary)]'
 
-function focusGold(e: React.FocusEvent<HTMLInputElement>) {
-  e.target.style.borderColor = 'var(--accent)'
-  e.target.style.boxShadow = '0 0 0 3px rgba(var(--accent-rgb),0.15)'
-}
-function blurReset(e: React.FocusEvent<HTMLInputElement>) {
-  e.target.style.borderColor = 'var(--border-default)'
-  e.target.style.boxShadow = 'none'
-}
+const FEATURES = [
+  'Invite clients, not the other way around',
+  'Session videos your clients can rewatch',
+  'Programs and assignments, packaged your way',
+  'Get paid before they walk in the door',
+]
 
 export function SignupPageClient() {
   const router = useRouter()
@@ -141,80 +122,39 @@ export function SignupPageClient() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] w-full" style={{ fontFamily: 'var(--font-dm-sans), var(--font)' }}>
+    <div className="flex min-h-[100dvh] w-full bg-[var(--bg-app)]">
 
-      {/* ═══ LEFT PANEL — atmospheric (desktop only) ═══ */}
-      <div
-        className="relative hidden min-h-0 flex-col overflow-hidden lg:flex lg:w-[45%]"
-        style={{ background: '#0A0908' }}
-      >
-        {/* Dojo hero — matches the login page */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute', inset: 0, zIndex: 0,
-            backgroundImage: 'url(/images/newlogin.jpg)',
-            backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.5,
-          }}
-        />
-
-        {/* Legibility overlay */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-            background: 'linear-gradient(180deg, rgba(10,9,8,0.72) 0%, rgba(10,9,8,0.55) 42%, rgba(8,7,6,0.85) 100%)',
-          }}
-        />
-
-        {/* Amber glow */}
-        <div
-          aria-hidden
-          style={{
-            position: 'absolute', bottom: '-15%', left: '20%', width: '70%', height: '60%',
-            background: 'radial-gradient(ellipse, rgba(var(--accent-rgb),0.12) 0%, rgba(var(--accent-rgb),0.04) 40%, transparent 70%)',
-            pointerEvents: 'none', zIndex: 1,
-          }}
-        />
-
+      {/* ═══ LEFT PANEL — ink-dark feature wall (desktop only) ═══ */}
+      <div className="relative hidden min-h-0 flex-col overflow-hidden border-r-[3px] border-[var(--ink)] bg-[var(--ink)] lg:flex lg:w-[45%]">
         <div className="relative z-10 flex flex-1 flex-col justify-between p-10 xl:p-14">
-          <div>
-            <div style={{
-              fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 500,
-              letterSpacing: '0.12em', color: 'rgba(237,237,239,0.7)', lineHeight: 1,
-            }}>
-              KOR<span style={{ color: 'var(--accent)' }}>VA</span>
-            </div>
+          <div className="font-[family-name:var(--font-display)] text-[20px] font-extrabold leading-none tracking-[-0.02em] text-[#faf7f0]">
+            Kor<span style={{ color: 'var(--belt-yellow)' }}>va</span>
           </div>
 
-          <div className="flex flex-col items-center gap-6">
-            <AlchemySymbol />
-            <div className="text-center">
-              <h2 style={{
-                fontFamily: 'var(--font-display)', fontSize: 'clamp(22px, 2.5vw, 32px)',
-                fontWeight: 500, letterSpacing: '0.02em', color: 'rgba(240,237,232,0.85)', lineHeight: 1.25,
-              }}>
-                Build something<br />that lasts.
+          <div className="flex flex-col gap-7">
+            <span className="arcade-badge arcade-badge-yellow self-start">🥋 Founding offer</span>
+            <div>
+              <h2 className="font-[family-name:var(--font-display)] text-[clamp(26px,2.8vw,38px)] font-extrabold leading-[1.08] tracking-[-0.03em] text-[#faf7f0]">
+                Build something
+                <br />
+                that lasts.
               </h2>
-              <p style={{ fontSize: 14, color: 'rgba(200,190,170,0.4)', marginTop: 12, lineHeight: 1.5 }}>
-                Your coaching workspace — clients, sessions,<br />programs, and revenue in one place.
+              <p className="mt-3.5 max-w-[360px] text-[15px] font-medium leading-relaxed text-[#faf7f0]/65">
+                Your coaching workspace — clients, sessions, programs, and revenue in one place.
               </p>
             </div>
 
             {/* Feature list */}
-            <div className="flex flex-col gap-3 mt-4">
-              {[
-                'Invite clients, not the other way around',
-                'Session videos your clients can rewatch',
-                'Programs and assignments, packaged your way',
-                'Get paid before they walk in the door',
-              ].map((text) => (
+            <div className="mt-1 flex flex-col gap-3">
+              {FEATURES.map((text) => (
                 <div key={text} className="flex items-center gap-3">
-                  <div style={{
-                    width: 5, height: 5, borderRadius: '50%',
-                    background: 'rgba(var(--accent-rgb),0.6)', flexShrink: 0,
-                  }} />
-                  <span style={{ fontSize: 13, color: 'rgba(200,190,170,0.55)', lineHeight: 1.4 }}>
+                  <span
+                    aria-hidden
+                    className="grid size-6 shrink-0 place-content-center rounded-[7px] border-2 border-[#faf7f0]/30 bg-[var(--belt-yellow)] text-[12px] font-extrabold text-[var(--ink)]"
+                  >
+                    ✓
+                  </span>
+                  <span className="text-[14px] font-medium leading-snug text-[#faf7f0]/80">
                     {text}
                   </span>
                 </div>
@@ -222,54 +162,35 @@ export function SignupPageClient() {
             </div>
           </div>
 
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(200,170,100,0.12), transparent)', marginBottom: 16 }} />
-            <p style={{ fontSize: 11, color: 'rgba(200,190,170,0.25)', letterSpacing: '0.06em' }}>
-              Discipline. Structure. Growth.
-            </p>
-          </div>
+          <p className="font-[family-name:var(--font-display)] text-[12px] font-bold uppercase tracking-[0.12em] text-[#faf7f0]/40">
+            Discipline. Structure. Growth.
+          </p>
         </div>
       </div>
 
       {/* ═══ RIGHT PANEL — form ═══ */}
-      <div
-        className="flex min-h-[100dvh] w-full flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8 lg:min-h-0 lg:w-[55%] lg:px-12"
-        style={{ background: 'var(--bg-app)' }}
-      >
-        <div
-          className="glass-modal w-full max-w-[480px] rounded-2xl p-7 lg:p-9"
-          style={{
-            background: 'rgba(24,24,27,0.5)',
-            border: '1px solid rgba(var(--accent-rgb),0.14)',
-            boxShadow: '0 0 60px rgba(var(--accent-rgb),0.06), 0 8px 32px rgba(0,0,0,0.35)',
-          }}
-        >
+      <div className="flex min-h-[100dvh] w-full flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-10 lg:min-h-0 lg:w-[55%] lg:px-12">
+        <div className="w-full max-w-[480px] rounded-[18px] border-[3px] border-[var(--ink)] bg-white p-7 shadow-[6px_6px_0_var(--ink)] lg:p-9">
 
           {/* Mobile brand */}
           <div className="mb-6 text-center lg:hidden">
-            <div style={{
-              fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 500,
-              letterSpacing: '0.12em', color: 'var(--text-primary)', lineHeight: 1,
-            }}>
-              KOR<span style={{ color: 'var(--accent)' }}>VA</span>
+            <div className="font-[family-name:var(--font-display)] text-[22px] font-extrabold leading-none tracking-[-0.02em] text-[var(--ink)]">
+              Kor<span style={{ color: 'var(--belt-yellow)' }}>va</span>
             </div>
           </div>
 
           {/* Heading */}
           <div className="mb-6">
-            <h1 style={{
-              fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 500,
-              letterSpacing: '0.01em', color: 'var(--text-primary)',
-            }}>
+            <h1 className="font-[family-name:var(--font-display)] text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[var(--ink)]">
               Create your workspace
             </h1>
-            <p style={{ fontSize: 14, color: 'var(--text-tertiary)', marginTop: 6 }}>
+            <p className="mt-1.5 text-[14px] font-medium text-[var(--text-tertiary)]">
               Set up your coaching platform in under a minute.
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-3.5">
+          <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col gap-4">
             {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -278,9 +199,8 @@ export function SignupPageClient() {
                   id="firstName" type="text" autoComplete="given-name" required
                   value={firstName} onChange={(e) => setFirstName(e.target.value)}
                   className={INPUT_CLASS} placeholder="Jane"
-                  onFocus={focusGold} onBlur={blurReset}
                 />
-                {fieldErrors.firstName && <p className="mt-1 text-[12px] text-[var(--error)]">{fieldErrors.firstName}</p>}
+                {fieldErrors.firstName && <p className="mt-1 text-[12px] font-semibold text-[var(--error)]">{fieldErrors.firstName}</p>}
               </div>
               <div>
                 <label htmlFor="lastName" className={LABEL_CLASS}>Last name</label>
@@ -288,9 +208,8 @@ export function SignupPageClient() {
                   id="lastName" type="text" autoComplete="family-name" required
                   value={lastName} onChange={(e) => setLastName(e.target.value)}
                   className={INPUT_CLASS} placeholder="Doe"
-                  onFocus={focusGold} onBlur={blurReset}
                 />
-                {fieldErrors.lastName && <p className="mt-1 text-[12px] text-[var(--error)]">{fieldErrors.lastName}</p>}
+                {fieldErrors.lastName && <p className="mt-1 text-[12px] font-semibold text-[var(--error)]">{fieldErrors.lastName}</p>}
               </div>
             </div>
 
@@ -301,9 +220,8 @@ export function SignupPageClient() {
                 id="email" type="email" autoComplete="email" required
                 value={email} onChange={(e) => setEmail(e.target.value)}
                 className={INPUT_CLASS} placeholder="you@example.com"
-                onFocus={focusGold} onBlur={blurReset}
               />
-              {fieldErrors.email && <p className="mt-1 text-[12px] text-[var(--error)]">{fieldErrors.email}</p>}
+              {fieldErrors.email && <p className="mt-1 text-[12px] font-semibold text-[var(--error)]">{fieldErrors.email}</p>}
             </div>
 
             {/* Password */}
@@ -314,17 +232,16 @@ export function SignupPageClient() {
                   id="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required
                   value={password} onChange={(e) => setPassword(e.target.value)}
                   className={`${INPUT_CLASS} pr-11`} placeholder="At least 8 characters"
-                  onFocus={focusGold} onBlur={blurReset}
                 />
                 <button
                   type="button" onClick={() => setShowPassword((v) => !v)} tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-quaternary)] hover:text-[var(--text-secondary)]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-quaternary)] transition-colors hover:text-[var(--ink)]"
                   aria-label={showPassword ? 'Hide' : 'Show'}
                 >
                   <EyeIcon off={showPassword} />
                 </button>
               </div>
-              {fieldErrors.password && <p className="mt-1 text-[12px] text-[var(--error)]">{fieldErrors.password}</p>}
+              {fieldErrors.password && <p className="mt-1 text-[12px] font-semibold text-[var(--error)]">{fieldErrors.password}</p>}
             </div>
 
             {/* Confirm */}
@@ -335,45 +252,44 @@ export function SignupPageClient() {
                   id="confirmPassword" type={showConfirm ? 'text' : 'password'} autoComplete="new-password" required
                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                   className={`${INPUT_CLASS} pr-11`} placeholder="Same as above"
-                  onFocus={focusGold} onBlur={blurReset}
                 />
                 <button
                   type="button" onClick={() => setShowConfirm((v) => !v)} tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-quaternary)] hover:text-[var(--text-secondary)]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-quaternary)] transition-colors hover:text-[var(--ink)]"
                   aria-label={showConfirm ? 'Hide' : 'Show'}
                 >
                   <EyeIcon off={showConfirm} />
                 </button>
               </div>
-              {fieldErrors.confirmPassword && <p className="mt-1 text-[12px] text-[var(--error)]">{fieldErrors.confirmPassword}</p>}
+              {fieldErrors.confirmPassword && <p className="mt-1 text-[12px] font-semibold text-[var(--error)]">{fieldErrors.confirmPassword}</p>}
             </div>
 
             {/* Terms */}
-            <div className="flex items-start gap-3 mt-1">
+            <div className="mt-1 flex items-start gap-3">
               <input
                 id="acceptTerms" type="checkbox" checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
-                className="mt-0.5 size-4 shrink-0 rounded border-[var(--border-default)] accent-[var(--accent)]"
+                className="mt-0.5 size-4 shrink-0 rounded-[4px] border-2 border-[var(--ink)] accent-[var(--belt-yellow)]"
               />
-              <label htmlFor="acceptTerms" className="text-[13px] leading-snug text-[var(--text-secondary)]">
+              <label htmlFor="acceptTerms" className="text-[13px] font-medium leading-snug text-[var(--text-secondary)]">
                 I agree to the{' '}
-                <a href="/terms" target="_blank" className="font-medium text-[var(--accent)] hover:underline">Terms</a>
+                <a href="/terms" target="_blank" className="font-bold text-[var(--ink)] underline decoration-[var(--belt-yellow)] decoration-2 underline-offset-2">Terms</a>
                 {' '}and{' '}
-                <a href="/privacy" target="_blank" className="font-medium text-[var(--accent)] hover:underline">Privacy Policy</a>
+                <a href="/privacy" target="_blank" className="font-bold text-[var(--ink)] underline decoration-[var(--belt-yellow)] decoration-2 underline-offset-2">Privacy Policy</a>
               </label>
             </div>
-            {fieldErrors.acceptTerms && <p className="text-[12px] text-[var(--error)]">{fieldErrors.acceptTerms}</p>}
+            {fieldErrors.acceptTerms && <p className="text-[12px] font-semibold text-[var(--error)]">{fieldErrors.acceptTerms}</p>}
 
             {/* Error */}
             {submitError && (
-              <div className="rounded-[10px] border border-[var(--error-border)] bg-[var(--error-bg)] px-4 py-3 text-[13px] text-[var(--error)]">
+              <div role="alert" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
                 {submitError}
               </div>
             )}
 
             {/* Verify-email notice */}
             {notice && (
-              <div role="status" className="rounded-[10px] border border-[var(--success-border)] bg-[var(--success-bg)] px-4 py-3 text-[13px] text-[var(--success)]">
+              <div role="status" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
                 {notice}
               </div>
             )}
@@ -381,35 +297,32 @@ export function SignupPageClient() {
             {/* Submit */}
             <button
               type="submit" disabled={loading}
-              className="btn-shimmer relative mt-1 flex h-12 w-full items-center justify-center overflow-hidden rounded-[10px] border-none text-[14px] font-semibold transition-all duration-200 disabled:opacity-60"
-              style={{ background: 'var(--accent)', color: 'var(--text-on-accent)', cursor: loading ? 'not-allowed' : 'pointer' }}
+              className="mt-1 flex h-12 w-full items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] font-[family-name:var(--font-display)] text-[15px] font-extrabold tracking-[-0.01em] text-[var(--ink)] shadow-[4px_4px_0_var(--ink)] transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-[6px_6px_0_var(--ink)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_var(--ink)]"
             >
               {loading ? (
-                <div style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'currentColor', borderRadius: '50%', animation: 'cp-spin 0.7s linear infinite' }} />
+                <span className="size-[18px] animate-spin rounded-full border-2 border-[var(--ink)]/30 border-t-[var(--ink)]" />
               ) : (
                 'Create my workspace'
               )}
             </button>
-            <p className="text-center text-[12px] leading-relaxed text-[var(--text-tertiary)]">
+            <p className="text-center text-[12px] font-medium leading-relaxed text-[var(--text-tertiary)]">
               Founding offer: lock in{' '}
-              <span className="font-medium text-[var(--text-secondary)]">$99/mo for life</span>.
+              <span className="font-bold text-[var(--ink)]">$99/mo for life</span>.
               {' '}Checkout right after signup — cancel anytime.
             </p>
           </form>
 
           {/* Footer */}
           <div className="mt-6 text-center">
-            <p className="text-[13px] text-[var(--text-tertiary)]">
+            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-[var(--accent)] no-underline hover:text-[var(--accent-hover)] hover:underline">
+              <Link href="/login" className="font-bold text-[var(--ink)] underline decoration-[var(--belt-yellow)] decoration-2 underline-offset-2 hover:decoration-[3px]">
                 Sign in
               </Link>
             </p>
           </div>
         </div>
       </div>
-
-      <style>{`@keyframes cp-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

@@ -6,7 +6,6 @@ import { Loader2, Plus, Pencil, Trash2, X, Ticket, AlertTriangle } from 'lucide-
 import { formatCents } from '@/lib/format-currency'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Icon } from '@/components/icons/inked'
-import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 const CLASS_TYPE_SUGGESTIONS = [
@@ -488,14 +487,14 @@ export function PassesContent() {
         {!loading && !error && (
           <>
             <div className="grid grid-cols-2 gap-3">
-              <Card className="px-5 py-4">
-                <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-quaternary)]">Credits outstanding</p>
-                <p className="mt-1 font-display text-2xl font-medium text-[var(--text-primary)]">{creditsOutstanding}</p>
-              </Card>
-              <Card className="px-5 py-4">
-                <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-quaternary)]">Clients with passes</p>
-                <p className="mt-1 font-display text-2xl font-medium text-[var(--text-primary)]">{holderTotal}</p>
-              </Card>
+              <div className="tile-blue arcade-lift px-5 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/65">Credits outstanding</p>
+                <p className="mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums tracking-[-0.03em] text-white">{creditsOutstanding}</p>
+              </div>
+              <div className="tile-violet arcade-lift px-5 py-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/65">Clients with passes</p>
+                <p className="mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--ink)]">{holderTotal}</p>
+              </div>
             </div>
 
             <section>
@@ -513,20 +512,20 @@ export function PassesContent() {
               ) : (
                 <div className="space-y-2">
                   {activePasses.map((pass) => (
-                    <div key={pass.id} className="flex items-center gap-4 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-5 py-4">
+                    <div key={pass.id} className="arcade-tile flex items-center gap-4 bg-[var(--bg-subtle)] px-5 py-4">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium text-[var(--text-primary)]">{pass.title}</p>
+                          <p className="font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--text-primary)]">{pass.title}</p>
                           {pass.status === 'draft' && (
-                            <span className="rounded-full bg-[var(--bg-muted)] px-2 py-0.5 text-xs font-medium text-[var(--text-tertiary)]">Draft</span>
+                            <span className="arcade-badge">Draft</span>
                           )}
                         </div>
                         <p className="mt-0.5 text-xs text-[var(--text-tertiary)]">
-                          {pass.credit_count} classes &middot; {formatCents(pass.price_cents)} &middot; {scopeSummary(pass)}
+                          <span className="font-[family-name:var(--font-display)] font-bold text-[var(--text-secondary)]">{pass.credit_count} classes</span> &middot; {formatCents(pass.price_cents)} &middot; {scopeSummary(pass)}
                           {pass.expires_in_days != null ? ` · expires ${pass.expires_in_days}d` : ''}
                         </p>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-[var(--text-tertiary)]" title={`${pass.creditsOutstanding} credits outstanding`}>
+                      <div className="flex items-center gap-1 text-xs font-semibold text-[var(--text-secondary)]" title={`${pass.creditsOutstanding} credits outstanding`}>
                         <Ticket className="size-3.5" />
                         {pass.creditsOutstanding}
                       </div>

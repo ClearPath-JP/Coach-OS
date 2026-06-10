@@ -3,15 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { endOfWeek, format, startOfWeek } from 'date-fns'
-import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  Circle,
-} from 'lucide-react'
+import { TrendingUp, TrendingDown, AlertTriangle, ArrowRight } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
 import {
@@ -58,52 +50,62 @@ const ZERO_STATS: DashboardStats = {
   },
 }
 
-function TrendIcon({ direction }: { direction: string }) {
-  if (direction === 'up') return <TrendingUp size={14} className="text-emerald-400" />
-  if (direction === 'down') return <TrendingDown size={14} className="text-red-400" />
-  return <Minus size={14} className="text-[var(--text-quaternary)]" />
-}
+type TileColor = 'yellow' | 'teal' | 'violet' | 'coral' | 'blue'
 
-function StatCard({
+const TILE_CLASS: Record<TileColor, string> = {
+  yellow: 'tile-yellow',
+  teal: 'tile-teal',
+  violet: 'tile-violet',
+  coral: 'tile-coral',
+  blue: 'tile-blue',
+}
+// On dark belt tiles (teal/coral/blue) text rides white; on light tiles (yellow/violet) text is ink.
+const TILE_DARK: Record<TileColor, boolean> = { yellow: false, teal: true, violet: false, coral: true, blue: true }
+
+function StatTile({
   label,
   value,
+  color,
   trend,
-  accent = false,
-  zero = false,
+  note,
 }: {
   label: string
   value: string
+  color: TileColor
   trend?: { direction: string; percentChange: number }
-  accent?: boolean
-  zero?: boolean
+  note?: string
 }) {
+  const dark = TILE_DARK[color]
+  const muted = dark ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)'
+  const eyebrow = dark ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)'
+  const showTrend = trend && trend.percentChange > 0
   return (
-    <div
-      className={cn(
-        'group relative flex flex-col gap-1.5 rounded-2xl border bg-[var(--bg-subtle)] px-5 py-4 transition-all duration-200 hover:bg-[var(--bg-muted)]',
-        accent
-          ? 'border-[var(--border-subtle)] before:absolute before:inset-y-3 before:left-0 before:w-[2px] before:rounded-r-full before:bg-[var(--accent)] before:shadow-[0_0_12px_var(--accent)]'
-          : 'border-[var(--border-subtle)] hover:border-[var(--border-default)]',
-      )}
-    >
-      <span className="text-[11px] font-medium tracking-[0.02em] text-[var(--text-tertiary)]">{label}</span>
-      <div className="flex items-end gap-2">
-        <span
-          className={cn(
-            'font-display text-[28px] font-medium leading-none tracking-tight',
-            zero ? 'text-[var(--text-quaternary)]' : 'text-[var(--text-primary)]',
-          )}
-        >
-          {value}
-        </span>
-        {trend && trend.percentChange > 0 ? (
-          <span className="mb-0.5 flex items-center gap-1 text-[12px]">
-            <TrendIcon direction={trend.direction} />
-            <span className={trend.direction === 'up' ? 'text-emerald-400' : trend.direction === 'down' ? 'text-red-400' : 'text-[var(--text-quaternary)]'}>
-              {Math.round(trend.percentChange)}%
-            </span>
-          </span>
-        ) : null}
+    <div className={cn(TILE_CLASS[color], 'p-5')}>
+      <div
+        className="mb-2 font-[family-name:var(--font-display)] text-[10px] font-bold uppercase tracking-[0.14em]"
+        style={{ color: eyebrow }}
+      >
+        {label}
+      </div>
+      <div className="font-[family-name:var(--font-display)] text-[34px] font-extrabold leading-none tracking-[-0.03em]">
+        {value}
+      </div>
+      <div
+        className="mt-2 flex items-center gap-1 font-[family-name:var(--font-display)] text-[12px] font-bold"
+        style={{ color: muted }}
+      >
+        {showTrend ? (
+          <>
+            {trend!.direction === 'up' ? (
+              <TrendingUp size={13} strokeWidth={2.5} />
+            ) : trend!.direction === 'down' ? (
+              <TrendingDown size={13} strokeWidth={2.5} />
+            ) : null}
+            {Math.round(trend!.percentChange)}% vs last
+          </>
+        ) : (
+          (note ?? ' ')
+        )}
       </div>
     </div>
   )
@@ -127,19 +129,20 @@ function AttentionStrip({ attention, pendingInvoicesCount }: { attention: Attent
   }
   if (items.length === 0) return null
   return (
-    <div className="rounded-xl border border-[var(--accent-border)] bg-[var(--accent-surface)] px-4 py-3">
-      <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--accent)]">
-        <AlertTriangle size={15} />
+    <div className="tile-coral p-4">
+      <div className="flex items-center gap-2 font-[family-name:var(--font-display)] text-[13px] font-extrabold text-white">
+        <AlertTriangle size={15} strokeWidth={2.5} />
         <span>Needs attention</span>
       </div>
-      <div className="mt-2 flex flex-col gap-1.5">
+      <div className="mt-2.5 flex flex-col gap-2">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className="text-[13px] text-[var(--text-secondary)] underline decoration-[var(--border-strong)] underline-offset-2 transition-colors hover:text-[var(--text-primary)]"
+            className="flex items-center justify-between gap-2 rounded-[10px] border-2 border-[var(--border-default)] bg-white/90 px-3 py-2 font-[family-name:var(--font-display)] text-[12px] font-bold text-[var(--text-primary)] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[var(--shadow-xs)]"
           >
-            {item.label}
+            <span>{item.label}</span>
+            <ArrowRight size={14} strokeWidth={2.5} className="shrink-0" />
           </Link>
         ))}
       </div>
@@ -147,47 +150,169 @@ function AttentionStrip({ attention, pendingInvoicesCount }: { attention: Attent
   )
 }
 
-function GettingStarted({ stats, programsCount }: { stats: DashboardStats; programsCount: number }) {
-  const steps = [
-    { done: stats.activeClientsCount > 0, label: 'Add your first client', href: '/coach/clients', desc: 'Import or create a client profile' },
-    { done: stats.sessionsThisWeek > 0, label: 'Book a session', href: '/coach/schedule', desc: 'Schedule your first training session' },
-    { done: programsCount > 0, label: 'Create a program', href: '/coach/programs', desc: 'Build a structured training program' },
-    { done: stats.revenueMonthCents > 0, label: 'Record a payment', href: '/coach/payments', desc: 'Track revenue from your clients' },
-  ]
+/** Recent activity, honestly derived from the data already loaded (no invented feed). */
+function ActivityCard({
+  attention,
+  badges,
+  programsCompleteOf,
+}: {
+  attention: AttentionData | null
+  badges: Badges
+  programsCompleteOf: { done: number; total: number }
+}) {
+  const rows: { medal: string; tile: string; title: string; sub: string; href: string }[] = []
+
+  attention?.unpaidInvoices?.slice(0, 2).forEach((inv) => {
+    const name = [inv.firstName, inv.lastName].filter(Boolean).join(' ').trim() || 'A client'
+    rows.push({
+      medal: '💸',
+      tile: 'var(--belt-coral)',
+      title: 'Invoice awaiting payment',
+      sub: `${formatCents(inv.amountCents || 0)} · ${name}`,
+      href: '/coach/invoices',
+    })
+  })
+  if (badges.assignments > 0) {
+    rows.push({
+      medal: '📋',
+      tile: 'var(--belt-blue)',
+      title: `${badges.assignments} assignment${badges.assignments === 1 ? '' : 's'} to review`,
+      sub: 'Pending review or overdue',
+      href: '/coach/assignments',
+    })
+  }
+  attention?.inactive?.slice(0, 2).forEach((c) => {
+    const name = [c.firstName, c.lastName].filter(Boolean).join(' ').trim() || 'A client'
+    rows.push({
+      medal: '👋',
+      tile: 'var(--belt-yellow)',
+      title: 'Hasn’t trained lately',
+      sub: `Reach out to ${name}`,
+      href: `/coach/clients/${c.clientId}`,
+    })
+  })
+
+  const goalPct = programsCompleteOf.total > 0
+    ? Math.round((programsCompleteOf.done / programsCompleteOf.total) * 100)
+    : 0
+  const goalComplete = programsCompleteOf.done >= programsCompleteOf.total
+
+  return (
+    <section className="card-gloss rounded-[16px] p-5">
+      <div className="mb-4">
+        <div className="font-[family-name:var(--font-display)] text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-tertiary)]">
+          Recent
+        </div>
+        <h2 className="font-[family-name:var(--font-display)] text-[17px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">
+          Activity
+        </h2>
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="rounded-[12px] border-[3px] border-dashed border-[var(--border-default)] px-4 py-5 text-center font-[family-name:var(--font-display)] text-[13px] font-medium text-[var(--text-tertiary)]">
+          Nothing needs you right now. 🥋
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {rows.slice(0, 4).map((r, i) => (
+            <Link key={r.href + i} href={r.href} className="flex items-start gap-3 group">
+              <span
+                className="flex size-10 shrink-0 items-center justify-center rounded-full border-[3px] border-[var(--border-default)] text-[18px]"
+                style={{ background: r.tile, boxShadow: '3px 3px 0 var(--border-default)' }}
+              >
+                {r.medal}
+              </span>
+              <div className="min-w-0 flex-1 pt-0.5">
+                <div className="truncate font-[family-name:var(--font-display)] text-[13px] font-bold text-[var(--text-primary)] group-hover:underline">
+                  {r.title}
+                </div>
+                <div className="truncate font-[family-name:var(--font-display)] text-[12px] font-medium text-[var(--text-secondary)]">
+                  {r.sub}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Setup goal — real completion of the get-started steps (honest denominator). */}
+      {!goalComplete ? (
+        <div className="mt-5 border-t-[3px] border-[var(--border-default)] pt-4">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="font-[family-name:var(--font-display)] text-[12px] font-bold text-[var(--text-primary)]">
+              🎯 Dojo setup
+            </span>
+            <span className="font-[family-name:var(--font-display)] text-[12px] font-extrabold text-[var(--text-secondary)]">
+              {programsCompleteOf.done} / {programsCompleteOf.total}
+            </span>
+          </div>
+          <div className="arcade-track">
+            <div className="arcade-fill arcade-fill-yellow" style={{ width: `${goalPct}%` }} />
+          </div>
+          <div className="mt-1.5 font-[family-name:var(--font-display)] text-[11px] font-semibold text-[var(--text-tertiary)]">
+            {goalPct}% set up · {programsCompleteOf.total - programsCompleteOf.done} to go 🏆
+          </div>
+        </div>
+      ) : (
+        <div className="mt-5 border-t-[3px] border-[var(--border-default)] pt-4 font-[family-name:var(--font-display)] text-[12px] font-bold text-[var(--text-primary)]">
+          🏆 Dojo fully set up — nice work.
+        </div>
+      )}
+    </section>
+  )
+}
+
+function GettingStarted({ steps }: { steps: { done: boolean; label: string; href: string; desc: string }[] }) {
   const completed = steps.filter((s) => s.done).length
   if (completed >= steps.length) return null
   return (
-    <div className="gloss-panel p-5">
-      <div className="flex items-center justify-between">
+    <section className="card-gloss rounded-[16px] p-5">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Get started</h2>
-          <p className="mt-0.5 text-[13px] text-[var(--text-tertiary)]">{completed} of {steps.length} complete</p>
+          <div className="font-[family-name:var(--font-display)] text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-tertiary)]">
+            First steps
+          </div>
+          <h2 className="font-[family-name:var(--font-display)] text-[17px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">
+            Get set up
+          </h2>
         </div>
-        <div className="flex h-2 w-24 overflow-hidden rounded-full bg-[var(--bg-muted)]">
-          <div className="h-full rounded-full bg-[var(--accent)] transition-all duration-500" style={{ width: `${(completed / steps.length) * 100}%` }} />
-        </div>
+        <span className="arcade-badge arcade-badge-yellow">{completed}/{steps.length}</span>
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2.5 sm:grid-cols-2">
         {steps.map((step) => (
           <Link
             key={step.href + step.label}
             href={step.href}
-            className={cn('group flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150', step.done ? 'opacity-50' : 'hover:bg-[var(--bg-muted)]')}
-          >
-            {step.done ? (
-              <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-500" />
-            ) : (
-              <Circle size={16} className="mt-0.5 shrink-0 text-[var(--text-quaternary)] group-hover:text-[var(--text-tertiary)]" />
+            className={cn(
+              'flex items-start gap-3 rounded-[12px] border-[3px] border-[var(--border-default)] bg-[var(--bg-subtle)] px-3.5 py-3 transition-transform',
+              step.done
+                ? 'opacity-55'
+                : 'shadow-[var(--shadow-sm)] hover:-translate-x-px hover:-translate-y-px hover:shadow-[var(--shadow-md)]',
             )}
+          >
+            <span
+              className={cn(
+                'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-[var(--border-default)] font-[family-name:var(--font-display)] text-[11px] font-extrabold',
+                step.done ? 'bg-[var(--belt-green)] text-[var(--border-default)]' : 'bg-[var(--bg-muted)] text-transparent',
+              )}
+            >
+              ✓
+            </span>
             <div className="min-w-0">
-              <span className={cn('text-[13px] font-medium', step.done ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]')}>{step.label}</span>
-              <p className="text-[12px] text-[var(--text-quaternary)]">{step.desc}</p>
+              <span
+                className={cn(
+                  'font-[family-name:var(--font-display)] text-[13px] font-bold',
+                  step.done ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]',
+                )}
+              >
+                {step.label}
+              </span>
+              <p className="font-[family-name:var(--font-display)] text-[12px] font-medium text-[var(--text-tertiary)]">{step.desc}</p>
             </div>
-            {!step.done && <ArrowRight size={14} className="ml-auto mt-0.5 shrink-0 text-[var(--text-quaternary)] opacity-0 transition-opacity group-hover:opacity-100" />}
           </Link>
         ))}
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -247,61 +372,125 @@ export function CoachDashboardHome({ coachName }: { coachName: string }) {
   const msgs = useMemo(() => messageRows(conversations, 3), [conversations])
   const unread = useMemo(() => unreadTotal(conversations), [conversations])
 
+  // Real "get started" steps (also feed the Activity card's setup goal denominator).
+  const steps = useMemo(
+    () => [
+      { done: s.activeClientsCount > 0, label: 'Add your first client', href: '/coach/clients', desc: 'Import or create a profile' },
+      { done: s.sessionsThisWeek > 0, label: 'Book a session', href: '/coach/schedule', desc: 'Schedule your first session' },
+      { done: badges.programsCount > 0, label: 'Create a program', href: '/coach/programs', desc: 'Build a training program' },
+      { done: s.revenueMonthCents > 0, label: 'Record a payment', href: '/coach/payments', desc: 'Track revenue from clients' },
+    ],
+    [s.activeClientsCount, s.sessionsThisWeek, s.revenueMonthCents, badges.programsCount],
+  )
+  const stepsDone = steps.filter((st) => st.done).length
+
   const coachFirst = coachName.trim().split(/\s+/)[0] || 'Coach'
-  // Time-based greeting + date are computed AFTER mount (client-only). Computing them during
-  // render makes the SSR output (server timezone) differ from the client's local timezone,
-  // which causes a hydration text mismatch (React #418). Empty until mounted, then filled in.
+  // Time-based greeting + date are computed AFTER mount (client-only) to avoid an SSR/client
+  // timezone hydration mismatch (React #418). Empty until mounted, then filled in.
   const [greeting, setGreeting] = useState('')
   const [dateLine, setDateLine] = useState('')
   useEffect(() => {
     const now = new Date()
     const hour = now.getHours()
     setGreeting(hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening')
-    setDateLine(format(now, 'EEEE · MMMM d'))
+    setDateLine(format(now, 'EEEE, MMMM d'))
   }, [])
+
+  // Honest greeting subline from real loaded data.
+  const sessionsToday = today.length
+  const subParts: string[] = []
+  if (!loading && !error) {
+    subParts.push(`${sessionsToday} session${sessionsToday === 1 ? '' : 's'} today`)
+    subParts.push(`${unread} unread message${unread === 1 ? '' : 's'}`)
+  }
 
   return (
     <div className="coach-dash-stagger flex flex-col gap-6">
-      <GreetingBar coachFirst={coachFirst} dateLine={dateLine} greeting={greeting} next={nextUp} />
+      <div className="flex flex-col gap-1.5">
+        <GreetingBar coachFirst={coachFirst} dateLine={dateLine} greeting={greeting} next={nextUp} />
+        {subParts.length ? (
+          <p className="font-[family-name:var(--font-display)] text-[14px] font-semibold text-[var(--text-tertiary)]">
+            {subParts.join(' · ')}
+          </p>
+        ) : null}
+      </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-[88px] animate-pulse rounded-xl bg-[var(--bg-subtle)]" />
+            <div
+              key={i}
+              className="h-[120px] animate-pulse rounded-[16px] border-[3px] border-[var(--border-default)] bg-[var(--bg-muted)] shadow-[var(--shadow-sm)]"
+            />
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-5 py-8 text-center">
-          <p className="text-sm font-medium text-[var(--text-secondary)]">Couldn’t load your dashboard</p>
-          <p className="mt-1 text-xs text-[var(--text-quaternary)]">Check your connection and try again.</p>
+        <div className="card-gloss rounded-[16px] px-5 py-8 text-center">
+          <p className="font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--text-primary)]">
+            Couldn’t load your dashboard
+          </p>
+          <p className="mt-1 font-[family-name:var(--font-display)] text-[12px] font-medium text-[var(--text-tertiary)]">
+            Check your connection and try again.
+          </p>
           <button
             type="button"
             onClick={() => void fetchAll()}
-            className="mt-3 inline-flex items-center justify-center rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--text-on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            className="btn-primary-gloss mt-3 inline-flex items-center justify-center rounded-[10px] border-[3px] border-[var(--border-default)] px-4 py-2 font-[family-name:var(--font-display)] text-[13px] font-bold text-[var(--text-on-accent)]"
           >
             Try again
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Active clients" value={String(s.activeClientsCount)} trend={s.trends?.activeClients} zero={s.activeClientsCount === 0} />
-          <StatCard label="Sessions this week" value={String(s.sessionsThisWeek)} trend={s.trends?.sessionsThisWeek} zero={s.sessionsThisWeek === 0} />
-          <StatCard label="Revenue (month)" value={formatCents(s.revenueMonthCents)} trend={s.trends?.revenueMonth} zero={s.revenueMonthCents === 0} />
-          <StatCard label="Pending invoices" value={String(s.pendingInvoicesCount)} accent={s.pendingInvoicesCount > 0} zero={s.pendingInvoicesCount === 0} />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatTile
+            label="Active students"
+            value={String(s.activeClientsCount)}
+            color="yellow"
+            trend={s.trends?.activeClients}
+            note="In your dojo"
+          />
+          <StatTile
+            label="Revenue (month)"
+            value={formatCents(s.revenueMonthCents)}
+            color="teal"
+            trend={s.trends?.revenueMonth}
+            note="This month so far"
+          />
+          <StatTile
+            label="Sessions this week"
+            value={String(s.sessionsThisWeek)}
+            color="violet"
+            trend={s.trends?.sessionsThisWeek}
+            note="Booked Mon–Sun"
+          />
+          <StatTile
+            label="Pending invoices"
+            value={String(s.pendingInvoicesCount)}
+            color="coral"
+            note={s.pendingInvoicesCount > 0 ? 'Awaiting payment' : 'All paid up'}
+          />
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex flex-col gap-4">
           <TodayPanel items={today} />
-          {!loading && !error && <GettingStarted stats={s} programsCount={badges.programsCount} />}
+          {!loading && !error && <GettingStarted steps={steps} />}
         </div>
         <div className="flex flex-col gap-4">
           {!loading && !error && <AttentionStrip attention={attention} pendingInvoicesCount={s.pendingInvoicesCount} />}
+          {!loading && !error && (
+            <ActivityCard
+              attention={attention}
+              badges={badges}
+              programsCompleteOf={{ done: stepsDone, total: steps.length }}
+            />
+          )}
           <MessagesPeek items={msgs} unreadTotal={unread} />
-          <QuickActions />
         </div>
       </div>
+
+      {!loading && !error && <QuickActions />}
     </div>
   )
 }

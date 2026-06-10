@@ -68,15 +68,15 @@ export function ClientProfileContent({
 
   return (
     <div className="client-page-content mx-auto max-w-lg space-y-10 px-4 py-8 md:px-6">
-      <h1 className="text-[22px] font-bold text-[var(--text-primary)]">My Profile</h1>
+      <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">My Profile</h1>
 
       <section>
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Profile</h2>
+        <h2 className="font-[family-name:var(--font-display)] text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">Profile</h2>
         <div className="mt-4 flex flex-col items-center">
-          <div className="flex size-16 items-center justify-center rounded-full bg-[var(--accent-light)] text-[18px] font-bold text-[var(--cp-accent)]">
+          <div className="grid size-16 place-items-center rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] font-[family-name:var(--font-display)] text-[20px] font-extrabold text-[var(--ink)] shadow-[4px_4px_0_var(--ink)]">
             {initials(firstName, lastName)}
           </div>
-          <p className="mt-2 text-[13px] text-[var(--text-tertiary)]">Photo updates go through your coach.</p>
+          <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">Photo updates go through your coach.</p>
         </div>
         <div className="mt-6 space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -110,7 +110,7 @@ export function ClientProfileContent({
       </section>
 
       <section>
-        <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--text-tertiary)]">Security</h2>
+        <h2 className="font-[family-name:var(--font-display)] text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">Security</h2>
         <Link
           href="/client/change-password"
           className="mt-4 inline-flex h-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 text-[14px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--bg-subtle)]"

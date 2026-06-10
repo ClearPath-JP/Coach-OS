@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
-import { Loader2, AlertCircle, CheckCircle2, Ticket } from 'lucide-react'
+import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
+import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -168,7 +169,7 @@ export function PassesContent() {
     return (
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="space-y-1">
-          <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">Passes</h1>
+          <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">Passes</h1>
         </header>
         <Card className="p-10 text-center">
           <Loader2 className="mx-auto size-5 animate-spin text-[var(--text-tertiary)]" />
@@ -182,7 +183,7 @@ export function PassesContent() {
     return (
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="space-y-1">
-          <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">Passes</h1>
+          <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">Passes</h1>
         </header>
         <div role="alert" className="flex items-start gap-3 rounded-xl border border-[var(--error-border)] bg-[var(--error-bg)] px-4 py-3 text-sm text-[var(--error)]">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
@@ -198,7 +199,7 @@ export function PassesContent() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <header className="space-y-1">
-        <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">Passes</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">Passes</h1>
         <p className="text-sm text-[var(--text-tertiary)]">Buy class credits up front, then spend one each time you book.</p>
       </header>
 
@@ -236,48 +237,56 @@ export function PassesContent() {
 
       {/* Credits remaining — zero state (so the balance concept is always visible) */}
       {balances.length === 0 && (
-        <div className="flex items-center justify-between rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] px-6 py-5">
+        <div className="flex items-center gap-5 rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] px-6 py-5 shadow-[5px_5px_0_var(--ink)]">
+          <div className="grid size-[88px] shrink-0 place-items-center rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-muted)] shadow-[5px_5px_0_var(--ink)]">
+            <span className="font-[family-name:var(--font-display)] text-[44px] font-extrabold leading-none tracking-[-0.04em] text-[var(--text-primary)]">0</span>
+          </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">Credits remaining</p>
-            <p className="mt-1 font-display text-[32px] font-medium leading-none text-[var(--text-primary)]">0</p>
+            <p className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Class credits</p>
             <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Buy a pass below to get started.</p>
-            <Link href="/client/classes" className="mt-2 inline-block text-[13px] font-medium text-[var(--cp-accent)] underline-offset-2 hover:underline">
+            <Link href="/client/classes" className="mt-2 inline-block text-[13px] font-bold text-[var(--cp-accent)] underline-offset-2 hover:underline">
               Book a class →
             </Link>
           </div>
-          <Ticket className="size-8 text-[var(--text-quaternary)]" />
         </div>
       )}
 
       {/* Your passes */}
       {balances.length > 0 && (
         <section className="space-y-3">
-          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-6">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">Credits remaining</p>
-                <p className="mt-1 font-display text-[40px] font-medium leading-none text-[var(--text-primary)]">{totalCredits}</p>
+          <div className="rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] p-6 shadow-[5px_5px_0_var(--ink)]">
+            <div className="flex items-center gap-5">
+              <div className="tile-yellow grid size-[96px] shrink-0 place-items-center px-3 text-center">
+                <span className="font-[family-name:var(--font-display)] text-[48px] font-extrabold leading-none tracking-[-0.04em] text-[var(--ink)]">{totalCredits}</span>
               </div>
-              <Ticket className="size-8 text-[var(--cp-accent)]" />
+              <div>
+                <p className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">Class credits left</p>
+                <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Spend one each time you book a covered class.</p>
+                {lowBalance && (
+                  <span className="arcade-badge arcade-badge-coral mt-2">Running low</span>
+                )}
+              </div>
             </div>
-            {lowBalance && (
-              <p className="mt-3 text-[13px] font-medium text-[var(--cp-accent)]">Running low — grab another pass below so you don&rsquo;t miss a class.</p>
-            )}
-            <div className="mt-5 space-y-2">
-              {balances.map((b) => (
-                <div key={b.id} className="flex items-center justify-between rounded-xl border border-[var(--border-subtle)] bg-[var(--cp-offwhite)] px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-[var(--text-primary)]">{b.title}</p>
-                    <p className="text-xs text-[var(--text-tertiary)]">
-                      {b.credits_remaining} of {b.credits_total} left
-                      {b.expires_at ? ` · expires ${format(parseISO(b.expires_at), 'MMM d, yyyy')}` : ''}
-                    </p>
+            <div className="mt-6 space-y-3">
+              {balances.map((b) => {
+                const pct = b.credits_total > 0 ? Math.max(0, Math.min(100, (b.credits_remaining / b.credits_total) * 100)) : 0
+                return (
+                  <div key={b.id} className="rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--cp-offwhite)] px-4 py-3 shadow-[3px_3px_0_var(--ink)]">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="truncate font-[family-name:var(--font-display)] text-sm font-bold text-[var(--text-primary)]">{b.title}</p>
+                      <span className="font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.02em] text-[var(--text-primary)] tabular-nums">{b.credits_remaining}<span className="text-[12px] font-bold text-[var(--text-tertiary)]">/{b.credits_total}</span></span>
+                    </div>
+                    <div className="arcade-track mt-2 h-2.5">
+                      <div className="arcade-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                    {b.expires_at && (
+                      <p className="mt-2 text-xs text-[var(--text-tertiary)]">Expires {format(parseISO(b.expires_at), 'MMM d, yyyy')}</p>
+                    )}
                   </div>
-                  <span className="font-display text-lg font-medium text-[var(--text-primary)] tabular-nums">{b.credits_remaining}</span>
-                </div>
-              ))}
+                )
+              })}
             </div>
-            <Link href="/client/classes" className="mt-4 inline-block text-[13px] font-medium text-[var(--cp-accent)] underline-offset-2 hover:underline">
+            <Link href="/client/classes" className="mt-4 inline-block text-[13px] font-bold text-[var(--cp-accent)] underline-offset-2 hover:underline">
               Book a class →
             </Link>
           </div>
@@ -294,7 +303,7 @@ export function PassesContent() {
 
       <section className="space-y-3">
         {balances.length > 0 && (
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">Buy another pass</h2>
+          <h2 className="font-[family-name:var(--font-display)] text-xs font-bold uppercase tracking-[0.16em] text-[var(--text-quaternary)]">Buy another pass</h2>
         )}
         {passes.length === 0 ? (
           balances.length === 0 ? (
@@ -305,10 +314,10 @@ export function PassesContent() {
             {passes.map((pass) => {
               const isBuying = buyingId === pass.id
               return (
-                <div key={pass.id} className="flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-6">
-                  <h3 className="text-[18px] font-semibold text-[var(--text-primary)]">{pass.title}</h3>
-                  <div className="mt-2 flex items-baseline gap-1">
-                    <span className="font-display text-[32px] font-medium text-[var(--text-primary)]">{formatCents(pass.price_cents)}</span>
+                <div key={pass.id} className="arcade-lift flex flex-col rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] p-6 shadow-[5px_5px_0_var(--ink)]">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-[family-name:var(--font-display)] text-[18px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">{pass.title}</h3>
+                    <span className="arcade-badge arcade-badge-yellow shrink-0">{formatCents(pass.price_cents)}</span>
                   </div>
                   <p className="mt-3 text-[14px] text-[var(--text-secondary)]">
                     {pass.credit_count} {pass.credit_count === 1 ? 'class' : 'classes'}
@@ -321,15 +330,14 @@ export function PassesContent() {
                     <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">Expires {pass.expires_in_days} days after purchase</p>
                   )}
                   <div className="mt-auto pt-5">
-                    <button
-                      type="button"
+                    <Button
                       onClick={() => void handleBuy(pass.id)}
                       disabled={isBuying || buyingId !== null}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--cp-accent)] py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[var(--cp-accent-hover)] disabled:cursor-wait disabled:opacity-70"
+                      loading={isBuying}
+                      fullWidth
                     >
-                      {isBuying && <Loader2 className="size-4 animate-spin" />}
                       {isBuying ? 'Redirecting to checkout...' : 'Buy pass'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )

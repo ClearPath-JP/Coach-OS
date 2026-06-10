@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { DataTable } from '@/components/ui/DataTable'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { StatusDot } from '@/components/ui/StatusDot'
 import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
 import { cn } from '@/lib/utils'
 
@@ -211,9 +210,9 @@ export function InvoicesPageContent() {
         render: (inv: InvoiceRow) => (
           <span
             className={cn(
-              'tabular-nums',
+              'font-[family-name:var(--font-display)] font-bold tabular-nums',
               inv.status === 'pending'
-                ? 'text-[16px] font-bold text-[var(--warning)]'
+                ? 'text-[17px] text-[var(--warning)]'
                 : 'text-[var(--text-primary)]'
             )}
           >
@@ -225,12 +224,16 @@ export function InvoicesPageContent() {
         key: 'status',
         header: 'Status',
         sortValue: (r: InvoiceRow) => r.status,
-        render: (inv: InvoiceRow) => (
-          <span className="inline-flex items-center gap-2 text-[13px]">
-            <StatusDot tone={inv.status === 'paid' ? 'active' : inv.status === 'pending' ? 'pending' : 'inactive'} />
-            {inv.status}
-          </span>
-        ),
+        render: (inv: InvoiceRow) => {
+          const tone =
+            inv.status === 'paid'
+              ? 'arcade-badge-teal'
+              : inv.status === 'pending'
+                ? 'arcade-badge-yellow'
+                : 'arcade-badge-coral'
+          const label = inv.status === 'paid' ? 'Paid' : inv.status === 'pending' ? 'Pending' : inv.status === 'refunded' ? 'Refunded' : 'Cancelled'
+          return <span className={cn('arcade-badge', tone)}>{label}</span>
+        },
       },
       {
         key: 'method',
@@ -305,18 +308,18 @@ export function InvoicesPageContent() {
 
       {!loading && !error && invoices.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Card variant="raised" padding="lg">
-            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">Total received</p>
-            <p className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+          <div className="tile-teal arcade-lift p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-white/65">Total received</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-[30px] font-extrabold tabular-nums tracking-[-0.03em] text-white">
               {formatAmount(totalReceived, 'usd')}
             </p>
-          </Card>
-          <Card variant="raised" padding="lg">
-            <p className="text-[13px] font-medium text-[var(--text-tertiary)]">Pending</p>
-            <p className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+          </div>
+          <div className="tile-yellow arcade-lift p-5">
+            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/65">Pending</p>
+            <p className="mt-1 font-[family-name:var(--font-display)] text-[30px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--ink)]">
               {formatAmount(totalPending, 'usd')}
             </p>
-          </Card>
+          </div>
         </div>
       )}
 

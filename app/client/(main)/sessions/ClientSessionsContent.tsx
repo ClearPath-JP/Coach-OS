@@ -90,7 +90,7 @@ export function ClientSessionsContent() {
   return (
     <div className="client-page-content mx-auto max-w-[640px] space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h1 className="text-[22px] font-bold text-[var(--text-primary)]">Sessions</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">Sessions</h1>
         <Button type="button" variant="primary" size="sm" className="shrink-0" onClick={() => setRequestOpen(true)}>
           Request a session
         </Button>
@@ -116,7 +116,7 @@ export function ClientSessionsContent() {
       )}
 
       <section>
-        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Upcoming</p>
+        <p className="mb-3 font-[family-name:var(--font-display)] text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">Upcoming</p>
         {loading ? (
           <div className="space-y-3">
             <div className="h-24 animate-pulse rounded-[var(--radius-lg)] bg-[var(--bg-muted)]" />
@@ -143,22 +143,24 @@ export function ClientSessionsContent() {
               return (
                 <li
                   key={s.id}
-                  className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] shadow-[var(--shadow-xs)]"
+                  className="overflow-hidden rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--cp-offwhite)] shadow-[5px_5px_0_var(--ink)]"
                 >
-                  <div className="p-4">
-                    <p className="text-[18px] font-bold text-[var(--text-primary)]">{format(start, 'EEEE, MMMM d')}</p>
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-[family-name:var(--font-display)] text-[19px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">{format(start, 'EEEE, MMMM d')}</p>
+                      <span className="arcade-badge shrink-0">{stype}</span>
+                    </div>
                     <p className="mt-1 text-[14px] text-[var(--text-secondary)]">
                       {format(start, 'h:mm a')} · {dur} minutes
                     </p>
-                    <span className="mt-2 inline-flex rounded-full bg-[var(--accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--cp-accent)]">
-                      {stype}
-                    </span>
                     {within24h ? (
-                      <div className="mt-3 rounded-[var(--radius-md)] bg-[var(--accent-light)] px-3 py-2 text-[13px] font-medium text-[var(--cp-accent)]">
-                        {isToday ? 'Today!' : isTomorrow ? 'Tomorrow!' : 'Coming up soon'}
+                      <div className="mt-3 inline-flex items-center gap-2">
+                        <span className="arcade-badge arcade-badge-yellow">
+                          {isToday ? 'Today!' : isTomorrow ? 'Tomorrow!' : 'Coming up soon'}
+                        </span>
                         {minsUntil > 0 && minsUntil < 24 * 60 ? (
-                          <span className="ml-1 text-[var(--text-secondary)]">
-                            · {Math.max(0, Math.floor(minsUntil / 60))}h {Math.max(0, Math.floor(minsUntil % 60))}m
+                          <span className="font-[family-name:var(--font-display)] text-[12px] font-bold text-[var(--text-secondary)]">
+                            in {Math.max(0, Math.floor(minsUntil / 60))}h {Math.max(0, Math.floor(minsUntil % 60))}m
                           </span>
                         ) : null}
                       </div>
@@ -178,7 +180,7 @@ export function ClientSessionsContent() {
         <button
           type="button"
           onClick={() => setPastOpen((v) => !v)}
-          className="mb-3 flex w-full items-center justify-between text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]"
+          className="mb-3 flex w-full items-center justify-between text-left font-[family-name:var(--font-display)] text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]"
         >
           Past sessions
           <span aria-hidden>{pastOpen ? '▾' : '▸'}</span>
@@ -197,16 +199,11 @@ export function ClientSessionsContent() {
                 const done = s.status === 'completed'
                 return (
                   <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-[13px]">
-                    <span className="font-medium text-[var(--text-primary)]">{format(start, 'MMM d, yyyy')}</span>
+                    <span className="font-[family-name:var(--font-display)] font-bold text-[var(--text-primary)]">{format(start, 'MMM d, yyyy')}</span>
                     <span className="text-[var(--text-tertiary)]">
                       {dur} min · {stype}
                     </span>
-                    <span
-                      className={cn(
-                        'rounded-full px-2 py-0.5 text-[11px] font-medium',
-                        done ? 'bg-[var(--success-bg)] text-[var(--success)]' : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
-                      )}
-                    >
+                    <span className={cn('arcade-badge', done && 'arcade-badge-teal')}>
                       {statusLabel(s.status)}
                     </span>
                   </li>
@@ -218,7 +215,7 @@ export function ClientSessionsContent() {
       </section>
 
       <section>
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+        <p className="mb-2 font-[family-name:var(--font-display)] text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">
           Times you&apos;re usually unavailable
         </p>
         <p className="mb-4 text-[13px] text-[var(--text-secondary)]">

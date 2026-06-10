@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { Input, Textarea } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { differenceInDays, eachWeekOfInterval, endOfWeek, format, isWithinInterval, parseISO, startOfWeek, subWeeks } from 'date-fns'
 import { Flame } from 'lucide-react'
 import { getLevelFromXp } from '@/lib/xp-system'
+import { cn } from '@/lib/utils'
 import { ClientDailyCheckinsCoachSection } from '@/components/coach/ClientDailyCheckinsCoachSection'
 import { AssignProgramToClientModal } from '@/components/coach/AssignProgramToClientModal'
 import { ClientGoalsTab } from '@/components/coach/ClientGoalsTab'
@@ -185,10 +185,18 @@ function ClientProgressPanel({
   )
 }
 
-function statusBadgeVariant(s: string): 'active' | 'inactive' | 'pending' {
-  if (s === 'active') return 'active'
-  if (s === 'paused') return 'pending'
-  return 'inactive'
+/** Arcade badge tone + label for a client status (no raw DB enum on screen). */
+function clientStatusBadgeTone(s: string): string {
+  if (s === 'active') return 'arcade-badge-teal'
+  if (s === 'paused') return 'arcade-badge-yellow'
+  return ''
+}
+
+function clientStatusBadgeLabel(s: string): string {
+  if (s === 'active') return 'Active'
+  if (s === 'paused') return 'Paused'
+  if (s === 'completed') return 'Completed'
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 type SessionNotesHistoryRow = {
@@ -548,13 +556,13 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
       {/* ── Profile Header Banner ── */}
       <Card variant="elevated" padding="lg" className="card-glow overflow-hidden !p-0">
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[20px] font-bold text-white ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg-subtle)]">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-[2.5px] border-[var(--ink)] bg-[var(--cp-accent)] text-[20px] font-bold text-white shadow-[3px_3px_0_var(--ink)]">
             {(client.first_name?.[0] ?? '').toUpperCase()}{(client.last_name?.[0] ?? '').toUpperCase() || ''}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{fullName}</h1>
-              <Badge variant={statusBadgeVariant(client.status)}>{client.status}</Badge>
+              <h1 className="font-[family-name:var(--font-display)] text-[24px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">{fullName}</h1>
+              <span className={cn('arcade-badge', clientStatusBadgeTone(client.status))}>{clientStatusBadgeLabel(client.status)}</span>
             </div>
             <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">
               {client.email || 'No email'}{client.phone ? ` · ${client.phone}` : ''}
@@ -578,28 +586,28 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
 
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Member</p>
-          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{daysAsClient}</p>
-          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">days</p>
+        <div className="tile-yellow p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--ink)]/65">Member</p>
+          <p className="mt-1.5 font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-[var(--ink)]">{daysAsClient}</p>
+          <p className="mt-1 text-[11px] font-medium text-[var(--ink)]/55">days</p>
         </div>
-        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Assignments</p>
-          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{client.rewards?.assignments_completed ?? 0}<span className="text-[14px] font-medium text-[var(--text-tertiary)]">/{client.rewards?.assignments_total ?? 0}</span></p>
-          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">completed</p>
+        <div className="tile-teal p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-white/65">Assignments</p>
+          <p className="mt-1.5 font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-white">{client.rewards?.assignments_completed ?? 0}<span className="text-[14px] font-bold text-white/70">/{client.rewards?.assignments_total ?? 0}</span></p>
+          <p className="mt-1 text-[11px] font-medium text-white/65">completed</p>
         </div>
-        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Program</p>
-          <p className="mt-1.5 truncate text-[14px] font-semibold text-[var(--text-primary)]">{clientPrograms[0]?.title ?? '—'}</p>
-          <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">{clientPrograms.length > 0 ? 'active' : 'none assigned'}</p>
+        <div className="tile-violet p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--ink)]/65">Program</p>
+          <p className="mt-1.5 truncate font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]">{clientPrograms[0]?.title ?? '—'}</p>
+          <p className="mt-1 text-[11px] font-medium text-[var(--ink)]/55">{clientPrograms.length > 0 ? 'active' : 'none assigned'}</p>
         </div>
-        <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">XP / Level</p>
-          <p className="mt-1.5 text-[24px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</p>
+        <div className="tile-coral p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-white/65">XP / Level</p>
+          <p className="mt-1.5 font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-white">{client.rewards?.total_xp ?? 0}</p>
           <div className="mt-1 flex items-center gap-1.5">
-            <p className="text-[11px] text-[var(--text-quaternary)]">Level {client.rewards?.level ?? 1}</p>
+            <p className="text-[11px] font-medium text-white/65">Level {client.rewards?.level ?? 1}</p>
             {(client.rewards?.current_streak_days ?? 0) > 0 && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-[var(--accent-surface)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--accent)]">
+              <span className="inline-flex items-center gap-0.5 rounded-full border-2 border-[var(--ink)] bg-[var(--belt-yellow)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--ink)]">
                 <Flame size={11} className="shrink-0" />
                 {client.rewards?.current_streak_days}d
               </span>
@@ -808,12 +816,9 @@ export function ClientDetailContent({ clientId }: { clientId: string }) {
                         href={`/coach/programs/${cp.programId}`}
                         className="block rounded-lg border border-[var(--color-border)] p-3 hover:bg-[var(--color-surface)]"
                       >
-                        <span className="font-medium text-[var(--color-ink)]">{cp.title}</span>
-                        <div className="mt-2 h-1.5 w-full rounded-full bg-[var(--color-border)] overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-[var(--color-accent)]"
-                            style={{ width: `${pct}%` }}
-                          />
+                        <span className="font-[family-name:var(--font-display)] font-bold text-[var(--color-ink)]">{cp.title}</span>
+                        <div className="arcade-track mt-2">
+                          <div className="arcade-fill arcade-fill-yellow" style={{ width: `${pct}%` }} />
                         </div>
                         <p className="mt-1 text-xs text-[var(--color-muted)]">
                           {cp.modulesCompleted} of {cp.totalModules} modules

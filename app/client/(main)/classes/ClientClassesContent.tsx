@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { Clock, Users, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
+import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -146,7 +147,7 @@ export function ClientClassesContent() {
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
       <header className="space-y-1">
-        <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">
+        <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">
           Book a class
         </h1>
         <p className="text-sm text-[var(--text-tertiary)]">
@@ -212,74 +213,81 @@ export function ClientClassesContent() {
             return (
               <section key={dateStr} className="space-y-3">
                 <div className="flex items-baseline gap-3">
-                  <h2 className="font-display text-[15px] font-semibold uppercase tracking-[0.12em] text-[var(--cp-accent)]">
+                  <h2 className="font-[family-name:var(--font-display)] text-[15px] font-extrabold uppercase tracking-[0.12em] text-[var(--cp-accent)]">
                     {format(date, 'EEEE')}
                   </h2>
                   <span className="text-sm text-[var(--text-tertiary)]">
                     {format(date, 'MMMM d')}
                   </span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {list.map((inst) => {
                     const full = inst.spotsRemaining <= 0
                     const booked = inst.myBookingStatus !== 'none'
                     const isBooking = bookingId === inst.instanceKey
+                    const fillPct = inst.capacity > 0
+                      ? Math.max(0, Math.min(100, (inst.bookedCount / inst.capacity) * 100))
+                      : 0
                     return (
                       <div
                         key={inst.instanceKey}
-                        className={`rounded-xl border p-5 transition-colors ${
-                          booked
-                            ? 'border-[var(--cp-accent)]/30 bg-[var(--cp-accent)]/5'
-                            : 'border-[var(--border-subtle)] bg-[var(--bg-subtle)]'
+                        className={`rounded-[16px] border-[3px] border-[var(--ink)] p-5 shadow-[5px_5px_0_var(--ink)] ${
+                          booked ? 'bg-[var(--cp-accent)]/8' : 'bg-[var(--bg-subtle)]'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
-                            <h3 className="truncate font-medium text-[var(--text-primary)]">
+                            <h3 className="truncate font-[family-name:var(--font-display)] text-[17px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">
                               {inst.title}
                             </h3>
-                            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-tertiary)]">
-                              <span className="inline-flex items-center gap-1.5">
-                                <Clock className="size-3.5" />
-                                {timeLabel(inst.startTime)} &middot; {inst.durationMinutes} min
-                              </span>
-                              <span className="inline-flex items-center gap-1.5">
-                                <Users className="size-3.5" />
-                                {inst.bookedCount}/{inst.capacity} booked
-                              </span>
+                            <div className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--text-tertiary)]">
+                              <Clock className="size-3.5" />
+                              {timeLabel(inst.startTime)} &middot; {inst.durationMinutes} min
                             </div>
                           </div>
-                          <div className="shrink-0 text-right">
-                            <div className="font-display text-lg font-medium text-[var(--text-primary)]">
-                              {formatCents(inst.priceCents)}
-                            </div>
+                          <span className="arcade-badge arcade-badge-yellow shrink-0">
+                            {formatCents(inst.priceCents)}
+                          </span>
+                        </div>
+
+                        {/* Capacity track */}
+                        <div className="mt-4">
+                          <div className="mb-1.5 flex items-center justify-between font-[family-name:var(--font-display)] text-[11px] font-bold text-[var(--text-secondary)]">
+                            <span className="inline-flex items-center gap-1.5">
+                              <Users className="size-3.5" />
+                              {inst.bookedCount}/{inst.capacity} booked
+                            </span>
+                            <span className={full ? 'text-[var(--belt-coral)]' : ''}>
+                              {full ? 'Full' : `${inst.spotsRemaining} left`}
+                            </span>
+                          </div>
+                          <div className="arcade-track h-2.5">
+                            <div
+                              className={`arcade-fill ${full ? 'arcade-fill-coral' : ''}`}
+                              style={{ width: `${fillPct}%` }}
+                            />
                           </div>
                         </div>
 
                         <div className="mt-4">
                           {booked ? (
-                            <div className="inline-flex items-center gap-2 rounded-lg bg-[var(--cp-accent)]/15 px-3 py-2 text-xs font-medium text-[var(--cp-accent)]">
+                            <span className="arcade-badge arcade-badge-teal">
                               <CheckCircle2 className="size-3.5" />
                               You&apos;re booked
-                            </div>
+                            </span>
                           ) : full ? (
-                            <button
-                              type="button"
-                              disabled
-                              className="w-full cursor-not-allowed rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-muted)] py-2 text-sm font-medium text-[var(--text-quaternary)]"
-                            >
+                            <Button variant="secondary" disabled fullWidth>
                               Class full
-                            </button>
+                            </Button>
                           ) : (
-                            <button
-                              type="button"
+                            <Button
                               onClick={() => book(inst)}
                               disabled={isBooking}
-                              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--cp-accent)] py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-[var(--cp-accent-hover)] disabled:cursor-wait disabled:opacity-70"
+                              loading={isBooking}
+                              fullWidth
                             >
-                              {isBooking && <Loader2 className="size-4 animate-spin" />}
                               {isBooking ? 'Redirecting to checkout…' : 'Book & pay'}
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </div>

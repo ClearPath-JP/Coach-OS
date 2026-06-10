@@ -1487,6 +1487,16 @@ html[data-theme='dark'] .btn-shimmer:hover:not(:disabled) {
 html[data-theme='dark'] .coach-nav__link--active {
   box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.1);
 }
+/* Arcade: ink-dark coach sidebar — readable light links + solid belt-yellow active pill */
+.coach-sidebar-dark .coach-nav__link { color: rgba(250, 247, 240, 0.6); }
+.coach-sidebar-dark .coach-nav__link:hover { color: #faf7f0; background: rgba(250, 247, 240, 0.08); }
+.coach-sidebar-dark .coach-nav__link--active,
+.coach-sidebar-dark .coach-nav__link--active:hover {
+  color: var(--ink);
+  background: var(--belt-yellow);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+}
+.coach-sidebar-dark .coach-nav__link--active::after { display: none; }
 .coach-nav__link-icon {
   width: 16px;
   height: 16px;

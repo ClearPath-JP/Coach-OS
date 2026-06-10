@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Check } from 'lucide-react'
 
 const plans = [
   {
@@ -49,88 +48,120 @@ const plans = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="relative py-24 md:py-32">
-      {/* Accent glow */}
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-[var(--accent)] opacity-[0.03] blur-[120px]" />
-
-      <div className="relative mx-auto max-w-7xl px-6">
+    <section
+      id="pricing"
+      className="relative border-b-[3px] border-[var(--ink)] bg-[var(--ink)] py-20 md:py-28"
+    >
+      <div className="relative mx-auto max-w-6xl px-6">
         {/* Section header */}
-        <div className="text-center mb-16">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[var(--accent)]">
-            Pricing
+        <div className="text-center mb-12 md:mb-14">
+          <span className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.14em] text-[#faf7f0]/45">
+            Founder pricing
           </span>
-          <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-            Pricing that grows with you
+          <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-[-0.04em] leading-[1.05] text-[#faf7f0]">
+            Lock in <span style={{ color: 'var(--belt-yellow)' }}>$99/mo</span>
+            <br />
+            for life.
           </h2>
-          <p className="mt-4 text-[var(--text-secondary)] max-w-lg mx-auto">
-            Students join free. Coaches pick a plan that fits their dojo.
+          <p className="mt-3 text-base font-medium text-[#faf7f0]/60">
+            The first 10 founding coaches keep this rate forever — full Pro access, $50/mo off, never goes up.
           </p>
         </div>
 
-        {/* Founding early-bird offer — current launch deal; the 3-tier ladder below is the public "later" pricing */}
-        <div className="relative mx-auto mb-12 max-w-3xl overflow-hidden rounded-2xl border border-[var(--accent)]/40 bg-[var(--accent)]/[0.06] p-6 text-center">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[var(--accent)]">
-            Founding offer · limited spots
-          </span>
-          <p className="mt-2 text-lg md:text-xl font-semibold text-[var(--text-primary)]">
-            Lock in full Pro access for{' '}
-            <span className="text-[var(--accent)]">$99/mo for life</span> — $50/mo off regular Pro pricing, forever.
-          </p>
-          <p className="mt-1 text-sm text-[var(--text-secondary)]">
-            Same as the <span className="text-[var(--text-primary)] font-medium">Pro plan ($149/mo)</span> below — unlimited students, custom branding, the works. Founding price never goes up.
-          </p>
-          <Link
-            href="/signup?role=coach&plan=founding"
-            className="mt-4 inline-block rounded-xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-[var(--text-on-accent)] shadow-lg shadow-[var(--accent)]/20 transition-all hover:bg-[var(--accent-hover)]"
+        {/* Pricing cards — founding (featured) + 3 tiers */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 items-end">
+          {/* FOUNDING — featured belt-yellow card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col rounded-[20px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] p-7 shadow-[7px_7px_0_#b8910f] lg:-translate-y-2"
           >
-            Claim a founding spot
-          </Link>
-        </div>
+            <span className="arcade-badge arcade-badge-dark self-start mb-4">
+              🏆 Founding · 10 spots
+            </span>
+            <h3 className="font-[family-name:var(--font-display)] text-lg font-extrabold text-[var(--ink)]">
+              Founding Coach
+            </h3>
+            <div className="mt-1 mb-5">
+              <span className="font-[family-name:var(--font-display)] text-5xl font-extrabold tracking-[-0.04em] text-[var(--ink)]">
+                $99
+              </span>
+              <span className="font-[family-name:var(--font-display)] text-sm font-bold text-[var(--ink)]">
+                /mo for life
+              </span>
+            </div>
+            <Link
+              href="/signup?role=coach&plan=founding"
+              className="block text-center font-[family-name:var(--font-display)] font-bold text-sm text-white bg-[var(--belt-blue)] border-[3px] border-[var(--ink)] rounded-[12px] px-5 py-3 shadow-[4px_4px_0_var(--ink)] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_var(--ink)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+            >
+              Claim a spot →
+            </Link>
+            <ul className="mt-5 space-y-2 font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--ink)]">
+              <li>✓ Everything in Pro</li>
+              <li>✓ Locked rate forever</li>
+              <li>✓ Founding badge</li>
+              <li>✓ Direct line to founder</li>
+            </ul>
+            {/* Spots cap indicator (illustrative — the offer is capped at 10) */}
+            <div className="mt-5 pt-4 border-t-[3px] border-[var(--ink)]/15">
+              <div className="flex justify-between font-[family-name:var(--font-display)] text-xs font-bold text-[var(--ink)] mb-1.5">
+                <span>Founding spots</span>
+                <span>First 10 coaches</span>
+              </div>
+              <div className="arcade-track">
+                <div className="arcade-fill arcade-fill-coral" style={{ width: '70%' }} />
+              </div>
+            </div>
+          </motion.div>
 
-        {/* Pricing cards */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* TIER CARDS — white brutal cards */}
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
-              transition={{ delay: i * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className={`relative rounded-2xl p-8 ${
-                plan.popular
-                  ? 'border-2 border-[var(--accent)] bg-[var(--accent)]/5'
-                  : 'border border-[var(--border-subtle)] bg-[var(--bg-subtle)]'
-              }`}
+              transition={{ delay: (i + 1) * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="arcade-lift flex flex-col rounded-[20px] border-[3px] border-[var(--ink)] bg-white p-7 shadow-[5px_5px_0_var(--ink)]"
             >
-              {plan.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-semibold bg-[var(--accent)] text-[var(--text-on-accent)]">
-                  Most Popular
+              <div className="flex items-center gap-2">
+                <h3 className="font-[family-name:var(--font-display)] text-lg font-extrabold text-[var(--ink)]">
+                  {plan.name}
+                </h3>
+                {plan.popular && (
+                  <span className="arcade-badge arcade-badge-teal !text-[10px]">Popular</span>
+                )}
+              </div>
+              <p className="text-xs font-medium text-[var(--text-tertiary)] mt-1">
+                {plan.description}
+              </p>
+
+              <div className="mt-4 mb-5">
+                <span className="font-[family-name:var(--font-display)] text-4xl font-extrabold tracking-[-0.04em] text-[var(--ink)]">
+                  ${plan.price}
                 </span>
-              )}
-
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">{plan.name}</h3>
-              <p className="text-sm text-[var(--text-tertiary)] mt-1">{plan.description}</p>
-
-              <div className="mt-6 mb-6">
-                <span className="text-4xl font-bold text-[var(--text-primary)]">${plan.price}</span>
-                <span className="text-sm text-[var(--text-tertiary)]">/mo</span>
+                <span className="font-[family-name:var(--font-display)] text-sm font-bold text-[var(--text-tertiary)]">
+                  /mo
+                </span>
               </div>
 
               <Link
                 href={`/signup?role=coach&plan=${plan.name.toLowerCase()}`}
-                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
+                className={`block text-center font-[family-name:var(--font-display)] font-bold text-sm border-[3px] border-[var(--ink)] rounded-[12px] px-5 py-3 transition-all ${
                   plan.popular
-                    ? 'bg-[var(--accent)] text-[var(--text-on-accent)] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20'
-                    : 'border border-white/40 bg-white/[0.12] text-[var(--text-primary)] hover:border-[var(--accent)]/60 hover:bg-[var(--accent)]/15'
+                    ? 'text-[var(--ink)] bg-[var(--belt-yellow)] shadow-[4px_4px_0_#b8910f] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#b8910f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
+                    : 'text-[var(--ink)] bg-white hover:bg-[var(--bg-muted)] active:translate-x-0.5 active:translate-y-0.5'
                 }`}
               >
-                Start Free Trial
+                Start free trial
               </Link>
 
-              <ul className="mt-8 space-y-3">
+              <ul className="mt-6 space-y-2.5 font-[family-name:var(--font-display)] text-sm font-medium text-[var(--text-secondary)]">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5 text-sm text-[var(--text-secondary)]">
-                    <Check size={16} className="text-[var(--accent)] shrink-0 mt-0.5" />
+                  <li key={feature} className="flex items-start gap-2">
+                    <span className="text-[var(--belt-teal)] font-bold shrink-0">✓</span>
                     {feature}
                   </li>
                 ))}

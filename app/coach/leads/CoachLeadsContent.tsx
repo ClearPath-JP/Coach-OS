@@ -591,7 +591,7 @@ export function CoachLeadsContent() {
                 <span>Local Scout is included in the Founding and Pro plans</span>
               ) : (
                 <>
-                  <span className="font-semibold text-[var(--text-primary)]">{limit.max - limit.used}</span> /{' '}
+                  <span className="font-[family-name:var(--font-display)] font-bold text-[var(--text-primary)]">{limit.max - limit.used}</span> /{' '}
                   {limit.max} searches left this month
                 </>
               )}

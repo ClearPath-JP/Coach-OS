@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { format, isBefore, parseISO, startOfDay } from 'date-fns'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { CoachGoalDto } from '@/components/coach/ClientGoalsTab'
 import { cn } from '@/lib/utils'
@@ -88,7 +87,7 @@ export default function ClientGoalsPage() {
 
   return (
     <main className="client-page-content mx-auto max-w-[720px] px-4 py-8 md:px-6">
-      <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">My Goals</h1>
+      <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">My Goals</h1>
 
       {goals.length === 0 ? (
         <EmptyState
@@ -108,7 +107,7 @@ export default function ClientGoalsPage() {
           {achievedList.length > 0 ? (
             <>
               <li className="pt-4">
-                <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+                <h2 className="font-[family-name:var(--font-display)] text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">
                   Achieved
                 </h2>
               </li>
@@ -152,42 +151,45 @@ function GoalCard({
 
   return (
     <li>
-      <Card padding="lg" variant="default" className={g.status === 'achieved' ? 'border-[var(--success-border)] bg-[var(--success-bg)]' : ''}>
+      <div className={cn(
+        'rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] p-6 shadow-[5px_5px_0_var(--ink)]',
+        g.status === 'achieved' && 'bg-[var(--success-bg)]'
+      )}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className={cn('inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize', catClass)}>
             {g.category}
           </span>
           {g.status === 'achieved' ? (
-            <span className="text-[12px] font-semibold text-[var(--success)]">🏆 Achieved</span>
+            <span className="arcade-badge arcade-badge-teal">🏆 Achieved</span>
           ) : g.status === 'paused' ? (
-            <Badge variant="warning">Paused</Badge>
+            <span className="arcade-badge">Paused</span>
           ) : (
-            <Badge variant="active">Active</Badge>
+            <span className="arcade-badge arcade-badge-blue">Active</span>
           )}
         </div>
-        <h2 className="mt-2 text-[16px] font-semibold text-[var(--text-primary)]">{g.title}</h2>
+        <h2 className="mt-2 font-[family-name:var(--font-display)] text-[17px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">{g.title}</h2>
         {g.description ? <p className="mt-1 text-[14px] text-[var(--text-secondary)]">{g.description}</p> : null}
 
         {showBar ? (
           <div className="mt-4">
-            <p className="text-[13px] text-[var(--text-tertiary)]">
-              {formatValue(g.startValue, g.unit)} → {formatValue(g.currentValue, g.unit)} → {formatValue(g.targetValue, g.unit)}
-            </p>
-            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
+            <div className="flex items-center justify-between font-[family-name:var(--font-display)] text-[13px] font-bold text-[var(--text-secondary)]">
+              <span>
+                {formatValue(g.startValue, g.unit)} → {formatValue(g.currentValue, g.unit)} → {formatValue(g.targetValue, g.unit)}
+              </span>
+              <span>{g.progressPercent != null ? `${g.progressPercent}%` : '—'}</span>
+            </div>
+            <div className="arcade-track mt-2 h-2.5">
               <AnimatedBar
                 percent={g.progressPercent ?? 0}
-                className="h-2 w-full"
-                fillClassName={g.status === 'achieved' ? 'bg-[var(--success)]' : 'bg-[var(--cp-accent)]'}
+                className="h-full w-full"
+                fillClassName={g.status === 'achieved' ? 'bg-[var(--belt-teal)]' : 'bg-[var(--cp-accent)]'}
               />
             </div>
-            <p className="mt-2 text-right text-[13px] text-[var(--text-tertiary)]">
-              {g.progressPercent != null ? `${g.progressPercent}% complete` : '—'}
-            </p>
           </div>
         ) : null}
 
         {g.status === 'achieved' && g.achievedAt ? (
-          <p className="mt-2 text-[12px] text-[var(--success)]">
+          <p className="mt-2 text-[12px] font-medium text-[var(--success)]">
             Achieved on {format(parseISO(g.achievedAt), 'MMMM d, yyyy')}
           </p>
         ) : null}
@@ -230,7 +232,7 @@ function GoalCard({
             ) : null}
           </div>
         ) : null}
-      </Card>
+      </div>
     </li>
   )
 }

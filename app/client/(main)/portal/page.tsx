@@ -30,27 +30,27 @@ function messagePreview(content: string | null, messageType: string | null): str
   return singleLine.length > 60 ? `${singleLine.slice(0, 60)}…` : singleLine
 }
 
+function formatMoney(cents: number, currency: string | null | undefined): string {
+  const amount = (cents ?? 0) / 100
+  const code = (currency ?? 'usd').trim().toUpperCase()
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).format(amount)
+  } catch {
+    return `$${amount.toFixed(2)}`
+  }
+}
+
 function sessionTypeLabel(t: string | null | undefined): string {
   if (t === 'in_person') return 'In person'
   if (t === 'video' || t === 'phone') return 'Video'
   return 'Session'
 }
 
-const GOAL_CATEGORY_STYLE: Record<string, string> = {
-  fitness: 'bg-[var(--info-bg)] text-[var(--info)]',
-  nutrition: 'bg-[var(--success-bg)] text-[var(--success)]',
-  mindset: 'bg-[var(--cp-accent-light)] text-[var(--cp-accent)]',
-  business: 'bg-[var(--warning-bg)] text-[var(--warning)]',
-  health: 'bg-[var(--error-bg)] text-[var(--error)]',
-  performance: 'bg-[var(--info-bg)] text-[var(--info)]',
-  general: 'bg-[var(--bg-muted)] text-[var(--text-secondary)]',
-}
-
-function assignmentEmoji(type: string | null | undefined): { emoji: string; bg: string } {
+function assignmentEmoji(type: string | null | undefined): { emoji: string } {
   const t = (type ?? 'text').toLowerCase()
-  if (t === 'video') return { emoji: '🎥', bg: 'bg-[var(--error-bg)]' }
-  if (t === 'checklist') return { emoji: '✅', bg: 'bg-[var(--success-bg)]' }
-  return { emoji: '📝', bg: 'bg-[var(--info-bg)]' }
+  if (t === 'video') return { emoji: '🎥' }
+  if (t === 'checklist') return { emoji: '✅' }
+  return { emoji: '📝' }
 }
 
 export default async function ClientPortalPage() {
@@ -219,84 +219,186 @@ export default async function ClientPortalPage() {
     <main className="client-page-content mx-auto w-full max-w-[1400px] px-4 pb-20 pt-4 md:px-6 md:pb-8 md:pt-6 lg:px-8 lg:pb-10 lg:pt-6 xl:px-10">
 
       {/* ══════════════════════════════════════════════
-          MOBILE LAYOUT (hidden on lg+)
+          MOBILE LAYOUT (hidden on lg+) — DOJO ARCADE
           ══════════════════════════════════════════════ */}
       <div className="lg:hidden px-0 pt-0 pb-24">
 
-        {/* Section 1 — Compact greeting (date computed client-side — server clock is UTC) */}
-        <div className="mb-3">
-          <PortalLocalDate className="text-[12px] text-[var(--text-tertiary)]" />
-          <h1 className="text-[21px] font-bold tracking-[-0.03em] text-[var(--text-primary)] leading-tight">
-            Hey, {firstName} 👋
+        {/* Section 1 — Greeting (date computed client-side — server clock is UTC) */}
+        <div className="mb-4">
+          <PortalLocalDate className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]" />
+          <h1 className="mt-1 text-[26px] font-extrabold leading-[1.05] tracking-[-0.02em] text-[var(--ink)] font-[family-name:var(--font-display)]">
+            Welcome back, {firstName} 👊
           </h1>
         </div>
 
-        {/* Section 2 — Next session card */}
-        {sessionStart && nextSession ? (
-          <div className="mb-3 overflow-hidden rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]" style={{ background: 'var(--bg-subtle)' }}>
-            <div className="flex items-center justify-between px-3 py-3">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)] mb-0.5">Next session</p>
-                <p className="text-[15px] font-bold text-[var(--text-primary)]">{format(sessionStart, 'EEE, MMM d · h:mm a')}</p>
-                <p className="text-[12px] text-[var(--text-tertiary)]">{sessionTypeLabel(nextSession.session_type)} · {nextSession.duration_minutes ?? 60} min with {coachDisplayName}</p>
+        {/* Section 2 — XP / streak banner (REAL data; only when rewards exist) */}
+        {rewardsRow ? (
+          <div className="tile-teal mb-4 p-4">
+            <div className="flex items-center gap-3">
+              <div className="arcade-medal shrink-0" style={{ background: 'var(--belt-yellow)' }} aria-hidden>🔥</div>
+              <div className="min-w-0 flex-1 text-white">
+                <p className="text-[18px] font-extrabold leading-tight tracking-[-0.02em] font-[family-name:var(--font-display)]">
+                  {streak > 0 ? `${streak}-day streak!` : `Level ${levelInfo.level} · ${levelInfo.name}`}
+                </p>
+                <p className="text-[12px] font-semibold leading-snug text-white/85 font-[family-name:var(--font-display)]">
+                  {streak > 0 ? `${levelInfo.name} · keep training` : 'Check in and finish tasks to build a streak'}
+                </p>
               </div>
-              <Link href="/client/sessions" className="rounded-[8px] bg-[var(--cp-accent)] px-3 py-2 text-[13px] font-semibold text-white">View</Link>
+              <div className="shrink-0 text-center text-white">
+                <p className="text-[26px] font-extrabold leading-none tracking-[-0.04em] tabular-nums font-[family-name:var(--font-display)]" style={{ color: 'var(--belt-yellow)' }}>
+                  {totalXp}
+                </p>
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/70 font-[family-name:var(--font-display)]">XP total</p>
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="mb-3 overflow-hidden rounded-[12px] border border-[var(--border-default)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]" style={{ background: 'var(--bg-subtle)' }}>
-            <div className="px-3 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)] mb-0.5">Next session</p>
-              <p className="text-[13px] text-[var(--text-tertiary)]">No upcoming sessions — request one below.</p>
+        ) : null}
+
+        {/* Section 3 — Next session card (REAL; 1-on-1 session, no fabricated capacity) */}
+        {sessionStart && nextSession ? (
+          <div className="tile-yellow mb-4 p-4">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink)]/55 font-[family-name:var(--font-display)]">Next session</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[20px] font-extrabold leading-tight tracking-[-0.02em] text-[var(--ink)] font-[family-name:var(--font-display)]">
+                  {format(sessionStart, 'EEE, MMM d')}
+                </p>
+                <p className="text-[13px] font-semibold text-[var(--ink)]/75 font-[family-name:var(--font-display)]">
+                  {sessionTypeLabel(nextSession.session_type)} · {durationMin} min with {coachDisplayName}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {within2h ? (
+                    <span className="arcade-badge arcade-badge-coral">Starting soon</span>
+                  ) : within24h && hoursUntil != null ? (
+                    <span className="arcade-badge">In {hoursUntil}h {minsRemainder ?? 0}m</span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="shrink-0 text-center">
+                <p className="text-[28px] font-extrabold leading-none tracking-[-0.04em] text-[var(--ink)] font-[family-name:var(--font-display)]">
+                  {format(sessionStart, 'h:mm')}
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/55 font-[family-name:var(--font-display)]">
+                  {format(sessionStart, 'a')}
+                </p>
+              </div>
             </div>
+            {nextSession.notes?.trim() ? (
+              <p className="mt-2 text-[12px] italic text-[var(--ink)]/70 font-[family-name:var(--font-display)]">{nextSession.notes.trim()}</p>
+            ) : null}
+            <Link href="/client/sessions" className="mt-3 flex h-11 w-full items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--belt-blue)] text-[14px] font-extrabold text-white shadow-[3px_3px_0_var(--ink)] transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none font-[family-name:var(--font-display)]">
+              View session details →
+            </Link>
+          </div>
+        ) : (
+          <div className="mb-4 rounded-[16px] border-[3px] border-[var(--ink)] bg-white p-4 shadow-[5px_5px_0_var(--ink)]">
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Next session</p>
+            <p className="text-[14px] font-semibold text-[var(--text-secondary)] font-[family-name:var(--font-display)]">No upcoming sessions — request one below.</p>
           </div>
         )}
 
-        {/* Section 3 — Daily check-in */}
-        <div className="mb-3 overflow-hidden rounded-[12px] border border-[var(--border-default)]" style={{ background: 'var(--bg-subtle)' }}>
-          <div className="px-3 py-3">
-            <ClientPortalDailyCheckIn firstName={firstName} serverToday={todayCheckin} />
+        {/* Section 4 — Daily check-in */}
+        <div className="mb-4 overflow-hidden rounded-[16px] border-[3px] border-[var(--ink)] bg-white p-4 shadow-[5px_5px_0_var(--ink)]">
+          <ClientPortalDailyCheckIn firstName={firstName} serverToday={todayCheckin} />
+        </div>
+
+        {/* Section 5 — Pending invoices alert (REAL) */}
+        {pendingInvoices.length > 0 ? (
+          <Link
+            href="/client/invoices"
+            className="arcade-lift mb-4 flex items-center gap-3 rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] p-4 text-white shadow-[5px_5px_0_var(--ink)]"
+          >
+            <span className="text-[22px]" aria-hidden>💰</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-extrabold leading-tight font-[family-name:var(--font-display)]">
+                {pendingInvoices.length} pending invoice{pendingInvoices.length !== 1 ? 's' : ''}
+              </span>
+              <span className="block text-[12px] font-semibold text-white/85 font-[family-name:var(--font-display)]">
+                {formatMoney(pendingInvoicesTotalCents, pendingCurrency)}{' '}due — tap to view
+              </span>
+            </span>
+          </Link>
+        ) : null}
+
+        {/* Section 6 — Tasks due (REAL) */}
+        {previewAssignments.length > 0 ? (
+          <div className="mb-4 overflow-hidden rounded-[16px] border-[3px] border-[var(--ink)] bg-white shadow-[5px_5px_0_var(--ink)]">
+            <p className="px-4 pt-4 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Tasks due</p>
+            <ul className="px-2 py-2">
+              {previewAssignments.map((row) => {
+                const tmpl = row.assignment_templates as
+                  | { title?: string; assignment_type?: string; points?: number }
+                  | { title?: string; assignment_type?: string; points?: number }[]
+                  | null
+                const tdata = Array.isArray(tmpl) ? tmpl[0] : tmpl
+                const title = tdata?.title ?? 'Task'
+                const typ = tdata?.assignment_type
+                const pts = tdata?.points ?? 0
+                const { emoji } = assignmentEmoji(typ)
+                const due = row.due_at ? parseISO(row.due_at) : null
+                const dayDelta = due ? differenceInCalendarDays(due, now) : null
+                const overdue = dayDelta != null && dayDelta < 0
+                return (
+                  <li key={row.id} className="flex min-h-14 items-center gap-3 px-2 py-2">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border-2 border-[var(--ink)] bg-[var(--belt-yellow)] text-[16px]" aria-hidden>
+                      {emoji}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-[14px] font-bold text-[var(--ink)] font-[family-name:var(--font-display)]">{title}</span>
+                      <span className="block text-[12px] font-semibold text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
+                        {due
+                          ? overdue
+                            ? `Overdue by ${Math.abs(dayDelta ?? 0)} days`
+                            : dayDelta === 0
+                              ? 'Due today'
+                              : dayDelta === 1
+                                ? 'Due tomorrow'
+                                : `Due in ${dayDelta} days`
+                          : 'No due date'}
+                      </span>
+                    </div>
+                    {pts > 0 ? (
+                      <span className="arcade-badge arcade-badge-teal shrink-0">+{pts} XP</span>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        ) : null}
+
+        {/* Section 7 — Belts & ranks placeholder (HONEST: no belt/achievement data yet) */}
+        <div className="mb-4 rounded-[16px] border-[3px] border-dashed border-[var(--ink)]/30 bg-white p-4">
+          <div className="flex items-center gap-3">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)]/30 bg-[var(--bg-muted)] text-[24px]" aria-hidden>🥋</span>
+            <div className="min-w-0">
+              <p className="text-[15px] font-extrabold text-[var(--ink)] font-[family-name:var(--font-display)]">Belts &amp; medals</p>
+              <p className="text-[12px] font-semibold text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Rank tracking &amp; achievements coming soon.</p>
+            </div>
           </div>
         </div>
 
-        {/* Section 4 — Quick nav grid */}
-        <div className="mb-3 grid grid-cols-2 gap-2.5">
+        {/* Section 8 — Quick actions (REAL routes) */}
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Quick actions</p>
+        <div className="mb-4 grid grid-cols-2 gap-3">
           {[
-            { label: 'Programs', href: '/client/programs', emoji: '📚', sub: 'Your content', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
-            { label: 'Sessions', href: '/client/sessions', emoji: '📅', sub: 'View schedule', color: 'var(--success-bg)', textColor: 'var(--success)' },
-            { label: 'Classes', href: '/client/classes', emoji: '🎟️', sub: 'Book a class', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
-            { label: 'Goals', href: '/client/goals', emoji: '🎯', sub: `${activeGoals.length > 0 ? `${activeGoals.length} active` : 'Track progress'}`, color: 'color-mix(in srgb, #a855f7 12%, var(--bg-muted))', textColor: '#a855f7' },
-            { label: 'Messages', href: '/client/messages', emoji: '💬', sub: messageUnreadCount > 0 ? `${messageUnreadCount} unread` : 'Chat with coach', color: 'var(--cp-accent-light)', textColor: 'var(--cp-accent)' },
-            { label: 'Passes', href: '/client/passes', emoji: '💳', sub: 'Class credits', color: 'var(--warning-bg)', textColor: 'var(--warning)' },
-            { label: 'Invoices', href: '/client/invoices', emoji: '🧾', sub: pendingInvoices.length > 0 ? `${pendingInvoices.length} pending` : 'Billing', color: 'var(--bg-muted)', textColor: 'var(--text-tertiary)' },
-          ].map(item => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 rounded-[12px] border border-[var(--border-default)] px-3 py-3.5 transition-all duration-100 active:scale-[0.98]"
-              style={{ background: 'var(--bg-subtle)' }}>
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full text-[20px]" style={{ background: item.color }}>
-                {item.emoji}
-              </span>
-              <span>
-                <span className="block text-[14px] font-semibold text-[var(--text-primary)]">{item.label}</span>
-                <span className="block text-[11px] text-[var(--text-tertiary)]">{item.sub}</span>
-              </span>
+            { label: 'Book a class', href: '/client/classes', emoji: '📅', tile: 'tile-yellow' },
+            { label: 'Message coach', href: '/client/messages', emoji: '💬', tile: 'tile-violet' },
+            { label: 'My videos', href: '/client/videos', emoji: '🎥', tile: 'tile-teal' },
+            { label: 'Invoices', href: '/client/invoices', emoji: '🧾', tile: 'tile-blue' },
+            { label: 'Programs', href: '/client/programs', emoji: '📚', tile: 'arcade-tile' },
+            { label: 'Passes', href: '/client/passes', emoji: '🎟️', tile: 'arcade-tile' },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(item.tile, 'arcade-lift flex items-center gap-3 p-3.5')}
+            >
+              <span className="text-[24px]" aria-hidden>{item.emoji}</span>
+              <span className="text-[14px] font-extrabold tracking-[-0.01em] font-[family-name:var(--font-display)]">{item.label}</span>
             </Link>
           ))}
         </div>
-
-        {/* Section 5 — Alert chips */}
-        {(pendingInvoices.length > 0) ? (
-          <div className="flex flex-wrap gap-2">
-            {pendingInvoices.length > 0 ? (
-              <Link
-                href="/client/invoices"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium bg-[var(--warning-bg)] text-[var(--warning)] border border-[var(--warning-border)]"
-              >
-                💰 {pendingInvoices.length} pending invoice{pendingInvoices.length !== 1 ? 's' : ''} — tap to view
-              </Link>
-            ) : null}
-          </div>
-        ) : null}
 
       </div>
       {/* END MOBILE LAYOUT */}
@@ -307,14 +409,14 @@ export default async function ClientPortalPage() {
       <div className="hidden lg:block">
 
       {/* Greeting (date + time-of-day greeting computed client-side — server clock is UTC) */}
-      <div className="mb-5 border-b border-[var(--border-subtle)] pb-5 lg:mb-6 lg:pb-6">
-        <PortalLocalDate className="text-[11px] font-medium text-[var(--text-tertiary)] lg:text-[13px]" />
+      <div className="mb-6 lg:mb-7">
+        <PortalLocalDate className="text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]" />
         <PortalLocalGreeting
           firstName={firstName}
-          className="mt-0.5 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-primary)] [font-family:var(--font-sora)] lg:mt-1 lg:text-[26px] xl:text-[28px]"
+          className="mt-1 text-[28px] font-extrabold leading-[1.05] tracking-[-0.02em] text-[var(--ink)] font-[family-name:var(--font-display)] lg:text-[32px] xl:text-[34px]"
         />
-        <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-[var(--text-secondary)] lg:mt-2 lg:text-[14px]">
-          Here&apos;s everything in one place — sessions, tasks, progress, and messages with {coachDisplayName}.
+        <p className="mt-2 max-w-xl text-[14px] font-semibold leading-relaxed text-[var(--text-secondary)] font-[family-name:var(--font-display)]">
+          Everything in one place — sessions, tasks, progress, and messages with {coachDisplayName}.
         </p>
       </div>
 
@@ -326,9 +428,9 @@ export default async function ClientPortalPage() {
 
           {hasBrandingContent ? (
             <PortalBrandedHero>
-              <section className="rounded-[var(--radius-xl)] bg-[linear-gradient(135deg,var(--cp-accent-light)_0%,transparent_100%)] px-6 py-6">
+              <section className="rounded-[16px] border-[3px] border-[var(--ink)] bg-white px-6 py-6 shadow-[5px_5px_0_var(--ink)]">
                 {branding?.logoUrl?.trim() ? (
-                  <div className="relative mb-3 size-12 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--cp-offwhite)]">
+                  <div className="relative mb-3 size-12 overflow-hidden rounded-[10px] border-[3px] border-[var(--ink)] bg-[var(--cp-offwhite)]">
                     <Image
                       src={branding.logoUrl.trim()}
                       alt={
@@ -343,17 +445,17 @@ export default async function ClientPortalPage() {
                   </div>
                 ) : null}
                 {branding?.brandName?.trim() ? (
-                  <p className="text-[20px] font-bold text-[var(--text-primary)]">{branding.brandName.trim()}</p>
+                  <p className="text-[22px] font-extrabold tracking-[-0.02em] text-[var(--ink)] font-[family-name:var(--font-display)]">{branding.brandName.trim()}</p>
                 ) : null}
                 {branding?.brandTagline?.trim() ? (
-                  <p className="mt-1 text-[14px] italic text-[var(--text-tertiary)]">{branding.brandTagline.trim()}</p>
+                  <p className="mt-1 text-[14px] font-semibold italic text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">{branding.brandTagline.trim()}</p>
                 ) : null}
                 {branding?.clientWelcomeMessage?.trim() ? (
-                  <p className="mt-3 text-[14px] leading-[1.7] text-[var(--text-secondary)]">
+                  <p className="mt-3 text-[14px] font-medium leading-[1.7] text-[var(--text-secondary)] font-[family-name:var(--font-display)]">
                     {branding.clientWelcomeMessage.trim()}
                   </p>
                 ) : branding?.clientPortalHeading?.trim() ? (
-                  <p className="mt-3 text-[14px] leading-[1.7] text-[var(--text-secondary)]">
+                  <p className="mt-3 text-[14px] font-medium leading-[1.7] text-[var(--text-secondary)] font-[family-name:var(--font-display)]">
                     {branding.clientPortalHeading.trim()}
                   </p>
                 ) : null}
@@ -362,29 +464,28 @@ export default async function ClientPortalPage() {
           ) : null}
 
           {pendingInvoices.length > 0 ? (
-            <section className="rounded-[12px] border border-[var(--warning-border)] bg-[var(--warning-bg)] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-[box-shadow,transform] duration-200 lg:border-[var(--warning-border)] lg:hover:-translate-y-px lg:hover:shadow-[var(--shadow-md)]">
+            <section className="rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] p-5 text-white shadow-[5px_5px_0_var(--ink)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-[15px] font-semibold text-[var(--warning)]">
-                    💰 You have {pendingInvoices.length} pending invoice{pendingInvoices.length !== 1 ? 's' : ''}
-                  </p>
-                  <p className="mt-1 text-[13px] text-[var(--text-tertiary)]">
-                    Total due:{' '}
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: pendingCurrency.toUpperCase() === 'USD' ? 'USD' : pendingCurrency,
-                    }).format(pendingInvoicesTotalCents / 100)}
-                  </p>
-                  {pendingInvoices.length === 1 ? (
-                    <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
-                      {(pendingInvoices[0] as { session_packages?: { title?: string | null } | null }).session_packages
-                        ?.title ?? 'Invoice'}
+                <div className="flex items-start gap-3">
+                  <span className="text-[24px]" aria-hidden>💰</span>
+                  <div>
+                    <p className="text-[17px] font-extrabold leading-tight tracking-[-0.01em] font-[family-name:var(--font-display)]">
+                      {pendingInvoices.length} pending invoice{pendingInvoices.length !== 1 ? 's' : ''}
                     </p>
-                  ) : null}
+                    <p className="mt-1 text-[13px] font-semibold text-white/85 font-[family-name:var(--font-display)]">
+                      Total due: {formatMoney(pendingInvoicesTotalCents, pendingCurrency)}
+                    </p>
+                    {pendingInvoices.length === 1 ? (
+                      <p className="mt-1 text-[13px] font-semibold text-white/85 font-[family-name:var(--font-display)]">
+                        {(pendingInvoices[0] as { session_packages?: { title?: string | null } | null }).session_packages
+                          ?.title ?? 'Invoice'}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <Link
                   href="/client/invoices"
-                  className="inline-flex h-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-3 text-[13px] font-medium text-[var(--text-primary)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--bg-subtle)]"
+                  className="inline-flex h-11 shrink-0 items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-white px-4 text-[14px] font-extrabold text-[var(--ink)] shadow-[3px_3px_0_var(--ink)] transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[5px_5px_0_var(--ink)] font-[family-name:var(--font-display)]"
                 >
                   View invoices
                 </Link>
@@ -392,133 +493,62 @@ export default async function ClientPortalPage() {
             </section>
           ) : null}
 
-          {/* ── NEXT SESSION ── */}
+          {/* ── NEXT SESSION (REAL; 1-on-1 session, no fabricated capacity) ── */}
           <section>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
-              Upcoming session
-            </p>
             {sessionStart && nextSession ? (
-              <Card variant="default" padding="lg" className="overflow-hidden !p-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <div className="p-4 lg:flex lg:items-center lg:gap-4">
+              <div className="tile-yellow overflow-hidden">
+                <div className="p-5 lg:flex lg:items-center lg:gap-5">
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="text-[16px] font-semibold text-[var(--text-primary)] lg:text-[16px] lg:font-bold">
-                        {format(sessionStart, 'EEEE, MMMM d')}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--ink)]/55 font-[family-name:var(--font-display)]">
+                        Next session
                       </p>
-                      <span className="rounded-full bg-[var(--cp-accent-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--cp-accent)]">
-                        {sessionTypeLabel(nextSession.session_type)}
-                      </span>
+                      <span className="arcade-badge">{sessionTypeLabel(nextSession.session_type)}</span>
                     </div>
-                    <p className="mt-2 text-[14px] text-[var(--text-secondary)] lg:text-[16px] lg:font-bold lg:text-[var(--text-primary)]">
-                      {format(sessionStart, 'h:mm a')} · {durationMin} minutes
+                    <p className="mt-1 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[var(--ink)] font-[family-name:var(--font-display)]">
+                      {format(sessionStart, 'EEEE, MMMM d')}
+                    </p>
+                    <p className="mt-1 text-[15px] font-bold text-[var(--ink)]/80 font-[family-name:var(--font-display)]">
+                      {format(sessionStart, 'h:mm a')} · {durationMin} minutes with {coachDisplayName}
                     </p>
                     {within24h && !within2h && hoursUntil != null ? (
-                      <p className="mt-1 text-[12px] font-medium text-[var(--cp-accent)]">
-                        In {hoursUntil} hours {minsRemainder ?? 0} minutes
+                      <p className="mt-2 inline-flex">
+                        <span className="arcade-badge arcade-badge-blue">In {hoursUntil}h {minsRemainder ?? 0}m</span>
                       </p>
                     ) : null}
                     {nextSession.notes?.trim() ? (
-                      <p className="mt-2 text-[13px] italic text-[var(--text-tertiary)]">{nextSession.notes.trim()}</p>
+                      <p className="mt-2 text-[13px] italic text-[var(--ink)]/70 font-[family-name:var(--font-display)]">{nextSession.notes.trim()}</p>
                     ) : null}
                   </div>
                   <Link
                     href="/client/sessions"
-                    className="mt-3 inline-block shrink-0 text-[13px] font-medium text-[var(--cp-accent)] lg:mt-0"
+                    className="mt-4 flex h-11 shrink-0 items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--belt-blue)] px-5 text-[14px] font-extrabold text-white shadow-[3px_3px_0_var(--ink)] transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[5px_5px_0_var(--ink)] font-[family-name:var(--font-display)] lg:mt-0"
                   >
-                    View all sessions →
+                    View details →
                   </Link>
                 </div>
                 {within2h ? (
-                  <div className="bg-[var(--cp-accent)] px-4 py-2 text-center text-[13px] font-medium text-white">
+                  <div className="border-t-[3px] border-[var(--ink)] bg-[var(--belt-coral)] px-4 py-2 text-center text-[14px] font-extrabold text-white font-[family-name:var(--font-display)]">
                     Starting soon — get ready!
                   </div>
                 ) : null}
-              </Card>
+              </div>
             ) : (
-              <p className="text-[14px] text-[var(--text-tertiary)]">Nothing scheduled yet. Request a session below.</p>
+              <div className="rounded-[16px] border-[3px] border-[var(--ink)] bg-white p-5 shadow-[5px_5px_0_var(--ink)]">
+                <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Next session</p>
+                <p className="text-[15px] font-semibold text-[var(--text-secondary)] font-[family-name:var(--font-display)]">Nothing scheduled yet. Request a session below.</p>
+              </div>
             )}
           </section>
 
-          {/* Mobile-only rewards strip */}
-          {rewardsRow ? (
-            <section className="flex items-center gap-4 rounded-[12px] bg-[var(--bg-subtle)] px-4 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] lg:hidden">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[20px] font-bold text-[var(--text-on-accent)]">
-                {levelInfo.level}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-medium text-[var(--text-primary)]">
-                  Level {levelInfo.level}: {levelInfo.name}
-                </p>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                  <AnimatedBar percent={xpBarPct} className="h-1.5 w-full" />
-                </div>
-                <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
-                  {totalXp} XP
-                  {nextLevelDef && xpToNext > 0 ? ` · ${xpToNext} to next level` : !nextLevelDef ? ' · Max level' : ''}
-                </p>
-              </div>
-              <div className="hidden shrink-0 text-right sm:block">
-                <p className="text-[12px] text-[var(--text-tertiary)]">🔥 {streak} day streak</p>
-                <p className="text-[12px] text-[var(--text-tertiary)]">✅ {doneHw} tasks done</p>
-              </div>
-            </section>
-          ) : null}
-
-          {/* Mobile-only program card */}
-          {programBlock ? (
-            <section className="lg:hidden">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
-                Your program
-              </p>
-              <Card variant="default" padding="lg" className="shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <p className="text-[16px] font-semibold text-[var(--text-primary)]">{programBlock.title}</p>
-                <div className="my-3 h-2 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                  <AnimatedBar
-                    percent={
-                      programBlock.total > 0
-                        ? Math.min(100, Math.round((programBlock.completed / programBlock.total) * 100))
-                        : 0
-                    }
-                    className="h-2 w-full"
-                  />
-                </div>
-                <div className="flex justify-between text-[13px] text-[var(--text-tertiary)]">
-                  <span>
-                    {programBlock.completed} of {programBlock.total} modules complete
-                  </span>
-                  <span>
-                    {programBlock.total > 0
-                      ? `${Math.min(100, Math.round((programBlock.completed / programBlock.total) * 100))}%`
-                      : '0%'}
-                  </span>
-                </div>
-                {programBlock.lastActivity ? (
-                  <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
-                    Last activity: {programBlock.lastActivity}
-                  </p>
-                ) : null}
-                <Link
-                  href={`/client/programs/${programBlock.programId}`}
-                  className="mt-4 flex h-11 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] text-[14px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--cp-accent-hover)]"
-                >
-                  Continue program
-                </Link>
-              </Card>
-            </section>
-          ) : (
-            <p className="text-[14px] leading-relaxed text-[var(--text-tertiary)] lg:hidden">
-              Your coach will assign a program here soon. In the meantime, check your messages.
-            </p>
-          )}
-
-          {/* ── ASSIGNMENTS PREVIEW ── */}
+          {/* ── ASSIGNMENTS PREVIEW (REAL) ── */}
           {previewAssignments.length > 0 ? (
             <section>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
                 Tasks due
               </p>
-              <Card variant="elevated" padding="default" className="overflow-hidden !p-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <ul className="divide-y divide-[var(--border-subtle)] px-1">
+              <div className="overflow-hidden rounded-[16px] border-[3px] border-[var(--ink)] bg-white shadow-[5px_5px_0_var(--ink)]">
+                <ul className="px-2 py-2">
                   {previewAssignments.map((row) => {
                     const tmpl = row.assignment_templates as
                       | { title?: string; assignment_type?: string; points?: number }
@@ -528,20 +558,20 @@ export default async function ClientPortalPage() {
                     const title = tdata?.title ?? 'Task'
                     const typ = tdata?.assignment_type
                     const pts = tdata?.points ?? 0
-                    const { emoji, bg } = assignmentEmoji(typ)
+                    const { emoji } = assignmentEmoji(typ)
                     const due = row.due_at ? parseISO(row.due_at) : null
                     const dayDelta = due ? differenceInCalendarDays(due, now) : null
                     const overdue = dayDelta != null && dayDelta < 0
                     return (
-                      <li key={row.id} className="flex min-h-14 items-center gap-3 py-2 pl-1 pr-1">
-                        <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full text-[15px]', bg)}>
+                      <li key={row.id} className="flex min-h-14 items-center gap-3 px-2 py-2">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border-2 border-[var(--ink)] bg-[var(--belt-yellow)] text-[16px]" aria-hidden>
                           {emoji}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <span className="text-[14px] font-medium text-[var(--text-primary)]">
+                          <span className="block text-[14px] font-bold text-[var(--ink)] font-[family-name:var(--font-display)]">
                             {title}
                           </span>
-                          <p className="text-[12px] text-[var(--text-tertiary)]">
+                          <p className={cn('text-[12px] font-semibold font-[family-name:var(--font-display)]', overdue ? 'text-[var(--belt-coral)]' : 'text-[var(--text-tertiary)]')}>
                             {due
                               ? overdue
                                 ? `Overdue by ${Math.abs(dayDelta ?? 0)} days`
@@ -554,26 +584,24 @@ export default async function ClientPortalPage() {
                           </p>
                         </div>
                         {pts > 0 ? (
-                          <span className="shrink-0 rounded-full bg-[var(--cp-accent-light)] px-2 py-0.5 text-[12px] font-medium text-[var(--cp-accent)]">
-                            +{pts} XP
-                          </span>
+                          <span className="arcade-badge arcade-badge-teal shrink-0">+{pts} XP</span>
                         ) : null}
                       </li>
                     )
                   })}
                 </ul>
-              </Card>
+              </div>
             </section>
           ) : null}
 
-          {/* ── GOALS PREVIEW ── */}
+          {/* ── GOALS PREVIEW (REAL) ── */}
           {portalGoals.length > 0 ? (
             <section>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
                 My goals
               </p>
-              <Card variant="elevated" padding="lg" className="shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <ul className="space-y-3">
+              <div className="rounded-[16px] border-[3px] border-[var(--ink)] bg-white p-5 shadow-[5px_5px_0_var(--ink)]">
+                <ul className="space-y-4">
                   {portalGoals.map((g) => {
                     const pct =
                       g.status === 'achieved'
@@ -583,28 +611,25 @@ export default async function ClientPortalPage() {
                             startValue: g.start_value,
                             currentValue: g.current_value,
                           }) ?? 0
-                    const catCls = GOAL_CATEGORY_STYLE[g.category] ?? GOAL_CATEGORY_STYLE.general
                     return (
                       <li key={g.id} className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-medium capitalize', catCls)}>
-                            {g.category}
-                          </span>
+                          <span className="arcade-badge capitalize">{g.category}</span>
                           {g.status === 'achieved' ? (
-                            <span className="text-[12px] font-medium text-[var(--success)]">🏆 Achieved!</span>
+                            <span className="arcade-badge arcade-badge-teal">🏆 Achieved</span>
                           ) : null}
                         </div>
-                        <p className="text-[14px] font-medium text-[var(--text-primary)]">{g.title}</p>
+                        <p className="text-[15px] font-bold text-[var(--ink)] font-[family-name:var(--font-display)]">{g.title}</p>
                         {g.target_value != null ? (
                           <>
-                            <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
+                            <div className="arcade-track">
                               <AnimatedBar
                                 percent={pct}
-                                className="h-1 w-full"
-                                fillClassName={g.status === 'achieved' ? 'bg-[var(--success)]' : 'bg-[var(--cp-accent)]'}
+                                className="h-full w-full !rounded-none border-0 bg-transparent"
+                                fillClassName={g.status === 'achieved' ? 'arcade-fill' : 'arcade-fill-blue'}
                               />
                             </div>
-                            <p className="text-right text-[12px] text-[var(--text-tertiary)]">
+                            <p className="text-right text-[12px] font-semibold text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
                               {g.current_value ?? '—'} / {g.target_value} {g.unit ?? ''}
                             </p>
                           </>
@@ -614,64 +639,13 @@ export default async function ClientPortalPage() {
                   })}
                 </ul>
                 {activeGoals.length > 3 ? (
-                  <Link href="/client/goals" className="mt-4 inline-block text-[13px] font-medium text-[var(--cp-accent)]">
+                  <Link href="/client/goals" className="mt-4 inline-flex h-10 items-center text-[13px] font-extrabold text-[var(--cp-accent)] font-[family-name:var(--font-display)]">
                     View all goals →
                   </Link>
                 ) : null}
-              </Card>
+              </div>
             </section>
           ) : null}
-
-          {/* Mobile-only messages card */}
-          <section className="lg:hidden">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
-              Messages
-            </p>
-            <Card variant="elevated" padding="default" className="overflow-hidden !p-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              <Link
-                href="/client/messages"
-                className="flex h-[72px] items-center gap-3 px-5 py-4 text-inherit no-underline transition-colors duration-150 hover:bg-[var(--bg-subtle)]"
-              >
-                <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--cp-accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
-                  {branding?.logoUrl?.trim() ? (
-                    <Image
-                      src={branding.logoUrl.trim()}
-                      alt={`${coachDisplayName} workspace logo`}
-                      fill
-                      className="object-cover"
-                      sizes="40px"
-                    />
-                  ) : (
-                    coachDisplayName.slice(0, 1).toUpperCase()
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{coachDisplayName}</p>
-                  {lastMessage ? (
-                    <p className="truncate text-[13px] text-[var(--text-tertiary)]">
-                      {messagePreview(lastMessage.content, lastMessage.message_type)}
-                    </p>
-                  ) : (
-                    <p className="text-[14px] text-[var(--text-tertiary)]">
-                      Your conversation with your coach lives here. They&apos;ll reach out soon.
-                    </p>
-                  )}
-                </div>
-                <div className="shrink-0 text-right">
-                  {messageUnreadCount > 0 ? (
-                    <span className="mb-1 flex size-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--cp-accent)] text-[11px] font-semibold text-[var(--text-on-accent)]">
-                      {messageUnreadCount > 9 ? '9+' : messageUnreadCount}
-                    </span>
-                  ) : null}
-                  {lastMessage?.created_at ? (
-                    <p className="text-[12px] text-[var(--text-quaternary)]">
-                      {formatDistanceToNow(parseISO(lastMessage.created_at), { addSuffix: true })}
-                    </p>
-                  ) : null}
-                </div>
-              </Link>
-            </Card>
-          </section>
 
           <PortalSessionRequestBar />
         </div>
@@ -681,186 +655,201 @@ export default async function ClientPortalPage() {
           className="client-portal-dash-stagger mt-8 hidden min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:mt-0 lg:flex lg:self-start"
           aria-label="Dashboard summary"
         >
-          {/* XP / Rewards */}
+          {/* XP / Rewards (REAL data) */}
           {rewardsRow ? (
-            <Card variant="elevated" padding="lg" className="shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
-                XP &amp; rewards
-              </p>
+            <div className="tile-teal p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/75 font-[family-name:var(--font-display)]">
+                  XP &amp; rewards
+                </p>
+                {streak > 0 ? <span className="arcade-streak">🔥 {streak}</span> : null}
+              </div>
               <div className="mt-3 flex items-center gap-3">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[16px] font-bold text-[var(--text-on-accent)]">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] text-[20px] font-extrabold text-[var(--ink)] shadow-[3px_3px_0_var(--ink)] font-[family-name:var(--font-display)]">
                   {levelInfo.level}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-medium text-[var(--text-primary)]">{levelInfo.name}</p>
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
-                    <AnimatedBar percent={xpBarPct} className="h-1.5 w-full" />
+                <div className="min-w-0 flex-1 text-white">
+                  <p className="text-[14px] font-extrabold leading-tight font-[family-name:var(--font-display)]">{levelInfo.name}</p>
+                  <div className="arcade-track mt-2">
+                    <AnimatedBar percent={xpBarPct} className="h-full w-full !rounded-none border-0 bg-transparent" fillClassName="arcade-fill-yellow" />
                   </div>
-                  <p className="mt-1 text-[11px] text-[var(--text-tertiary)]">
+                  <p className="mt-1 text-[11px] font-semibold text-white/80 font-[family-name:var(--font-display)]">
                     {totalXp} XP
                     {nextLevelDef && xpToNext > 0 ? ` · ${xpToNext} to next` : !nextLevelDef ? ' · Max level' : ''}
                   </p>
                 </div>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[var(--border-subtle)] pt-4">
-                <div className="rounded-[10px] bg-[var(--bg-subtle)] px-3 py-2.5">
-                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Streak</p>
-                  <p className="mt-1 text-[20px] font-semibold tabular-nums text-[var(--text-primary)] [font-family:var(--font-sora)]">
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-[12px] border-[3px] border-[var(--ink)] bg-white px-3 py-2.5 text-[var(--ink)]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Streak</p>
+                  <p className="mt-1 text-[22px] font-extrabold tabular-nums leading-none font-[family-name:var(--font-display)]">
                     🔥 {streak}
                   </p>
-                  <p className="text-[11px] text-[var(--text-secondary)]">day{streak !== 1 ? 's' : ''}</p>
+                  <p className="text-[11px] font-semibold text-[var(--text-secondary)] font-[family-name:var(--font-display)]">day{streak !== 1 ? 's' : ''}</p>
                 </div>
-                <div className="rounded-[10px] bg-[var(--bg-subtle)] px-3 py-2.5">
-                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Completed</p>
-                  <p className="mt-1 text-[20px] font-semibold tabular-nums text-[var(--text-primary)] [font-family:var(--font-sora)]">
+                <div className="rounded-[12px] border-[3px] border-[var(--ink)] bg-white px-3 py-2.5 text-[var(--ink)]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Completed</p>
+                  <p className="mt-1 text-[22px] font-extrabold tabular-nums leading-none font-[family-name:var(--font-display)]">
                     ✅ {doneHw}
                   </p>
-                  <p className="text-[11px] text-[var(--text-secondary)]">tasks done</p>
+                  <p className="text-[11px] font-semibold text-[var(--text-secondary)] font-[family-name:var(--font-display)]">tasks done</p>
                 </div>
               </div>
-            </Card>
+            </div>
           ) : (
-            <Card variant="elevated" padding="lg" className="text-[13px] text-[var(--text-secondary)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <div className="rounded-[16px] border-[3px] border-[var(--ink)] bg-white p-5 text-[14px] font-semibold text-[var(--text-secondary)] shadow-[5px_5px_0_var(--ink)] font-[family-name:var(--font-display)]">
               Complete tasks and check in to earn XP and level up.
-            </Card>
+            </div>
           )}
 
-          {/* Programs */}
+          {/* Belts & ranks placeholder (HONEST: no belt/achievement data yet) */}
+          <div className="rounded-[16px] border-[3px] border-dashed border-[var(--ink)]/30 bg-white p-5">
+            <div className="flex items-center gap-3">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)]/30 bg-[var(--bg-muted)] text-[24px]" aria-hidden>🥋</span>
+              <div className="min-w-0">
+                <p className="text-[15px] font-extrabold text-[var(--ink)] font-[family-name:var(--font-display)]">Belts &amp; medals</p>
+                <p className="text-[12px] font-semibold text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">Rank tracking &amp; achievements coming soon.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Programs (REAL) */}
           {programBlock ? (
             <section>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
                 Your program
               </p>
-              <Card variant="default" padding="lg" className="shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <p className="text-[15px] font-semibold text-[var(--text-primary)]">{programBlock.title}</p>
-                <div className="my-3 h-2 w-full overflow-hidden rounded-full bg-[var(--border-default)]">
+              <div className="rounded-[16px] border-[3px] border-[var(--ink)] bg-white p-5 shadow-[5px_5px_0_var(--ink)]">
+                <p className="text-[16px] font-extrabold text-[var(--ink)] font-[family-name:var(--font-display)]">{programBlock.title}</p>
+                <div className="arcade-track my-3">
                   <AnimatedBar
                     percent={
                       programBlock.total > 0
                         ? Math.min(100, Math.round((programBlock.completed / programBlock.total) * 100))
                         : 0
                     }
-                    className="h-2 w-full"
+                    className="h-full w-full !rounded-none border-0 bg-transparent"
+                    fillClassName="arcade-fill"
                   />
                 </div>
-                <div className="flex justify-between text-[13px] text-[var(--text-tertiary)]">
+                <div className="flex justify-between text-[13px] font-semibold text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
                   <span>
                     {programBlock.completed} of {programBlock.total} modules
                   </span>
-                  <span>
+                  <span className="text-[var(--ink)]">
                     {programBlock.total > 0
                       ? `${Math.min(100, Math.round((programBlock.completed / programBlock.total) * 100))}%`
                       : '0%'}
                   </span>
                 </div>
                 {programBlock.lastActivity ? (
-                  <p className="mt-2 text-[12px] text-[var(--text-quaternary)]">
+                  <p className="mt-2 text-[12px] font-semibold text-[var(--text-quaternary)] font-[family-name:var(--font-display)]">
                     Last activity: {programBlock.lastActivity}
                   </p>
                 ) : null}
                 <Link
                   href={`/client/programs/${programBlock.programId}`}
-                  className="mt-4 flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] text-[13px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--cp-accent-hover)]"
+                  className="mt-4 flex h-11 w-full items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--cp-accent)] text-[14px] font-extrabold text-white shadow-[3px_3px_0_var(--ink)] transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[5px_5px_0_var(--ink)] font-[family-name:var(--font-display)]"
                 >
                   Continue program
                 </Link>
-              </Card>
+              </div>
             </section>
           ) : null}
 
-          {/* Latest message / coach card */}
+          {/* Latest message / coach card (REAL) */}
           <section>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
               Messages
             </p>
-            <Card variant="elevated" padding="default" className="overflow-hidden !p-0 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <div className="overflow-hidden rounded-[16px] border-[3px] border-[var(--ink)] bg-white shadow-[5px_5px_0_var(--ink)]">
               <Link
                 href="/client/messages"
                 className="flex min-h-[72px] items-center gap-3 px-4 py-3 text-inherit no-underline transition-colors duration-150 hover:bg-[var(--bg-subtle)]"
               >
-                <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--cp-accent-light)] text-[13px] font-semibold text-[var(--cp-accent)]">
+                <div className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--cp-accent)] text-[15px] font-extrabold text-white font-[family-name:var(--font-display)]">
                   {branding?.logoUrl?.trim() ? (
                     <Image
                       src={branding.logoUrl.trim()}
                       alt={`${coachDisplayName} workspace logo`}
                       fill
                       className="object-cover"
-                      sizes="40px"
+                      sizes="44px"
                     />
                   ) : (
                     coachDisplayName.slice(0, 1).toUpperCase()
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-semibold text-[var(--text-primary)]">{coachDisplayName}</p>
+                  <p className="text-[14px] font-extrabold text-[var(--ink)] font-[family-name:var(--font-display)]">{coachDisplayName}</p>
                   {lastMessage ? (
-                    <p className="truncate text-[12px] text-[var(--text-tertiary)]">
+                    <p className="truncate text-[12px] font-semibold text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
                       {messagePreview(lastMessage.content, lastMessage.message_type)}
                     </p>
                   ) : (
-                    <p className="text-[12px] text-[var(--text-tertiary)]">
+                    <p className="text-[12px] font-semibold text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
                       No messages yet.
                     </p>
                   )}
                 </div>
                 <div className="shrink-0 text-right">
                   {messageUnreadCount > 0 ? (
-                    <span className="mb-1 flex size-4 min-w-[16px] items-center justify-center rounded-full bg-[var(--cp-accent)] text-[11px] font-semibold text-[var(--text-on-accent)]">
+                    <span className="mb-1 flex size-5 min-w-[20px] items-center justify-center rounded-full border-2 border-[var(--ink)] bg-[var(--belt-coral)] text-[11px] font-extrabold text-white font-[family-name:var(--font-display)]">
                       {messageUnreadCount > 9 ? '9+' : messageUnreadCount}
                     </span>
                   ) : null}
                   {lastMessage?.created_at ? (
-                    <p className="text-[12px] text-[var(--text-quaternary)]">
+                    <p className="text-[11px] font-semibold text-[var(--text-quaternary)] font-[family-name:var(--font-display)]">
                       {formatDistanceToNow(parseISO(lastMessage.created_at), { addSuffix: true })}
                     </p>
                   ) : null}
                 </div>
               </Link>
-              <div className="border-t border-[var(--border-subtle)] px-4 py-2.5">
+              <div className="border-t-[3px] border-[var(--ink)] px-4 py-3">
                 <Link
                   href="/client/messages"
-                  className="flex h-9 w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--cp-accent)] text-[13px] font-medium text-[var(--text-on-accent)] shadow-[var(--shadow-xs)] transition-colors hover:bg-[var(--cp-accent-hover)]"
+                  className="flex h-10 w-full items-center justify-center rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--cp-accent)] text-[13px] font-extrabold text-white shadow-[3px_3px_0_var(--ink)] transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[5px_5px_0_var(--ink)] font-[family-name:var(--font-display)]"
                 >
                   Open messages
                 </Link>
               </div>
-            </Card>
+            </div>
           </section>
 
-          {/* At-a-glance stat tiles */}
+          {/* At-a-glance stat tiles (REAL) */}
           <div>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] font-[family-name:var(--font-display)]">
               At a glance
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <Card variant="elevated" padding="default" className="!p-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Level</p>
-                <p className="mt-1 text-[22px] font-semibold tabular-nums text-[var(--text-primary)] [font-family:var(--font-sora)]">
+              <div className="tile-violet p-3.5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/60 font-[family-name:var(--font-display)]">Level</p>
+                <p className="mt-1 text-[24px] font-extrabold tabular-nums leading-none text-[var(--ink)] font-[family-name:var(--font-display)]">
                   {levelInfo.level}
                 </p>
-                <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-[var(--text-secondary)]">{levelInfo.name}</p>
-              </Card>
-              <Card variant="elevated" padding="default" className="!p-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Streak</p>
-                <p className="mt-1 text-[22px] font-semibold tabular-nums text-[var(--text-primary)] [font-family:var(--font-sora)]">
+                <p className="mt-0.5 line-clamp-2 text-[11px] font-bold leading-snug text-[var(--ink)]/75 font-[family-name:var(--font-display)]">{levelInfo.name}</p>
+              </div>
+              <div className="tile-coral p-3.5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/75 font-[family-name:var(--font-display)]">Streak</p>
+                <p className="mt-1 text-[24px] font-extrabold tabular-nums leading-none text-white font-[family-name:var(--font-display)]">
                   🔥 {streak}
                 </p>
-                <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">day{streak !== 1 ? 's' : ''}</p>
-              </Card>
-              <Card variant="elevated" padding="default" className="!p-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Tasks</p>
-                <p className="mt-1 text-[22px] font-semibold tabular-nums text-[var(--text-primary)] [font-family:var(--font-sora)]">
+                <p className="mt-0.5 text-[11px] font-bold text-white/80 font-[family-name:var(--font-display)]">day{streak !== 1 ? 's' : ''}</p>
+              </div>
+              <div className="tile-yellow p-3.5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/60 font-[family-name:var(--font-display)]">Tasks</p>
+                <p className="mt-1 text-[24px] font-extrabold tabular-nums leading-none text-[var(--ink)] font-[family-name:var(--font-display)]">
                   {assignmentRows.length}
                 </p>
-                <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">open</p>
-              </Card>
-              <Card variant="elevated" padding="default" className="!p-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Inbox</p>
-                <p className="mt-1 text-[22px] font-semibold tabular-nums text-[var(--text-primary)] [font-family:var(--font-sora)]">
+                <p className="mt-0.5 text-[11px] font-bold text-[var(--ink)]/75 font-[family-name:var(--font-display)]">open</p>
+              </div>
+              <div className="tile-blue p-3.5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/75 font-[family-name:var(--font-display)]">Inbox</p>
+                <p className="mt-1 text-[24px] font-extrabold tabular-nums leading-none text-white font-[family-name:var(--font-display)]">
                   {messageUnreadCount}
                 </p>
-                <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">unread</p>
-              </Card>
+                <p className="mt-0.5 text-[11px] font-bold text-white/80 font-[family-name:var(--font-display)]">unread</p>
+              </div>
             </div>
           </div>
         </aside>

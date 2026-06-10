@@ -99,7 +99,7 @@ function Avatar({ name, photoUrl }: { name: string; photoUrl: string | null }) {
   const safePhoto = photoUrl && isSafeUrl(photoUrl) ? photoUrl : null
   return (
     <span
-      className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-[13px] font-semibold text-white select-none"
+      className="inline-flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[var(--ink)] text-[13px] font-bold text-white shadow-[2px_2px_0_var(--ink)] select-none"
       style={{ background: safePhoto ? undefined : `hsl(${hue} 50% 38%)` }}
       title={name}
     >
@@ -383,7 +383,7 @@ export function ClassBookingsPanel({
                 <span className="text-xs text-[var(--text-tertiary)]">{formattedDate}</span>
               )}
               {!loading && !fetchError && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent)]/15 px-2 py-0.5 text-[11px] font-medium text-[var(--accent)]">
+                <span className="arcade-badge arcade-badge-yellow">
                   <Users className="size-3" />
                   {roster.length} booked
                 </span>
@@ -481,7 +481,7 @@ export function ClassBookingsPanel({
               />
 
               {sendResult === 'sent' && (
-                <p className="rounded-lg border border-emerald-600/30 bg-emerald-600/10 px-3 py-2 text-[11px] font-medium text-emerald-400">
+                <p className="rounded-lg border-2 border-[var(--ink)] bg-[var(--success-bg)] px-3 py-2 text-[11px] font-bold text-[var(--success)]">
                   Message sent to {clientIds.length} {clientIds.length === 1 ? 'client' : 'clients'}.
                 </p>
               )}

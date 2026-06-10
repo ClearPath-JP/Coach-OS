@@ -83,43 +83,35 @@ type LeadTypeLiteral = 'individual' | 'partner' | 'influencer' | 'business'
 
 const TYPE_META: Record<
   LeadTypeLiteral,
-  { label: string; Icon: typeof User; colorClass: string }
+  { label: string; Icon: typeof User; badgeClass: string }
 > = {
   individual: {
     label: 'Individual',
     Icon: User,
-    colorClass:
-      'bg-[var(--accent)]/15 text-[var(--accent)] ring-1 ring-inset ring-[var(--accent)]/30',
+    badgeClass: 'arcade-badge-yellow',
   },
   partner: {
     label: 'Partner',
     Icon: Handshake,
-    colorClass:
-      'bg-emerald-500/10 text-emerald-400 ring-1 ring-inset ring-emerald-500/20',
+    badgeClass: 'arcade-badge-teal',
   },
   influencer: {
     label: 'Influencer',
     Icon: Megaphone,
-    colorClass:
-      'bg-amber-500/10 text-amber-400 ring-1 ring-inset ring-amber-500/20',
+    badgeClass: 'arcade-badge-violet',
   },
   business: {
     label: 'Business',
     Icon: Building2,
-    colorClass: 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]',
+    badgeClass: '',
   },
 }
 
 export function TypeBadge({ leadType }: { leadType: string }) {
   const meta = TYPE_META[(leadType as LeadTypeLiteral) ?? 'individual'] ?? TYPE_META.business
-  const { Icon, label, colorClass } = meta
+  const { Icon, label, badgeClass } = meta
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
-        colorClass
-      )}
-    >
+    <span className={cn('arcade-badge', badgeClass)}>
       <Icon className="size-3" />
       {label}
     </span>

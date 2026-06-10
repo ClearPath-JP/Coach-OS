@@ -7,7 +7,7 @@ const footerLinks = {
     { label: 'Why Korva', href: '#founder' },
   ],
   Company: [
-    { label: 'Contact', href: 'mailto:hello@foundos.ai' },
+    { label: 'hello@foundos.ai', href: 'mailto:hello@foundos.ai' },
   ],
   Legal: [
     { label: 'Privacy', href: '/privacy' },
@@ -17,22 +17,22 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--border-subtle)] bg-[var(--bg-app)]">
-      <div className="mx-auto max-w-7xl px-6 py-16">
+    <footer className="border-t-[3px] border-[var(--ink)] bg-[var(--ink)]">
+      <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand col — KORVA wordmark */}
           <div className="col-span-2 md:col-span-1">
             <div className="mb-4">
               <span
-                className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-[0.12em]"
+                className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-[-0.03em]"
                 style={{ lineHeight: 1 }}
                 aria-label="Korva"
               >
-                <span className="text-[var(--text-primary)]">KOR</span>
-                <span className="font-bold" style={{ color: 'var(--accent)' }}>VA</span>
+                <span className="text-[#faf7f0]">Kor</span>
+                <span style={{ color: 'var(--belt-yellow)' }}>va</span>
               </span>
             </div>
-            <p className="text-sm text-[var(--text-tertiary)] max-w-xs leading-relaxed">
+            <p className="text-sm font-medium text-[#faf7f0]/55 max-w-xs leading-relaxed">
               The platform where coaches teach and students grow. Built by a coach, for coaches.
             </p>
           </div>
@@ -40,7 +40,7 @@ export function Footer() {
           {/* Link cols */}
           {Object.entries(footerLinks).map(([heading, links]) => (
             <div key={heading}>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-[var(--text-quaternary)] mb-4">
+              <h4 className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.14em] text-[#faf7f0]/40 mb-4">
                 {heading}
               </h4>
               <ul className="space-y-2.5">
@@ -48,7 +48,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                      className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#faf7f0]/65 hover:text-[#faf7f0] transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -59,11 +59,11 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-[var(--border-subtle)] flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[var(--text-quaternary)]">
-            &copy; {new Date().getFullYear()} Korva. All rights reserved.
+        <div className="mt-12 pt-8 border-t-[3px] border-[#faf7f0]/12 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="font-[family-name:var(--font-display)] text-xs font-semibold text-[#faf7f0]/40">
+            &copy; {new Date().getFullYear()} Korva. Built for coaches.
           </p>
-          <p className="text-xs text-[var(--text-quaternary)]">
+          <p className="font-[family-name:var(--font-display)] text-xs font-semibold text-[#faf7f0]/40">
             Your dojo, online.
           </p>
         </div>

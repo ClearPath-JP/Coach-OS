@@ -1,68 +1,94 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { UserPlus, Search, Video } from 'lucide-react'
 
 const steps = [
   {
-    icon: UserPlus,
+    emoji: '🙌',
     number: '01',
     title: 'Join as Coach or Student',
-    description: 'Create your profile with a real photo. Coaches set up their dojo — name it, set your price, add your style.',
+    description:
+      'Create your profile with a real photo. Coaches set up their dojo — name it, set your price, add your style.',
+    tile: 'tile-yellow',
+    shadow: 'shadow-[5px_5px_0_#b8910f]',
+    badge: 'arcade-badge-yellow',
   },
   {
-    icon: Search,
+    emoji: '🚪',
     number: '02',
     title: 'Open the Doors',
-    description: 'Set your price, drop in your videos, share your access code. Students subscribe directly — no app store fees, no middleman cut.',
+    description:
+      'Set your price, drop in your videos, share your access code. Students subscribe directly — no app store fees, no middleman cut.',
+    tile: 'tile-violet',
+    shadow: 'shadow-[5px_5px_0_#7c4fc7]',
+    badge: 'arcade-badge-violet',
   },
   {
-    icon: Video,
+    emoji: '🥊',
     number: '03',
     title: 'Train, Share, Grow',
-    description: 'Coaches post videos, build programs, and share knowledge. Students upload progress, chat with the class, level up.',
+    description:
+      'Coaches post videos, build programs, and share knowledge. Students upload progress, chat with the class, level up.',
+    tile: 'tile-teal',
+    shadow: 'shadow-[5px_5px_0_#1a8a80]',
+    light: true,
+    badge: 'arcade-badge-teal',
   },
 ]
 
 export function HowItWorksSection() {
   return (
-    <section className="relative py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-6">
+    <section className="relative border-b-[3px] border-[var(--ink)] bg-[var(--bg-app)] py-20 md:py-28">
+      <div className="mx-auto max-w-6xl px-6">
         {/* Section header */}
-        <div className="text-center mb-16">
-          <span className="text-xs font-semibold tracking-widest uppercase text-[var(--accent)]">
+        <div className="text-center mb-12 md:mb-14">
+          <span className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--text-tertiary)]">
             How it works
           </span>
-          <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-            Open the doors in three moves
+          <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-[-0.04em] leading-[1.05] text-[var(--ink)]">
+            Open the doors
+            <br />
+            <span style={{ color: 'var(--belt-violet)' }}>in three moves.</span>
           </h2>
         </div>
 
         {/* Steps */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-5">
           {steps.map((step, i) => (
             <motion.div
               key={step.number}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
-              transition={{ delay: i * 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative p-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] hover:border-[var(--accent)]/30 transition-colors"
+              transition={{ delay: i * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className={`arcade-lift relative overflow-hidden ${step.tile} ${step.shadow} p-7`}
             >
-              {/* Step number */}
-              <span className="absolute top-6 right-6 text-5xl font-bold text-[var(--text-quaternary)]/30 font-[family-name:var(--font-display)]">
+              {/* Step number — oversized ghost numeral */}
+              <span
+                className={`pointer-events-none absolute -top-2 right-3 font-[family-name:var(--font-display)] text-7xl font-extrabold tracking-[-0.04em] ${
+                  step.light ? 'text-white/20' : 'text-[var(--ink)]/15'
+                }`}
+              >
                 {step.number}
               </span>
 
-              {/* Icon */}
-              <div className="w-12 h-12 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mb-6">
-                <step.icon size={22} className="text-[var(--accent)]" />
+              {/* Icon coin */}
+              <div className="relative grid h-14 w-14 place-content-center rounded-[12px] border-[3px] border-[var(--ink)] bg-white text-2xl shadow-[3px_3px_0_var(--ink)] mb-5">
+                {step.emoji}
               </div>
 
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3">
+              <h3
+                className={`font-[family-name:var(--font-display)] text-xl font-extrabold tracking-[-0.02em] mb-2.5 ${
+                  step.light ? 'text-white' : 'text-[var(--ink)]'
+                }`}
+              >
                 {step.title}
               </h3>
-              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+              <p
+                className={`text-sm font-medium leading-relaxed ${
+                  step.light ? 'text-white/85' : 'text-[var(--text-secondary)]'
+                }`}
+              >
                 {step.description}
               </p>
             </motion.div>

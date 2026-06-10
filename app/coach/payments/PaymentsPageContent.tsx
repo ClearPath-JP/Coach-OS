@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { DataTable } from '@/components/ui/DataTable'
-import { StatusDot } from '@/components/ui/StatusDot'
 import { RecordPaymentModal, type EditingPayment } from '@/components/coach/RecordPaymentModal'
 import {
   PAYMENT_METHOD_LABELS,
@@ -354,42 +353,38 @@ export function PaymentsPageContent() {
         </Button>
       </PageHeader>
 
-      <Card
-        variant="default"
-        padding="default"
-        className="border border-[var(--border-subtle)] bg-[linear-gradient(135deg,var(--accent-light)_0%,transparent_55%)] p-6 shadow-[var(--shadow-sm)]"
-      >
-        <p className="text-[12px] font-medium text-[var(--text-tertiary)]">This month</p>
-        <p className="mt-1 text-[40px] font-bold leading-none tracking-[-0.03em] text-[var(--cp-accent)]">
+      <div className="tile-teal p-6">
+        <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-white/70">This month</p>
+        <p className="mt-1 font-[family-name:var(--font-display)] text-[44px] font-extrabold leading-none tracking-[-0.03em] text-white">
           {formatCents(kpiMonth)}
         </p>
-        <div className="mt-4 flex flex-wrap items-center gap-x-2 text-[13px] text-[var(--text-tertiary)]">
+        <div className="mt-4 flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-white/75">
           <span>{paymentCountLabel}</span>
-          <span aria-hidden className="text-[var(--text-quaternary)]">
+          <span aria-hidden className="text-white/40">
             ·
           </span>
           <span>Pending invoices {formatCents(pendingCents)}</span>
-          <span aria-hidden className="text-[var(--text-quaternary)]">
+          <span aria-hidden className="text-white/40">
             ·
           </span>
           <span>All-time recorded {formatCents(kpiAll)}</span>
         </div>
-      </Card>
+      </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-        <Card variant="raised" padding="lg" className="card-glow border border-[var(--border-subtle)] shadow-[var(--shadow-xs)]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">This week</p>
-          <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(kpiWeek)}</p>
-        </Card>
-        <Card variant="raised" padding="lg" className="card-glow border border-[var(--border-subtle)] shadow-[var(--shadow-xs)]">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">All time</p>
-          <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(kpiAll)}</p>
-        </Card>
+        <div className="tile-yellow arcade-lift p-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/65">This week</p>
+          <p className="mt-1.5 font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-[var(--ink)]">{formatCents(kpiWeek)}</p>
+        </div>
+        <div className="arcade-tile arcade-lift bg-[var(--bg-subtle)] p-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">All time</p>
+          <p className="mt-1.5 font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-[var(--text-primary)]">{formatCents(kpiAll)}</p>
+        </div>
         <Link href="/coach/invoices" className="block h-full min-h-[44px] md:col-span-1">
-          <Card variant="raised" padding="lg" className="card-glow h-full border border-[var(--border-subtle)] shadow-[var(--shadow-xs)]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Pending</p>
-            <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--accent)]">{formatCents(pendingCents)}</p>
-          </Card>
+          <div className="tile-coral arcade-lift h-full p-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/65">Pending</p>
+            <p className="mt-1.5 font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-white">{formatCents(pendingCents)}</p>
+          </div>
         </Link>
       </div>
 
@@ -480,12 +475,12 @@ export function PaymentsPageContent() {
                 emptyTitle="No payments recorded yet"
                 emptyDescription="Use the Record payment button to log your first payment."
                 columns={[
-                  { key: 'client', header: 'Client', sortValue: (r) => clientName(r.clients), render: (p) => clientName(p.clients) },
-                  { key: 'amount', header: 'Amount', sortValue: (r) => r.amount_cents, render: (p) => <span className="font-medium">{formatCents(p.amount_cents)}</span> },
+                  { key: 'client', header: 'Client', sortValue: (r) => clientName(r.clients), render: (p) => <span className="font-semibold text-[var(--text-primary)]">{clientName(p.clients)}</span> },
+                  { key: 'amount', header: 'Amount', sortValue: (r) => r.amount_cents, render: (p) => <span className="font-[family-name:var(--font-display)] font-bold tabular-nums text-[var(--text-primary)]">{formatCents(p.amount_cents)}</span> },
                   {
                     key: 'method',
                     header: 'Method',
-                    render: (p) => <span className="inline-flex items-center gap-2"><StatusDot tone="active" />{PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}</span>,
+                    render: (p) => <span className="arcade-badge arcade-badge-teal">{PAYMENT_METHOD_LABELS[p.payment_method as PaymentMethodValue] ?? p.payment_method}</span>,
                   },
                   { key: 'date', header: 'Date', sortValue: (r) => r.payment_date, render: (p) => formatPaymentDate(p.payment_date) },
                   { key: 'reference', header: 'Reference', render: (p) => p.payment_reference ?? '—' },

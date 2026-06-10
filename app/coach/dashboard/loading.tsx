@@ -1,46 +1,82 @@
 import { Skeleton } from '@/components/ui/Skeleton'
 
-function SessionRowSkeleton() {
+/** Ink-bordered, hard-shadowed Arcade shell to skeleton inside. */
+function Tile({ className, children }: { className?: string; children?: React.ReactNode }) {
   return (
-    <div className="flex h-[60px] shrink-0 items-center gap-3 rounded-[var(--radius-md)] px-1">
-      <Skeleton className="size-10 shrink-0 rounded-full" />
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
-        <Skeleton className="h-3.5 w-[55%] max-w-[180px]" />
-        <Skeleton className="h-3 w-[40%] max-w-[120px]" />
-      </div>
+    <div
+      className={`rounded-[16px] border-[3px] border-[var(--border-default)] bg-[var(--bg-subtle)] shadow-[var(--shadow-sm)] ${className ?? ''}`}
+    >
+      {children}
     </div>
   )
 }
 
 export default function CoachDashboardLoading() {
   return (
-    <main className="flex h-full min-h-0 flex-col gap-3 p-4 lg:h-[calc(100dvh-56px)] lg:max-h-[calc(100dvh-56px)] lg:gap-4 lg:overflow-hidden">
-      <div className="flex min-h-0 flex-[2] flex-col gap-3 lg:flex-row lg:gap-4">
-        <div className="flex min-h-0 w-full min-w-0 flex-[2] flex-col gap-3">
-          <Skeleton className="h-[200px] w-full shrink-0 rounded-[var(--radius-xl)]" />
-          <div className="grid min-h-0 shrink-0 grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-xl" />
-            ))}
-          </div>
-        </div>
-        <div className="flex min-h-[180px] w-full min-w-0 flex-[1] flex-col rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-bg)] p-3">
-          <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
-            <Skeleton className="h-4 w-14" />
-            <Skeleton className="h-4 w-16" />
-          </div>
-          <div className="flex min-h-0 flex-1 flex-col gap-2">
-            {[1, 2, 3].map((i) => (
-              <SessionRowSkeleton key={i} />
-            ))}
-          </div>
-        </div>
+    <div className="flex flex-col gap-6">
+      {/* Greeting */}
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-3 w-40 rounded-full" />
+        <Skeleton className="h-9 w-[18rem] max-w-[80%] rounded-[8px]" />
+        <Skeleton className="h-4 w-56 rounded-full" />
       </div>
-      <div className="flex min-h-0 flex-[3] flex-col gap-3 lg:flex-row lg:gap-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="min-h-[200px] w-full min-w-0 flex-1 rounded-[var(--radius-xl)]" />
+
+      {/* Stat tiles */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Tile key={i} className="p-5">
+            <Skeleton className="mb-3 h-3 w-20 rounded-full" />
+            <Skeleton className="h-8 w-16 rounded-[6px]" />
+            <Skeleton className="mt-3 h-3 w-24 rounded-full" />
+          </Tile>
         ))}
       </div>
-    </main>
+
+      {/* Main + side */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <Tile className="p-5">
+          <Skeleton className="mb-5 h-5 w-28 rounded-[6px]" />
+          <div className="flex flex-col gap-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3.5 rounded-[12px] border-[3px] border-[var(--border-default)] px-4 py-3"
+              >
+                <Skeleton className="size-[54px] shrink-0 rounded-[10px]" />
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <Skeleton className="h-3.5 w-[45%] rounded-full" />
+                  <Skeleton className="h-3 w-[30%] rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Tile>
+        <div className="flex flex-col gap-4">
+          {[1, 2].map((i) => (
+            <Tile key={i} className="p-5">
+              <Skeleton className="mb-4 h-5 w-24 rounded-[6px]" />
+              <div className="flex flex-col gap-3">
+                {[1, 2, 3].map((j) => (
+                  <Skeleton key={j} className="h-10 w-full rounded-[10px]" />
+                ))}
+              </div>
+            </Tile>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Tile key={i} className="flex items-center gap-3 p-4">
+            <Skeleton className="size-10 shrink-0 rounded-[10px]" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <Skeleton className="h-3.5 w-20 rounded-full" />
+              <Skeleton className="h-3 w-24 rounded-full" />
+            </div>
+          </Tile>
+        ))}
+      </div>
+    </div>
   )
 }

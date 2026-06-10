@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { formatConversationListTime } from '@/lib/conversation-time'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -74,10 +73,18 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase() || '?'
 }
 
-function statusBadgeVariant(status: string): 'active' | 'inactive' | 'pending' {
-  if (status === 'active') return 'active'
-  if (status === 'paused') return 'pending'
-  return 'inactive'
+/** Arcade badge tone + label for a client status (no raw DB enum on screen). */
+function statusBadgeTone(status: string): string {
+  if (status === 'active') return 'arcade-badge-teal'
+  if (status === 'paused') return 'arcade-badge-yellow'
+  return ''
+}
+
+function statusBadgeLabel(status: string): string {
+  if (status === 'active') return 'Active'
+  if (status === 'paused') return 'Paused'
+  if (status === 'completed') return 'Completed'
+  return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
 function conversationTimeLabel(iso: string): string {
@@ -651,10 +658,7 @@ export function CoachMessagesPageContent() {
             headerActions={
               <div className="flex shrink-0 items-center gap-2">
                 {totalUnread > 0 ? (
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[11px] font-semibold text-white"
-                    style={{ background: 'var(--cp-sapphire)' }}
-                  >
+                  <span className="inline-flex items-center rounded-full border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-2 py-0.5 font-[family-name:var(--font-display)] text-[11px] font-extrabold text-white shadow-[2px_2px_0_var(--ink)]">
                     {totalUnread > 99 ? '99+' : totalUnread}
                   </span>
                 ) : null}
@@ -736,7 +740,7 @@ export function CoachMessagesPageContent() {
               selectedClientId ? (
                 <>
                   {selectedConv ? (
-                    <Badge variant={statusBadgeVariant(selectedConv.status)}>{selectedConv.status}</Badge>
+                    <span className={cn('arcade-badge', statusBadgeTone(selectedConv.status))}>{statusBadgeLabel(selectedConv.status)}</span>
                   ) : null}
                   <div className="hidden shrink-0 items-center gap-2 sm:flex">
                     <Link

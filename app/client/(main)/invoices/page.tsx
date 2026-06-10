@@ -51,7 +51,7 @@ export default async function ClientInvoicesPage() {
   return (
     <main className="client-page-content min-h-screen px-4 py-6 md:px-6">
       <ClientInvoicesBackLink />
-      <h1 className="text-[22px] font-bold text-[var(--text-primary)]">Invoices</h1>
+      <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">Invoices</h1>
 
       <ClientInvoicesList clientId={client.id} invoices={list} />
     </main>

@@ -110,34 +110,41 @@ export function ClientProgramsContent() {
       <div className="mt-6 grid gap-4 grid-cols-1 md:grid-cols-2">
         {programs.map((prog) => {
           const pct = prog.totalModules > 0 ? Math.round((prog.modulesCompleted / prog.totalModules) * 100) : 0
+          const done = prog.status === 'completed'
+          const statusText = ({ active: 'Active', completed: 'Completed', paused: 'Paused' } as Record<string, string>)[prog.status ?? ''] ?? ((prog.status ?? '').charAt(0).toUpperCase() + (prog.status ?? '').slice(1).replace(/_/g, ' '))
           return (
-            <Card key={prog.clientProgramId} variant="raised" padding="lg">
-              <h3 className="font-medium text-[var(--color-ink)]">{prog.title}</h3>
-              <div className="mt-2 h-2 w-full rounded-full bg-[var(--color-border)] overflow-hidden">
+            <div
+              key={prog.clientProgramId}
+              className="arcade-lift flex flex-col rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] p-6 shadow-[5px_5px_0_var(--ink)]"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-[family-name:var(--font-display)] text-[17px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">{prog.title}</h3>
+                <span
+                  className={cn(
+                    'arcade-badge shrink-0',
+                    done && 'arcade-badge-teal',
+                    prog.status === 'active' && 'arcade-badge-blue'
+                  )}
+                >
+                  {statusText}
+                </span>
+              </div>
+              <div className="mt-3 flex items-center justify-between font-[family-name:var(--font-display)] text-[12px] font-bold text-[var(--text-secondary)]">
+                <span>{prog.modulesCompleted} of {prog.totalModules} modules</span>
+                <span>{pct}%</span>
+              </div>
+              <div className="arcade-track mt-1.5 h-2.5">
                 <div
-                  className="h-full rounded-full bg-[var(--color-accent)] transition-all"
+                  className={cn('arcade-fill', done && 'arcade-fill')}
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <p className="mt-2 text-sm text-[var(--color-muted)]">
-                {prog.modulesCompleted} of {prog.totalModules} modules complete
-              </p>
-              <span
-                className={cn(
-                  'mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium',
-                  prog.status === 'completed' && 'bg-[var(--color-success)]/15 text-[var(--color-success)]',
-                  prog.status === 'active' && 'bg-[var(--color-accent)]/15 text-[var(--color-accent)]',
-                  prog.status === 'paused' && 'bg-[var(--color-muted)]/20 text-[var(--color-muted)]'
-                )}
-              >
-                {({ active: 'Active', completed: 'Completed', paused: 'Paused' } as Record<string, string>)[prog.status ?? ''] ?? ((prog.status ?? '').charAt(0).toUpperCase() + (prog.status ?? '').slice(1).replace(/_/g, ' '))}
-              </span>
-              <Link href={`/client/programs/${prog.programId}`} className="block mt-4">
+              <Link href={`/client/programs/${prog.programId}`} className="mt-auto block pt-5">
                 <Button variant="secondary" className="w-full min-h-[44px]">
                   Continue
                 </Button>
               </Link>
-            </Card>
+            </div>
           )
         })}
       </div>

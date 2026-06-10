@@ -85,26 +85,26 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
   return (
     <div className="flex min-h-[100dvh] flex-col items-center bg-[var(--bg-app)] px-6 pb-20 pt-12">
       {/* Wordmark */}
-      <div className="mb-12 text-center">
-        <div className="font-display text-[22px] font-medium leading-none tracking-[0.12em] text-[var(--text-primary)]">
-          KOR<span style={{ color: 'var(--accent)' }}>VA</span>
+      <div className="mb-10 text-center">
+        <div className="font-[family-name:var(--font-display)] text-[22px] font-extrabold leading-none tracking-[-0.02em] text-[var(--ink)]">
+          Kor<span style={{ color: 'var(--belt-yellow)' }}>va</span>
         </div>
-        <p className="mt-1.5 text-[13px] text-[var(--text-tertiary)]">
+        <p className="mt-1.5 font-[family-name:var(--font-display)] text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--text-tertiary)]">
           Built for coaches. Designed for growth.
         </p>
       </div>
 
       {/* Heading */}
-      <div className="mb-10 max-w-[600px] text-center">
-        <h1 className="font-display text-[clamp(26px,4vw,40px)] font-medium leading-[1.15] tracking-[0.01em] text-[var(--text-primary)]">
+      <div className="mb-9 max-w-[600px] text-center">
+        <h1 className="font-[family-name:var(--font-display)] text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.1] tracking-[-0.03em] text-[var(--ink)]">
           Become a Founding Member
         </h1>
-        <p className="mt-4 text-[16px] leading-relaxed text-[var(--text-secondary)]">
+        <p className="mt-4 text-[16px] font-medium leading-relaxed text-[var(--text-secondary)]">
           Lock in $99/month for life. No setup fee. Full platform access.
         </p>
         {userEmail && (
-          <p className="mt-2 text-[13px] text-[var(--text-tertiary)]">
-            Signing up as <strong className="font-semibold text-[var(--text-secondary)]">{userEmail}</strong>
+          <p className="mt-2 text-[13px] font-medium text-[var(--text-tertiary)]">
+            Signing up as <strong className="font-bold text-[var(--ink)]">{userEmail}</strong>
           </p>
         )}
       </div>
@@ -113,13 +113,13 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       {errorCode && (
         <div
           role="alert"
-          className="mb-8 w-full max-w-[480px] rounded-xl border border-[var(--warning-border)] bg-[var(--warning-bg)] px-5 py-4 text-left text-[14px] leading-relaxed text-[var(--warning)]"
+          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] px-5 py-4 text-left text-[14px] leading-relaxed text-white shadow-[4px_4px_0_var(--ink)]"
         >
-          <p className="font-semibold">We could not finish setting up your account.</p>
-          <p className="mt-1">
-            If you just completed payment, <strong>DO NOT pay again</strong> — sign in again
+          <p className="font-[family-name:var(--font-display)] font-extrabold">We could not finish setting up your account.</p>
+          <p className="mt-1 font-medium">
+            If you just completed payment, <strong className="font-extrabold">DO NOT pay again</strong> — sign in again
             and your account will finish setting up, or email{' '}
-            <a href="mailto:hello@foundos.ai" className="font-semibold underline">
+            <a href="mailto:hello@foundos.ai" className="font-extrabold underline underline-offset-2">
               hello@foundos.ai
             </a>
             .
@@ -131,7 +131,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       {checkoutCancelled && !errorCode && (
         <div
           role="status"
-          className="mb-8 w-full max-w-[480px] rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-4 py-3 text-center text-[14px] text-[var(--text-secondary)]"
+          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-teal)] px-4 py-3 text-center text-[14px] font-semibold text-white shadow-[4px_4px_0_var(--ink)]"
         >
           Checkout cancelled — you have not been charged.
         </div>
@@ -141,33 +141,28 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       {error && (
         <div
           role="alert"
-          className="mb-8 max-w-[480px] rounded-xl border border-[var(--error-border)] bg-[var(--error-bg)] px-4 py-3 text-center text-[14px] text-[var(--error)]"
+          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] px-4 py-3 text-center text-[14px] font-semibold text-white shadow-[4px_4px_0_var(--ink)]"
         >
           {error}
         </div>
       )}
 
-      {/* Founding Member Card */}
-      <div
-        className="card-glow relative w-full max-w-[440px] rounded-2xl border-2 border-[var(--accent)] bg-[var(--bg-subtle)] px-8 py-10"
-        style={{
-          boxShadow: '0 0 40px rgba(200, 136, 46, 0.1), 0 0 80px rgba(200, 136, 46, 0.05)',
-        }}
-      >
+      {/* Founding Member Card — big belt-yellow brutal block */}
+      <div className="relative w-full max-w-[440px] rounded-[20px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] px-8 py-10 shadow-[8px_8px_0_var(--ink)]">
         {/* Badge */}
-        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[var(--accent)] px-3.5 py-1 text-[11px] font-bold tracking-[0.06em] text-white">
-          Founding Member
+        <div className="arcade-badge arcade-badge-dark absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap">
+          ⭐ Founding Member
         </div>
 
         {/* Price */}
         <div className="mb-2 text-center">
-          <span className="text-[48px] font-extrabold leading-none tracking-[-0.04em] text-[var(--text-primary)]">
+          <span className="font-[family-name:var(--font-display)] text-[52px] font-extrabold leading-none tracking-[-0.04em] text-[var(--ink)]">
             $99
           </span>
-          <span className="pb-1.5 text-[15px] font-medium text-[var(--text-secondary)]">/mo</span>
+          <span className="pb-1.5 font-[family-name:var(--font-display)] text-[16px] font-bold text-[var(--ink)]/70">/mo</span>
         </div>
 
-        <p className="mb-1 text-center text-[14px] font-medium text-[var(--accent)]">
+        <p className="mb-1 text-center font-[family-name:var(--font-display)] text-[14px] font-bold text-[var(--ink)]">
           Locked-in rate for life. No setup fee.
         </p>
 
@@ -175,17 +170,17 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
         <div className="mb-7 text-center">
           {spotsLeft !== null ? (
             <div className="mt-3 flex flex-col items-center gap-2">
-              <div className="flex w-full max-w-[200px] items-center gap-2">
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--bg-muted)]">
+              <div className="flex w-full max-w-[220px] items-center gap-2">
+                <div className="h-3.5 flex-1 overflow-hidden rounded-full border-2 border-[var(--ink)] bg-white">
                   <div
-                    className="h-full rounded-full bg-[var(--accent)] transition-all duration-700"
+                    className="h-full bg-[var(--belt-coral)] transition-all duration-700"
                     style={{ width: `${((claimedSpots ?? 0) / TOTAL_FOUNDING_SPOTS) * 100}%` }}
                   />
                 </div>
               </div>
               <p className={cn(
-                'text-[13px] font-semibold',
-                spotsLeft <= 3 ? 'text-[var(--error)]' : 'text-[var(--text-tertiary)]'
+                'font-[family-name:var(--font-display)] text-[13px] font-bold',
+                'text-[var(--ink)]'
               )}>
                 {spotsLeft === 0
                   ? 'All founding spots claimed!'
@@ -193,20 +188,22 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
               </p>
             </div>
           ) : (
-            <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">
+            <p className="mt-1 font-[family-name:var(--font-display)] text-[12px] font-semibold text-[var(--ink)]/70">
               Only {TOTAL_FOUNDING_SPOTS} founding spots available.
             </p>
           )}
         </div>
 
         {/* Divider */}
-        <div className="mb-6 h-px bg-[var(--border-default)]" />
+        <div className="mb-6 h-0.5 bg-[var(--ink)]/20" />
 
         {/* Features */}
         <ul className="mb-8 flex flex-col gap-2.5">
           {FOUNDING_FEATURES.map((f) => (
-            <li key={f} className="flex items-start gap-2.5 text-[14px] leading-snug text-[var(--text-secondary)]">
-              <Check className="mt-0.5 size-3.5 shrink-0 text-[var(--accent)]" strokeWidth={2.5} />
+            <li key={f} className="flex items-start gap-2.5 text-[14px] font-medium leading-snug text-[var(--ink)]">
+              <span className="mt-0.5 grid size-5 shrink-0 place-content-center rounded-[6px] border-2 border-[var(--ink)] bg-white">
+                <Check className="size-3 text-[var(--ink)]" strokeWidth={3} />
+              </span>
               {f}
             </li>
           ))}
@@ -218,10 +215,12 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
           disabled={loading}
           onClick={handleCheckout}
           className={cn(
-            'relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl',
-            'bg-[var(--accent)] text-[15px] font-semibold text-white',
-            'transition-all hover:bg-[var(--accent-hover)]',
-            'disabled:cursor-not-allowed disabled:opacity-50'
+            'relative flex h-12 w-full items-center justify-center gap-2 rounded-[12px]',
+            'border-[3px] border-[var(--ink)] bg-[var(--belt-blue)] font-[family-name:var(--font-display)] text-[15px] font-extrabold tracking-[-0.01em] text-white',
+            'shadow-[4px_4px_0_var(--ink)] transition-all',
+            'hover:-translate-x-px hover:-translate-y-px hover:shadow-[6px_6px_0_var(--ink)]',
+            'active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
+            'disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_var(--ink)]'
           )}
         >
           {loading ? (
@@ -236,7 +235,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       </div>
 
       {/* Footer note */}
-      <p className="mt-10 text-center text-[13px] text-[var(--text-tertiary)]">
+      <p className="mt-10 text-center font-[family-name:var(--font-display)] text-[13px] font-semibold text-[var(--text-tertiary)]">
         No setup fees. Cancel anytime. Billed monthly.
       </p>
     </div>

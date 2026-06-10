@@ -333,7 +333,7 @@ export function ProgramsPageContent() {
               <div className="flex flex-1 flex-col p-4">
                 {/* Title row + kebab menu */}
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="line-clamp-2 min-w-0 flex-1 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-[var(--text-primary)]">
+                  <h3 className="line-clamp-2 min-w-0 flex-1 font-[family-name:var(--font-display)] text-[15px] font-bold leading-snug tracking-[-0.02em] text-[var(--text-primary)]">
                     {prog.title}
                   </h3>
                   <div className="relative shrink-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
@@ -377,20 +377,7 @@ export function ProgramsPageContent() {
 
                 {/* Status pill + client count */}
                 <div className="mt-2.5 flex items-center gap-2">
-                  <span
-                    className={cn(
-                      'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-none',
-                      prog.status === 'published'
-                        ? 'bg-emerald-500/10 text-emerald-600'
-                        : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'mr-1.5 inline-block size-1.5 rounded-full',
-                        prog.status === 'published' ? 'bg-emerald-500' : 'bg-[var(--text-tertiary)]'
-                      )}
-                    />
+                  <span className={cn('arcade-badge', prog.status === 'published' ? 'arcade-badge-teal' : '')}>
                     {prog.status === 'published' ? 'Published' : 'Draft'}
                   </span>
                   <span className="text-[12px] text-[var(--text-tertiary)]">
@@ -432,11 +419,11 @@ export function ProgramsPageContent() {
                     <img
                       src={prog.thumbnail_url}
                       alt=""
-                      className="size-10 shrink-0 rounded-[var(--radius-md)] object-cover"
+                      className="size-10 shrink-0 rounded-[var(--radius-md)] border-2 border-[var(--ink)] object-cover shadow-[2px_2px_0_var(--ink)]"
                     />
                   ) : (
                     <div
-                      className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] text-[12px] font-bold text-white"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] border-2 border-[var(--ink)] text-[12px] font-bold text-white shadow-[2px_2px_0_var(--ink)]"
                       style={{ background: programGradient(prog.title) }}
                     >
                       {previewLetters(prog.title)}
@@ -448,20 +435,7 @@ export function ProgramsPageContent() {
                       {prog.total_modules} {prog.total_modules === 1 ? 'module' : 'modules'} · {prog.assigned_count ?? 0} client{(prog.assigned_count ?? 0) === 1 ? '' : 's'}
                     </p>
                   </div>
-                  <span
-                    className={cn(
-                      'inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium leading-none',
-                      prog.status === 'published'
-                        ? 'bg-emerald-500/10 text-emerald-600'
-                        : 'bg-[var(--bg-muted)] text-[var(--text-tertiary)]'
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'mr-1.5 inline-block size-1.5 rounded-full',
-                        prog.status === 'published' ? 'bg-emerald-500' : 'bg-[var(--text-tertiary)]'
-                      )}
-                    />
+                  <span className={cn('arcade-badge shrink-0', prog.status === 'published' ? 'arcade-badge-teal' : '')}>
                     {prog.status === 'published' ? 'Published' : 'Draft'}
                   </span>
                 </Link>

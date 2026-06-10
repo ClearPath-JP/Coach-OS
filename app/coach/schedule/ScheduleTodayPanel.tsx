@@ -118,8 +118,8 @@ export function ScheduleTodayPanel({
     <div className="flex h-full flex-col overflow-y-auto bg-[var(--bg-subtle)] p-4">
       {/* Header */}
       <div className="mb-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">{format(focusDay, 'EEEE')}</p>
-        <p className="text-[28px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{format(focusDay, 'MMMM d')}</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--text-secondary)]">{format(focusDay, 'EEEE')}</p>
+        <p className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">{format(focusDay, 'MMMM d')}</p>
         <p className={cn('mt-1 text-[13px]', daySessions.length ? 'font-medium text-[var(--accent)]' : 'text-[var(--text-tertiary)]')}>
           {daySessions.length
             ? `${daySessions.length} session${daySessions.length === 1 ? '' : 's'}${isFocusToday ? ' today' : ` on ${format(focusDay, 'MMM d')}`}`
@@ -136,30 +136,25 @@ export function ScheduleTodayPanel({
           <button
             type="button"
             onClick={() => onSessionClick(highlight.session)}
-            className={cn(
-              'relative w-full rounded-[var(--radius-lg)] border bg-[var(--bg-app)] p-4 text-left transition-all duration-300 hover:-translate-y-0.5',
-              highlight.kind === 'in-progress'
-                ? 'border-[var(--success)] shadow-[0_0_20px_rgba(52,211,153,0.12)]'
-                : 'border-[var(--accent)] shadow-[0_0_20px_rgba(var(--accent-rgb),0.12)]'
-            )}
+            className="arcade-tile arcade-lift relative w-full bg-[var(--bg-app)] p-4 text-left"
           >
             <span className={cn(
-              'absolute top-3 right-3 rounded-full px-2 py-0.5 text-[11px] font-semibold text-white',
-              highlight.kind === 'in-progress' ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'
+              'arcade-badge absolute top-3 right-3',
+              highlight.kind === 'in-progress' ? 'arcade-badge-teal' : 'arcade-badge-yellow'
             )}>
               {highlight.kind === 'in-progress' ? 'Live' : 'Next'}
             </span>
-            <div className="flex items-center gap-3">
-              <span className="text-[24px] font-bold tabular-nums text-[var(--text-primary)]">
+            <div className="flex items-baseline gap-2">
+              <span className="font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--text-primary)]">
                 {format(parseISO(highlight.session.scheduled_time), 'h:mm')}
               </span>
-              <span className="text-[13px] font-medium text-[var(--text-tertiary)]">
+              <span className="text-[13px] font-bold text-[var(--text-tertiary)]">
                 {format(parseISO(highlight.session.scheduled_time), 'a')}
               </span>
             </div>
             <div className="mt-2 flex items-center gap-2">
               <span
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-[var(--ink)] text-[12px] font-bold text-white shadow-[2px_2px_0_var(--ink)]"
                 style={{ backgroundColor: clientColorForId(highlight.session.client_id) }}
               >
                 {initials(fullName(highlight.session.clients ?? { first_name: null, last_name: null }))}
@@ -234,26 +229,26 @@ export function ScheduleTodayPanel({
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">This week</p>
           <div className="grid grid-cols-3 gap-2">
             {/* Sessions */}
-            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Sessions</p>
-              <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.sessionsThisWeek}</p>
+            <div className="tile-yellow p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--ink)]/65">Sessions</p>
+              <p className="mt-1.5 font-[family-name:var(--font-display)] text-[22px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-[var(--ink)]">{dashStats.sessionsThisWeek}</p>
               {dashStats.trends?.sessionsThisWeek?.percentChange != null && dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
-                <p className={cn('mt-1 text-[10px] font-medium', trendColor(dashStats.trends.sessionsThisWeek.direction))}>
+                <p className={cn('mt-1 text-[10px] font-bold', trendColor(dashStats.trends.sessionsThisWeek.direction))}>
                   {trendArrow(dashStats.trends.sessionsThisWeek.direction)} {Math.round(dashStats.trends.sessionsThisWeek.percentChange)}%
                 </p>
-              ) : <p className="mt-1 text-[10px] text-[var(--text-quaternary)]">this week</p>}
+              ) : <p className="mt-1 text-[10px] font-medium text-[var(--ink)]/55">this week</p>}
             </div>
             {/* Revenue */}
-            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Revenue</p>
-              <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(dashStats.revenueMonthCents)}</p>
-              <p className="mt-1 text-[10px] text-[var(--text-quaternary)]">this month</p>
+            <div className="tile-teal p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-white/65">Revenue</p>
+              <p className="mt-1.5 font-[family-name:var(--font-display)] text-[22px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-white">{formatCents(dashStats.revenueMonthCents)}</p>
+              <p className="mt-1 text-[10px] font-medium text-white/65">this month</p>
             </div>
             {/* Clients */}
-            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-app)] p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[var(--text-quaternary)]">Clients</p>
-              <p className="mt-1.5 text-[22px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.activeClientsCount}</p>
-              <p className="mt-1 text-[10px] text-[var(--text-quaternary)]">active</p>
+            <div className="tile-violet p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.06em] text-[var(--ink)]/65">Clients</p>
+              <p className="mt-1.5 font-[family-name:var(--font-display)] text-[22px] font-extrabold tabular-nums leading-none tracking-[-0.03em] text-[var(--ink)]">{dashStats.activeClientsCount}</p>
+              <p className="mt-1 text-[10px] font-medium text-[var(--ink)]/55">active</p>
             </div>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
+import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -84,7 +85,7 @@ function humanizeType(raw: string): string {
 function statusPill(status: Membership['status']) {
   if (status === 'active') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--success-bg)] px-2.5 py-1 text-[12px] font-semibold text-[var(--success)]">
+      <span className="arcade-badge arcade-badge-teal">
         <CheckCircle2 className="size-3.5" />
         Active
       </span>
@@ -92,7 +93,7 @@ function statusPill(status: Membership['status']) {
   }
   if (status === 'trialing') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--info-bg)] px-2.5 py-1 text-[12px] font-semibold text-[var(--info)]">
+      <span className="arcade-badge arcade-badge-blue">
         <Star className="size-3.5" />
         Trial
       </span>
@@ -100,7 +101,7 @@ function statusPill(status: Membership['status']) {
   }
   // past_due
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--warning-bg)] px-2.5 py-1 text-[12px] font-semibold text-[var(--warning)]">
+    <span className="arcade-badge arcade-badge-coral">
       <AlertCircle className="size-3.5" />
       Past due
     </span>
@@ -244,7 +245,7 @@ export function MembershipContent() {
     return (
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="space-y-1">
-          <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">
+          <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">
             Membership
           </h1>
         </header>
@@ -261,7 +262,7 @@ export function MembershipContent() {
     return (
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="space-y-1">
-          <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">
+          <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">
             Membership
           </h1>
         </header>
@@ -282,7 +283,7 @@ export function MembershipContent() {
     <div className="mx-auto w-full max-w-5xl space-y-6">
       {/* Header */}
       <header className="space-y-1">
-        <h1 className="font-display text-[28px] font-medium tracking-tight text-[var(--text-primary)]">
+        <h1 className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] text-[var(--text-primary)]">
           Membership
         </h1>
         <p className="text-sm text-[var(--text-tertiary)]">
@@ -308,14 +309,14 @@ export function MembershipContent() {
           ACTIVE MEMBERSHIP VIEW
           ════════════════════════════════════════════════ */}
       {membership ? (
-        <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-6">
+        <div className="rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] p-6 shadow-[5px_5px_0_var(--ink)]">
           {/* Plan name + status */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+              <p className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
                 Your plan
               </p>
-              <h2 className="mt-1 text-[22px] font-semibold text-[var(--text-primary)]">
+              <h2 className="mt-1 font-[family-name:var(--font-display)] text-[24px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">
                 {membership.plan_name ?? 'Membership'}
               </h2>
             </div>
@@ -324,21 +325,40 @@ export function MembershipContent() {
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {/* Classes remaining */}
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--cp-offwhite)] px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+            <div className="rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--cp-offwhite)] px-4 py-4 shadow-[3px_3px_0_var(--ink)]">
+              <p className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
                 Classes
               </p>
-              <p className="mt-1 text-[18px] font-semibold text-[var(--text-primary)]">
-                {remainingLabel(membership)}
-              </p>
+              {membership.plan_access_type === 'limited' && membership.plan_classes_per_period != null ? (
+                (() => {
+                  const total = membership.plan_classes_per_period
+                  const remaining = Math.max(0, total - membership.classes_used_this_period)
+                  const pct = total > 0 ? Math.max(0, Math.min(100, (remaining / total) * 100)) : 0
+                  return (
+                    <>
+                      <div className="mt-1 flex items-baseline gap-1.5">
+                        <span className="font-[family-name:var(--font-display)] text-[34px] font-extrabold leading-none tracking-[-0.03em] text-[var(--text-primary)]">{remaining}</span>
+                        <span className="font-[family-name:var(--font-display)] text-[14px] font-bold text-[var(--text-tertiary)]">/ {total} left this month</span>
+                      </div>
+                      <div className="arcade-track mt-3 h-2.5">
+                        <div className="arcade-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                    </>
+                  )
+                })()
+              ) : (
+                <p className="mt-1 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--text-primary)]">
+                  {remainingLabel(membership)}
+                </p>
+              )}
             </div>
 
             {/* Renewal / end date */}
-            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--cp-offwhite)] px-4 py-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+            <div className="rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--cp-offwhite)] px-4 py-4 shadow-[3px_3px_0_var(--ink)]">
+              <p className="font-[family-name:var(--font-display)] text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
                 {membership.canceled_at ? 'Ends on' : 'Renews on'}
               </p>
-              <p className="mt-1 text-[18px] font-semibold text-[var(--text-primary)]">
+              <p className="mt-1 font-[family-name:var(--font-display)] text-[18px] font-bold text-[var(--text-primary)]">
                 {membership.current_period_end
                   ? format(parseISO(membership.current_period_end), 'MMMM d, yyyy')
                   : '—'}
@@ -353,21 +373,22 @@ export function MembershipContent() {
 
           {/* Cancel section — only show if not already cancelled */}
           {!membership.canceled_at && !cancelledBanner && (
-            <div className="mt-6 border-t border-[var(--border-subtle)] pt-5">
+            <div className="mt-6 border-t-2 border-[var(--ink)]/15 pt-5">
               {!confirmCancel ? (
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => {
                     setCancelError(null)
                     setConfirmCancel(true)
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] shadow-[var(--shadow-xs)] transition-colors hover:border-[var(--error-border)] hover:bg-[var(--error-bg)] hover:text-[var(--error)]"
                 >
                   <XCircle className="size-4" />
                   Cancel membership
-                </button>
+                </Button>
               ) : (
-                <div className="space-y-3 rounded-xl border border-[var(--error-border)] bg-[var(--error-bg)] p-4">
+                <div className="space-y-3 rounded-[12px] border-[3px] border-[var(--ink)] bg-[var(--error-bg)] p-4 shadow-[3px_3px_0_var(--ink)]">
                   <p className="text-[14px] font-medium text-[var(--error)]">
                     Are you sure? Your membership will remain active until the end of your current
                     billing period, then will not renew.
@@ -376,23 +397,25 @@ export function MembershipContent() {
                     <p className="text-[13px] text-[var(--error)]">{cancelError}</p>
                   )}
                   <div className="flex flex-wrap gap-3">
-                    <button
+                    <Button
                       type="button"
+                      variant="danger"
+                      size="sm"
                       onClick={() => void handleCancel()}
                       disabled={cancelling}
-                      className="inline-flex items-center gap-2 rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-opacity disabled:cursor-wait disabled:opacity-70"
+                      loading={cancelling}
                     >
-                      {cancelling && <Loader2 className="size-4 animate-spin" />}
                       {cancelling ? 'Cancelling...' : 'Yes, cancel membership'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setConfirmCancel(false)}
                       disabled={cancelling}
-                      className="rounded-lg border border-[var(--border-default)] bg-[var(--cp-offwhite)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-subtle)] disabled:opacity-50"
                     >
                       Keep membership
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -437,18 +460,15 @@ export function MembershipContent() {
                 return (
                   <div
                     key={plan.id}
-                    className="flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-6"
+                    className="arcade-lift flex flex-col rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] p-6 shadow-[5px_5px_0_var(--ink)]"
                   >
-                    <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">
-                      {plan.name}
-                    </h2>
-
-                    {/* Price */}
-                    <div className="mt-2 flex items-baseline gap-1">
-                      <span className="font-display text-[32px] font-medium text-[var(--text-primary)]">
-                        {formatCents(plan.price_cents)}
+                    <div className="flex items-start justify-between gap-3">
+                      <h2 className="font-[family-name:var(--font-display)] text-[18px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">
+                        {plan.name}
+                      </h2>
+                      <span className="arcade-badge arcade-badge-yellow shrink-0">
+                        {formatCents(plan.price_cents)}/mo
                       </span>
-                      <span className="text-[14px] text-[var(--text-tertiary)]">/mo</span>
                     </div>
 
                     {/* Access summary */}
@@ -467,15 +487,15 @@ export function MembershipContent() {
                       )}
 
                     <div className="mt-auto pt-5">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => void handleSubscribe(plan.id)}
                         disabled={isSubscribing || subscribingPlanId !== null}
-                        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--cp-accent)] py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[var(--cp-accent-hover)] disabled:cursor-wait disabled:opacity-70"
+                        loading={isSubscribing}
+                        fullWidth
                       >
-                        {isSubscribing && <Loader2 className="size-4 animate-spin" />}
                         {isSubscribing ? 'Redirecting to checkout...' : 'Subscribe'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )

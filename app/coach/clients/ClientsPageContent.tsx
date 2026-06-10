@@ -4,12 +4,10 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
 import { CalendarCheck, Flame, Star } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { DataTable, type DataColumn } from '@/components/ui/DataTable'
-import { StatusDot } from '@/components/ui/StatusDot'
 import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { calculateEngagementScore, engagementLabelText } from '@/lib/client-engagement'
@@ -67,10 +65,19 @@ function getInitials(first: string | null, last: string | null, email: string | 
   return '?'
 }
 
-function statusTone(status: string): 'active' | 'pending' | 'inactive' {
-  if (status === 'active') return 'active'
-  if (status === 'paused') return 'pending'
-  return 'inactive'
+/** Arcade badge tone for a client status. */
+function statusBadgeTone(status: string): string {
+  if (status === 'active') return 'arcade-badge-teal'
+  if (status === 'paused') return 'arcade-badge-yellow'
+  return ''
+}
+
+/** Capitalized client status label (no raw DB enum on screen). */
+function statusLabelText(status: string): string {
+  if (status === 'active') return 'Active'
+  if (status === 'paused') return 'Paused'
+  if (status === 'completed') return 'Completed'
+  return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
 function engagementThumbClass(label: 'engaged' | 'moderate' | 'at-risk' | undefined): string {
@@ -268,11 +275,11 @@ export function CoachClientsPageContent() {
         render: (client) => {
           return (
             <div className="flex items-center gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--cp-accent)] text-[11px] font-bold text-white">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-[var(--ink)] bg-[var(--cp-accent)] text-[11px] font-bold text-white shadow-[2px_2px_0_var(--ink)]">
                 {getInitials(client.first_name, client.last_name, client.email)}
               </div>
               <div className="min-w-0">
-                <p className="truncate font-medium">{[client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'}</p>
+                <p className="truncate font-semibold text-[var(--text-primary)]">{[client.first_name, client.last_name].filter(Boolean).join(' ') || 'Unnamed client'}</p>
                 <p className="truncate text-[12px] text-[var(--text-tertiary)]">{client.email || '—'}</p>
               </div>
             </div>
@@ -284,10 +291,7 @@ export function CoachClientsPageContent() {
         header: 'Status',
         sortValue: (r) => r.status,
         render: (client) => (
-          <span className="inline-flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
-            <StatusDot tone={statusTone(client.status)} />
-            {client.status}
-          </span>
+          <span className={cn('arcade-badge', statusBadgeTone(client.status))}>{statusLabelText(client.status)}</span>
         ),
       },
       {
@@ -307,8 +311,8 @@ export function CoachClientsPageContent() {
         sortValue: (r) => r.rewards?.total_xp ?? 0,
         render: (client) => (
           <div className="flex items-center gap-2">
-            <span className="tabular-nums text-[13px] text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</span>
-            <Badge variant="accent">L{client.rewards?.level ?? 1}</Badge>
+            <span className="font-[family-name:var(--font-display)] font-bold tabular-nums text-[13px] text-[var(--text-primary)]">{client.rewards?.total_xp ?? 0}</span>
+            <span className="arcade-badge arcade-badge-yellow">L{client.rewards?.level ?? 1}</span>
           </div>
         ),
       },
@@ -341,11 +345,8 @@ export function CoachClientsPageContent() {
               <p className="mt-0.5 text-[11px] text-[var(--text-tertiary)]">
                 {p.modulesCompleted} of {p.totalModules} modules
               </p>
-              <div className="mt-1 h-0.5 w-full overflow-hidden rounded-full bg-[var(--bg-muted)]">
-                <div
-                  className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-200"
-                  style={{ width: `${p.percent}%` }}
-                />
+              <div className="arcade-track mt-1.5" aria-hidden>
+                <div className="arcade-fill arcade-fill-yellow" style={{ width: `${p.percent}%` }} />
               </div>
             </div>
           )
@@ -475,21 +476,20 @@ export function CoachClientsPageContent() {
                   tabIndex={0}
                 >
                   <div className="flex items-center gap-3 px-4 pt-4">
-                    <div className="relative flex size-10 flex-shrink-0 items-center justify-center rounded-full text-[14px] font-bold text-white" style={{ background: 'linear-gradient(135deg, var(--cp-accent), var(--accent-dark))' }}>
+                    <div className="relative flex size-10 flex-shrink-0 items-center justify-center rounded-full border-[2.5px] border-[var(--ink)] text-[14px] font-bold text-white shadow-[3px_3px_0_var(--ink)]" style={{ background: 'linear-gradient(135deg, var(--cp-accent), var(--accent-dark))' }}>
                       {getInitials(client.first_name, client.last_name, client.email)}
                       <span
                         className={cn(
-                          'absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-[var(--cp-offwhite)]',
+                          'absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-[var(--cp-offwhite)]',
                           statusDotClass(client.status)
                         )}
                         aria-hidden
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] font-semibold text-[var(--text-primary)]">{name}</p>
-                      <p className="flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)]">
-                        <StatusDot tone={statusTone(client.status)} />
-                        {client.status}
+                      <p className="truncate font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--text-primary)]">{name}</p>
+                      <p className="mt-0.5">
+                        <span className={cn('arcade-badge', statusBadgeTone(client.status))}>{statusLabelText(client.status)}</span>
                       </p>
                     </div>
                   </div>
@@ -544,25 +544,22 @@ export function CoachClientsPageContent() {
                             <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">
                               {p.modulesCompleted} of {p.totalModules} modules
                             </p>
-                            <div className="mt-1.5 h-1 w-full rounded-full bg-[var(--bg-muted)]" aria-hidden>
-                              <div
-                                className="h-full rounded-full bg-[var(--cp-accent)] transition-[width] duration-200"
-                                style={{ width: `${p.percent}%` }}
-                              />
+                            <div className="arcade-track mt-1.5" aria-hidden>
+                              <div className="arcade-fill arcade-fill-yellow" style={{ width: `${p.percent}%` }} />
                             </div>
                           </>
                         )
                       })()}
                     </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] text-[var(--text-tertiary)]">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2 py-0.5" title="Sessions completed">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px] font-semibold text-[var(--text-secondary)]">
+                      <span className="inline-flex items-center gap-1 rounded-full border-2 border-[var(--ink)] bg-[var(--bg-subtle)] px-2 py-0.5" title="Sessions completed">
                         <CalendarCheck size={12} /> {sessionsN}
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--bg-muted)] px-2 py-0.5" title="Total XP">
+                      <span className="inline-flex items-center gap-1 rounded-full border-2 border-[var(--ink)] bg-[var(--belt-yellow)] px-2 py-0.5 text-[var(--ink)]" title="Total XP">
                         <Star size={12} /> {client.rewards?.total_xp ?? 0}
                       </span>
                       {(client.rewards?.current_streak_days ?? 0) > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-surface)] px-2 py-0.5 text-[var(--accent)]" title="Current streak">
+                        <span className="arcade-streak" title="Current streak">
                           <Flame size={12} /> {client.rewards?.current_streak_days}d
                         </span>
                       )}

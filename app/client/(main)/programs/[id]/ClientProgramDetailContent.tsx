@@ -176,42 +176,34 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
         : null}
 
       <div>
-        <h1 className="text-xl font-medium text-[var(--color-ink)]">{data.title}</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-[28px] font-extrabold tracking-[-0.03em] text-[var(--color-ink)]">{data.title}</h1>
         {data.description && (
           <p className="mt-2 text-[15px] text-[var(--color-muted)]">{data.description}</p>
         )}
       </div>
 
       <div>
-        <div className="flex justify-between text-sm text-[var(--color-muted)] mb-1">
+        <div className="mb-1.5 flex justify-between font-[family-name:var(--font-display)] text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
           <span>Progress</span>
           <span>
-            {data.progress.modulesCompleted} of {data.progress.totalModules} modules
+            {data.progress.modulesCompleted} of {data.progress.totalModules} modules · {pct}%
           </span>
         </div>
-        <div className="h-2 w-full rounded-full bg-[var(--color-border)] overflow-hidden">
-          <div
-            className="h-full rounded-full bg-[var(--color-accent)] transition-all"
-            style={{ width: `${pct}%` }}
-          />
+        <div className="arcade-track h-3">
+          <div className="arcade-fill" style={{ width: `${pct}%` }} />
         </div>
       </div>
 
       {showCompletionBanner && allComplete && (
-        <div
-          className="w-full overflow-hidden rounded-xl border border-[var(--color-border)]"
-          style={{
-            background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 18%, transparent) 0%, transparent 100%)',
-          }}
-        >
+        <div className="w-full overflow-hidden rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] shadow-[6px_6px_0_var(--ink)]">
           <div className="px-6 py-8 text-center">
             <p className="text-[48px] leading-none" aria-hidden>
               🎉
             </p>
-            <p className="mt-4 text-[24px] font-bold leading-tight text-[var(--color-ink)]">
+            <p className="mt-4 font-[family-name:var(--font-display)] text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-[var(--ink)]">
               You completed {data.title}!
             </p>
-            <p className="mt-2 text-[15px] text-[var(--color-muted)]">
+            <p className="mt-2 font-[family-name:var(--font-display)] text-[15px] font-bold text-[var(--ink)]/70">
               {data.progress.modulesCompleted} modules completed · {xpEarnedDisplay} XP earned
             </p>
             <div className="mt-6 flex justify-center">
@@ -229,7 +221,7 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
         {(data.modules ?? []).map((mod, modIdx) => {
           const isExpanded = expandedModuleId === mod.id
           return (
-            <Card key={mod.id} variant="raised" padding="lg">
+            <div key={mod.id} className="rounded-[16px] border-[3px] border-[var(--ink)] bg-[var(--bg-subtle)] p-5 shadow-[5px_5px_0_var(--ink)]">
               <button
                 type="button"
                 className="w-full flex items-center gap-3 text-left"
@@ -237,29 +229,29 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
               >
                 <span
                   className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+                    'grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 border-[var(--ink)] font-[family-name:var(--font-display)] font-extrabold shadow-[2px_2px_0_var(--ink)]',
                     mod.completed
-                      ? 'bg-[var(--color-success)]/15 text-[var(--color-success)]'
-                      : 'bg-[var(--color-accent)]/15 text-[var(--color-accent)]'
+                      ? 'bg-[var(--belt-teal)] text-white'
+                      : 'bg-[var(--belt-yellow)] text-[var(--ink)]'
                   )}
                   aria-hidden
                 >
                   {mod.completed ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   ) : (
-                    <span className="text-xs font-medium">{modIdx + 1}</span>
+                    <span className="text-sm">{modIdx + 1}</span>
                   )}
                 </span>
-                <span className="flex-1 font-medium text-[var(--color-ink)]">{mod.title}</span>
+                <span className="flex-1 font-[family-name:var(--font-display)] font-extrabold text-[var(--color-ink)]">{mod.title}</span>
                 <svg
                   width="20"
                   height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   className={cn('shrink-0 transition-transform', isExpanded && 'rotate-180')}
                 >
                   <path d="M6 9l6 6 6-6" />
@@ -267,7 +259,7 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
               </button>
 
               {isExpanded && (
-                <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+                <div className="mt-4 pt-4 border-t-2 border-[var(--ink)]/15">
                   {mod.description && (
                     <p className="text-sm text-[var(--color-muted)] mb-4">{mod.description}</p>
                   )}
@@ -287,7 +279,7 @@ export function ClientProgramDetailContent({ programId }: { programId: string })
                   )}
                 </div>
               )}
-            </Card>
+            </div>
           )
         })}
       </div>

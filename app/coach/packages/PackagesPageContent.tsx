@@ -424,14 +424,14 @@ export function PackagesPageContent() {
       {!loading && !error && packages.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {packages.filter((p) => p.is_active).map((pkg) => (
-            <Card key={pkg.id} variant="raised" padding="lg" className="shadow-[var(--shadow-xs)]">
+            <Card key={pkg.id} variant="raised" padding="lg" className="arcade-lift">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="text-[16px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">{pkg.title}</h3>
+                <h3 className="font-[family-name:var(--font-display)] text-[16px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">{pkg.title}</h3>
               </div>
               {pkg.description && (
                 <p className="mt-1 text-[13px] leading-snug text-[var(--text-tertiary)] line-clamp-2">{pkg.description}</p>
               )}
-              <p className="mt-4 text-[22px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+              <p className="mt-4 font-[family-name:var(--font-display)] text-[26px] font-extrabold tabular-nums tracking-[-0.03em] text-[var(--text-primary)]">
                 {formatAmount(pkg.price_cents, pkg.currency)}
               </p>
               {pkg.duration_minutes > 0 && (
@@ -440,14 +440,8 @@ export function PackagesPageContent() {
                   {pkg.session_type ? ` · ${pkg.session_type}` : ''}
                 </p>
               )}
-              <p className="mt-2">
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
-                    pkg.is_virtual !== false
-                      ? 'bg-[var(--accent-light)] text-[var(--cp-accent)]'
-                      : 'bg-[var(--bg-muted)] text-[var(--text-secondary)]'
-                  }`}
-                >
+              <p className="mt-2.5">
+                <span className={`arcade-badge ${pkg.is_virtual !== false ? 'arcade-badge-blue' : 'arcade-badge-yellow'}`}>
                   {pkg.is_virtual !== false ? 'Virtual' : 'In-person'}
                 </span>
               </p>
