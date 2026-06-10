@@ -43,6 +43,8 @@ export interface RecordPaymentModalProps {
   onRecorded?: (detail: { clientName: string; amountCents: number }) => void
   onUpdated?: () => void
   defaultClientId?: string | null
+  /** When set (e.g. schedule drawer), link the new payment to this session. */
+  defaultSessionId?: string | null
   editingPayment?: EditingPayment | null
 }
 
@@ -71,6 +73,7 @@ export function RecordPaymentModal({
   onRecorded,
   onUpdated,
   defaultClientId,
+  defaultSessionId,
   editingPayment,
 }: RecordPaymentModalProps) {
   const [clients, setClients] = useState<ClientRow[]>([])
@@ -171,7 +174,7 @@ export function RecordPaymentModal({
         notes: notes.trim() || null,
         paymentDate: payDate,
         invoiceId: linkInvoice ? invoiceId : null,
-        sessionId: null,
+        sessionId: defaultSessionId ?? null,
       }
       const url = isEdit ? `/api/payments/${editingPayment!.id}` : '/api/payments'
       const res = await fetch(url, {

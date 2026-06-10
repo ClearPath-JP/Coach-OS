@@ -5,6 +5,7 @@ import { recurringAvailabilityCreateSchema } from '@/lib/validations'
 
 /**
  * GET /api/availability — all recurring_availability rules for the workspace. Coach only.
+ * Excludes class slots (class_group_id set) — those are managed by /api/coach/classes.
  */
 export async function GET() {
   try {
@@ -24,6 +25,7 @@ export async function GET() {
       .select('id, workspace_id, coach_id, day_of_week, start_time, end_time, label, session_product_id, is_client_bookable, is_active, created_at')
       .eq('workspace_id', coach.workspace_id)
       .eq('coach_id', user.id)
+      .is('class_group_id', null)
       .order('day_of_week')
       .order('start_time')
       .limit(200)

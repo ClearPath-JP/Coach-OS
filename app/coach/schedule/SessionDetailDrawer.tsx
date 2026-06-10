@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { format, formatDistanceToNow } from 'date-fns'
 import { RecordPaymentModal } from '@/components/coach/RecordPaymentModal'
 import { MarkPaidModal } from '@/components/coach/MarkPaidModal'
+import { QuickInvoiceModal } from '@/components/coach/QuickInvoiceModal'
 import { parseActionItemsJson } from '@/lib/sessions/action-items'
 import { formatCents } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
@@ -61,6 +62,10 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
   const [invoiceId, setInvoiceId] = useState<string | null>(null)
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
   const [markPaidOpen, setMarkPaidOpen] = useState(false)
+  const [quickInvoiceOpen, setQuickInvoiceOpen] = useState(false)
+  const [resendingInvoice, setResendingInvoice] = useState(false)
+  const [completeChoiceOpen, setCompleteChoiceOpen] = useState(false)
+  const [completeAfterPayment, setCompleteAfterPayment] = useState(false)
 
   useEffect(() => {
     if (!session) return
@@ -79,6 +84,8 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
     setNotesTab('client')
     setConfirmCancel(false)
     setConfirmRemove(false)
+    setCompleteChoiceOpen(false)
+    setCompleteAfterPayment(false)
   }, [session])
 
   useEffect(() => {
@@ -118,7 +125,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
     }
   }, [session?.id])
 
-  useEffect(() => {
+  const loadPaymentState = useCallback(() => {
     if (!session) return
     fetch(`/api/payments?clientId=${encodeURIComponent(session.client_id)}`)
       .then((res) => res.json())
@@ -126,6 +133,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
         const payment = (json.data ?? []).find((p: { session_id?: string | null; amount_cents?: number; payment_method?: string | null; payment_date?: string | null }) => p.session_id === session.id)
         if (payment) {
           setPaymentState('paid')
+          setInvoiceId(null)
           setPaymentAmountCents(payment.amount_cents ?? null)
           setPaymentMethod(payment.payment_method ?? null)
           setPaymentDate(payment.payment_date ?? null)
@@ -134,7 +142,11 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
         return fetch(`/api/invoices?clientId=${encodeURIComponent(session.client_id)}&status=pending`)
           .then((r) => r.json())
           .then((invJson) => {
-            const inv = (invJson.data ?? [])[0]
+            // Only an invoice linked to THIS session counts — never an unrelated pending invoice.
+            const inv = (invJson.data ?? []).find(
+              (i: { id?: string; session_id?: string | null; amount_cents?: number; created_at?: string }) =>
+                i.session_id === session.id
+            )
             if (inv) {
               setPaymentState('invoice_pending')
               setInvoiceId(inv.id ?? null)
@@ -142,13 +154,19 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
               setPaymentDate(inv.created_at ?? null)
             } else {
               setPaymentState('none')
+              setInvoiceId(null)
             }
           })
       })
       .catch(() => {
         setPaymentState('none')
+        setInvoiceId(null)
       })
   }, [session])
+
+  useEffect(() => {
+    loadPaymentState()
+  }, [loadPaymentState])
 
   if (!session) return null
 
@@ -228,28 +246,19 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
     setActionDraft((prev) => prev.filter((a) => a.id !== id))
   }
 
-  const markComplete = async () => {
-    const answer = window.prompt('Was payment received for this session?\nType: yes, already, or no')
-    if (answer == null) return
-    const normalized = answer.trim().toLowerCase()
-    if (normalized === 'yes') {
-      setRecordPaymentOpen(true)
-      return
-    }
-    if (normalized !== 'already' && normalized !== 'no') {
-      onToast?.('Please answer yes, already, or no', 'warning')
-      return
-    }
+  /** PATCH the session to completed. Pass { paid: false } for the "no payment" path. */
+  const completeSession = async (opts?: { paid?: boolean }) => {
     setActionLoading(true)
     try {
       const payload: Record<string, unknown> = { status: 'completed' }
-      if (normalized === 'no') payload.paid = false
+      if (opts?.paid === false) payload.paid = false
       const res = await fetch(`/api/sessions/${session.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
       if (res.ok) {
+        setCompleteChoiceOpen(false)
         onUpdated()
         onToast?.('Session marked complete', 'success')
       } else {
@@ -257,6 +266,27 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
       }
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const resendInvoice = async () => {
+    if (!invoiceId) return
+    setResendingInvoice(true)
+    try {
+      const res = await fetch(`/api/invoices/${encodeURIComponent(invoiceId)}/resend`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      const json = (await res.json().catch(() => ({}))) as { error?: string }
+      if (res.ok) {
+        onToast?.('Invoice sent again in the message thread', 'success')
+      } else {
+        onToast?.(typeof json.error === 'string' ? json.error : 'Could not resend invoice', 'error')
+      }
+    } catch {
+      onToast?.('Could not resend invoice — try again', 'error')
+    } finally {
+      setResendingInvoice(false)
     }
   }
 
@@ -490,7 +520,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
             <div className="space-y-2">
               <p className="text-sm text-[var(--color-text-secondary)]">No payment recorded</p>
               <div className="flex gap-2">
-                <Button variant="secondary" className="text-xs" onClick={() => setMarkPaidOpen(true)}>Send invoice</Button>
+                <Button variant="secondary" className="text-xs" onClick={() => setQuickInvoiceOpen(true)}>Send invoice</Button>
                 <Button variant="secondary" className="text-xs" onClick={() => setRecordPaymentOpen(true)}>Record payment</Button>
               </div>
             </div>
@@ -503,7 +533,9 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
                 {paymentDate ? ` · sent ${format(new Date(paymentDate), 'MMM d, yyyy')}` : ''}
               </p>
               <div className="flex gap-2">
-                <Button variant="secondary" className="text-xs" onClick={() => setMarkPaidOpen(true)}>Resend invoice</Button>
+                <Button variant="secondary" className="text-xs" disabled={resendingInvoice} onClick={() => void resendInvoice()}>
+                  {resendingInvoice ? 'Sending…' : 'Resend invoice'}
+                </Button>
                 <Button variant="secondary" className="text-xs" onClick={() => setMarkPaidOpen(true)}>Mark as paid</Button>
               </div>
             </div>
@@ -677,13 +709,40 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
             </Button>
           ) : null}
           {session.status !== 'completed' && session.status !== 'cancelled' ? (
-            <Button
-              onClick={markComplete}
-              disabled={actionLoading}
-              className="w-full"
-            >
-              Complete session
-            </Button>
+            !completeChoiceOpen ? (
+              <Button
+                onClick={() => setCompleteChoiceOpen(true)}
+                disabled={actionLoading}
+                className="w-full"
+              >
+                Complete session
+              </Button>
+            ) : (
+              <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+                <p className="text-sm text-[var(--color-text-primary)] mb-2">Was payment received for this session?</p>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={() => {
+                      setCompleteAfterPayment(true)
+                      setCompleteChoiceOpen(false)
+                      setRecordPaymentOpen(true)
+                    }}
+                    disabled={actionLoading}
+                  >
+                    Record payment now
+                  </Button>
+                  <Button variant="secondary" onClick={() => void completeSession()} disabled={actionLoading}>
+                    Payment already recorded
+                  </Button>
+                  <Button variant="secondary" onClick={() => void completeSession({ paid: false })} disabled={actionLoading}>
+                    No payment — just complete
+                  </Button>
+                  <Button variant="secondary" onClick={() => setCompleteChoiceOpen(false)} disabled={actionLoading}>
+                    Back
+                  </Button>
+                </div>
+              </div>
+            )
           ) : null}
           {!confirmCancel ? (
             <Button variant="destructive-secondary" onClick={() => setConfirmCancel(true)} disabled={actionLoading}>
@@ -731,12 +790,34 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
       </div>
       <RecordPaymentModal
         open={recordPaymentOpen}
-        onClose={() => setRecordPaymentOpen(false)}
+        onClose={() => {
+          setRecordPaymentOpen(false)
+          setCompleteAfterPayment(false)
+        }}
         defaultClientId={session.client_id}
+        defaultSessionId={session.id}
         onRecorded={() => {
           setRecordPaymentOpen(false)
+          loadPaymentState()
+          if (completeAfterPayment) {
+            // "Record payment now" path of Complete session — finish the completion.
+            setCompleteAfterPayment(false)
+            void completeSession()
+          } else {
+            onUpdated()
+            onToast?.('Payment recorded', 'success')
+          }
+        }}
+      />
+      <QuickInvoiceModal
+        open={quickInvoiceOpen}
+        onClose={() => setQuickInvoiceOpen(false)}
+        defaultClientId={session.client_id}
+        sessionId={session.id}
+        onSent={(name) => {
+          onToast?.(`Invoice sent to ${name}`, 'success')
+          loadPaymentState()
           onUpdated()
-          onToast?.('Payment recorded', 'success')
         }}
       />
       {invoiceId ? (
@@ -749,6 +830,7 @@ export function SessionDetailDrawer({ session, onClose, onUpdated, onToast, onRe
           currency="usd"
           onSuccess={() => {
             setMarkPaidOpen(false)
+            loadPaymentState()
             onUpdated()
             onToast?.('Invoice marked paid', 'success')
           }}

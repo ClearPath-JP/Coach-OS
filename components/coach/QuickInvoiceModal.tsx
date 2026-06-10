@@ -12,12 +12,15 @@ export function QuickInvoiceModal({
   open,
   onClose,
   defaultClientId,
+  sessionId,
   onSent,
 }: {
   open: boolean
   onClose: () => void
   /** When set (e.g. client detail), pre-select this client and hide selector if only one. */
   defaultClientId?: string | null
+  /** When set (e.g. schedule drawer), link the invoice to this session. */
+  sessionId?: string | null
   onSent?: (clientName: string) => void
 }) {
   const [clients, setClients] = useState<ClientOpt[]>([])
@@ -104,7 +107,7 @@ export function QuickInvoiceModal({
       const invRes = await fetch('/api/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId, clientId }),
+        body: JSON.stringify({ packageId, clientId, sessionId: sessionId ?? null }),
       })
       const invJson = await invRes.json().catch(() => ({}))
       if (!invRes.ok) {

@@ -86,6 +86,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/availability/[id] — soft delete (set is_active = false). Coach only.
+ * Refuses class slots (class_group_id set) — those are managed by /api/coach/classes.
  */
 export async function DELETE(
   _request: Request,
@@ -116,13 +117,26 @@ export async function DELETE(
       return res
     }
 
-    const { data: existing } = await supabase
+    const { data: existingRaw } = await supabase
       .from('recurring_availability')
-      .select('id, workspace_id')
+      .select('id, workspace_id, class_group_id')
       .eq('id', id)
       .maybeSingle()
+    // Cast via unknown — class_group_id was added by the classes-overhaul migration
+    // and may lag behind the generated Supabase types.
+    const existing = existingRaw as unknown as {
+      id: string
+      workspace_id: string
+      class_group_id: string | null
+    } | null
     if (!existing || existing.workspace_id !== coach.workspace_id) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+    if (existing.class_group_id) {
+      return NextResponse.json(
+        { error: 'This slot belongs to a class — manage it from the Classes page' },
+        { status: 409 }
+      )
     }
 
     const { error } = await supabase

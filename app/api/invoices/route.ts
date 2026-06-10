@@ -141,7 +141,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg }, { status: 400 })
     }
 
-    const { packageId, clientId, dueDate } = parsed.data
+    const { packageId, clientId, sessionId, dueDate } = parsed.data
 
     const { data: pkg, error: pkgError } = await supabase
       .from('session_packages')
@@ -188,6 +188,22 @@ export async function POST(request: Request) {
 
     const recipientId = clientProfile.id
 
+    // Optional session link — invoice shows against that session in the schedule drawer.
+    if (sessionId) {
+      const { data: sessionRow, error: sessionError } = await supabase
+        .from('sessions')
+        .select('id, client_id')
+        .eq('id', sessionId)
+        .eq('workspace_id', coach.workspace_id)
+        .maybeSingle()
+      if (sessionError || !sessionRow || sessionRow.client_id !== client.id) {
+        return NextResponse.json(
+          { error: "We couldn't find that session for this client" },
+          { status: 404 }
+        )
+      }
+    }
+
     const dueDateValue = dueDate ? new Date(dueDate).toISOString() : null
 
     const { data: invoice, error: invError } = await supabase
@@ -197,6 +213,7 @@ export async function POST(request: Request) {
         package_id: pkg.id,
         coach_id: user.id,
         client_id: client.id,
+        session_id: sessionId ?? null,
         amount_cents: pkg.price_cents,
         currency: pkg.currency,
         status: 'pending',

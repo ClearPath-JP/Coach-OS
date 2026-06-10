@@ -23,17 +23,6 @@ const WEEKDAYS = [
   { value: 6, short: 'Sun', long: 'Sunday' },
 ] as const
 
-const TIME_OPTIONS: string[] = (() => {
-  const out: string[] = []
-  for (let h = 5; h <= 22; h++) {
-    for (const m of [0, 30]) {
-      if (h === 22 && m === 30) break
-      out.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
-    }
-  }
-  return out
-})()
-
 function timeLabel(t: string) {
   const [h, m] = t.split(':').map((x) => parseInt(x, 10))
   if (h == null) return t
@@ -69,15 +58,6 @@ export function CoachClassesContent() {
   const [error, setError] = useState<string | null>(null)
   const [stripeConnected, setStripeConnected] = useState<boolean | null>(null)
 
-  const [addOpen, setAddOpen] = useState(false)
-  const [form, setForm] = useState<{ packageId: string; dayOfWeek: number; startTime: string }>({
-    packageId: '',
-    dayOfWeek: 0,
-    startTime: '09:00',
-  })
-  const [saving, setSaving] = useState(false)
-  const [formError, setFormError] = useState<string | null>(null)
-
   // New class form modal
   const [classModalOpen, setClassModalOpen] = useState(false)
   const [editingClass, setEditingClass] = useState<ClassRecord | undefined>(undefined)
@@ -93,7 +73,7 @@ export function CoachClassesContent() {
       const [pkgsRes, slotsRes, settingsRes, classesRes] = await Promise.all([
         fetch('/api/packages'),
         fetch('/api/availability'),
-        fetch('/api/settings/workspace'),
+        fetch('/api/settings'),
         fetch('/api/coach/classes'),
       ])
       const pkgsJson = await pkgsRes.json().catch(() => ({}))
@@ -111,9 +91,8 @@ export function CoachClassesContent() {
       } else {
         setClasses([])
       }
-      const connectedId =
-        settingsJson?.data?.stripe_connect_account_id || settingsJson?.stripe_connect_account_id
-      setStripeConnected(Boolean(connectedId))
+      // stripeConnected mirrors Stripe charges_enabled (synced on Connect onboarding return)
+      setStripeConnected(Boolean(settingsJson?.data?.workspace?.stripeConnected))
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not load'
       setError(msg)
@@ -136,54 +115,6 @@ export function CoachClassesContent() {
     for (const p of packages) m.set(p.id, p)
     return m
   }, [packages])
-
-  async function addSlot(e: React.FormEvent) {
-    e.preventDefault()
-    setFormError(null)
-    if (!form.packageId) {
-      setFormError('Pick a class type first.')
-      return
-    }
-    const pkg = packagesById.get(form.packageId)
-    if (!pkg) {
-      setFormError('Class type not found.')
-      return
-    }
-    setSaving(true)
-    try {
-      // Calculate end time from package duration
-      const [sh, sm] = form.startTime.split(':').map((x) => parseInt(x, 10))
-      const start = new Date(2000, 0, 1, sh ?? 9, sm ?? 0)
-      const end = new Date(start.getTime() + (pkg.duration_minutes ?? 60) * 60_000)
-      const endHH = String(end.getHours()).padStart(2, '0')
-      const endMM = String(end.getMinutes()).padStart(2, '0')
-
-      const res = await fetch('/api/availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dayOfWeek: form.dayOfWeek,
-          startTime: `${form.startTime}:00`,
-          endTime: `${endHH}:${endMM}:00`,
-          sessionProductId: form.packageId,
-          isClientBookable: true,
-          label: pkg.title,
-        }),
-      })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setFormError(json.error ?? 'Could not add class slot')
-        return
-      }
-      setAddOpen(false)
-      setForm({ packageId: '', dayOfWeek: 0, startTime: '09:00' })
-      await load()
-    } catch {
-      setFormError('Network error — try again')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   async function removeSlot(id: string) {
     if (!window.confirm('Remove this class slot? Existing paid bookings will be kept.')) return
@@ -252,85 +183,6 @@ export function CoachClassesContent() {
           />
         )}
 
-        {addOpen && packages.length > 0 && (
-          <form
-            onSubmit={addSlot}
-            className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-subtle)] p-5 space-y-4"
-          >
-            <h2 className="text-sm font-semibold text-[var(--text-primary)]">Add a class slot</h2>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
-                Class type
-              </label>
-              <select
-                value={form.packageId}
-                onChange={(e) => setForm((f) => ({ ...f, packageId: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-primary)]"
-                required
-              >
-                <option value="">Pick a class…</option>
-                {packages.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title} — {formatCents(p.price_cents)} · {p.duration_minutes}min · cap {p.capacity ?? 1}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Day</label>
-                <select
-                  value={form.dayOfWeek}
-                  onChange={(e) => setForm((f) => ({ ...f, dayOfWeek: parseInt(e.target.value, 10) }))}
-                  className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-primary)]"
-                >
-                  {WEEKDAYS.map((d) => (
-                    <option key={d.value} value={d.value}>
-                      {d.long}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">Start time</label>
-                <select
-                  value={form.startTime}
-                  onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
-                  className="w-full rounded-lg border border-[var(--border-default)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-primary)]"
-                >
-                  {TIME_OPTIONS.map((t) => (
-                    <option key={t} value={t}>
-                      {timeLabel(t)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {formError && <p className="text-sm text-[var(--error)]">{formError}</p>}
-
-            <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setAddOpen(false)}
-                className="rounded-lg border border-[var(--border-default)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-muted)]"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[var(--accent-hover)] disabled:cursor-wait disabled:opacity-70"
-              >
-                {saving && <Loader2 className="size-4 animate-spin" />}
-                {saving ? 'Adding…' : 'Add slot'}
-              </button>
-            </div>
-          </form>
-        )}
-
         {loading && (
           <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-10 text-center">
             <Loader2 className="mx-auto size-5 animate-spin text-[var(--text-tertiary)]" />
@@ -343,14 +195,7 @@ export function CoachClassesContent() {
           </div>
         )}
 
-        {!loading && !error && bookableSlots.length === 0 && packages.length > 0 && (
-          <EmptyState
-            title="No class slots scheduled yet"
-            description="Put one of your class types on the weekly calendar."
-            action={<Button onClick={() => setAddOpen(true)}>New class slot</Button>}
-          />
-        )}
-
+        {/* Legacy bookable slots (pre-Classes) — render only when a coach still has some */}
         {!loading && !error && bookableSlots.length > 0 && (
           <Card className="overflow-hidden !p-0">
             <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-3 border-b border-[var(--border-subtle)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-[var(--text-quaternary)]">

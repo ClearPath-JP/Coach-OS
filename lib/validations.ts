@@ -289,10 +289,11 @@ export const buyPassSchema = z.object({
 })
 export type BuyPassInput = z.infer<typeof buyPassSchema>
 
-/** Create invoice — package, client, optional due date */
+/** Create invoice — package, client, optional linked session, optional due date */
 export const createInvoiceSchema = z.object({
   packageId: z.string().uuid('Invalid package'),
   clientId: z.string().uuid('Invalid client'),
+  sessionId: z.string().uuid('Invalid session').optional().nullable(),
   dueDate: z.string().refine((s) => !Number.isNaN(Date.parse(s)), 'Invalid date').optional().nullable(),
 })
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>
