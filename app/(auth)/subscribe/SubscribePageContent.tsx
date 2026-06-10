@@ -25,9 +25,13 @@ const TOTAL_FOUNDING_SPOTS = 10
 
 interface Props {
   userEmail: string
+  /** `?error=` code from the checkout/activation redirect (new-coach-activate route). */
+  errorCode?: string | null
+  /** `?cancelled=true` — the coach backed out of Stripe Checkout. */
+  checkoutCancelled?: boolean
 }
 
-export function SubscribePageContent({ userEmail }: Props) {
+export function SubscribePageContent({ userEmail, errorCode = null, checkoutCancelled = false }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -104,6 +108,34 @@ export function SubscribePageContent({ userEmail }: Props) {
           </p>
         )}
       </div>
+
+      {/* Returned from a failed payment activation — guard against a double charge */}
+      {errorCode && (
+        <div
+          role="alert"
+          className="mb-8 w-full max-w-[480px] rounded-xl border border-[var(--warning-border)] bg-[var(--warning-bg)] px-5 py-4 text-left text-[14px] leading-relaxed text-[var(--warning)]"
+        >
+          <p className="font-semibold">We could not finish setting up your account.</p>
+          <p className="mt-1">
+            If you just completed payment, <strong>DO NOT pay again</strong> — sign in again
+            and your account will finish setting up, or email{' '}
+            <a href="mailto:hello@foundos.ai" className="font-semibold underline">
+              hello@foundos.ai
+            </a>
+            .
+          </p>
+        </div>
+      )}
+
+      {/* Came back from a cancelled Stripe Checkout */}
+      {checkoutCancelled && !errorCode && (
+        <div
+          role="status"
+          className="mb-8 w-full max-w-[480px] rounded-xl border border-[var(--border-default)] bg-[var(--bg-subtle)] px-4 py-3 text-center text-[14px] text-[var(--text-secondary)]"
+        >
+          Checkout cancelled — you have not been charged.
+        </div>
+      )}
 
       {/* Error */}
       {error && (

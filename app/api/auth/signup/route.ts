@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase-server'
+import { applyAuthNoStoreHeaders } from '@/lib/auth-response'
+import {
+  createRouteHandlerSupabase,
+  flushSupabaseAuthCookies,
+  type SupabaseAuthCookieRow,
+} from '@/lib/supabase-server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { signupSchema } from '@/lib/validations'
@@ -45,7 +50,13 @@ export async function POST(request: Request) {
     const emailLower = email.trim().toLowerCase()
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
 
-    const supabase = await createClient()
+    // Cookie-queue pattern (mirrors /api/auth/login): Set-Cookie must be attached to the
+    // NextResponse we actually return — mutating next/headers cookies() does not reliably
+    // emit Set-Cookie on JSON responses, so the auto-sign-in session could fail to persist.
+    const authCookieQueue: SupabaseAuthCookieRow[] = []
+    const supabase = await createRouteHandlerSupabase(authCookieQueue)
+    const wrap = (res: NextResponse) =>
+      flushSupabaseAuthCookies(applyAuthNoStoreHeaders(res), authCookieQueue)
     const service = createServiceClient()
 
     // Try normal signup first (works if email confirmation is disabled)
@@ -57,17 +68,17 @@ export async function POST(request: Request) {
 
     // If we got a session, great — we're done
     if (signUpData.session?.user) {
-      return NextResponse.json({ data: { redirect: '/subscribe' } })
+      return wrap(NextResponse.json({ data: { redirect: '/subscribe' } }))
     }
 
     // Check for "already exists" errors
     if (signUpError) {
       const errMsg = (signUpError.message ?? '').toLowerCase()
       if (errMsg.includes('already') || errMsg.includes('registered') || errMsg.includes('exists')) {
-        return NextResponse.json(
+        return wrap(NextResponse.json(
           { error: 'An account with this email already exists.' },
           { status: 400 },
-        )
+        ))
       }
     }
 
@@ -75,12 +86,12 @@ export async function POST(request: Request) {
     // If we can't send a verification email, fall back to auto-confirm so signup isn't broken.
     if (!shouldAutoConfirm && signUpData.user?.id) {
       // Production with Resend: verification email already sent by Supabase. Tell user to check email.
-      return NextResponse.json({
+      return wrap(NextResponse.json({
         data: {
           redirect: '/login?verify=1',
           message: 'Check your email to confirm your account, then sign in.',
         },
-      })
+      }))
     }
     if (signUpData.user?.id) {
       // Dev / no-Resend prod: auto-confirm and sign in
@@ -99,16 +110,16 @@ export async function POST(request: Request) {
       if (adminErr) {
         const adminLower = (adminErr.message ?? '').toLowerCase()
         if (adminLower.includes('already') || adminLower.includes('exists')) {
-          return NextResponse.json(
+          return wrap(NextResponse.json(
             { error: 'An account with this email already exists.' },
             { status: 400 },
-          )
+          ))
         }
         console.error('[signup] admin createUser failed:', adminErr.message)
-        return NextResponse.json(
+        return wrap(NextResponse.json(
           { error: 'Could not create account. Please try again.' },
           { status: 500 },
-        )
+        ))
       }
     }
 
@@ -120,13 +131,13 @@ export async function POST(request: Request) {
 
     if (signInErr || !signInData.user) {
       console.error('[signup] signIn after create failed:', signInErr?.message)
-      return NextResponse.json(
+      return wrap(NextResponse.json(
         { error: 'Account created but sign-in failed. Please go to login and sign in.' },
         { status: 200 },
-      )
+      ))
     }
 
-    return NextResponse.json({ data: { redirect: '/subscribe' } })
+    return wrap(NextResponse.json({ data: { redirect: '/subscribe' } }))
   } catch (err) {
     console.error('[signup] unexpected error:', err instanceof Error ? err.message : err)
     return NextResponse.json(

@@ -12,6 +12,7 @@ export function isSafeAuthRedirectPath(path: string | null): path is string {
       pathname.startsWith('/client/') ||
       pathname.startsWith('/onboarding') ||
       pathname === '/billing' ||
+      pathname === '/subscribe' ||
       pathname.startsWith('/admin/')
     )
   } catch {

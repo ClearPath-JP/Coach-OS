@@ -69,11 +69,13 @@ export function SignupPageClient() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitError(null)
+    setNotice(null)
     setFieldErrors({})
 
     const parsed = signupSchema.safeParse({
@@ -118,6 +120,13 @@ export function SignupPageClient() {
           setSubmitError(msg)
         }
         setLoading(false)
+        return
+      }
+
+      // Verify-email path: the API returns a message instead of a usable session.
+      // Show it here so the user knows to check their inbox before signing in.
+      if (typeof json.data?.message === 'string' && json.data.message.length > 0) {
+        setNotice(json.data.message)
         return
       }
 
@@ -362,6 +371,13 @@ export function SignupPageClient() {
               </div>
             )}
 
+            {/* Verify-email notice */}
+            {notice && (
+              <div role="status" className="rounded-[10px] border border-[var(--success-border)] bg-[var(--success-bg)] px-4 py-3 text-[13px] text-[var(--success)]">
+                {notice}
+              </div>
+            )}
+
             {/* Submit */}
             <button
               type="submit" disabled={loading}
@@ -375,8 +391,9 @@ export function SignupPageClient() {
               )}
             </button>
             <p className="text-center text-[12px] leading-relaxed text-[var(--text-tertiary)]">
-              No credit card to start — set up your workspace, then lock in Founding:{' '}
+              Founding offer: lock in{' '}
               <span className="font-medium text-[var(--text-secondary)]">$99/mo for life</span>.
+              {' '}Checkout right after signup — cancel anytime.
             </p>
           </form>
 

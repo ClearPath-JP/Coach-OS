@@ -87,6 +87,15 @@ export async function POST(request: Request) {
 
   const adminBypassCoachTab = await isPlatformAdmin(supabase, data.user)
   if (intent === 'coach' && role !== 'coach' && !adminBypassCoachTab) {
+    // No profiles row at all = signed up but never completed checkout (the profile is
+    // only created by billing activation). Reject them here and they can never get back
+    // in to pay — so allow the login and send them to /subscribe to finish.
+    if (!profile) {
+      void logAuditEvent('login', data.user.id, null, { intent, prePayment: true }, request)
+      return wrap(
+        NextResponse.json({ data: { ok: true, role: null, redirect: '/subscribe' } })
+      )
+    }
     await supabase.auth.signOut()
     void logAuditEvent('login_failed', data.user.id, null, { intent, reason: 'wrong_role' }, request)
     return wrap(

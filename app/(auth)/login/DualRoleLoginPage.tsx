@@ -441,6 +441,10 @@ function LoginForm({
     searchParams.get('message') === 'password_reset'
       ? 'Your password has been updated. Sign in with your new password.'
       : null
+  const verifyEmailMessage =
+    searchParams.get('verify') === '1'
+      ? 'Check your email to confirm your account, then sign in.'
+      : null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -560,6 +564,11 @@ function LoginForm({
         {passwordResetMessage && !rateLimitMessage && (
           <div role="status" style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 10, fontSize: 13, background: 'rgba(40,140,80,0.15)', border: '1px solid rgba(40,140,80,0.25)', color: '#4ade80' }}>
             {passwordResetMessage}
+          </div>
+        )}
+        {verifyEmailMessage && !rateLimitMessage && !passwordResetMessage && (
+          <div role="status" style={{ marginBottom: 14, padding: '10px 14px', borderRadius: 10, fontSize: 13, background: 'rgba(40,140,80,0.15)', border: '1px solid rgba(40,140,80,0.25)', color: '#4ade80' }}>
+            {verifyEmailMessage}
           </div>
         )}
 
@@ -702,7 +711,12 @@ function LoginForm({
 /* ───────────────── Main component ───────────────── */
 
 export function DualRoleLoginPage() {
-  const [view, setView] = useState<ViewState>('select')
+  const searchParams = useSearchParams()
+  // Coach signup redirects to /login?verify=1 — open the coach form directly so the
+  // "check your email" notice (rendered inside the form card) is actually visible.
+  const [view, setView] = useState<ViewState>(
+    searchParams.get('verify') === '1' ? 'form' : 'select'
+  )
   const [role, setRole] = useState<LoginRole>('coach')
 
   function handleRoleSelect(r: LoginRole) {
