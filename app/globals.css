@@ -28,7 +28,9 @@
   /* FONT */
   --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-sora: 'Sora', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Shippori Mincho', Georgia, serif;
+  /* --font-display is provided by next/font (Space Grotesk) on <html>. Do NOT hardcode a
+     family here: :root and the next/font class have equal specificity, so a value here wins
+     by source order and silently overrides the loaded display font (was 'Shippori Mincho'). */
 
   /* SPACING SCALE — multiples of 4px only */
   --space-1: 4px;
@@ -77,7 +79,7 @@
   --bg-muted: #ebe8e4;
   --bg-emphasis: #ddd9d4;
 
-  --accent: #7f1d1d;
+  --accent: #ffd23f;
   --accent-rgb: 127, 29, 29;
   --accent-dark: #581c1c;
   --accent-light: #fef2f2;
