@@ -246,29 +246,29 @@ export function CoachScheduleWorkspace() {
         {/* ── Quick Stats — always visible at top ── */}
         {dashStats && (
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Sessions</p>
-              <p className="mt-1 text-[28px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.sessionsThisWeek}</p>
+            <div className="tile-yellow p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/70">Sessions</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums leading-none text-[var(--ink)]">{dashStats.sessionsThisWeek}</p>
               {dashStats.trends?.sessionsThisWeek?.percentChange != null && dashStats.trends.sessionsThisWeek.percentChange > 0 ? (
-                <p className={cn('mt-1 text-[11px] font-medium', dashStats.trends.sessionsThisWeek.direction === 'up' ? 'text-[var(--success)]' : dashStats.trends.sessionsThisWeek.direction === 'down' ? 'text-[var(--error)]' : 'text-[var(--text-tertiary)]')}>
+                <p className="mt-1 text-[11px] font-bold text-[var(--ink)]/70">
                   {dashStats.trends.sessionsThisWeek.direction === 'up' ? '↑' : '↓'} {Math.round(dashStats.trends.sessionsThisWeek.percentChange)}% vs last week
                 </p>
-              ) : <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">this week</p>}
+              ) : <p className="mt-1 text-[11px] font-medium text-[var(--ink)]/60">this week</p>}
             </div>
-            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Revenue</p>
-              <p className="mt-1 text-[28px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatCents(dashStats.revenueMonthCents)}</p>
-              <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">this month</p>
+            <div className="tile-teal p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/80">Revenue</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums leading-none text-white">{formatCents(dashStats.revenueMonthCents)}</p>
+              <p className="mt-1 text-[11px] font-medium text-white/75">this month</p>
             </div>
-            <div className="card-glow rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-subtle)] p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Clients</p>
-              <p className="mt-1 text-[28px] font-bold tabular-nums leading-none text-[var(--text-primary)]">{dashStats.activeClientsCount}</p>
-              <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">active</p>
+            <div className="tile-violet p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/70">Clients</p>
+              <p className="mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums leading-none text-[var(--ink)]">{dashStats.activeClientsCount}</p>
+              <p className="mt-1 text-[11px] font-medium text-[var(--ink)]/60">active</p>
             </div>
-            <div className={cn('card-glow rounded-[var(--radius-lg)] border bg-[var(--bg-subtle)] p-4', attentionCount > 0 ? 'border-[var(--warning-border)]' : 'border-[var(--border-subtle)]')}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-quaternary)]">Attention</p>
-              <p className={cn('mt-1 text-[28px] font-bold tabular-nums leading-none', attentionCount > 0 ? 'text-[var(--warning)]' : 'text-[var(--text-primary)]')}>{attentionCount}</p>
-              <p className="mt-1 text-[11px] text-[var(--text-quaternary)]">{attentionCount > 0 ? 'needs action' : 'all clear'}</p>
+            <div className={cn('p-4', attentionCount > 0 ? 'tile-coral' : 'arcade-tile bg-[var(--bg-subtle)]')}>
+              <p className={cn('text-[10px] font-bold uppercase tracking-[0.08em]', attentionCount > 0 ? 'text-white/80' : 'text-[var(--text-tertiary)]')}>Attention</p>
+              <p className={cn('mt-1 font-[family-name:var(--font-display)] text-[28px] font-extrabold tabular-nums leading-none', attentionCount > 0 ? 'text-white' : 'text-[var(--text-primary)]')}>{attentionCount}</p>
+              <p className={cn('mt-1 text-[11px] font-medium', attentionCount > 0 ? 'text-white/75' : 'text-[var(--text-tertiary)]')}>{attentionCount > 0 ? 'needs action' : 'all clear'}</p>
             </div>
           </div>
         )}

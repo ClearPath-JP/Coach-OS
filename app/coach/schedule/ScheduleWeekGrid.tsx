@@ -86,7 +86,7 @@ export function ScheduleWeekGrid({
   }
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)]">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-[14px] border-[2px] border-[var(--ink)] bg-[var(--bg-subtle)] shadow-[var(--shadow-md)]">
       <div className="relative min-h-0 min-w-0 flex-1 overflow-auto">
         {/* Day header row */}
         <div className="flex min-w-[640px]">
@@ -98,18 +98,18 @@ export function ScheduleWeekGrid({
               <div
                 key={day.toISOString()}
                 className={cn(
-                  'min-w-0 flex-1 border-b border-l border-[var(--border-default)]/60 px-1 py-2 text-center first:border-l-0',
-                  today ? 'bg-[rgba(159,18,57,0.04)]' : 'bg-[var(--bg-subtle)]'
+                  'min-w-0 flex-1 border-b-[2px] border-l border-[var(--border-subtle)] px-1 py-2 text-center first:border-l-0',
+                  today ? 'border-b-[var(--ink)] bg-[rgba(255,210,63,0.18)]' : 'bg-[var(--bg-subtle)]'
                 )}
                 style={{ height: HEADER_PX }}
               >
-                <span className="block text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--text-quaternary)]">
+                <span className={cn('block text-[10px] font-bold uppercase tracking-[0.12em]', today ? 'text-[var(--ink)]' : 'text-[var(--text-tertiary)]')}>
                   {format(day, 'EEE').toUpperCase()}
                 </span>
                 <span
                   className={cn(
-                    'mt-0.5 inline-flex h-7 min-w-[28px] items-center justify-center text-[20px] font-semibold tabular-nums text-[var(--text-primary)]',
-                    today && 'rounded-full bg-[var(--cp-accent)] px-2 text-[15px] text-white'
+                    'mt-0.5 inline-flex h-8 min-w-[32px] items-center justify-center font-[family-name:var(--font-display)] text-[20px] font-extrabold tabular-nums text-[var(--text-primary)]',
+                    today && 'rounded-[10px] border-2 border-[var(--ink)] bg-[var(--belt-yellow)] px-2 text-[18px] text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]'
                   )}
                 >
                   {format(day, 'd')}
@@ -124,7 +124,7 @@ export function ScheduleWeekGrid({
                       />
                     ))}
                     {daySessions.length > 3 ? (
-                      <span className="text-[10px] font-medium text-[var(--cp-accent)]">+{daySessions.length - 3}</span>
+                      <span className="text-[10px] font-bold text-[var(--text-secondary)]">+{daySessions.length - 3}</span>
                     ) : null}
                   </div>
                 ) : null}
@@ -136,17 +136,17 @@ export function ScheduleWeekGrid({
         {/* Time gutter + day columns */}
         <div className="flex min-w-[640px]">
           {/* Time column */}
-          <div className="sticky left-0 z-[2] shrink-0 border-r border-[var(--border-default)] bg-[var(--bg-subtle)]" style={{ width: TIME_COL_W }}>
+          <div className="sticky left-0 z-[2] shrink-0 border-r-[2px] border-[var(--ink)] bg-[var(--bg-subtle)]" style={{ width: TIME_COL_W }}>
             {halfHourStarts.map((absMins) => {
               const isMainHour = absMins % 60 === 0
               return (
                 <div
                   key={absMins}
                   className={cn(
-                    'flex items-start justify-end pr-1 pt-0.5 text-[11px] tabular-nums font-medium text-[var(--text-quaternary)]',
+                    'flex items-start justify-end pr-1 pt-0.5 text-[11px] tabular-nums font-semibold text-[var(--text-tertiary)]',
                     isMainHour
-                      ? 'border-b border-[var(--border-default)]'
-                      : 'border-b border-dashed border-[var(--border-subtle)]/50'
+                      ? 'border-b border-[var(--border-subtle)]'
+                      : ''
                   )}
                   style={{ height: 30 }}
                 >
@@ -179,8 +179,8 @@ export function ScheduleWeekGrid({
               <div
                 key={`col-${dayStr}`}
                 className={cn(
-                  'relative min-w-0 flex-1 border-l border-[var(--border-default)]/60 first:border-l-0',
-                  todayCol ? 'bg-[rgba(159,18,57,0.03)]' : 'bg-[var(--bg-subtle)]'
+                  'relative min-w-0 flex-1 border-l border-[var(--border-subtle)] first:border-l-0',
+                  todayCol ? 'bg-[rgba(255,210,63,0.07)]' : 'bg-[var(--bg-subtle)]'
                 )}
                 style={{ height: gridHeightPx }}
               >
@@ -188,7 +188,7 @@ export function ScheduleWeekGrid({
                 {ruleSegments.map((seg, i) => (
                   <div
                     key={i}
-                    className="pointer-events-none absolute right-0 left-0 bg-[rgba(52,211,153,0.05)]"
+                    className="pointer-events-none absolute right-0 left-0 bg-[rgba(46,196,182,0.13)]"
                     style={{ top: seg.top, height: seg.h }}
                   />
                 ))}
@@ -227,10 +227,10 @@ export function ScheduleWeekGrid({
                       type="button"
                       title={inAvail ? `Book at ${formatSlotLabel(absMins)}` : 'Outside availability'}
                       className={cn(
-                        'group absolute right-0 left-0 z-[1] flex items-center justify-center border-b border-dashed border-[var(--border-subtle)] transition-colors',
+                        'group absolute right-0 left-0 z-[1] flex items-center justify-center border-b border-[var(--border-subtle)]/60 transition-colors',
                         inAvail
-                          ? 'hover:bg-[rgba(159,18,57,0.06)]'
-                          : 'cursor-default bg-[rgba(255,255,255,0.015)] hover:bg-[rgba(255,255,255,0.015)]'
+                          ? 'hover:bg-[rgba(255,210,63,0.20)]'
+                          : 'cursor-default'
                       )}
                       style={{ top, height: 30 }}
                       disabled={!inAvail}
@@ -240,7 +240,7 @@ export function ScheduleWeekGrid({
                     >
                       {inAvail ? (
                         <Plus
-                          className="h-4 w-4 text-[var(--cp-accent)] opacity-0 transition-opacity group-hover:opacity-100"
+                          className="h-4 w-4 text-[var(--ink)] opacity-0 transition-opacity group-hover:opacity-100"
                           aria-hidden
                         />
                       ) : null}
@@ -264,25 +264,25 @@ export function ScheduleWeekGrid({
                     <button
                       key={s.id}
                       type="button"
-                      className="absolute z-[3] flex flex-col justify-center overflow-hidden rounded-[8px] px-2.5 py-1.5 text-left transition-all duration-100 hover:z-[4] hover:brightness-110 hover:shadow-lg"
+                      className="absolute z-[3] flex flex-col justify-center overflow-hidden rounded-[8px] px-2.5 py-1 text-left transition-transform duration-100 hover:z-[4] hover:-translate-y-px"
                       style={{
                         top,
                         left: 3,
-                        width: 'calc(100% - 6px)',
+                        width: 'calc(100% - 8px)',
                         height: heightPx,
-                        background: `linear-gradient(135deg, ${color}28 0%, ${color}18 100%)`,
-                        borderLeft: `3px solid ${color}`,
-                        borderTop: `1px solid ${color}40`,
-                        boxShadow: `0 1px 4px rgba(0,0,0,0.3), inset 0 1px 0 ${color}20`,
+                        background: `color-mix(in srgb, ${color} 16%, #ffffff)`,
+                        border: '2px solid var(--ink)',
+                        borderLeft: `5px solid ${color}`,
+                        boxShadow: '2px 2px 0 rgba(16,16,16,0.28)',
                       }}
                       onClick={(e) => { e.stopPropagation(); onOpenSession(s) }}
                     >
-                      <span className="block text-[10px] font-semibold tabular-nums leading-tight" style={{ color }}>
+                      <span className="block text-[10px] font-bold tabular-nums leading-tight text-[var(--ink)]">
                         {format(start, 'h:mm a')}{'–'}{format(end, 'h:mm a')}
                       </span>
-                      <span className="block truncate text-[12px] font-semibold leading-tight text-white/90">{name}</span>
-                      {heightPx >= 48 ? (
-                        <span className="block text-[10px] leading-tight text-white/50">{s.session_type ?? 'Session'}</span>
+                      <span className="block truncate text-[12px] font-bold leading-tight text-[var(--ink)]">{name}</span>
+                      {heightPx >= 50 ? (
+                        <span className="block truncate text-[10px] font-medium leading-tight text-[var(--text-secondary)]">{s.session_type ?? 'Session'}</span>
                       ) : null}
                     </button>
                   )

@@ -2116,6 +2116,11 @@ html[data-theme='dark'] .coach-nav__mobile-link--active {
   margin: 0 -16px;
   padding: 0 16px;
 }
+/* Mobile-only. The JSX marks it `lg:hidden`, but this unlayered rule beats the layered
+   Tailwind utility (v4), so hide on desktop here to avoid duplicate view controls. */
+@media (min-width: 1024px) {
+  .sensei-page__tabs { display: none; }
+}
 .sensei-page__tab {
   flex: 1;
   padding: 12px 0;
