@@ -30,7 +30,10 @@ Method: Supabase security advisors + a full RLS/policy/function inventory on the
 
 ## 🟡 Findings to fix (prioritized)
 
-### 1. 🟡 HIGH — Uploaded files live in **public** storage buckets
+### 1. ✅ FIXED (assignment-submissions) — Uploaded files live in **public** storage buckets
+**FIXED 2026-06-11** (commit `2b19ffc`, deployed): `assignment-submissions` flipped to **private**; the access-controlled serve points (`videos/[id]` GET + `/stream`) now mint short-lived **signed URLs** via `lib/storage-signing.ts` (bucket-allowlisted, path-traversal-guarded, passthrough for Bunny/Drive/external). `videos` + `studio-audio` remain public (they feed Bunny-ingest / Lambda-render pipelines that fetch the public URL — privatizing them needs each handoff signed, a separate follow-up). ⏳ Verify: a client uploads a submission + the coach views it (signed-URL playback). Rollback: `scripts/make-submissions-private.ts` with `public:true`.
+
+
 `assignment-submissions`, `studio-audio`, and `videos` buckets are `public: true`, and files are served via `getPublicUrl` (`app/api/client/videos/upload/route.ts:87`, `lib/post-upload.ts:172`, `lib/drive-import/*`). **Effect:** a student's uploaded assignment file is readable by *anyone with the URL*, with no auth/tenant check at the storage layer — which bypasses the app's access control.
 - **Not trivially exploitable** (paths are UUIDs, so you can't enumerate other tenants' files), but it's the wrong model for tenant data and should be fixed before scaling.
 - **Fix:** make these buckets **private** and serve via **signed URLs** (`createSignedUrl`, short TTL) from the already-access-controlled routes (`lib/video-stream-access.ts` already does the authorization). `avatars` can stay public (low sensitivity). ⚠️ This must be done *together* with the code change — flipping the buckets private alone would break every stored public URL.
