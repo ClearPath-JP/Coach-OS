@@ -277,8 +277,8 @@ function NavRowsCoach({
             className={cn(
               'relative mb-[2px] flex h-[34px] items-center gap-2.5 rounded-[6px] px-2.5 text-[13px] no-underline transition-all duration-[200ms] ease-out',
               isActive
-                ? 'nav-item-active-coach bg-[var(--accent-surface)] font-medium text-[var(--text-primary)] [&_svg]:text-[var(--accent)] before:absolute before:left-0 before:top-1/2 before:h-[18px] before:w-[3px] before:-translate-y-1/2 before:rounded-r-full before:bg-[var(--accent)]'
-                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--coach-sidebar-icon)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-secondary)] [&:hover_svg]:text-[var(--text-tertiary)]'
+                ? 'bg-[var(--belt-yellow)] font-semibold text-[var(--ink)] shadow-[2px_2px_0_rgba(0,0,0,0.45)] [&_svg]:text-[var(--ink)]'
+                : 'font-normal text-[var(--text-tertiary)] [&_svg]:text-[var(--coach-sidebar-icon)] hover:bg-[var(--coach-sidebar-hover)] hover:text-[var(--text-primary)] [&:hover_svg]:text-[var(--text-primary)]'
             )}
           >
             {item.icon ? (
@@ -380,7 +380,7 @@ export function Sidebar({
               href={settingsHref}
               className="mt-2 flex h-10 cursor-pointer items-center gap-2.5 rounded-[8px] px-2 transition-colors duration-[180ms] hover:bg-[var(--coach-sidebar-hover)]"
             >
-              <div className="avatar-hover flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold" style={{ background: 'var(--accent)', color: 'var(--bg-app)' }}>
+              <div className="avatar-hover flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-semibold" style={{ background: 'var(--accent)', color: 'var(--ink)' }}>
                 {userBar.avatarUrl ? (
                   <Image
                     src={userBar.avatarUrl}

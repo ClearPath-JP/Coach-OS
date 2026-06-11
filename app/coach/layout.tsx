@@ -110,7 +110,7 @@ export default async function CoachLayout({
       initialSettings={initialWorkspaceSettings}
     >
       {/* Desktop: sidebar + content grid  |  Mobile: bottom dock + content */}
-      <div className="flex min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
+      <div className="flex min-h-[100dvh] flex-col bg-[var(--bg-app)] lg:grid lg:h-[100dvh] lg:min-h-0 lg:overflow-hidden lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]">
         {/* Sidebar — desktop only */}
         <CoachSidebarShell
           coachName={profile?.full_name ?? null}

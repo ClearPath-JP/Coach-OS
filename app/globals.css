@@ -1084,14 +1084,22 @@ html[data-theme='dark'] .section-header-glow::before {
 
 /* Coach shell — dark sidebar chrome */
 .coach-sidebar-dark {
-  --coach-sidebar-bg: #0A0908;
-  --coach-sidebar-border: #16140F;
-  --coach-sidebar-hover: rgba(255, 255, 255, 0.04);
-  --coach-sidebar-muted: #4A4540;
-  --coach-sidebar-icon: #5A554E;
-  --coach-sidebar-label: #7A7268;
-  --coach-sidebar-input-bg: #0F0E0C;
-  --coach-sidebar-input-border: #1A1814;
+  /* Arcade ink rail — brighter chrome + light text tokens. The dark→light token
+     flip left --text-* resolving to ink (#101010), invisible on this dark rail;
+     re-map them to cream *inside* the sidebar so every inline text-[var(--text-*)]
+     (wordmark KOR, active label, search field, username) is legible again. */
+  --coach-sidebar-bg: #101010;
+  --coach-sidebar-border: #2a2926;
+  --coach-sidebar-hover: rgba(250, 247, 240, 0.08);
+  --coach-sidebar-muted: rgba(250, 247, 240, 0.45);
+  --coach-sidebar-icon: rgba(250, 247, 240, 0.58);
+  --coach-sidebar-label: rgba(250, 247, 240, 0.42);
+  --coach-sidebar-input-bg: #1c1b19;
+  --coach-sidebar-input-border: #2f2e2a;
+  --text-primary: #faf7f0;
+  --text-secondary: rgba(250, 247, 240, 0.74);
+  --text-tertiary: rgba(250, 247, 240, 0.62);
+  --text-quaternary: rgba(250, 247, 240, 0.45);
 }
 
 .panel-body-scroll {
