@@ -5,6 +5,8 @@ import { verifyStreamToken } from '@/lib/stream-token'
 import { getVideoStreamRow, userCanStreamVideo } from '@/lib/video-stream-access'
 import { isAllowedMediaUrl } from '@/lib/url-allowlist'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
+import { createServiceClient } from '@/lib/supabase/service'
+import { signSupabaseStorageUrl } from '@/lib/storage-signing'
 
 export const dynamic = 'force-dynamic'
 
@@ -110,15 +112,25 @@ export async function GET(request: Request, context: RouteContext) {
       })
     }
 
+    // Supabase-stored videos live in a private bucket — mint a short-lived signed URL for the
+    // server-side proxy fetch (no-op for Bunny/Drive/external URLs).
+    const effectiveUrl = await signSupabaseStorageUrl(createServiceClient(), playbackUrl)
+    if (!effectiveUrl) {
+      return NextResponse.json(
+        { error: "We couldn't find that video — it may have been deleted" },
+        { status: 404 }
+      )
+    }
+
     // SSRF guard: playback_url comes from the DB and may have been written by an
     // n8n callback. Reject any URL that is not on the known media host allowlist.
-    if (!isAllowedMediaUrl(playbackUrl)) {
+    if (!isAllowedMediaUrl(effectiveUrl)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const legacyHeaders: Record<string, string> = {}
     if (range) legacyHeaders.Range = range
-    const r = await fetch(playbackUrl as string, { headers: legacyHeaders })
+    const r = await fetch(effectiveUrl, { headers: legacyHeaders })
 
     const outHeaders = new Headers()
     const copy = ['content-type', 'content-length', 'content-range', 'accept-ranges']

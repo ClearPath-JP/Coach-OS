@@ -6,6 +6,7 @@ import { patchVideoSchema } from '@/lib/validations'
 import { createServiceClient } from '@/lib/supabase/service'
 import { userCanStreamVideo } from '@/lib/video-stream-access'
 import { deleteBunnyVideo } from '@/lib/bunny'
+import { signSupabaseStorageUrl } from '@/lib/storage-signing'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -81,13 +82,17 @@ export async function GET(_request: Request, context: RouteContext) {
       file_size_bytes: number | null
     }
 
+    // Supabase-stored videos (assignment submissions) live in a private bucket — hand back a
+    // short-lived signed URL. Bunny/Drive/external URLs pass through unchanged.
+    const signedPlayback = await signSupabaseStorageUrl(service, v.playback_url)
+
     return NextResponse.json({
       data: {
         id: v.id,
         title: v.title,
         description: v.description,
         processing_status: v.processing_status,
-        playback_url: v.playback_url,
+        playback_url: signedPlayback,
         thumbnail_url: v.thumbnail_url,
         drive_thumbnail_url: v.drive_thumbnail_url,
         duration_seconds: v.duration_seconds,
