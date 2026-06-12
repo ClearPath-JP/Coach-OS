@@ -28,58 +28,14 @@ export async function completeCoachSignup(
     }
   }
 
-  const firstName = (user.user_metadata?.full_name as string)?.trim() || 'Coach'
-  const workspaceName = `${firstName}'s Workspace`
-  const emailTrimmed = (user.email ?? '').trim().toLowerCase()
-
-  const { data: workspace, error: workspaceError } = await supabase
-    .from('workspaces')
-    .insert({ name: workspaceName, owner_id: user.id })
-    .select('id')
-    .single()
-
-  if (workspaceError || !workspace?.id) {
-    return {
-      ok: false,
-      error:
-        workspaceError?.message ??
-        'Could not create your workspace — please try again.',
-      status: 500,
-    }
+  // Paywall-first: workspaces are only created by Stripe activation
+  // (lib/new-coach-activation.ts) after a completed checkout. A user with no coach
+  // row here has NOT paid, so we do not mint a free workspace — we tell the caller to
+  // send them to choose a plan. This stays idempotent for paid coaches: the early
+  // return above hands back the workspace that activation already created.
+  return {
+    ok: false,
+    error: 'Please choose a plan to finish setting up your workspace.',
+    status: 402,
   }
-
-  const { error: profileError } = await supabase.from('profiles').upsert(
-    {
-      id: user.id,
-      email: user.email ?? emailTrimmed,
-      full_name: firstName,
-      role: 'coach',
-      workspace_id: workspace.id,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: 'id' }
-  )
-  if (profileError) {
-    return {
-      ok: false,
-      error:
-        profileError.message ?? 'Could not create your profile — please try again.',
-      status: 500,
-    }
-  }
-
-  const { error: coachError } = await supabase.from('coaches').insert({
-    user_id: user.id,
-    workspace_id: workspace.id,
-    role: 'owner',
-  })
-  if (coachError) {
-    return {
-      ok: false,
-      error: coachError.message ?? 'Could not link your account — please try again.',
-      status: 500,
-    }
-  }
-
-  return { ok: true, workspaceId: workspace.id, alreadyCompleted: false }
 }

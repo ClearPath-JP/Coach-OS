@@ -66,7 +66,7 @@ export function HowItWorksSection() {
               {/* Step number — oversized ghost numeral */}
               <span
                 className={`pointer-events-none absolute -top-2 right-3 font-[family-name:var(--font-display)] text-7xl font-extrabold tracking-[-0.04em] ${
-                  step.light ? 'text-white/20' : 'text-[var(--ink)]/15'
+                  step.light ? 'text-[var(--ink)]/20' : 'text-[var(--ink)]/15'
                 }`}
               >
                 {step.number}
@@ -79,14 +79,14 @@ export function HowItWorksSection() {
 
               <h3
                 className={`font-[family-name:var(--font-display)] text-xl font-extrabold tracking-[-0.02em] mb-2.5 ${
-                  step.light ? 'text-white' : 'text-[var(--ink)]'
+                  step.light ? 'text-[var(--ink)]' : 'text-[var(--ink)]'
                 }`}
               >
                 {step.title}
               </h3>
               <p
                 className={`text-sm font-medium leading-relaxed ${
-                  step.light ? 'text-white/85' : 'text-[var(--text-secondary)]'
+                  step.light ? 'text-[var(--ink)]/70' : 'text-[var(--text-secondary)]'
                 }`}
               >
                 {step.description}

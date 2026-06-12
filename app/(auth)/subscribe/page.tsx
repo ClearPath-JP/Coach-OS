@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase-server'
 import { SubscribePageContent } from './SubscribePageContent'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Choose Your Plan — Korva' }
+export const metadata = { title: 'Choose your plan' }
 
 export default async function SubscribePage({
   searchParams,

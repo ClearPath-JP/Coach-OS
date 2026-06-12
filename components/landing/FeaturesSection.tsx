@@ -124,14 +124,14 @@ export function FeaturesSection() {
               <div className="text-4xl mb-4">{feature.emoji}</div>
               <h3
                 className={`font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.02em] mb-2 ${
-                  feature.light ? 'text-white' : 'text-[var(--ink)]'
+                  feature.light ? 'text-[var(--ink)]' : 'text-[var(--ink)]'
                 }`}
               >
                 {feature.title}
               </h3>
               <p
                 className={`text-sm font-medium leading-relaxed ${
-                  feature.light ? 'text-white/85' : 'text-[var(--text-secondary)]'
+                  feature.light ? 'text-[var(--ink)]/70' : 'text-[var(--text-secondary)]'
                 }`}
               >
                 {feature.description}

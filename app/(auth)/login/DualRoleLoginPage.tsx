@@ -83,10 +83,10 @@ function RoleSelect({ onSelect }: { onSelect: (role: LoginRole) => void }) {
           className="tile-teal arcade-lift arcade-press flex flex-col items-center gap-3 px-6 py-8 text-center"
         >
           <span className="text-[44px] leading-none" aria-hidden>🎒</span>
-          <span className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-[-0.02em] text-white">
+          <span className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-[-0.02em] text-[var(--ink)]">
             Student
           </span>
-          <span className="font-[family-name:var(--font-display)] text-[13px] font-bold text-white/80">
+          <span className="font-[family-name:var(--font-display)] text-[13px] font-bold text-[var(--ink)]/70">
             Your training
           </span>
         </button>
@@ -246,17 +246,17 @@ function LoginForm({
 
         {/* Alerts */}
         {rateLimitMessage && (
-          <div role="alert" className="mb-4 rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
+          <div role="alert" className="mb-4 rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]">
             {rateLimitMessage}
           </div>
         )}
         {passwordResetMessage && !rateLimitMessage && (
-          <div role="status" className="mb-4 rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
+          <div role="status" className="mb-4 rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]">
             {passwordResetMessage}
           </div>
         )}
         {verifyEmailMessage && !rateLimitMessage && !passwordResetMessage && (
-          <div role="status" className="mb-4 rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
+          <div role="status" className="mb-4 rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]">
             {verifyEmailMessage}
           </div>
         )}
@@ -321,7 +321,7 @@ function LoginForm({
 
           {/* Error */}
           {error && (
-            <p role="alert" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
+            <p role="alert" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]">
               {error}
             </p>
           )}

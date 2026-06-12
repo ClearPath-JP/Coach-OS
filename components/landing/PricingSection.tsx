@@ -94,7 +94,7 @@ export function PricingSection() {
             </div>
             <Link
               href="/signup?role=coach&plan=founding"
-              className="block text-center font-[family-name:var(--font-display)] font-bold text-sm text-white bg-[var(--belt-blue)] border-[3px] border-[var(--ink)] rounded-[12px] px-5 py-3 shadow-[4px_4px_0_var(--ink)] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_var(--ink)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+              className="block text-center font-[family-name:var(--font-display)] font-bold text-sm text-[var(--ink)] bg-[var(--belt-blue)] border-[3px] border-[var(--ink)] rounded-[12px] px-5 py-3 shadow-[4px_4px_0_var(--ink)] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_var(--ink)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
             >
               Claim a spot →
             </Link>
@@ -155,7 +155,7 @@ export function PricingSection() {
                     : 'text-[var(--ink)] bg-white hover:bg-[var(--bg-muted)] active:translate-x-0.5 active:translate-y-0.5'
                 }`}
               >
-                Start free trial
+                Get started
               </Link>
 
               <ul className="mt-6 space-y-2.5 font-[family-name:var(--font-display)] text-sm font-medium text-[var(--text-secondary)]">

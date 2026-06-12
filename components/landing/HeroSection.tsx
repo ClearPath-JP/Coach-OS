@@ -113,7 +113,7 @@ function HeroAppPreview() {
         </div>
         <div className="flex items-center gap-2">
           <span className="arcade-badge arcade-badge-yellow !text-[11px] !py-1">🔥 12-day streak</span>
-          <span className="grid h-8 w-8 place-content-center rounded-[9px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] font-[family-name:var(--font-display)] text-[11px] font-extrabold text-white shadow-[2px_2px_0_var(--ink)]">
+          <span className="grid h-8 w-8 place-content-center rounded-[9px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] font-[family-name:var(--font-display)] text-[11px] font-extrabold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]">
             MV
           </span>
         </div>
@@ -147,12 +147,12 @@ function HeroAppPreview() {
               <div className="text-[9px] font-bold uppercase tracking-[0.08em] font-[family-name:var(--font-display)]">Students</div>
             </div>
             <div className="tile-teal !shadow-[3px_3px_0_#1a8a80] !rounded-[10px] p-3 text-center">
-              <div className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-[-0.03em] text-white">$1,840</div>
-              <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-white/80 font-[family-name:var(--font-display)]">This week</div>
+              <div className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-[-0.03em] text-[var(--ink)]">$1,840</div>
+              <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/70 font-[family-name:var(--font-display)]">This week</div>
             </div>
             <div className="tile-coral !shadow-[3px_3px_0_#cc2929] !rounded-[10px] p-3 text-center">
-              <div className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-[-0.03em] text-white">3</div>
-              <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-white/80 font-[family-name:var(--font-display)]">Unread</div>
+              <div className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-[-0.03em] text-[var(--ink)]">3</div>
+              <div className="text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--ink)]/70 font-[family-name:var(--font-display)]">Unread</div>
             </div>
           </div>
           <div className="rounded-[12px] border-[3px] border-[var(--ink)] bg-white p-3 shadow-[3px_3px_0_var(--ink)]">

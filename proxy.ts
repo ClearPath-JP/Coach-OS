@@ -221,15 +221,18 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/client/portal', request.url))
     }
     const onboardingWorkspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
-    if (onboardingWorkspaceId) {
-      const { data: workspace } = await supabase
-        .from('workspaces')
-        .select('completed_onboarding')
-        .eq('id', onboardingWorkspaceId)
-        .maybeSingle()
-      if (workspace?.completed_onboarding) {
-        return NextResponse.redirect(new URL('/coach/dashboard', request.url))
-      }
+    // Paywall-first: no workspace means checkout isn't finished — pick a plan first
+    // (don't let /onboarding mint a free workspace).
+    if (!onboardingWorkspaceId) {
+      return NextResponse.redirect(new URL('/subscribe', request.url))
+    }
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('completed_onboarding')
+      .eq('id', onboardingWorkspaceId)
+      .maybeSingle()
+    if (workspace?.completed_onboarding) {
+      return NextResponse.redirect(new URL('/coach/dashboard', request.url))
     }
     return response
   }
@@ -354,9 +357,12 @@ export async function proxy(request: NextRequest) {
             .eq('workspace_id', coachWorkspaceId)
             .maybeSingle()
 
-          // No row: coach is pre-Stripe or in implicit free trial — allow access until they subscribe via Stripe.
+          // No subscription row. Workspace creation is now gated behind Stripe checkout
+          // (paywall-first, see lib/complete-coach-signup.ts), so a row-less workspace
+          // should only be a demo/seeded or legacy pre-Stripe account — allow rather than
+          // lock those out.
           if (!sub) {
-            // intentionally allow
+            // intentionally allow (demo / legacy)
           } else {
             const now = Date.now()
             const trialActive =

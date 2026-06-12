@@ -113,7 +113,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       {errorCode && (
         <div
           role="alert"
-          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] px-5 py-4 text-left text-[14px] leading-relaxed text-white shadow-[4px_4px_0_var(--ink)]"
+          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] px-5 py-4 text-left text-[14px] leading-relaxed text-[var(--ink)] shadow-[4px_4px_0_var(--ink)]"
         >
           <p className="font-[family-name:var(--font-display)] font-extrabold">We could not finish setting up your account.</p>
           <p className="mt-1 font-medium">
@@ -131,7 +131,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       {checkoutCancelled && !errorCode && (
         <div
           role="status"
-          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-teal)] px-4 py-3 text-center text-[14px] font-semibold text-white shadow-[4px_4px_0_var(--ink)]"
+          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-teal)] px-4 py-3 text-center text-[14px] font-semibold text-[var(--ink)] shadow-[4px_4px_0_var(--ink)]"
         >
           Checkout cancelled — you have not been charged.
         </div>
@@ -141,7 +141,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
       {error && (
         <div
           role="alert"
-          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] px-4 py-3 text-center text-[14px] font-semibold text-white shadow-[4px_4px_0_var(--ink)]"
+          className="mb-8 w-full max-w-[480px] rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-coral)] px-4 py-3 text-center text-[14px] font-semibold text-[var(--ink)] shadow-[4px_4px_0_var(--ink)]"
         >
           {error}
         </div>
@@ -216,7 +216,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
           onClick={handleCheckout}
           className={cn(
             'relative flex h-12 w-full items-center justify-center gap-2 rounded-[12px]',
-            'border-[3px] border-[var(--ink)] bg-[var(--belt-blue)] font-[family-name:var(--font-display)] text-[15px] font-extrabold tracking-[-0.01em] text-white',
+            'border-[3px] border-[var(--ink)] bg-[var(--belt-blue)] font-[family-name:var(--font-display)] text-[15px] font-extrabold tracking-[-0.01em] text-[var(--ink)]',
             'shadow-[4px_4px_0_var(--ink)] transition-all',
             'hover:-translate-x-px hover:-translate-y-px hover:shadow-[6px_6px_0_var(--ink)]',
             'active:translate-x-[3px] active:translate-y-[3px] active:shadow-none',
@@ -234,10 +234,19 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
         </button>
       </div>
 
-      {/* Footer note */}
-      <p className="mt-10 text-center font-[family-name:var(--font-display)] text-[13px] font-semibold text-[var(--text-tertiary)]">
-        No setup fees. Cancel anytime. Billed monthly.
+      {/* Auto-renewal disclosure — required adjacent to the pay button */}
+      <p className="mt-8 max-w-[440px] text-center text-[13px] font-medium leading-relaxed text-[var(--text-tertiary)]">
+        Your subscription renews automatically at{' '}
+        <strong className="font-bold text-[var(--ink)]">$99/month</strong> until you cancel. No setup fees — cancel
+        anytime from Billing.
       </p>
+
+      {/* Legal links */}
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[12px] font-semibold text-[var(--text-tertiary)]">
+        <a href="/terms" className="hover:text-[var(--ink)] hover:underline">Terms</a>
+        <a href="/privacy" className="hover:text-[var(--ink)] hover:underline">Privacy</a>
+        <a href="/refunds" className="hover:text-[var(--ink)] hover:underline">Refunds</a>
+      </div>
     </div>
   )
 }

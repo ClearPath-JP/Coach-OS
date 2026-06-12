@@ -282,14 +282,14 @@ export function SignupPageClient() {
 
             {/* Error */}
             {submitError && (
-              <div role="alert" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
+              <div role="alert" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]">
                 {submitError}
               </div>
             )}
 
             {/* Verify-email notice */}
             {notice && (
-              <div role="status" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]">
+              <div role="status" className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-teal)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]">
                 {notice}
               </div>
             )}

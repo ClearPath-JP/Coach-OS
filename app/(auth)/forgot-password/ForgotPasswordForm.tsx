@@ -94,7 +94,7 @@ export function ForgotPasswordForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-white shadow-[2px_2px_0_var(--ink)]"
+            className="rounded-[12px] border-2 border-[var(--ink)] bg-[var(--belt-coral)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--ink)] shadow-[2px_2px_0_var(--ink)]"
           >
             {error}
           </p>

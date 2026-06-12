@@ -27,15 +27,17 @@ export async function getPostLoginRedirectPath(
 
   if (role === 'coach') {
     const workspaceId = await resolveCoachWorkspaceIdForSession(supabase, user.id)
-    if (workspaceId) {
-      const { data: workspace } = await supabase
-        .from('workspaces')
-        .select('completed_onboarding')
-        .eq('id', workspaceId)
-        .maybeSingle()
-      if (workspace?.completed_onboarding) {
-        return '/coach/dashboard'
-      }
+    // Paywall-first: a coach with no workspace hasn't completed checkout → choose a plan.
+    if (!workspaceId) {
+      return '/subscribe'
+    }
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('completed_onboarding')
+      .eq('id', workspaceId)
+      .maybeSingle()
+    if (workspace?.completed_onboarding) {
+      return '/coach/dashboard'
     }
     return '/onboarding'
   }

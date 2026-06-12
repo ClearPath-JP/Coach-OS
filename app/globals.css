@@ -272,9 +272,9 @@ html[data-theme='dark'] {
   /* Text — ink on cream */
   --text-primary: #101010;
   --text-secondary: #3d3a34;
-  --text-tertiary: #7a7569;
-  --text-quaternary: #a8a296;
-  --text-placeholder: #b8b2a6;
+  --text-tertiary: #6b6659;
+  --text-quaternary: #767065;
+  --text-placeholder: #767065;
   --text-on-accent: #101010;
 
   /* Borders — bold ink line on cards/buttons, soft hairline for dividers */
@@ -405,9 +405,7 @@ html[data-theme='dark'] ::selection {
 
 :focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px var(--bg-app),
-    0 0 0 4px var(--accent);
+  box-shadow: 0 0 0 2px var(--bg-app, #faf7f0), 0 0 0 4px var(--ink);
   border-radius: var(--radius-sm);
 }
 
@@ -934,18 +932,18 @@ html[data-theme='dark'] .gloss-panel {
   /* Belt-bright stat/feature tiles (hard offset shadow tuned per color) */
   .arcade-tile   { border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 var(--ink); }
   .tile-yellow   { background: var(--belt-yellow);            border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #b8910f; }
-  .tile-teal     { background: var(--belt-teal);   color:#fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #1a8a80; }
+  .tile-teal     { background: var(--belt-teal);   color: var(--ink); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #1a8a80; }
   .tile-violet   { background: var(--belt-violet);            border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #7c4fc7; }
-  .tile-coral    { background: var(--belt-coral);  color:#fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #cc2929; }
-  .tile-blue     { background: var(--belt-blue);   color:#fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #1e5bc2; }
+  .tile-coral    { background: var(--belt-coral);  color: var(--ink); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #cc2929; }
+  .tile-blue     { background: var(--belt-blue);   color: var(--ink); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 5px 5px 0 #1e5bc2; }
 
   /* Brutal chips/badges */
   .arcade-badge        { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-display); font-weight:700; font-size:12px; padding:4px 10px; border:2px solid var(--ink); border-radius:999px; background:#fff; box-shadow:2px 2px 0 var(--ink); letter-spacing:-0.01em; }
   .arcade-badge-yellow { background:var(--belt-yellow); }
-  .arcade-badge-teal   { background:var(--belt-teal);   color:#fff; }
+  .arcade-badge-teal   { background:var(--belt-teal);   color: var(--ink); }
   .arcade-badge-violet { background:var(--belt-violet); }
-  .arcade-badge-coral  { background:var(--belt-coral);  color:#fff; }
-  .arcade-badge-blue   { background:var(--belt-blue);   color:#fff; }
+  .arcade-badge-coral  { background:var(--belt-coral);  color: var(--ink); }
+  .arcade-badge-blue   { background:var(--belt-blue);   color: var(--ink); }
   .arcade-badge-dark   { background:var(--ink);         color:#faf7f0; }
 
   /* Progress track + fill */
@@ -964,7 +962,7 @@ html[data-theme='dark'] .gloss-panel {
 
   /* Belt tiers */
   .belt-white  { background:#f0f0f0; }
-  .belt-blue   { background:var(--belt-blue);   color:#fff; }
+  .belt-blue   { background:var(--belt-blue);   color: var(--ink); }
   .belt-purple { background:var(--belt-violet); }
   .belt-brown  { background:#a0522d;            color:#fff; }
   .belt-black  { background:var(--ink);         color:#faf7f0; }

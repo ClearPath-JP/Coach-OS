@@ -1,5 +1,7 @@
 import { ForgotPasswordForm } from './ForgotPasswordForm'
 
+export const metadata = { title: 'Reset password', robots: { index: false } }
+
 /**
  * Forgot password — Dojo Arcade identity, matches the login page.
  */

@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Space_Grotesk } from 'next/font/google'
 import './globals.css'
@@ -23,8 +21,43 @@ const shipporiMincho = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'Korva — Coaching platform & client portal',
-  description: 'The coaching platform for martial arts and strength conditioning.',
+  metadataBase: new URL('https://korvacoach.com'),
+  title: {
+    default: 'Korva — All-in-one software for martial arts & fitness coaches',
+    template: '%s · Korva',
+  },
+  description:
+    'Scheduling, classes, payments, belts, and video in one platform built for solo martial-arts and fitness coaches. Run your whole practice — and get paid — from one place.',
+  applicationName: 'Korva',
+  keywords: [
+    'martial arts coaching software',
+    'fitness coaching platform',
+    'dojo management software',
+    'solo coach app',
+    'class booking software',
+    'coaching CRM',
+    'jiu jitsu gym software',
+  ],
+  authors: [{ name: 'Korva' }],
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Korva',
+    title: 'Korva — All-in-one software for martial arts & fitness coaches',
+    description:
+      'Run your whole coaching practice from one place — scheduling, classes, payments, belts, and video.',
+    url: 'https://korvacoach.com',
+    images: [
+      { url: '/og.png', width: 1200, height: 630, alt: 'Korva — run your whole coaching practice from one place' },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Korva — All-in-one software for martial arts & fitness coaches',
+    description:
+      'Run your whole coaching practice from one place — scheduling, classes, payments, belts, and video.',
+    images: ['/og.png'],
+  },
 }
 
 export const viewport: Viewport = {
@@ -32,6 +65,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: 'cover',
+  themeColor: '#faf7f0',
 }
 
 export default function RootLayout({
@@ -42,6 +76,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-theme="dark" className={`${instrumentSans.variable} ${shipporiMincho.variable}`}>
       <body className="antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[300] focus:rounded-md focus:border-2 focus:border-[var(--ink)] focus:bg-[var(--bg-app)] focus:px-4 focus:py-2 focus:font-semibold focus:text-[var(--ink)] focus:shadow-lg"
+        >
+          Skip to content
+        </a>
         <ThemeProvider>
           <AppLoadingScreen />
           <div className="page-enter min-h-screen">{children}</div>
