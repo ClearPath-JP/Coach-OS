@@ -17,3 +17,9 @@ public/images/Leonardo_Kino_XL_Wideangle_interior_of_an_empty_traditional_Ja_2.j
 # Claude Code / agent tooling dirs — not part of the app build or runtime
 .claude/
 .agents/
+
+# Marketing creative source (ads, Remotion video, copy) — not imported by the app; large assets
+marketing/
+
+# Stray downloaded sample code — not part of the app
+stripe-sample-code*/
