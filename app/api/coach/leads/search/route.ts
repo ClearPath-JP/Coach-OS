@@ -5,6 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { checkLeadSearchLimit } from '@/lib/plan-limits'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 import { runLeadResearch, LeadSearchUnavailableError } from '@/lib/lead-research'
 import { logServerError } from '@/lib/log-server-error'
 
@@ -29,6 +30,10 @@ export async function POST(request: Request) {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
     const { user, workspaceId, supabase } = auth
+
+    if (!isFeatureEnabled('leads')) {
+      return NextResponse.json({ error: 'Lead Research is coming soon.' }, { status: 403 })
+    }
 
     const { success: rateOk, retryAfter } = await checkRateLimitAsync(`leads-search:${user.id}`, {
       windowMs: 60_000,

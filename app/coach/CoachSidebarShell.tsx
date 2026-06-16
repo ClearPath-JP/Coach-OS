@@ -39,7 +39,7 @@ const SECTIONS: SidebarNavSection[] = [
     items: [
       { href: '/coach/studio', label: 'Studio', icon: <Icon name="studio" />, pill: 'Soon' },
       { href: '/coach/promote', label: 'Promote', icon: <Icon name="promote" />, pill: 'Soon' },
-      { href: '/coach/leads', label: 'Lead Research', icon: <Icon name="leads" /> },
+      { href: '/coach/leads', label: 'Lead Research', icon: <Icon name="leads" />, pill: 'Soon' },
       { href: '/coach/videos', label: 'Videos', icon: <Icon name="videos" /> },
     ],
   },

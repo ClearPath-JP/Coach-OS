@@ -3,6 +3,7 @@ import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkLeadSearchLimit } from '@/lib/plan-limits'
 import { normalizeLeadKey, type LeadStatus } from '@/lib/leads-interactions'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 
 /**
  * GET /api/coach/leads — list recent lead searches for the coach's workspace.
@@ -13,6 +14,10 @@ export async function GET() {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
     const { user, workspaceId, supabase } = auth
+
+    if (!isFeatureEnabled('leads')) {
+      return NextResponse.json({ error: 'Lead Research is coming soon.' }, { status: 403 })
+    }
 
     const { success, retryAfter } = await checkRateLimitAsync(`leads-list:${user.id}`, {
       windowMs: 60_000,

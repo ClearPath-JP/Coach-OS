@@ -5,6 +5,7 @@ import { requireCoach } from '@/lib/api-helpers'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { checkDailyWorkspaceQuota } from '@/lib/spend-guard'
 import { logServerError } from '@/lib/log-server-error'
+import { isFeatureEnabled } from '@/lib/feature-flags'
 
 const schema = z.object({
   name: z.string().trim().max(120),
@@ -30,6 +31,10 @@ export async function POST(request: Request) {
     const auth = await requireCoach()
     if ('error' in auth) return auth.error
     const { user, workspaceId } = auth
+
+    if (!isFeatureEnabled('leads')) {
+      return NextResponse.json({ error: 'Lead Research is coming soon.' }, { status: 403 })
+    }
 
     const { success, retryAfter } = await checkRateLimitAsync(`leads-outreach:${user.id}`, {
       windowMs: 60_000,
