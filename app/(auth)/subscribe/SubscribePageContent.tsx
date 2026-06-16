@@ -100,7 +100,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
           Become a Founding Member
         </h1>
         <p className="mt-4 text-[16px] font-medium leading-relaxed text-[var(--text-secondary)]">
-          Lock in $99/month for life. No setup fee. Full platform access.
+          Start with a 14-day free trial. Then lock in $99/month for life — cancel anytime.
         </p>
         {userEmail && (
           <p className="mt-2 text-[13px] font-medium text-[var(--text-tertiary)]">
@@ -163,7 +163,7 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
         </div>
 
         <p className="mb-1 text-center font-[family-name:var(--font-display)] text-[14px] font-bold text-[var(--ink)]">
-          Locked-in rate for life. No setup fee.
+          14 days free, then $99/mo for life. $0 due today.
         </p>
 
         {/* Founding counter */}
@@ -229,16 +229,17 @@ export function SubscribePageContent({ userEmail, errorCode = null, checkoutCanc
               Redirecting...
             </>
           ) : (
-            'Get started — $99/month'
+            'Start my 14-day free trial'
           )}
         </button>
       </div>
 
       {/* Auto-renewal disclosure — required adjacent to the pay button */}
       <p className="mt-8 max-w-[440px] text-center text-[13px] font-medium leading-relaxed text-[var(--text-tertiary)]">
-        Your subscription renews automatically at{' '}
-        <strong className="font-bold text-[var(--ink)]">$99/month</strong> until you cancel. No setup fees — cancel
-        anytime from Billing.
+        Your card is saved today but{' '}
+        <strong className="font-bold text-[var(--ink)]">not charged for 14 days</strong>. After your free trial it
+        renews automatically at <strong className="font-bold text-[var(--ink)]">$99/month</strong> until you cancel —
+        cancel anytime from Billing.
       </p>
 
       {/* Legal links */}

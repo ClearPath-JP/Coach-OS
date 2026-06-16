@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { endOfWeek, format, startOfWeek } from 'date-fns'
-import { TrendingUp, TrendingDown, AlertTriangle, ArrowRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, AlertTriangle, ArrowRight, Sparkles } from 'lucide-react'
 import { formatCents } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
 import {
@@ -363,7 +363,27 @@ function MonthlyCard({
   )
 }
 
-export function CoachDashboardHome({ coachName }: { coachName: string }) {
+/** Founding free-trial countdown — card is on file, so this is a heads-up, not a paywall. */
+function TrialBanner({ daysLeft, chargeDate }: { daysLeft: number; chargeDate: string }) {
+  return (
+    <div className="flex flex-col gap-2 rounded-[14px] border-[3px] border-[var(--border-default)] bg-[var(--belt-yellow)] px-4 py-3 shadow-[var(--shadow-sm)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-2 font-[family-name:var(--font-display)] text-[13px] font-bold text-[var(--text-primary)]">
+        <Sparkles size={15} strokeWidth={2.5} className="shrink-0" />
+        <span>
+          Free trial — {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left. You&apos;ll be charged $99/mo on {chargeDate}.
+        </span>
+      </div>
+      <Link
+        href="/billing"
+        className="shrink-0 rounded-[10px] border-2 border-[var(--border-default)] bg-white px-3 py-1.5 text-center font-[family-name:var(--font-display)] text-[12px] font-extrabold text-[var(--text-primary)] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[var(--shadow-sm)]"
+      >
+        Manage billing
+      </Link>
+    </div>
+  )
+}
+
+export function CoachDashboardHome({ coachName, trialEndsAt = null }: { coachName: string; trialEndsAt?: string | null }) {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [attention, setAttention] = useState<AttentionData | null>(null)
   const [badges, setBadges] = useState<Badges>({ assignments: 0, programsCount: 0 })
@@ -443,6 +463,17 @@ export function CoachDashboardHome({ coachName }: { coachName: string }) {
     setDateLine(format(now, 'EEEE, MMMM d'))
   }, [])
 
+  // Trial countdown computed after mount (client tz) to avoid an SSR/client hydration
+  // mismatch on the date — same reason as the greeting above.
+  const [trial, setTrial] = useState<{ daysLeft: number; chargeDate: string } | null>(null)
+  useEffect(() => {
+    if (!trialEndsAt) { setTrial(null); return }
+    const end = new Date(trialEndsAt)
+    const ms = end.getTime() - Date.now()
+    if (!Number.isFinite(ms) || ms <= 0) { setTrial(null); return }
+    setTrial({ daysLeft: Math.max(1, Math.ceil(ms / 86_400_000)), chargeDate: format(end, 'MMMM d') })
+  }, [trialEndsAt])
+
   // Honest greeting subline from real loaded data.
   const sessionsToday = today.length
   const subParts: string[] = []
@@ -454,6 +485,7 @@ export function CoachDashboardHome({ coachName }: { coachName: string }) {
   return (
     <div className="coach-dash-stagger flex flex-col gap-6">
       <WelcomeGuide coachFirst={coachFirst} />
+      {trial && <TrialBanner daysLeft={trial.daysLeft} chargeDate={trial.chargeDate} />}
       <div className="flex flex-col gap-1.5">
         <GreetingBar coachFirst={coachFirst} dateLine={dateLine} greeting={greeting} next={nextUp} />
         {subParts.length ? (

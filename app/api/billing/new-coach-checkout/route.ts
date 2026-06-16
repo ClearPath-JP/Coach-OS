@@ -6,6 +6,9 @@ import { checkRateLimitAsync } from '@/lib/rate-limit'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+/** New coaches get a 14-day free trial; Stripe collects the card up front and auto-charges $99/mo when it ends. */
+const TRIAL_PERIOD_DAYS = 14
+
 /**
  * Stripe Checkout needs a *price* id, but a product id (prod_…) is an easy env
  * paste-mistake that 500s the founding checkout. Accept either: a price id is
@@ -112,6 +115,10 @@ export async function POST(request: Request) {
         mode: 'subscription',
         customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
+        // 14-day free trial: the card is collected now (Checkout's default
+        // payment_method_collection: 'always'), but the first charge is deferred to the
+        // trial end, when Stripe auto-converts the subscription from trialing → active.
+        subscription_data: { trial_period_days: TRIAL_PERIOD_DAYS },
         success_url: `${baseUrl}/api/billing/new-coach-activate?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/subscribe?cancelled=true`,
         metadata: {

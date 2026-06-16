@@ -67,8 +67,16 @@ export async function GET(request: Request) {
       plan,
       stripeCustomerId: typeof session.customer === 'string' ? session.customer : null,
       stripeSubscriptionId: stripeSubId,
-      // Payment verified above — same status the route always recorded.
-      subscriptionStatus: 'active',
+      // Record the real Stripe status: a 14-day-trial checkout creates a `trialing`
+      // subscription (no charge yet); an immediate-pay checkout creates `active`. Mirrors
+      // the webhook backstop's mapping so both activation paths agree. Falls back to
+      // `active` if the subscription object somehow didn't expand (preserves prior behavior).
+      subscriptionStatus:
+        stripeSubObj?.status === 'trialing'
+          ? 'trialing'
+          : stripeSubObj?.status === 'past_due'
+            ? 'past_due'
+            : 'active',
       currentPeriodEnd: periodEnd,
       trialEndsAt: trialEnd,
     })

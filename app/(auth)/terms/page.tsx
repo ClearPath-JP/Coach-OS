@@ -60,6 +60,7 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-bold text-[var(--ink)]">5. Your subscription &amp; billing</h2>
             <ul className="list-disc space-y-1 pl-5">
+              <li><span className="font-semibold">14-day free trial:</span> new coach accounts start with a 14-day free trial. We save your payment method at signup but do not charge it during the trial. If you do not cancel before the trial ends, your paid subscription begins automatically at the price shown at checkout. Cancel anytime during the trial to avoid any charge.</li>
               <li>Korva coach subscriptions are billed monthly in advance at the price shown at checkout.</li>
               <li><span className="font-semibold">Auto-renewal:</span> your subscription renews automatically each month until you cancel. You authorize us (through our payment processor, Stripe) to charge your payment method for each renewal.</li>
               <li>A &quot;founding&quot; rate, where offered, stays fixed for as long as your subscription remains active and continuous; if it lapses, the founding rate may no longer be available.</li>
