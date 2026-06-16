@@ -527,17 +527,14 @@ export function VideosPageContent() {
           className="w-full max-w-none md:w-[min(96vw,1400px)]"
         >
           {playerVideo.embed_url ? (
-            // Bunny's hosted player — plays HLS in every browser (a native <video>
-            // src=.m3u8 only works in Safari, which is why this was gray before).
-            <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-              <iframe
-                src={playerVideo.embed_url}
-                className="h-full w-full"
-                allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen;"
-                allowFullScreen
-                title={playerVideo.title}
-              />
-            </div>
+            // Route Bunny playback through the shared hardened player so an outage shows a
+            // retry fallback instead of a silent black box (was a bare iframe before).
+            <VideoPlayer
+              videoId={playerVideo.id}
+              title={playerVideo.title}
+              thumbnailUrl={playerVideo.drive_thumbnail_url ?? playerVideo.thumbnail_url}
+              className="max-h-[75vh]"
+            />
           ) : playerVideo.playback_url?.trim() ? (
             <video
               src={playerVideo.playback_url}

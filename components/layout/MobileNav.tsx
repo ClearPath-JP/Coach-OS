@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
-import { LayoutDashboard, BookOpen, MessageSquare, Megaphone, User, CreditCard, Ticket, Video } from 'lucide-react'
+import { LayoutDashboard, BookOpen, MessageSquare, Megaphone, User, Ticket, Video, CalendarPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 function BillingIcon({ className }: { className?: string }) {
@@ -168,14 +168,15 @@ export const coachTabs = [
   { href: '/coach/subscription', label: 'Subscription', icon: BillingIcon },
 ] as const
 
-/** Mobile bottom bar — five primary destinations (Goals/Sessions/Invoices live on Home + desktop sidebar). */
+/** Mobile bottom bar — primary client destinations. Booking ("Book") gets a permanent home
+ *  here since it's the core transaction; Membership/Goals/Sessions/Invoices live on Home + the desktop sidebar. */
 export const clientPortalTabs: readonly { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/client/portal', label: 'Home', icon: LayoutDashboard },
+  { href: '/client/classes', label: 'Book', icon: CalendarPlus },
   { href: '/client/programs', label: 'Programs', icon: BookOpen },
   { href: '/client/passes', label: 'Passes', icon: Ticket },
   { href: '/client/videos', label: 'Videos', icon: Video },
   { href: '/client/messages', label: 'Messages', icon: MessageSquare },
-  { href: '/client/membership', label: 'Plan', icon: CreditCard },
   { href: '/client/profile', label: 'Profile', icon: User },
 ] as const
 

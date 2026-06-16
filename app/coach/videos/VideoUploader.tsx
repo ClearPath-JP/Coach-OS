@@ -58,6 +58,13 @@ export function VideoUploader({ onUploaded }: { onUploaded: () => void }) {
         /* keep polling */
       }
     }
+    // Poll window elapsed while Bunny is still transcoding. The upload itself succeeded —
+    // surface it as done (the library shows a "processing" badge until Bunny finishes)
+    // instead of leaving the modal stuck on "Transcoding…" forever.
+    if (!cancelledRef.current) {
+      onUploaded()
+      setState('done')
+    }
   }
 
   function onFile(file: File | undefined) {

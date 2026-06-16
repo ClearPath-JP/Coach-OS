@@ -15,6 +15,7 @@ import {
   type ConversationRow,
 } from './dashboard-data'
 import { GreetingBar, TodayPanel, MessagesPeek, QuickActions } from './dashboard-widgets'
+import { WelcomeGuide } from './WelcomeGuide'
 
 type DashboardStats = {
   activeClientsCount: number
@@ -316,6 +317,52 @@ function GettingStarted({ steps }: { steps: { done: boolean; label: string; href
   )
 }
 
+/** A warm monthly ROI moment for the coach (the retention loop) — built from data already
+ *  loaded. Rendered only once the coach has students, so a brand-new coach never sees a $0. */
+function MonthlyCard({
+  revenueCents,
+  trend,
+  activeClients,
+}: {
+  revenueCents: number
+  trend?: { direction: string; percentChange: number }
+  activeClients: number
+}) {
+  const showTrend = trend && trend.percentChange > 0
+  return (
+    <section className="card-gloss rounded-[16px] p-5">
+      <div className="mb-3">
+        <div className="font-[family-name:var(--font-display)] text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-tertiary)]">
+          This month
+        </div>
+        <h2 className="font-[family-name:var(--font-display)] text-[17px] font-extrabold tracking-[-0.02em] text-[var(--text-primary)]">
+          Your dojo this month
+        </h2>
+      </div>
+      <div className="font-[family-name:var(--font-display)] text-[32px] font-extrabold leading-none tracking-[-0.03em] text-[var(--text-primary)]">
+        {formatCents(revenueCents)}
+      </div>
+      <div className="mt-1.5 flex items-center gap-1.5 font-[family-name:var(--font-display)] text-[12px] font-bold text-[var(--text-secondary)]">
+        {showTrend ? (
+          <>
+            {trend!.direction === 'up' ? (
+              <TrendingUp size={13} strokeWidth={2.5} />
+            ) : trend!.direction === 'down' ? (
+              <TrendingDown size={13} strokeWidth={2.5} />
+            ) : null}
+            {Math.round(trend!.percentChange)}% vs last month
+          </>
+        ) : (
+          <span>collected so far</span>
+        )}
+      </div>
+      <div className="mt-3 border-t-[3px] border-[var(--border-default)] pt-3 font-[family-name:var(--font-display)] text-[12px] font-semibold text-[var(--text-tertiary)]">
+        {activeClients} {activeClients === 1 ? 'student' : 'students'} training with you 🥋
+      </div>
+    </section>
+  )
+}
+
 export function CoachDashboardHome({ coachName }: { coachName: string }) {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [attention, setAttention] = useState<AttentionData | null>(null)
@@ -406,6 +453,7 @@ export function CoachDashboardHome({ coachName }: { coachName: string }) {
 
   return (
     <div className="coach-dash-stagger flex flex-col gap-6">
+      <WelcomeGuide coachFirst={coachFirst} />
       <div className="flex flex-col gap-1.5">
         <GreetingBar coachFirst={coachFirst} dateLine={dateLine} greeting={greeting} next={nextUp} />
         {subParts.length ? (
@@ -478,6 +526,13 @@ export function CoachDashboardHome({ coachName }: { coachName: string }) {
           {!loading && !error && <GettingStarted steps={steps} />}
         </div>
         <div className="flex flex-col gap-4">
+          {!loading && !error && s.activeClientsCount > 0 && (
+            <MonthlyCard
+              revenueCents={s.revenueMonthCents}
+              trend={s.trends?.revenueMonth}
+              activeClients={s.activeClientsCount}
+            />
+          )}
           {!loading && !error && <AttentionStrip attention={attention} pendingInvoicesCount={s.pendingInvoicesCount} />}
           {!loading && !error && (
             <ActivityCard

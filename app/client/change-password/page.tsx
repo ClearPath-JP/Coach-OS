@@ -48,7 +48,7 @@ export default function ClientChangePasswordPage() {
   return (
     <div className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-8">
       <ClientAuthBrandTitle className="text-center text-lg font-medium text-[var(--color-ink)]" />
-      <h2 className="mt-4 text-xl font-medium text-[var(--color-ink)]">Set your password</h2>
+      <h2 className="mt-4 font-[family-name:var(--font-display)] text-xl font-extrabold text-[var(--text-primary)]">Set your password</h2>
       <p className="mt-2 text-[15px] text-[var(--color-muted)]">
         Choose a new password to secure your account
       </p>

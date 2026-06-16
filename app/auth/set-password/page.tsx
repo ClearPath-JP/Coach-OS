@@ -121,7 +121,7 @@ export default function SetPasswordPage() {
     <main className="min-h-screen flex items-center justify-center p-6 bg-[var(--color-surface)]">
       <Card variant="raised" padding="lg" className="w-full max-w-md">
         <ClientAuthBrandTitle className="text-lg font-medium text-[var(--color-ink)]" />
-        <h2 className="mt-2 text-lg font-medium text-[var(--color-ink)]">Set your password</h2>
+        <h2 className="mt-2 font-[family-name:var(--font-display)] text-xl font-extrabold text-[var(--text-primary)]">Set your password</h2>
         <p className="mt-1 text-[15px] text-[var(--color-muted)]">
           Choose a password to sign in to your client portal.
         </p>

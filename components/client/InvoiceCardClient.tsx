@@ -148,7 +148,7 @@ export function InvoiceCardClient({
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 min-w-[260px] max-w-[320px]">
       <div className="flex items-start justify-between gap-2">
-        <h4 className="font-medium text-[var(--color-ink)]">{data.packageTitle}</h4>
+        <h4 className="font-[family-name:var(--font-display)] font-extrabold text-[var(--text-primary)]">{data.packageTitle}</h4>
         <Badge
           variant={
             isPaid ? 'active' : isCancelled ? 'inactive' : 'pending'
@@ -162,7 +162,7 @@ export function InvoiceCardClient({
           {data.packageDescription}
         </p>
       )}
-      <p className="mt-2 text-lg font-medium text-[var(--color-ink)]">
+      <p className="mt-2 font-[family-name:var(--font-display)] text-xl font-extrabold text-[var(--text-primary)]">
         {formatAmount(data.amountCents, data.currency)}
       </p>
       {data.dueDate && !isPaid && !isCancelled && (
@@ -185,17 +185,17 @@ export function InvoiceCardClient({
           </div>
 
           {canPayByCard ? (
-            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-2">
+            <div className="rounded-[12px] border-2 border-[var(--border-default)] bg-[var(--bg-subtle)] p-2.5">
               <button
                 type="button"
-                className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
+                className="btn-primary-gloss w-full rounded-[10px] border-2 border-[var(--border-default)] px-3 py-2.5 text-sm font-[family-name:var(--font-display)] font-extrabold text-[var(--text-on-accent)] disabled:opacity-60"
                 disabled={checkoutLoading}
                 onClick={() => void startCardCheckout()}
               >
-                {checkoutLoading ? 'Opening secure checkout…' : `Pay by card ${formatAmount(data.amountCents, data.currency)}`}
+                {checkoutLoading ? 'Opening secure checkout…' : `Pay by card · ${formatAmount(data.amountCents, data.currency)}`}
               </button>
-              <p className="mt-1 text-xs text-indigo-700">You’ll complete payment on Stripe’s secure page.</p>
-              {checkoutError ? <p className="mt-2 text-xs text-red-700">{checkoutError}</p> : null}
+              <p className="mt-1.5 text-xs text-[var(--text-tertiary)]">You’ll complete payment on Stripe’s secure page.</p>
+              {checkoutError ? <p className="mt-2 text-xs text-[var(--error)]">{checkoutError}</p> : null}
             </div>
           ) : paymentDetails?.stripeConnected ? (
             <p className="text-xs text-[var(--color-muted)]">
