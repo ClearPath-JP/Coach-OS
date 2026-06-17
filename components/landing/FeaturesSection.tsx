@@ -17,15 +17,6 @@ type Feature = {
 
 const features: Feature[] = [
   {
-    emoji: '📍',
-    title: 'Find Local Clients',
-    description:
-      'Type your city — Korva pulls a list of local prospects from Instagram you can DM today. Built-in lead engine, not a third-party plugin.',
-    tile: 'tile-yellow',
-    shadow: 'shadow-[5px_5px_0_#b8910f]',
-    badge: 'Lead Engine',
-  },
-  {
     emoji: '🎥',
     title: 'Video Library',
     description:
@@ -83,6 +74,15 @@ const features: Feature[] = [
       'Set a monthly subscription price or share access codes. You control who enters your dojo.',
     tile: 'arcade-tile bg-white',
     shadow: 'shadow-[5px_5px_0_var(--ink)]',
+  },
+  {
+    emoji: '📍',
+    title: 'Find Local Clients',
+    description:
+      'Coming soon: type your city and Korva surfaces nearby prospects to reach out to — a lead engine built in, not bolted on.',
+    tile: 'tile-yellow',
+    shadow: 'shadow-[5px_5px_0_#b8910f]',
+    badge: 'Coming soon',
   },
 ]
 

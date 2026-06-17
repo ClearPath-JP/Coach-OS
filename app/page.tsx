@@ -1,6 +1,7 @@
 import { PublicNav } from '@/components/landing/PublicNav'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection'
+import { ShowcaseSection } from '@/components/landing/ShowcaseSection'
 import { FeaturesSection } from '@/components/landing/FeaturesSection'
 import { FounderSection } from '@/components/landing/FounderSection'
 import { PricingSection } from '@/components/landing/PricingSection'
@@ -39,6 +40,7 @@ export default function LandingPage() {
       <main id="main-content" className="bg-[var(--bg-app)] min-h-screen">
         <HeroSection />
         <HowItWorksSection />
+        <ShowcaseSection />
         <FeaturesSection />
         <FounderSection />
         <PricingSection />
