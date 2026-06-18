@@ -64,7 +64,8 @@ export function PricingSection() {
             for life.
           </h2>
           <p className="mt-3 text-base font-medium text-[#faf7f0]/60">
-            The first 10 founding coaches keep this rate forever — full Pro access, $50/mo off, never goes up.
+            The first 10 founding coaches keep this rate — full Pro access, $50/mo off, never goes up while your
+            subscription stays active.
           </p>
         </div>
 
@@ -100,7 +101,7 @@ export function PricingSection() {
             </Link>
             <ul className="mt-5 space-y-2 font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--ink)]">
               <li>✓ Everything in Pro</li>
-              <li>✓ Locked rate forever</li>
+              <li>✓ Locked rate (while subscribed)</li>
               <li>✓ Founding badge</li>
               <li>✓ Direct line to founder</li>
             </ul>

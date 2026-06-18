@@ -20,7 +20,7 @@ export function HeroSection() {
 
       {/* Founding banner */}
       <div className="border-b-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] text-center px-4 py-2.5 font-[family-name:var(--font-display)] text-[13px] sm:text-sm font-bold tracking-[-0.01em] text-[var(--ink)]">
-        🥋 10 founding spots · $99/mo for life — locked forever for the first 10 coaches
+        🥋 10 founding spots · $99/mo — locked for the first 10 coaches while subscribed
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">

@@ -49,6 +49,10 @@ export default function PrivacyPage() {
               <li><span className="font-semibold text-[var(--ink)]">Upstash</span> — rate limiting and abuse prevention.</li>
               <li><span className="font-semibold text-[var(--ink)]">Anthropic</span> — AI-assisted features (e.g. drafting captions and content), when you use them.</li>
               <li><span className="font-semibold text-[var(--ink)]">Vercel</span> — application hosting and delivery.</li>
+              <li><span className="font-semibold text-[var(--ink)]">n8n</span> — workflow automation (reminders and scheduled-post dispatch).</li>
+              <li><span className="font-semibold text-[var(--ink)]">CloudConvert</span> — video format conversion for Google Drive imports.</li>
+              <li><span className="font-semibold text-[var(--ink)]">Amazon Web Services (AWS)</span> — server-side video rendering.</li>
+              <li><span className="font-semibold text-[var(--ink)]">Google</span> — Google Drive video import (only when you connect Drive).</li>
             </ul>
             <p>We do not share your data with advertisers.</p>
           </section>
@@ -56,8 +60,10 @@ export default function PrivacyPage() {
           <section className="space-y-2">
             <h2 className="text-base font-bold text-[var(--ink)]">4. Cookies</h2>
             <p>
-              We use essential cookies to keep you signed in and to keep the service secure. We do not use third-party
-              advertising cookies. You can clear cookies in your browser, but doing so will sign you out.
+              We use essential cookies to keep you signed in and to keep the service secure, plus a small number of
+              functional cookies to remember your preferences — for example, to remember a welcome message you&apos;ve
+              dismissed. We use <span className="font-semibold">no</span> advertising or cross-site tracking cookies. You
+              can clear cookies in your browser, but doing so will sign you out.
             </p>
           </section>
 

@@ -33,7 +33,7 @@ export function Footer() {
                 <span style={{ color: 'var(--belt-yellow)' }}>va</span>
               </span>
             </div>
-            <p className="text-sm font-medium text-[#faf7f0]/55 max-w-xs leading-relaxed">
+            <p className="text-sm font-medium text-[#faf7f0]/75 max-w-xs leading-relaxed">
               The platform where coaches teach and students grow. Built by a coach, for coaches.
             </p>
           </div>

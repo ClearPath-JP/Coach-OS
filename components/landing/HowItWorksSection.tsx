@@ -73,7 +73,10 @@ export function HowItWorksSection() {
               </span>
 
               {/* Icon coin */}
-              <div className="relative grid h-14 w-14 place-content-center rounded-[12px] border-[3px] border-[var(--ink)] bg-white text-2xl shadow-[3px_3px_0_var(--ink)] mb-5">
+              <div
+                className="relative grid h-14 w-14 place-content-center rounded-[12px] border-[3px] border-[var(--ink)] bg-white text-2xl shadow-[3px_3px_0_var(--ink)] mb-5"
+                aria-hidden="true"
+              >
                 {step.emoji}
               </div>
 
@@ -86,7 +89,7 @@ export function HowItWorksSection() {
               </h3>
               <p
                 className={`text-sm font-medium leading-relaxed ${
-                  step.light ? 'text-[var(--ink)]/70' : 'text-[var(--text-secondary)]'
+                  step.light ? 'text-[var(--ink)]/80' : 'text-[var(--text-secondary)]'
                 }`}
               >
                 {step.description}

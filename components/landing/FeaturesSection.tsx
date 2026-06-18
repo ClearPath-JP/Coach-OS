@@ -121,7 +121,7 @@ export function FeaturesSection() {
                   {feature.badge}
                 </span>
               )}
-              <div className="text-4xl mb-4">{feature.emoji}</div>
+              <div className="text-4xl mb-4" aria-hidden="true">{feature.emoji}</div>
               <h3
                 className={`font-[family-name:var(--font-display)] text-lg font-extrabold tracking-[-0.02em] mb-2 ${
                   feature.light ? 'text-[var(--ink)]' : 'text-[var(--ink)]'
@@ -131,7 +131,7 @@ export function FeaturesSection() {
               </h3>
               <p
                 className={`text-sm font-medium leading-relaxed ${
-                  feature.light ? 'text-[var(--ink)]/70' : 'text-[var(--text-secondary)]'
+                  feature.light ? 'text-[var(--ink)]/80' : 'text-[var(--text-secondary)]'
                 }`}
               >
                 {feature.description}

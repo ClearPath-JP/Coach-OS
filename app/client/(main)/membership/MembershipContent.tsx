@@ -487,6 +487,10 @@ export function MembershipContent() {
                       )}
 
                     <div className="mt-auto pt-5">
+                      <p className="mb-3 text-[13px] font-medium leading-snug text-[var(--text-secondary)]">
+                        Renews automatically at {formatCents(plan.price_cents)}/month until you cancel.
+                        Cancel anytime from this page.
+                      </p>
                       <Button
                         type="button"
                         onClick={() => void handleSubscribe(plan.id)}
