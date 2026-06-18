@@ -99,7 +99,7 @@ export function ShowcaseSection() {
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={fade}>
             <BrowserFrame src="/shots/coach-dashboard.png" alt="Korva coach dashboard — students, revenue, today's sessions, and who needs attention" />
             <Caption>
-              <strong className="font-bold text-[var(--ink)]">Your command center.</strong> Every student, this week&apos;s revenue, today&apos;s
+              <strong className="font-bold text-[var(--ink)]">Your command center.</strong> Every student, this month&apos;s revenue, today&apos;s
               sessions, and who needs a nudge — at a glance.
             </Caption>
           </motion.div>
@@ -108,6 +108,20 @@ export function ShowcaseSection() {
             <Caption>
               <strong className="font-bold text-[var(--ink)]">Every student, tracked.</strong> Belts, program progress, and check-ins for your
               whole roster in one place.
+            </Caption>
+          </motion.div>
+          <motion.div custom={2} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={fade}>
+            <BrowserFrame src="/shots/coach-payments.png" alt="Korva payments — money in this month, this week, all-time, and every payment logged" />
+            <Caption>
+              <strong className="font-bold text-[var(--ink)]">Get paid, see it all.</strong> Log cash, Venmo, Zelle or card — this month, this
+              week, and all-time totals add themselves up.
+            </Caption>
+          </motion.div>
+          <motion.div custom={3} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={fade}>
+            <BrowserFrame src="/shots/coach-videos.png" alt="Korva video library — the coach's technique videos, organized by category" />
+            <Caption>
+              <strong className="font-bold text-[var(--ink)]">Your technique library.</strong> Upload once, organize by category, and share the
+              right videos with the right students.
             </Caption>
           </motion.div>
         </div>
@@ -136,6 +150,12 @@ export function ShowcaseSection() {
               <strong className="font-bold text-[var(--ink)]">Your videos, theirs to rewatch</strong> — technique on demand, anytime.
             </p>
           </motion.div>
+          <motion.div custom={2} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={fade} className="flex flex-col items-center">
+            <PhoneFrame src="/shots/chat.png" alt="Korva student messaging — a direct chat thread with their coach" />
+            <p className="mt-3 max-w-[230px] text-center text-[13px] font-medium leading-relaxed text-[var(--text-secondary)]">
+              <strong className="font-bold text-[var(--ink)]">A direct line to you</strong> — questions, check-ins, and accountability between sessions.
+            </p>
+          </motion.div>
         </div>
 
         {/* CTA */}
@@ -144,8 +164,11 @@ export function ShowcaseSection() {
             href="/signup?role=coach"
             className="inline-flex items-center gap-2 rounded-[14px] border-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] px-6 py-3.5 font-[family-name:var(--font-display)] text-base font-bold text-[var(--ink)] shadow-[5px_5px_0_#b8910f] transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-[7px_7px_0_#b8910f] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
           >
-            Try it free for 14 days <ArrowRight size={16} />
+            Start your free 14-day trial <ArrowRight size={16} />
           </Link>
+          <p className="mt-3 font-[family-name:var(--font-display)] text-[13px] font-semibold text-[var(--text-tertiary)]">
+            14 days free · $0 due today · then $99/mo · cancel anytime
+          </p>
         </div>
       </div>
     </section>

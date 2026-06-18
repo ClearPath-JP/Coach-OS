@@ -1,21 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { DoorOpen, MapPin, ArrowRight } from 'lucide-react'
+import { Rocket, MapPin, ArrowRight } from 'lucide-react'
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
-  }),
-}
-
+/**
+ * Above-the-fold content must be visible on FIRST PAINT (no JS / pre-hydration).
+ * We deliberately do NOT use framer-motion `initial="hidden"` here, because that
+ * renders the SSR HTML at opacity:0 and the hero stays blank until JS hydrates.
+ *
+ * Instead the markup is fully visible by default, and a tasteful entrance is layered
+ * on as a pure-CSS enhancement (see the <style> block below). The keyframes only run
+ * under `prefers-reduced-motion: no-preference`; the default/reduced-motion/no-JS
+ * state is opacity:1 with no transform, so the content is always readable.
+ */
 export function HeroSection() {
   return (
     <section className="relative bg-[var(--bg-app)] pt-16">
+      <style>{heroRevealCss}</style>
+
       {/* Founding banner */}
       <div className="border-b-[3px] border-[var(--ink)] bg-[var(--belt-yellow)] text-center px-4 py-2.5 font-[family-name:var(--font-display)] text-[13px] sm:text-sm font-bold tracking-[-0.01em] text-[var(--ink)]">
         🥋 10 founding spots · $99/mo for life — locked forever for the first 10 coaches
@@ -24,35 +26,40 @@ export function HeroSection() {
       <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
           {/* LEFT: copy */}
-          <motion.div initial="hidden" animate="visible">
-            <motion.div custom={0} variants={fadeUp} className="flex flex-wrap items-center gap-2.5 mb-6">
+          <div>
+            <div className="hero-reveal flex flex-wrap items-center gap-2.5 mb-6" style={{ '--hero-i': 0 } as React.CSSProperties}>
               <span className="arcade-badge arcade-badge-teal">🏋️ Solo coach tool</span>
               <span className="arcade-badge arcade-badge-yellow">⚡ Setup in an afternoon</span>
-            </motion.div>
+            </div>
 
-            <motion.h1
-              custom={1}
-              variants={fadeUp}
-              className="font-[family-name:var(--font-display)] text-[2.6rem] sm:text-5xl md:text-6xl font-extrabold leading-[1.03] tracking-[-0.04em] text-[var(--ink)]"
+            <h1
+              className="hero-reveal font-[family-name:var(--font-display)] text-[2.6rem] sm:text-5xl md:text-6xl font-extrabold leading-[1.03] tracking-[-0.04em] text-[var(--ink)]"
+              style={{ '--hero-i': 1 } as React.CSSProperties}
             >
               Run your whole
               <br />
               coaching practice
               <br />
               <span style={{ color: 'var(--belt-teal)' }}>from one place.</span>
-            </motion.h1>
+            </h1>
 
-            <motion.p custom={2} variants={fadeUp} className="mt-5 text-lg font-medium text-[var(--text-secondary)] max-w-[440px]">
+            <p
+              className="hero-reveal mt-5 text-lg font-medium text-[var(--text-secondary)] max-w-[440px]"
+              style={{ '--hero-i': 2 } as React.CSSProperties}
+            >
               Scheduling, classes, payments, belts, and messaging — the all-in-one OS built for solo
               martial-arts and fitness coaches.
-            </motion.p>
+            </p>
 
-            <motion.div custom={3} variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
+            <div
+              className="hero-reveal mt-7 flex flex-wrap items-center gap-3"
+              style={{ '--hero-i': 3 } as React.CSSProperties}
+            >
               <Link
                 href="/signup?role=coach"
                 className="inline-flex items-center gap-2 font-[family-name:var(--font-display)] font-bold text-base text-[var(--ink)] bg-[var(--belt-yellow)] border-[3px] border-[var(--ink)] rounded-[14px] px-6 py-3.5 shadow-[5px_5px_0_#b8910f] hover:-translate-x-px hover:-translate-y-px hover:shadow-[7px_7px_0_#b8910f] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
               >
-                <DoorOpen size={18} /> Open your dojo <ArrowRight size={16} />
+                <Rocket size={18} /> Start your free 14-day trial <ArrowRight size={16} />
               </Link>
               <Link
                 href="/signup?role=student"
@@ -60,19 +67,25 @@ export function HeroSection() {
               >
                 <MapPin size={17} /> Find a coach
               </Link>
-            </motion.div>
+            </div>
 
-            <motion.div
-              custom={4}
-              variants={fadeUp}
-              className="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--text-tertiary)]"
+            <p
+              className="hero-reveal mt-4 font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--text-tertiary)]"
+              style={{ '--hero-i': 4 } as React.CSSProperties}
             >
-              <span>✓ No card to start</span>
-              <span>✓ Replaces 5 apps</span>
-              <span>✓ Your branding</span>
-            </motion.div>
+              14 days free · $0 due today · then $99/mo · cancel anytime
+            </p>
 
-            <motion.div custom={5} variants={fadeUp} className="mt-7">
+            <div
+              className="hero-reveal mt-4 flex flex-wrap gap-x-5 gap-y-2 font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--text-tertiary)]"
+              style={{ '--hero-i': 5 } as React.CSSProperties}
+            >
+              <span>✓ 14 days free</span>
+              <span>✓ $0 due today</span>
+              <span>✓ Cancel anytime</span>
+            </div>
+
+            <div className="hero-reveal mt-7" style={{ '--hero-i': 6 } as React.CSSProperties}>
               <Link
                 href="/login"
                 className="font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--text-tertiary)] hover:text-[var(--ink)] inline-flex items-center gap-1.5"
@@ -82,18 +95,40 @@ export function HeroSection() {
                   Log in
                 </span>
               </Link>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* RIGHT: app preview */}
-          <motion.div custom={2} initial="hidden" animate="visible" variants={fadeUp} className="lg:pl-4">
+          <div className="hero-reveal lg:pl-4" style={{ '--hero-i': 2 } as React.CSSProperties}>
             <HeroAppPreview />
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
   )
 }
+
+/**
+ * Pure-CSS entrance. The base state is fully visible (opacity:1, no transform), so
+ * server-rendered HTML and reduced-motion users see the finished hero immediately.
+ * Only when motion is allowed do we start slightly down + faded and animate up.
+ */
+const heroRevealCss = `
+@media (prefers-reduced-motion: no-preference) {
+  .hero-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: heroReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(var(--hero-i, 0) * 0.1s);
+  }
+}
+@keyframes heroReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+`
 
 function HeroAppPreview() {
   const nav: [string, string, boolean][] = [

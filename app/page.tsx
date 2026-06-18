@@ -4,7 +4,9 @@ import { HowItWorksSection } from '@/components/landing/HowItWorksSection'
 import { ShowcaseSection } from '@/components/landing/ShowcaseSection'
 import { FeaturesSection } from '@/components/landing/FeaturesSection'
 import { FounderSection } from '@/components/landing/FounderSection'
+import { TrustSection } from '@/components/landing/TrustSection'
 import { PricingSection } from '@/components/landing/PricingSection'
+import { FaqSection } from '@/components/landing/FaqSection'
 import { CTASection } from '@/components/landing/CTASection'
 import { Footer } from '@/components/landing/Footer'
 
@@ -43,7 +45,9 @@ export default function LandingPage() {
         <ShowcaseSection />
         <FeaturesSection />
         <FounderSection />
+        <TrustSection />
         <PricingSection />
+        <FaqSection />
         <CTASection />
         <Footer />
       </main>

@@ -44,12 +44,15 @@ export function FounderSection() {
 
           <div className="mt-8">
             <Link
-              href="/signup?role=coach"
+              href="/signup?role=coach&plan=founding"
               className="group inline-flex items-center gap-2 font-[family-name:var(--font-display)] font-bold text-sm text-[var(--ink)] bg-[var(--belt-yellow)] border-[3px] border-[var(--ink)] rounded-[14px] px-7 py-3.5 shadow-[5px_5px_0_#b8910f] hover:-translate-x-px hover:-translate-y-px hover:shadow-[7px_7px_0_#b8910f] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
             >
-              Become a founding coach
+              Start your free 14-day trial
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
+            <p className="mt-3 font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--text-tertiary)]">
+              14 days free · $0 due today · then $99/mo · cancel anytime
+            </p>
           </div>
 
           <p className="mt-8 font-[family-name:var(--font-display)] text-sm font-bold text-[var(--ink)]">

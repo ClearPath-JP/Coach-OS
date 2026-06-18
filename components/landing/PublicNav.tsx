@@ -46,10 +46,10 @@ export function PublicNav() {
             Log in
           </Link>
           <Link
-            href="/signup"
+            href="/signup?role=coach"
             className="font-[family-name:var(--font-display)] text-sm font-bold text-[var(--ink)] bg-[var(--belt-yellow)] border-2 border-[var(--ink)] rounded-[10px] px-4 py-2 shadow-[3px_3px_0_#b8910f] hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#b8910f] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
           >
-            Open Your Dojo →
+            Start free trial
           </Link>
         </div>
 
@@ -93,11 +93,11 @@ export function PublicNav() {
                 Log in
               </Link>
               <Link
-                href="/signup"
+                href="/signup?role=coach"
                 onClick={() => setMobileOpen(false)}
                 className="font-[family-name:var(--font-display)] text-sm font-bold text-center text-[var(--ink)] bg-[var(--belt-yellow)] border-2 border-[var(--ink)] rounded-[10px] px-5 py-2.5"
               >
-                Open Your Dojo →
+                Start free trial
               </Link>
             </div>
           </motion.div>

@@ -21,16 +21,20 @@ export function CTASection() {
               Open your dojo today.
             </h2>
             <p className="mt-4 text-base md:text-lg font-medium text-[var(--ink)]/75 max-w-xl mx-auto">
-              Coaches: open your dojo. Students: find yours. Set up in an afternoon.
+              Start free for 14 days and set up in an afternoon. The first 10 founding coaches lock in
+              $99/mo for life.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3">
               <Link
-                href="/signup"
+                href="/signup?role=coach"
                 className="inline-flex items-center gap-2 font-[family-name:var(--font-display)] font-bold text-base text-[#faf7f0] bg-[var(--ink)] border-[3px] border-[var(--ink)] rounded-[14px] px-8 py-4 shadow-[5px_5px_0_#b8910f] hover:-translate-x-px hover:-translate-y-px hover:shadow-[7px_7px_0_#b8910f] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all"
               >
-                Open Your Dojo
+                Start your free 14-day trial
                 <ArrowRight size={18} />
               </Link>
+              <p className="font-[family-name:var(--font-display)] text-sm font-semibold text-[var(--ink)]/70">
+                14 days free · $0 due today · then $99/mo · cancel anytime
+              </p>
             </div>
           </div>
         </motion.div>
