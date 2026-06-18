@@ -174,6 +174,10 @@ export async function POST(request: Request) {
       success_url: `${baseUrl}/client/portal?membership=active`,
       cancel_url: `${baseUrl}/client/portal?membership=cancelled`,
       subscription_data: {
+        // Coach's connected account = merchant of record for the subscription
+        // (descriptor/settlement region), aligning with our Terms. Disputes still
+        // debit the platform balance (see book-class note) until transfers are reversed.
+        on_behalf_of: connectId,
         transfer_data: { destination: connectId },
         metadata: {
           type: 'client_membership',

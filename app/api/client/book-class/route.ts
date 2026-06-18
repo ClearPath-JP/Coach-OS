@@ -416,6 +416,12 @@ export async function POST(request: Request) {
         success_url: `${baseUrl}/client/sessions?booked=1`,
         cancel_url: `${baseUrl}/client/sessions?booking_cancelled=1`,
         payment_intent_data: {
+          // on_behalf_of makes the coach's connected account the merchant of record
+          // (their statement descriptor + settlement region), aligning with our Terms.
+          // NOTE: per Stripe, disputes/refunds on destination charges still debit the
+          // PLATFORM balance with or without on_behalf_of — recovering those funds from
+          // the coach requires reversing the transfer (not implemented here).
+          on_behalf_of: connectId,
           transfer_data: { destination: connectId },
           // 0% platform fee for now per user decision 2026-05-23
         },

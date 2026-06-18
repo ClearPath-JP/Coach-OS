@@ -125,6 +125,10 @@ export async function POST(request: Request) {
       success_url: `${base}/client/passes?purchased=1`,
       cancel_url: `${base}/client/passes?cancelled=1`,
       payment_intent_data: {
+        // Coach's connected account = merchant of record (descriptor/settlement region),
+        // aligning with our Terms. Disputes still debit the platform balance (see
+        // book-class note) until transfers are reversed.
+        on_behalf_of: connectId,
         transfer_data: { destination: connectId },
         metadata: passMeta,
       },

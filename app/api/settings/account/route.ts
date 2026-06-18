@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { resolveCoachWorkspaceIdForSession } from '@/lib/coach-workspace'
 import { createClient } from '@/lib/supabase-server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { checkRateLimitAsync } from '@/lib/rate-limit'
 import { stripe } from '@/lib/stripe'
+import { purgeWorkspace } from '@/lib/purge-workspace'
 
 export async function DELETE(request: Request) {
   try {
@@ -50,11 +52,18 @@ export async function DELETE(request: Request) {
         .eq('workspace_id', workspaceId)
     }
 
-    const { error } = await supabase
-      .from('workspaces')
-      .update({ status: 'deleted' })
-      .eq('id', workspaceId)
-    if (error) {
+    // REAL erasure (GDPR/CCPA deletion right): cascade-delete the workspace + every
+    // workspace-scoped table + all of its auth users. Replaces the old soft-delete
+    // (status='deleted'), which erased nothing.
+    try {
+      const svc = createServiceClient()
+      const purgeResult = await purgeWorkspace(svc, workspaceId)
+      // If any auth users could not be deleted, the erasure is incomplete — fail loud so the
+      // caller knows (a retry is safe: deleteUser no-ops on already-gone users).
+      if (purgeResult.authDeleteFailures.length > 0) {
+        return NextResponse.json({ error: 'Could not delete account' }, { status: 500 })
+      }
+    } catch {
       return NextResponse.json({ error: 'Could not delete account' }, { status: 500 })
     }
 
