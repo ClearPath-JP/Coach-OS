@@ -58,6 +58,8 @@ export function PublicNav() {
           onClick={() => setMobileOpen(!mobileOpen)}
           className="md:hidden p-2 text-[#faf7f0]"
           aria-label="Toggle menu"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-menu"
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -67,6 +69,7 @@ export function PublicNav() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            id="mobile-menu"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
